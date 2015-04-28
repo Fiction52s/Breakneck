@@ -7,6 +7,8 @@
 #include <list> 
 #include <stdlib.h>
 
+#define TIMESTEP 1.f / 60.f
+
 using namespace std;
 using namespace sf;
 
@@ -110,35 +112,31 @@ struct Tileset
 	string sourceName;
 };
 
-list<Tileset*> *tilesetList;
-Tileset* tilesets;
-int tilesetCount;
+list<Tileset*> tilesetList;
 
-int GetTilesetIndex( const string & s )
+Tileset * GetTileset( const string & s, int tileWidth, int tileHeight )
 {
-	int i = 0;
-	for( list<Tileset*>::iterator it = tilesetList->begin(); it != tilesetList->end(); ++it )
+	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	{
 		if( (*it)->sourceName == s )
 		{
-			return i;
+			return (*it);
 		}
-		++i;
 	}
+
 
 	//not found
 
+
+	Tileset *t = new Tileset();
+	t->texture = new Texture();
+	t->texture->loadFromFile( s );
+	t->tileWidth = tileWidth;
+	t->tileHeight = tileHeight;
+	tilesetList.push_back( t );
+
+	return t;
 	//make sure to set up tileset here
-	tilesetList->push_back( new Tileset() );
-
-	return i;
-}
-
-Tileset * GetTileset( int i )
-{
-	assert( i > 0 && i < tilesetCount );
-
-	return tilesets[i];
 }
 
 struct Actor
@@ -152,16 +150,24 @@ struct Actor
 	};
 
 	Sprite *sprite;
-	int tilesetStand;
+	Tileset *tilesetStand;
+	Tileset *tilesetRun;
 
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 	Actor::Actor()
 	{
-		actionLength[STAND] = 5;
-		tilesetStand = GetTilesetIndex( "stand.png" );
+		sprite = new Sprite;
+		velocity = Vector2f( 0, 0 );
+		actionLength[STAND] = 18 * 4;
+		tilesetStand = GetTileset( "stand.png", 64, 64 );
 
-		actionLength[RUN] = 10;
+		actionLength[RUN] = 10 * 4;
+		tilesetRun = GetTileset( "run.png", 128, 64 );
+
 		actionLength[JUMP] = 5;
+
+		currentAction = RUN;
+		frame = 0;
 	}
 
 	void ActionEnded()
@@ -171,6 +177,9 @@ struct Actor
 			switch( currentAction )
 			{
 			case STAND:
+				frame = 0;
+				break;
+			case RUN:
 				frame = 0;
 				break;
 			}
@@ -191,6 +200,10 @@ struct Actor
 		case JUMP:
 			break;
 		}
+
+	//	cout << "position: " << position.x << ", " << position.y << endl;
+	//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+		position += velocity;
 	}
 
 	void UpdatePhysics()
@@ -199,12 +212,24 @@ struct Actor
 
 	void UpdatePostPhysics()
 	{
+		//cout << "updating" << endl;
 		switch( currentAction )
 		{
 		case STAND:
 				//display stand at the current frame
+			sprite->setPosition( position );
+			
+			sprite->setTexture( *(tilesetStand->texture));
+			sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			//cout << "setting to frame: " << frame / 4 << endl;
 			break;
 		case RUN:
+			sprite->setPosition( position );
+			
+			sprite->setTexture( *(tilesetRun->texture));
+			sprite->setTextureRect( tilesetRun->GetSubRect( frame / 4 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			break;
 		case JUMP:
 			break;
@@ -370,7 +395,7 @@ void collideRectRect()
 int main()
 {
 	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-			sf::VideoMode( 1920, 1080 ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+		sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::None, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	sf::Vector2i pos( 0, 0 );
 
 	window->setPosition( pos );
@@ -378,9 +403,12 @@ int main()
 	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
 	
+	View view( sf::Vector2f(  300, 300 ), sf::Vector2f( 960, 540 ) );
+	window->setView( view );
 
-	sf::RectangleShape r( sf::Vector2f( 100, 300 ) );
-	r.setPosition( 300, 300 );
+
+	
+
 	
 	ifstream is;
 	is.open( "test.brknk" );
@@ -429,8 +457,6 @@ int main()
 	sf::CircleShape circle( 30 );
 	circle.setFillColor( Color::Blue );
 
-	sf::Vector2f rectVel( 0, 100 );
-
 	Edge * edgeList = new Edge[lineCount];
 	for( int i = 0; i < lineCount-1; ++i )
 	{
@@ -463,83 +489,91 @@ int main()
 	b.offsetAngle = 0;
 	b.offset.x = 0;
 	b.offset.y = 0;
-	b.rw = 50;
-	b.rh = 150;
+	b.rw = 32;
+	b.rh = 32;
 	b.type = b.Physics;
 
 	Actor player;
-	
+	player.position = Vector2f( 300, 300 );
+
+	sf::Clock gameClock;
+	double currentTime = 0;
+	double accumulator = TIMESTEP + .1;
 
 	while( true )
 	{
+		double newTime = gameClock.getElapsedTime().asSeconds();
+		double frameTime = newTime - currentTime;
+
+		if ( frameTime > 0.25 )
+			frameTime = 0.25;	
+        currentTime = newTime;
+
+		accumulator += frameTime;
 
 		window->clear();
 		
-
-		r.setPosition( r.getPosition().x + rectVel.x, r.getPosition().y + rectVel.y );
-
-
-		player.velocity = rectVel;
-		player.position = Vector2f( r.getPosition().x + r.getLocalBounds().width / 2, 
-			r.getPosition().y + r.getLocalBounds().height / 2 );
-
-		//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-		
-		for( int i = 0; i < lineCount; ++i )
-		{
-			collideEdge( player, b, edgeList[i] );
-		}
-		//collideEdge( player, b, edge1 );
-		//collideEdge( player, b, edge2 );
-		//collideEdge( player, b, edge3 );
-		//collideEdge( player, b, edge4 );
-
-		r.setPosition( player.position.x - r.getLocalBounds().width / 2, player.position.y - r.getLocalBounds().height / 2 );
-		/*for( int i = 1; i < lineCount; ++i )
-		{
-			sf::Vector2f temp = sf::Vector2f( r.getPosition().x ,//+ r.getGlobalBounds().width,
-			r.getPosition().y + r.getGlobalBounds().height ) - line[i].position;
-		
-			normalize( temp );
-
-			sf::Vector2f edge = line[i].position - line[i-1].position;
-
-			sf::Vector2f normal( edge.y, -edge.x );
-			normal = normalize( normal );
-
-			int res = cross( temp, nLine );
-
-			if( normal.x > 0 )
+		while ( accumulator >= TIMESTEP  )
+        {
+			float f = 10;			
+			player.velocity = Vector2f( 0, 0 );
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
-				if( res < 0 && r.getPosition().x >= 0 && r.getPosition().x < line[1].position.x )
-				{
-					r.setPosition( r.getPosition().x + lineNormal.x * res, r.getPosition().y + lineNormal.y * res);
-					cout << "move" << endl;
-				}
+				player.velocity += Vector2f( f, 0 );
+				//break;
 			}
-			else if( normal.x < 0 )
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Left ) )
 			{
-				if( res < 0 && r.getPosition().x >= 0 && r.getPosition().x < line[1].position.x )
-				{
-					r.setPosition( r.getPosition().x + lineNormal.x * res, r.getPosition().y + lineNormal.y * res);
-					cout << "move" << endl;
-				}
+				player.velocity += Vector2f( -f, 0 );
+				//break;
 			}
-			cout << "normal: " << normal.x << ", " << normal.y << endl;
-		cout << "cross: " << res << endl;
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Up ) )
+			{
+				player.velocity += Vector2f( 0, -f );
+				//break;
+			}
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Down ) )
+			{
+				player.velocity += Vector2f( 0, f );
+				//break;
+			}
+
+
+			player.UpdatePrePhysics();
+
+			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
 		
-		
+			for( int i = 0; i < lineCount; ++i )
+			{
+				collideEdge( player, b, edgeList[i] );
+			}
+
+			player.UpdatePostPhysics();
+
+			//r.setPosition( player.position.x - r.getLocalBounds().width / 2, player.position.y - r.getLocalBounds().height / 2 );
 			
-		}*/
 		
 
-		window->draw( r );
+			accumulator -= TIMESTEP;
+		}
+
+		view.setSize( Vector2f( 960 * .5, 540 * .5 ) );
+		view.setCenter( player.position );
+		window->setView( view );
+		window->draw( *(player.sprite) );
 		window->draw( circle );
 		window->draw(line, lineCount * 2, sf::Lines);
 
+		/*Event ev;
+		window->pollEvent( ev );
+		if( ev.type == Event::Resized )
+		{
+			window->setSize( 
+		}*/
+
 		window->display();
 
-		while( true )
+	/*	while( true )
 		{
 			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 				break;
@@ -549,42 +583,10 @@ int main()
 				break;
 			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Down) )
 				break;
-		}
+		}*/
 
-		
-
-		while( true )
-		{
-			float f = 20;
-			rectVel = Vector2f( 0, 0 );
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
-			{
-				rectVel += Vector2f( f, 0 );
-				//break;
-			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Left ) )
-			{
-				rectVel += Vector2f( -f, 0 );
-				//break;
-			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Up ) )
-			{
-				rectVel += Vector2f( 0, -f );
-				//break;
-			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Down ) )
-			{
-				rectVel += Vector2f( 0, f );
-				//break;
-			}
-
-			if( rectVel.x != 0 || rectVel.y != 0 )
-				break;
-
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
 				return 0;
-			
-		}
 
 
 		
