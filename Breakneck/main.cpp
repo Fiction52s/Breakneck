@@ -14,20 +14,41 @@ using namespace sf;
 
 RenderWindow *window;
 
-float cross( sf::Vector2f a, sf::Vector2f b )
+double cross( sf::Vector2f a, sf::Vector2f b )
 {
-	return a.x * b.y - a.y * b.x;
+	double ax = a.x;
+	double ay = a.y;
+	double bx = b.x;
+	double by = b.y;
+	return ax * by - ay * bx;
+	//return a.x * b.y - a.y * b.x;
+}
+
+
+double length( Vector2f v)
+{
+	double vx = v.x;
+	double vy = v.y;
+	return sqrt( vx * vx + vy * vy );
 }
 
 sf::Vector2f normalize( sf::Vector2f v )
 {
-	float vLen = sqrtf( v.x * v.x + v.y * v.y );
-	return sf::Vector2f( v.x / vLen, v.y / vLen );
+	double vLen = length( v );
+	if( vLen > 0 )
+		return sf::Vector2f( v.x / vLen, v.y / vLen );
+	else
+		return Vector2f( 0, 0 );
 }
 
-float dot( sf::Vector2f a, sf::Vector2f b )
+double dot( sf::Vector2f a, sf::Vector2f b )
 {
-	return a.x * b.x + a.y * b.y;
+	double ax = a.x;
+	double ay = a.y;
+	double bx = b.x;
+	double by = b.y;
+	return ax * bx + ay * by;
+	//return a.x * b.x + a.y * b.y;
 }
 
 struct Edge
@@ -38,7 +59,12 @@ struct Edge
 	Edge * GetEdge1();
 	Edge *edge0;
 	Edge *edge1;
+
 	//material ---
+	Edge()
+	{
+		
+	}
 
 	Vector2f Normal()
 	{
@@ -47,15 +73,27 @@ struct Edge
 		return Vector2f( temp.y, -temp.x );
 	}
 
-	Vector2f GetPoint( float f )
+	Vector2f GetPoint( float quantity )
 	{
+		//gets the point on a line w/ length quantity in the direction of the edge vector
 		Vector2f e( v1 - v0 );
-		e.x *= f;
-		e.y *= f;
-		e += v0;
-		return e; 
+		e = normalize( e );
+		return v0 + quantity * e;
+	}
+
+	
+
+	float GetQuantity( Vector2f p )
+	{
+		//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 
+		//normal to use dot product to get cos(0) =1
+		Vector2f vv = normalize(p - v0);
+		Vector2f e = normalize(v1 - v0);
+		return dot( vv, e ) * length( p - v0 );                          
 	}
 };
+
+
 
 struct CollisionBox
 {
@@ -95,7 +133,10 @@ struct Contact
 	Contact()
 		:edge( NULL )
 	{
+		collisionPriority = 0;
 	}
+		
+	float collisionPriority;	
 	Vector2f position;
 	Vector2f resolution;
 	Edge *edge;
@@ -211,7 +252,7 @@ struct Actor
 
 	//	cout << "position: " << position.x << ", " << position.y << endl;
 	//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-		position += velocity;
+		
 	}
 
 	void UpdatePhysics()
@@ -254,34 +295,72 @@ struct Actor
 	CollisionBox *physBox;
 };
 
-sf::Vector2f lineIntersection( Vector2f a, Vector2f b, Vector2f c, Vector2f d )
+struct LineIntersection
 {
-	float x = ((a.x * b.y - a.y * b.x ) * ( c.x - d.x ) - (a.x - b.x ) * ( c.x * d.y - c.y * d.x ))
-			/ ( (a.x-b.x)*(c.y - d.y) - (a.y - b.y) * (c.x - d.x ) );
-	
-	float y = ((a.x * b.y - a.y * b.x ) * ( c.y - d.y ) - (a.y - b.y ) * ( c.x * d.y - c.y * d.x ))
-			/ ( (a.x-b.x)*(c.y - d.y) - (a.y - b.y) * (c.x - d.x ) );
+	LineIntersection(const Vector2f &pos, bool p )
+	{
+		position = pos;
+		parallel = p;
+	}
 
-	sf::CircleShape cs;
-	//cs.setOutlineColor( Color::Cyan );
-	//cs.setOutlineThickness( 10 );
-	cs.setFillColor( Color::Cyan );
-	cs.setRadius( 20 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( x,y );
-	window->draw( cs );
-	cout << "cirlce pos: " << cs.getPosition().x << ", " << cs.getPosition().y << endl;
+	Vector2f position;
+	bool parallel;
+};
 
-	return sf::Vector2f( x, y );
+LineIntersection lineIntersection( Vector2f a, Vector2f b, Vector2f c, Vector2f d )
+{
+	double ax = a.x;
+	double ay = a.y;
+	double bx = b.x;
+	double by = b.y;
+	double cx = c.x;
+	double cy = c.y;
+	double dx = d.x;
+	double dy = d.y;
+
+	double x= 0,y = 0;
+	bool parallel = false;
+	if( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) == 0 )
+	{
+		parallel = true;
+		//cout << "error with: ( " << ax << ", " << ay << " ), ( " << bx << ", " << by << " ) and ( "
+		//	<< cx << ", " << cy << " ), ( " << dx << ", " << dy << endl;
+	}
+	else
+	{
+		x = ((ax * by - ay * bx ) * ( cx - dx ) - (ax - bx ) * ( cx * dy - cy * dx ))
+			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
+		y = ((ax * by - ay * bx ) * ( cy - dy ) - (ay - by ) * ( cx * dy - cy * dx ))
+			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
+		sf::CircleShape cs;
+		//cs.setOutlineColor( Color::Cyan );
+		//cs.setOutlineThickness( 10 );
+		cs.setFillColor( Color::Cyan );
+		cs.setRadius( 20 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( x,y );
+	//	window->draw( cs );
+		cout << "cirlce pos: " << cs.getPosition().x << ", " << cs.getPosition().y << endl;
+	}
+
+
+	return LineIntersection( Vector2f(x,y), parallel );
 }
 
 Contact *currentContact;
 Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 {
+	Vector2f oldPosition = a.position - a.velocity;
 	float left = a.position.x + b.offset.x - b.rw;
 	float right = a.position.x + b.offset.x + b.rw;
 	float top = a.position.y + b.offset.y - b.rh;
 	float bottom = a.position.y + b.offset.y + b.rh;
+
+	float oldLeft = oldPosition.x + b.offset.x - b.rw;
+	float oldRight = oldPosition.x + b.offset.x + b.rw;
+	float oldTop = oldPosition.y + b.offset.y - b.rh;
+	float oldBottom = oldPosition.y + b.offset.y + b.rh;
+
 
 	float edgeLeft = min( e->v0.x, e->v1.x );
 	float edgeRight = max( e->v0.x, e->v1.x ); 
@@ -333,11 +412,35 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			}
 			else
 			{
-				//Vector2f topLeft( top, left );
-				//Vector2f bottomLeft( bottom, left );
+				if( bottom > e->v0.y && bottom < e->v1.y )
+				{
+					Vector2f bottomLeft( left, bottom);
+					corner = bottomLeft;
+				}
+				else if( top < e->v1.y && top > e->v0.y )
+				{
+					Vector2f topLeft( left, top );
+					corner = topLeft;
+				}
+				else if( e->v0.y < top && e->v1.y > bottom )
+				{
+					Vector2f bottomLeft( left, bottom);
+					corner = bottomLeft;
+					//corner = Vector2f( left, (top + bottom) / 2 );
+				}
+				else
+				{
+					//corner = Vector2f(left, (e->v0.y + e->v1.y)/2);
+					Vector2f bottomLeft( left, bottom);
+					corner = bottomLeft;
+				}
 
-			//	corner = Vector2f( left, (top + bottom) / 2 );
-			//	resolve = true;
+				//Vector2f topLeft( top, left );
+				
+
+				//corner = Vector2f( left, (top + bottom) / 2 );
+			//	corner = bottomLeft;
+				resolve = true;
 				//currentContact->position = (topLeft + bottomLeft) / 2;
 				//currentContact->resolution = intersect - currentContact->position;
 				//currentContact->edge = e;
@@ -361,10 +464,35 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			}
 			else
 			{
-				//Vector2f topRight( right, top );
-				//Vector2f bottomRight( right, bottom );
+				if( bottom < e->v0.y && bottom > e->v1.y )
+				{
+					Vector2f bottomRight( right, bottom);
+					corner = bottomRight;
+				}
+				else if( top < e->v0.y && top > e->v1.y )
+				{
+					Vector2f topRight( right, top );
+					corner = topRight;
+				}
+				else if( bottom < e->v0.y && top > e->v1.y)
+				{
+					Vector2f bottomRight( right, bottom);
+					corner = bottomRight;
+					//corner = Vector2f( right, (top + bottom) / 2 );
+				}
+				else
+				{
+					Vector2f bottomRight( right, bottom);
+					corner = bottomRight;
+					cout << "WARNNINGGGGGGGGGGGGGGGGGGGG" << endl;
+					//corner = Vector2f(right, (e->v0.y + e->v1.y)/2);
+				}
+		//		Vector2f topRight( right, top );
+			//	Vector2f bottomRight( right, bottom );
 				//corner = (topRight + bottomRight) / 2;
-			//	corner = Vector2f( right, (top + bottom) / 2);
+				//corner = Vector2f( right, bottom );
+				//corner = Vector2f( right, (top + bottom) / 2);
+				resolve = true;
 			//	resolve = true;
 			}
 		}
@@ -373,18 +501,65 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			//up and down
 			if( edgeNormal.y > 0 )
 			{
-				//Vector2f bottomLeft( left, bottom );
+				if( left > e->v1.x && left < e->v0.x )
+				{
+					Vector2f topLeft( left, top);
+					corner = topLeft;
+				}
+				else if( right > e->v1.x && right < e->v0.x )
+				{
+					Vector2f topRight( right, top);
+					corner = topRight;
+				}
+				else if( e->v1.x < left && e->v0.x > right)
+				{
+					Vector2f topLeft( left, top);
+					corner = topLeft;
+				}
+				else
+				{
+					Vector2f topLeft( left, top);
+					corner = topLeft;
+						cout << "WARNNINGGGGGGGGGGGGGGGGGGGG" << endl;
+					//corner = Vector2f((e->v0.x + e->v1.x)/2, top);
+				}
+				//Vector2f topLeft( left, top );
 				//Vector2f bottomRight( right, bottom );
-			//	corner = Vector2f( (left + right) / 2, bottom );
-			//	resolve = true;
+				//Vector2f topRight( right, top );
+				//corner = Vector2f( (left + right) / 2, top );
+			//	corner = topRight;
+				resolve = true;
+				cout << "up" << endl;
 			}
 			else if( edgeNormal.y < 0 )
 			{
-				//Vector2f topLeft( left, top );
-				//Vector2f topRight( right, top);
-				//corner = (topLeft + topRight) / 2;
-			//	corner = Vector2f( (left + right) / 2, top );
-			//	resolve = true;
+				if( left > e->v0.x && left < e->v1.x )
+				{
+					Vector2f bottomLeft( left, bottom);
+					corner = bottomLeft;
+				}
+				else if( right < e->v1.x && right > e->v0.x )
+				{
+					Vector2f bottomRight( right, bottom);
+					corner = bottomRight;
+				}
+				else if( e->v0.x < left && e->v1.x > right)
+				{
+					Vector2f bottomLeft( left, bottom);
+					corner = bottomLeft;
+					//corner = Vector2f( (left + right) / 2, bottom );
+				}
+				else
+				{
+					Vector2f bottomLeft( left, bottom);
+					corner = bottomLeft;
+						cout << "WARNNINGGGGGGGGGGGGGGGGGGGG" << endl;
+					//corner = Vector2f((e->v0.x + e->v1.x)/2, bottom);
+				}
+		
+				//corner = Vector2f( (left + right) / 2, bottom );
+				resolve = true;
+				cout << "down" << endl;
 			}
 			else
 			{
@@ -398,11 +573,147 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 		}
 
 		int res = cross( corner - e->v0, e->v1 - e->v0 );
-		if( res < 0 && resolve )
+
+		double measureNormal = dot( e->Normal(), a.velocity );
+		if( res < 0 && resolve && measureNormal < 0 && ( a.velocity.x != 0 || a.velocity.y != 0 )  )
 		{
 			Vector2f invVel = normalize(-a.velocity);
-			Vector2f intersect = lineIntersection( corner, corner + invVel, e->v0, e->v1 );
 
+			//double pri = -cross( normalize((corner - normalize(a.velocity)) - e->v0), normalize( e->v1 - e->v0 ) );
+			//if( pri <= 0 )
+			//	return NULL;
+
+			Vector2f norm = e->Normal();
+			LineIntersection li = lineIntersection( corner, corner - (a.velocity), e->v0, e->v1 );
+			assert( li.parallel == false );
+			Vector2f intersect = li.position;
+			float intersectQuantity = e->GetQuantity( intersect );
+			//cout << "intersectQuantity: " << intersectQuantity << endl;
+
+		//	if( intersect.x < edgeLeft )
+		//		intersect.x = edgeLeft;
+		//	else if( intersect.x > edgeRight )
+		//		intersect.x = edgeRight;
+			if( intersectQuantity < 0 )
+			{
+				float minx = min( intersect.x, corner.x );
+				float maxx = max( intersect.x, corner.x );
+				float miny = min( intersect.y, corner.y );
+				float maxy = max( intersect.y, corner.y );
+
+				LineIntersection lii = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x, e->v0.y - 1 ) );
+			//	intersect = lii.position;
+
+				LineIntersection lii1 = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x-1, e->v0.y ) );
+			//	intersect = lii1.position;
+
+				float distanceI = length( lii.position - corner );
+				float distanceI1 = length( lii1.position - corner );
+
+				if( distanceI >= distanceI1 )
+				{
+					intersect = lii1.position;
+				}
+				else if( distanceI < distanceI1)
+				{
+					intersect = lii.position;
+				}
+
+				/*if( e->v0.x >= minx && e->v0.x <= maxx )
+				{
+					LineIntersection lii = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x, e->v0.y - 1 ) );
+					intersect = lii.position;
+					if( lii.parallel )
+				{
+					cout << "-----------" << endl;
+				}
+				}
+				else if( e->v0.y >= miny && e->v0.y <= maxy )
+				{
+					
+					LineIntersection lii = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x-1, e->v0.y ) );
+					intersect = lii.position;
+					if( lii.parallel )
+				{
+					cout << "-----------" << endl;
+				}
+				}
+				else
+				{
+					assert( false );
+				}*/
+				//Vector2f zz = normalize( e->v0 - corner );
+				//Vector2f yy = normalize( intersect - corner );
+				//intersect = e->v0 - dot( zz, yy ) * (intersect - corner);
+				//cout << "a" << endl;
+				//intersect = e->v0;
+				
+				cout << "YOOO: " << e->Normal().x << ", " << e->Normal().y << endl;
+				//if( lii.parallel )
+				//{
+				//	cout << "88888888888888" << endl;
+				//}
+			}
+			else if( intersectQuantity > length( e->v1 - e->v0 ) )
+			{
+				cout << " not yo: " << e->Normal().x << ", " << e->Normal().y << endl;
+				//float r = cross(normalize(intersect - corner), normalize(e->v1 - corner) );
+				//intersect += 
+				//float slope = (e->v1.y - e->v0.y) / (e->v1.x - e->v0.x );
+				//Vector2f ss = intersect - e->v1;
+				/*LineIntersection lii = lineIntersection( intersect, corner, e->v1, Vector2f( e->v1.x, e->v1.y - 1 ) );
+				if( lii.parallel )
+				{
+					cout << "-----------" << endl;
+				}
+				intersect = lii.position;*/
+
+				float minx = min( intersect.x, corner.x );
+				float maxx = max( intersect.x, corner.x );
+				float miny = min( intersect.y, corner.y );
+				float maxy = max( intersect.y, corner.y );
+
+				LineIntersection lii = lineIntersection( intersect, corner, e->v1, Vector2f( e->v1.x, e->v1.y - 1 ) );
+			//	intersect = lii.position;
+
+				LineIntersection lii1 = lineIntersection( intersect, corner, e->v1, Vector2f( e->v1.x-1, e->v1.y ) );
+			//	intersect = lii1.position;
+
+				float distanceI = length( lii.position - corner );
+				float distanceI1 = length( lii1.position - corner );
+
+				if( distanceI > distanceI1 )
+				{
+					intersect = lii1.position;
+				}
+				else if( distanceI < distanceI1)
+				{
+					intersect = lii.position;
+				}
+				else
+				{
+					assert( false && "stupid" );
+				}
+
+
+				//Vector2f zz = normalize( e->v1 - corner );
+				//Vector2f yy = normalize( intersect - corner );
+				//intersect = e->v1 - dot( zz, yy ) * (e->v1 - corner);
+				//cout << "bb" << endl;
+				//intersect = e->v1;
+			}
+			double pri = -cross( normalize((corner - a.velocity) - e->v0), normalize( e->v1 - e->v0 ) );
+			//double pri = -cross( normalize((corner) - e->v0), normalize( e->v1 - e->v0 ) );
+			//double pri = length( intersect - (corner - a.velocity ) );
+			cout << "pri: " << pri <<" .... " << e->v0.x << ", " << e->v0.y << " .. " << e->v1.x << ", " << e->v1.y << endl;
+			if( pri < 0 )
+			{
+				cout << "BUSTED---------------" << endl;
+				return NULL;
+			}
+
+			intersectQuantity = e->GetQuantity( intersect );
+			//cout << "intersectQuantity2222: " << intersectQuantity << endl;
 			sf::CircleShape cs;
 			cs.setFillColor( Color::Magenta );
 				
@@ -417,6 +728,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			//Vector2f p = intersect - corner;
 			currentContact->position = corner;
 			currentContact->resolution = intersect - corner;
+			currentContact->collisionPriority = pri;//dot(intersect - ( corner + invVel), e->Normal());
 			currentContact->edge = e;
 
 			return currentContact;
@@ -443,10 +755,11 @@ void collideRectRect()
 int main()
 {
 	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::None, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	window->setPosition( Vector2i(800, 0 ));
 	sf::Vector2i pos( 0, 0 );
 
-	window->setPosition( pos );
+	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
 	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
@@ -458,6 +771,11 @@ int main()
 	currentContact = new Contact;
 
 	
+	sf::RectangleShape bDraw;
+	bDraw.setFillColor( Color::Red );
+	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
+	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
+
 	ifstream is;
 	is.open( "test.brknk" );
 
@@ -675,22 +993,56 @@ int main()
 			player.UpdatePrePhysics();
 
 			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-		
+			
+			player.position += player.velocity;
+			float minPriority = 1000000;
+			Edge *minEdge = NULL;
+			Vector2f res(0,0);
 			for( int i = 0; i < totalEdges; ++i )
 			{
 				Contact *c = collideEdge( player, b, edges[i] );
 				if( c != NULL )
 				{
-				player.position += c->resolution;
-				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+				//player.position += c->resolution;
+				if( c->collisionPriority <= minPriority )
+				{
+					if( c->collisionPriority == minPriority )
+					{
+						if( length(c->resolution) > length(res) )
+						{
+							minPriority = c->collisionPriority;
+							minEdge = edges[i];
+							res = c->resolution;
+						}
+					}
+					else
+					{
+
+						minPriority = c->collisionPriority;
+						minEdge = edges[i];
+						res = c->resolution;
+					}
+				}
+				
+				//cout << "p: " << c->collisionPriority << endl;
+				//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+
 				//break;
 				}
 			}
+			if( minEdge != NULL )
+			{
+				Contact *c = collideEdge( player, b, minEdge );
+				cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
+				player.position += c->resolution;
+				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+			}
+			
 
 			player.UpdatePostPhysics();
 
 			//r.setPosition( player.position.x - r.getLocalBounds().width / 2, player.position.y - r.getLocalBounds().height / 2 );
-			cout << "playerPos: " << player.position.x << ", " << player.position.y << endl;	
+			//cout << "playerPos: " << player.position.x << ", " << player.position.y << endl;	
 		
 
 			accumulator -= TIMESTEP;
@@ -702,6 +1054,10 @@ int main()
 		view.setSize( Vector2f( 960 * 1, 540 * 1 ) );
 		view.setCenter( player.position );
 		window->setView( view );
+
+		bDraw.setPosition( player.position );
+		window->draw( bDraw );
+
 		window->draw( *(player.sprite) );
 		window->draw( circle );
 		window->draw(line, totalEdges * 2, sf::Lines);
