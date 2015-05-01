@@ -424,12 +424,15 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				}
 				else if( e->v0.y < top && e->v1.y > bottom )
 				{
-					Vector2f bottomLeft( left, bottom);
-					corner = bottomLeft;
+					//Vector2f bottomLeft( left, bottom);
+					//corner = bottomLeft;
 					//corner = Vector2f( left, (top + bottom) / 2 );
+					Vector2f topLeft( left, top );
+					corner = topLeft;
 				}
 				else
 				{
+				
 					//corner = Vector2f(left, (e->v0.y + e->v1.y)/2);
 					Vector2f bottomLeft( left, bottom);
 					corner = bottomLeft;
@@ -575,8 +578,18 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 		int res = cross( corner - e->v0, e->v1 - e->v0 );
 
 		double measureNormal = dot( e->Normal(), a.velocity );
+		if( res == 0 )
+		{
+			//cout << "STUPID" << endl;
+		}
+		if( measureNormal > 0 )
+		{
+			//cout << e->Normal().x << ", " << e->Normal().y << endl;
+		}
+		//if( res < 0 && resolve && measureNormal < 0 && ( a.velocity.x != 0 || a.velocity.y != 0 )  )
 		if( res < 0 && resolve && measureNormal < 0 && ( a.velocity.x != 0 || a.velocity.y != 0 )  )
 		{
+			cout << "starting this" << endl;
 			Vector2f invVel = normalize(-a.velocity);
 
 			//double pri = -cross( normalize((corner - normalize(a.velocity)) - e->v0), normalize( e->v1 - e->v0 ) );
@@ -607,16 +620,50 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				LineIntersection lii1 = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x-1, e->v0.y ) );
 			//	intersect = lii1.position;
 
-				float distanceI = length( lii.position - corner );
-				float distanceI1 = length( lii1.position - corner );
+				float distanceI = dot( lii.position - corner, intersect - corner );//length( lii.position - corner )* dot(normalize(lii.position - corner), normalize( intersect - corner )) ;
+				float distanceI1 =dot( lii1.position - corner, intersect - corner ); //length( lii1.position - corner )* dot(normalize(lii1.position - corner), normalize( intersect - corner )) ;
 
-				if( distanceI >= distanceI1 )
+//				if( distanceI <= 0 && distanceI1 <= 0 )
+//					assert( false && "bbbbsdfdf" );
+				bool diOk = false;
+				bool di1Ok = false;
+				if( !lii.parallel && length(lii.position - corner) < length( intersect - corner ) )
 				{
-					intersect = lii1.position;
+					diOk = true;
 				}
-				else if( distanceI < distanceI1)
+
+				if( !lii1.parallel && length(lii1.position - corner) < length( intersect - corner ))
+				{
+					di1Ok = true;
+				}
+				if( diOk && di1Ok ) 
+				{
+					if( length( lii.position - corner ) < length( intersect - corner ) )
+					{
+						intersect = lii.position;
+					}
+					else
+					{
+						intersect = lii1.position;
+					}
+					//intersect = lii.position;
+					cout << "case 0" << endl;
+				}
+				else if( diOk )
 				{
 					intersect = lii.position;
+					cout << "case 1" << endl;
+				}
+				else if( di1Ok )
+				{
+					cout << "case 2" << endl;
+					intersect = lii1.position;
+				}
+				else
+				{
+					cout << "case failure" << endl;
+					return NULL;
+				//	assert( false && "case error" );
 				}
 
 				/*if( e->v0.x >= minx && e->v0.x <= maxx )
@@ -679,20 +726,86 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				LineIntersection lii1 = lineIntersection( intersect, corner, e->v1, Vector2f( e->v1.x-1, e->v1.y ) );
 			//	intersect = lii1.position;
 
-				float distanceI = length( lii.position - corner );
-				float distanceI1 = length( lii1.position - corner );
+				float distanceI = dot( lii.position - corner, intersect - corner );//length(lii.position - corner) * dot(normalize(lii.position - corner), normalize( intersect - corner )) ;
+				float distanceI1 = dot( lii1.position - corner, intersect - corner );//length( lii1.position - corner ) * dot(normalize(lii1.position - corner), normalize( intersect - corner )) ;
 
-				if( distanceI > distanceI1 )
+			//	if( distanceI < 0 && distanceI1 < 0 )
+				//	assert( false && "bbbbsdfdf" );
+				bool diOk = false;
+				bool di1Ok = false;
+				if( !lii.parallel && length(lii.position - corner) < length( a.velocity ))
 				{
-					intersect = lii1.position;
+					diOk = true;
 				}
-				else if( distanceI < distanceI1)
+
+				if( !lii1.parallel && length(lii1.position - corner) < length( a.velocity ) )
+				{
+					di1Ok = true;
+				}
+				if( diOk && di1Ok ) 
+				{
+					if( length( lii.position - corner ) < length( intersect - corner ) )
+					{
+						intersect = lii.position;
+					}
+					else
+					{
+						intersect = lii1.position;
+					}
+					//intersect = lii.position;
+					cout << "case 0" << endl;
+				}
+				else if( diOk )
 				{
 					intersect = lii.position;
+					cout << "case 1" << endl;
+				}
+				else if( di1Ok )
+				{
+					cout << "case 2" << endl;
+					intersect = lii1.position;
 				}
 				else
 				{
-					assert( false && "stupid" );
+							cout << "case failure not yo" << endl;
+					return NULL;
+					//assert( false && "case error" );
+				}
+
+				//if( distanceI < 0 )
+				//	intersect = lii1.position;
+				//else if( distanceI1 < 0 )
+			//		intersect = lii.position;
+				//intersect = lii1.position;
+				/*if( e->v0.x > minx && e->v0.x < maxx )
+				{
+					intersect = lii1.position;
+					if( lii.parallel )
+					{
+						cout << "-----------" << endl;
+					}
+				}
+				else if( e->v0.y > miny && e->v0.y < maxy )
+				{
+					intersect = lii.position;
+					if( lii1.parallel )
+					{
+					cout << "-----------" << endl;
+					}
+				}*/
+			
+				if( distanceI >= distanceI1 )
+				{
+			//		intersect = lii1.position;
+				}
+				else if( distanceI < distanceI1)
+				{
+				//	intersect = lii.position;
+				}
+				else
+				{
+
+					//assert( false && "stupid" );
 				}
 
 
@@ -951,6 +1064,7 @@ int main()
 	double currentTime = 0;
 	double accumulator = TIMESTEP + .1;
 
+	Vector2f otherPlayerPos;
 	while( true )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -998,11 +1112,13 @@ int main()
 			float minPriority = 1000000;
 			Edge *minEdge = NULL;
 			Vector2f res(0,0);
+			int collisionNumber = 0;
 			for( int i = 0; i < totalEdges; ++i )
 			{
 				Contact *c = collideEdge( player, b, edges[i] );
 				if( c != NULL )
 				{
+					collisionNumber++;
 				//player.position += c->resolution;
 				if( c->collisionPriority <= minPriority )
 				{
@@ -1030,12 +1146,18 @@ int main()
 				//break;
 				}
 			}
+
+
+			cout << "collisionNumber: " << collisionNumber << endl;
 			if( minEdge != NULL )
 			{
+				
 				Contact *c = collideEdge( player, b, minEdge );
 				cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
+				otherPlayerPos = player.position;
 				player.position += c->resolution;
 				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+				 
 			}
 			
 
@@ -1059,6 +1181,12 @@ int main()
 		window->draw( bDraw );
 
 		window->draw( *(player.sprite) );
+		sf::RectangleShape rs;
+		rs.setSize( Vector2f(64, 64) );
+		rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
+		rs.setPosition( otherPlayerPos );
+		rs.setFillColor( Color::Blue );
+		window->draw( rs );
 		window->draw( circle );
 		window->draw(line, totalEdges * 2, sf::Lines);
 
