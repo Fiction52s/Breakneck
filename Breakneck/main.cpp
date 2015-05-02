@@ -6,6 +6,7 @@
 #include <fstream>
 #include <list> 
 #include <stdlib.h>
+#include "EditSession.h"
 
 #define TIMESTEP 1.f / 60.f
 
@@ -348,6 +349,68 @@ LineIntersection lineIntersection( Vector2f a, Vector2f b, Vector2f c, Vector2f 
 }
 
 Contact *currentContact;
+Contact *collideeEdge( Actor &a, const CollisionBox &b, Edge *e )
+{
+	Vector2f oldPosition = a.position - a.velocity;
+	float left = a.position.x + b.offset.x - b.rw;
+	float right = a.position.x + b.offset.x + b.rw;
+	float top = a.position.y + b.offset.y - b.rh;
+	float bottom = a.position.y + b.offset.y + b.rh;
+
+	float oldLeft = oldPosition.x + b.offset.x - b.rw;
+	float oldRight = oldPosition.x + b.offset.x + b.rw;
+	float oldTop = oldPosition.y + b.offset.y - b.rh;
+	float oldBottom = oldPosition.y + b.offset.y + b.rh;
+
+
+	float edgeLeft = min( e->v0.x, e->v1.x );
+	float edgeRight = max( e->v0.x, e->v1.x ); 
+	float edgeTop = min( e->v0.y, e->v1.y ); 
+	float edgeBottom = max( e->v0.y, e->v1.y ); 
+
+	bool aabbCollision = false;
+	if( left <= edgeRight && right >= edgeLeft && top <= edgeBottom && bottom >= edgeTop )
+	{	
+		aabbCollision = true;
+	}
+
+	if( aabbCollision )
+	{
+		Vector2f corner(0,0);
+		Vector2f edgeNormal = e->Normal();
+
+		if( edgeNormal.x > 0 )
+		{
+			corner.x = left;
+		}
+		else if( edgeNormal.x < 0 )
+		{
+			corner.x = right;
+		}
+		else
+		{
+			//aabb
+		}
+
+		if( edgeNormal.y > 0 )
+		{
+			corner.y = top;
+		}
+		else if( edgeNormal.y < 0 )
+		{
+			corner.y = bottom;
+		}
+		else
+		{
+			//aabb
+		}
+
+		
+	}
+
+	return NULL;
+}
+
 Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 {
 	Vector2f oldPosition = a.position - a.velocity;
@@ -822,7 +885,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			if( pri < 0 )
 			{
 				cout << "BUSTED---------------" << endl;
-				return NULL;
+				//return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );
@@ -890,14 +953,74 @@ int main()
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 
 	ifstream is;
-	is.open( "test.brknk" );
+	is.open( "test1.brknk" );
 
 	int numPoints;
 	is >> numPoints;
 	Vector2f *points = new Vector2f[numPoints];
 	list<Vector2f> lvec;
+
+	Actor player;
+	//player.position = Vector2f( -500, 300 );
+
+	is >> player.position.x;
+	is >> player.position.y;
+
+	int pointsLeft = numPoints;
+
+	int pointCounter = 0;
+
+	Edge **edges = new Edge*[numPoints];
+	while( pointCounter < numPoints )
+	{
+		string matStr;
+		is >> matStr;
+		int polyPoints;
+		is >> polyPoints;
+
+		int currentEdgeIndex = pointCounter;
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			float px, py;
+			is >> px;
+			is >> py;
+			
+			points[pointCounter].x = px;
+			points[pointCounter].y = py;
+			++pointCounter;
+		}
+
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			Edge *ee = new Edge();
+			edges[currentEdgeIndex + i] = ee;
+			ee->v0 = points[i+currentEdgeIndex];
+			if( i < polyPoints - 1 )
+				ee->v1 = points[i+1 + currentEdgeIndex];
+
+		
+
+			if( i == 0 )
+			{
+				ee->edge0 = edges[currentEdgeIndex + polyPoints - 1];
+				ee->edge1 = edges[currentEdgeIndex + 1];
+			}
+			else if( i == polyPoints - 1 )
+			{
+				ee->edge0 = edges[currentEdgeIndex + i - 1];
+				ee->edge1 = edges[currentEdgeIndex];
+				ee->v1 = points[currentEdgeIndex];
+			}
+			else
+			{
+				ee->edge0 = edges[currentEdgeIndex + i - 1];
+				ee->edge1 = edges[currentEdgeIndex + i + 1];
+			}
+		}
+	}
+	
 	//load points
-	for( int i = 0; i < numPoints; ++i )
+	/*for( int i = 0; i < numPoints; ++i )
 	{
 		float px, py;
 		is >> px;
@@ -910,17 +1033,17 @@ int main()
 	int totalEdges = numPoints;
 	int numPolygons;
 
-	is >> numPolygons;
+	is >> numPolygons;*/
 
 	
 	
-	Edge **edges = new Edge*[totalEdges];
 	
-	int currentEdgeIndex = 0;
+	
+	//int currentEdgeIndex = 0;
 
 	//start loop
 
-	for( int n = 0; n < numPolygons; ++n )
+	/*for( int n = 0; n < numPolygons; ++n )
 	{
 		string materialStr;
 		is >> materialStr;
@@ -958,7 +1081,7 @@ int main()
 		
 		}
 		currentEdgeIndex += numPolygonEdges;
-	}
+	}*/
 	//end loop
 
 	/*for( int i = 0; i < numEdges; ++i )
@@ -972,8 +1095,8 @@ int main()
 	}*/
 
 	//int lineCount = lvec.size();
-	sf::Vertex *line = new sf::Vertex[totalEdges*2];
-	for( int i = 0; i < totalEdges; ++i )
+	sf::Vertex *line = new sf::Vertex[numPoints*2];
+	for( int i = 0; i < numPoints; ++i )
 	{
 		//cout << "i: " << i << endl;
 		line[i*2] = sf::Vertex( edges[i]->v0 );
@@ -1057,14 +1180,17 @@ int main()
 	b.rh = 32;
 	b.type = b.Physics;
 
-	Actor player;
-	player.position = Vector2f( -500, 300 );
+	
 
 	sf::Clock gameClock;
 	double currentTime = 0;
 	double accumulator = TIMESTEP + .1;
 
 	Vector2f otherPlayerPos;
+
+	EditSession es(window );
+	es.Run( "test1" );
+
 	while( true )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1113,7 +1239,7 @@ int main()
 			Edge *minEdge = NULL;
 			Vector2f res(0,0);
 			int collisionNumber = 0;
-			for( int i = 0; i < totalEdges; ++i )
+			for( int i = 0; i < numPoints; ++i )
 			{
 				Contact *c = collideEdge( player, b, edges[i] );
 				if( c != NULL )
@@ -1188,7 +1314,7 @@ int main()
 		rs.setFillColor( Color::Blue );
 		window->draw( rs );
 		window->draw( circle );
-		window->draw(line, totalEdges * 2, sf::Lines);
+		window->draw(line, numPoints * 2, sf::Lines);
 
 		/*Event ev;
 		window->pollEvent( ev );
