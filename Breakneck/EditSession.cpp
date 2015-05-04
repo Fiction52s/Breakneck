@@ -240,6 +240,8 @@ void EditSession::Run( string fileName )
 	bool panning = false;
 	Vector2f panAnchor;
 	bool backspace = true;
+	double minimumEdgeLength = 1;
+
 
 	while( !quit )
 	{
@@ -252,7 +254,7 @@ void EditSession::Run( string fileName )
 		{
 			if( mode == "neutral" )
 			{
-				if( length1( worldPos - polygonInProgress->points.back() ) >= 16)
+				if( length1( worldPos - polygonInProgress->points.back() ) >= minimumEdgeLength)
 					polygonInProgress->points.push_back( worldPos );
 			}
 			else if( mode == "set player" )

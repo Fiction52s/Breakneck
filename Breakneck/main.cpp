@@ -357,6 +357,8 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 	float top = a.position.y + b.offset.y - b.rh;
 	float bottom = a.position.y + b.offset.y + b.rh;
 
+	
+
 	float oldLeft = oldPosition.x + b.offset.x - b.rw;
 	float oldRight = oldPosition.x + b.offset.x + b.rw;
 	float oldTop = oldPosition.y + b.offset.y - b.rh;
@@ -371,8 +373,21 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 	bool aabbCollision = false;
 	if( left <= edgeRight && right >= edgeLeft && top <= edgeBottom && bottom >= edgeTop )
 	{	
+		
 		aabbCollision = true;
+		
 	}
+
+	Vector2f half = (oldPosition + a.position ) / 2.f;
+		float halfLeft = half.x - b.rw;
+		float halfRight = half.x + b.rw;
+		float halfTop = half.y - b.rh;
+		float halfBottom = half.y + b.rh;
+
+	if( halfLeft <= edgeRight && halfRight >= edgeLeft && halfTop <= edgeBottom && halfBottom >= edgeTop )
+		{
+			aabbCollision = true;
+		}
 
 	if( aabbCollision )
 	{
@@ -426,7 +441,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 
 		double measureNormal = dot( edgeNormal, normalize(-a.velocity) );
 
-		if( res < 0 )// && ( a.velocity.x != 0 || a.velocity.y != 0 )  )	
+		if( res < 0 && measureNormal >= 0 && ( a.velocity.x != 0 || a.velocity.y != 0 )  )	
 		{
 			
 			Vector2f invVel = normalize(-a.velocity);
@@ -443,9 +458,10 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			Vector2f intersect = li.position;
 
 			float intersectQuantity = e->GetQuantity( intersect );
-
+			Vector2f collisionPosition = intersect;
 			if( intersectQuantity < 0 )
 			{
+				collisionPosition = e->v0;
 				cout << "under: " << e->v0.x << ", " << e->v0.y << endl;
 				float minx = min( intersect.x, corner.x );
 				float maxx = max( intersect.x, corner.x );
@@ -499,14 +515,14 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				}
 				else
 				{
-				//	cout << "case failure" << endl;
+					cout << "case failure" << endl;
 					//return NULL;
 				//	assert( false && "case error" );
 				}
 			}
 			else if( intersectQuantity > length( e->v1 - e->v0 ) )
 			{
-
+				collisionPosition = e->v1;
 				cout << "over: " << e->v0.x << ", " << e->v0.y << endl;
 				float minx = min( intersect.x, corner.x );
 				float maxx = max( intersect.x, corner.x );
@@ -567,11 +583,11 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 
 			
 			}
-			if( dot( normalize( -a.velocity ), normalize(intersect - corner ) ) < .99 )
+			if( dot( normalize( -a.velocity ), normalize(intersect - corner ) ) < .999 )
 			{
-				return NULL;
+			//	return NULL;
 			}
-			double pri = dot( intersect - ( a.position - a.velocity ), normalize( a.velocity ) );
+			double pri = dot( intersect - ( corner - a.velocity ), normalize( a.velocity ) );
 				//cross( (corner - a.velocity) - e->v0, normalize( e->v1 - e->v0 ) );
 			//double pri = -cross( normalize((corner) - e->v0), normalize( e->v1 - e->v0 ) );
 			//double pri = length( intersect - (corner - a.velocity ) );
@@ -590,7 +606,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			//window->draw( cs );
 
 			//Vector2f p = intersect - corner;
-			currentContact->position = intersect;
+			currentContact->position = collisionPosition;//intersect;
 			currentContact->resolution = intersect - corner;
 			currentContact->collisionPriority = pri;//dot(intersect - ( corner + invVel), e->Normal());
 			currentContact->edge = e;
@@ -1404,7 +1420,7 @@ int main()
 		while ( accumulator >= TIMESTEP  )
         {
 			window->clear();
-			float f = 10;			
+			float f = 20;			
 			player.velocity = Vector2f( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
@@ -1431,7 +1447,7 @@ int main()
 			player.UpdatePrePhysics();
 
 			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-			float xkl = 1;
+			float xkl = 2;
 			for( int jkl = 0; jkl < xkl; ++jkl )
 			{
 			player.position += player.velocity / xkl;
@@ -1490,7 +1506,7 @@ int main()
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 				cs.setPosition( c->position );
 				window->draw( cs );
-				//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
 				//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
 				Color lc = Color::Green;
 				sf::Vertex linez[] =
