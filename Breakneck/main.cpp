@@ -393,7 +393,10 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				corner.x = left;
 			else if ( edgeRight >= right )
 				corner.x = right;
-			//else
+			else
+			{
+				corner.x = (edgeLeft + edgeRight) / 2;
+			}
 			//aabb
 			//cout << "this prob" << endl;
 		}
@@ -413,6 +416,8 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			corner.y = top;
 			else if ( edgeBottom >= bottom )
 				corner.y = bottom;
+			else
+				corner.y = (edgeTop+ edgeBottom) / 2;
 			//else
 			//cout << "this 2" << endl;
 		}
@@ -441,6 +446,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 
 			if( intersectQuantity < 0 )
 			{
+				cout << "under: " << e->v0.x << ", " << e->v0.y << endl;
 				float minx = min( intersect.x, corner.x );
 				float maxx = max( intersect.x, corner.x );
 				float miny = min( intersect.y, corner.y );
@@ -501,7 +507,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			else if( intersectQuantity > length( e->v1 - e->v0 ) )
 			{
 
-
+				cout << "over: " << e->v0.x << ", " << e->v0.y << endl;
 				float minx = min( intersect.x, corner.x );
 				float maxx = max( intersect.x, corner.x );
 				float miny = min( intersect.y, corner.y );
@@ -554,7 +560,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				}
 				else
 				{
-				//	cout << "case failure" << endl;
+					cout << "case failure" << endl;
 					//return NULL;
 				//	assert( false && "case error" );
 				}
@@ -565,14 +571,15 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			{
 				return NULL;
 			}
-			double pri = -cross( normalize((corner - a.velocity) - e->v0), normalize( e->v1 - e->v0 ) );
+			double pri = dot( intersect - ( a.position - a.velocity ), normalize( a.velocity ) );
+				//cross( (corner - a.velocity) - e->v0, normalize( e->v1 - e->v0 ) );
 			//double pri = -cross( normalize((corner) - e->v0), normalize( e->v1 - e->v0 ) );
 			//double pri = length( intersect - (corner - a.velocity ) );
 			//cout << "pri: " << pri <<" .... " << e->v0.x << ", " << e->v0.y << " .. " << e->v1.x << ", " << e->v1.y << endl;
-			if( pri < 0 )
+			if( pri < -1 )
 			{
-				//cout << "BUSTED---------------" << endl;
-				//return NULL;
+				cout << "BUSTED--------------- " << pri  << endl;
+				return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );
@@ -1483,8 +1490,18 @@ int main()
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 				cs.setPosition( c->position );
 				window->draw( cs );
-				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
-				cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
+				//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+				//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
+				Color lc = Color::Green;
+				sf::Vertex linez[] =
+				{
+					sf::Vertex(sf::Vector2f(minEdge->v0.x + 1, minEdge->v0.y + 1), lc),
+					sf::Vertex(sf::Vector2f(minEdge->v1.x + 1, minEdge->v1.y + 1), lc),
+					sf::Vertex(sf::Vector2f(minEdge->v0.x - 1, minEdge->v0.y - 1), lc),
+					sf::Vertex(sf::Vector2f(minEdge->v1.x - 1, minEdge->v1.y - 1), lc)
+				};
+
+				window->draw(linez, 4, sf::Lines);
 				 
 			}
 			}
