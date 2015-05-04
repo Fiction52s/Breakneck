@@ -22,13 +22,15 @@ struct EditSession
 	void Run(std::string fileName );
 	void Draw();
 	bool OpenFile( std::string fileName );
-	void WriteFile();
+	void WriteFile(std::string fileName);
 	std::list<Polygon*> polygons;
 	sf::Vector2f playerPosition;
 	Polygon *polygonInProgress;
 	sf::RenderWindow *w;
 	std::string mode;
 	std::string currentFile;
+	
+	
 };
 
 

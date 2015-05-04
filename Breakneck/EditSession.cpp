@@ -154,7 +154,7 @@ bool EditSession::OpenFile( string fileName )
 		is >> numPoints;
 		is >> playerPosition.x;
 		is >> playerPosition.y;
-		
+
 		while( numPoints > 0 )
 		{
 			Polygon *poly = new Polygon;
@@ -190,10 +190,10 @@ bool EditSession::OpenFile( string fileName )
 	
 }
 
-void EditSession::WriteFile()
+void EditSession::WriteFile(string fileName)
 {
 	ofstream of;
-	of.open( "test1.brknk" );
+	of.open( fileName + ".brknk" );
 
 	int pointCount = 0;
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -201,11 +201,8 @@ void EditSession::WriteFile()
 		pointCount += (*it)->points.size();
 	}
 
-	playerPosition = Vector2f( 600, 600 );
-
 	of << pointCount << endl;
-	of << playerPosition.x << endl;
-	of << playerPosition.y << endl;
+	of << playerPosition.x << " " << playerPosition.y << endl;
 
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -221,18 +218,29 @@ void EditSession::Run( string fileName )
 {
 	View view( sf::Vector2f(  300, 300 ), sf::Vector2f( 960, 540 ) );
 	w->setView( view );
+	Texture playerTex;
+	playerTex.loadFromFile( "stand.png" );
+	sf::Sprite playerSprite( playerTex );
+	playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
+	playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
 
+	w->setVerticalSyncEnabled( false );
 
 	OpenFile( fileName );
+
+	view.setCenter( playerPosition );
+
 	mode = "neutral";
 	bool quit = false;
 	polygonInProgress = new Polygon();
-	float zoomMultiple = 0;
+	float zoomMultiple = 1;
 	Vector2f prevWorldPos;
 	Vector2i pixelPos;
 	Vector2f worldPos = w->mapPixelToCoords(sf::Mouse::getPosition( *w ));
 	bool panning = false;
 	Vector2f panAnchor;
+	bool backspace = true;
+
 	while( !quit )
 	{
 		w->clear();
@@ -242,9 +250,27 @@ void EditSession::Run( string fileName )
 
 		if( Mouse::isButtonPressed( Mouse::Left ) )
 		{
+			if( mode == "neutral" )
+			{
+				if( length1( worldPos - polygonInProgress->points.back() ) >= 16)
+					polygonInProgress->points.push_back( worldPos );
+			}
+			else if( mode == "set player" )
+			{
+				playerPosition = worldPos;
+				mode = "transition";
+			}
 			
-			if( length1( worldPos - polygonInProgress->points.back() ) >= 16)
-				polygonInProgress->points.push_back( worldPos );
+		}
+
+		if( mode == "transition" && !Mouse::isButtonPressed( Mouse::Left ) )
+		{
+			mode = "neutral";
+		}
+
+		if( mode == "transition1" && !sf::Keyboard::isKeyPressed( sf::Keyboard::S)  )
+		{
+			mode = "neutral";
 		}
 
 		sf::Event ev;
@@ -256,15 +282,25 @@ void EditSession::Run( string fileName )
 			//if( prevDelta - ev.mouseWheel.delta != 0)
 			{
 				//view.zoom( ev.mouseWheel.delta / 5 );
-				zoomMultiple -= ev.mouseWheel.delta; //( prevDelta - ev.mouseWheel.delta )/ 100.f;
-				if( zoomMultiple < 0 )
+				if( ev.mouseWheel.delta > 0 )
 				{
-					zoomMultiple = 0;
+					zoomMultiple /= 2;
+				}
+				else if( ev.mouseWheel.delta < 0 )
+				{
+					zoomMultiple *= 2;
+				}
+				//zoomMultiple -= ev.mouseWheel.delta * 10; //( prevDelta - ev.mouseWheel.delta )/ 100.f;
+				if( zoomMultiple < 1 )
+				{
+					zoomMultiple = 1;
 				}
 			
-				Vector2f ff = view.getCenter();
-				view.setSize( Vector2f( 960 * (1 + zoomMultiple), 540 * ( 1 + zoomMultiple ) ) );
-				view.setCenter( ff );
+				Vector2f ff = view.getCenter();//worldPos - ( - (  .5f * view.getSize() ) );
+				view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
+				w->setView( view );
+				Vector2f newWorldPos = w->mapPixelToCoords(pixelPos);
+				view.setCenter( ff + ( worldPos - newWorldPos ) );
 				w->setView( view );
 				//cout << "altering dleta: " << ev.mouseWheel.delta << endl;
 			}
@@ -305,32 +341,66 @@ void EditSession::Run( string fileName )
 			view.move( panAnchor - worldPos );
 		}
 
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
 		{
 			quit = true;
 		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::P ) )
+		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::B) )
 		{
-			//cout << "mode: set player" << endl;
-			mode = "set player";
+			if( mode == "neutral" && polygonInProgress->points.size() == 0 )
+				mode = "set player";
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) )
 		{
 			//cout << "mode: set player" << endl;
-			if( mode == "neutral" && polygonInProgress->points.size() > 0 )
+			if( mode == "neutral" && polygonInProgress->points.size() > 2 )
 			{
 				polygonInProgress->Finalize();
 				polygons.push_back( polygonInProgress );
 				polygonInProgress = new Polygon();
 			}
+
+			if( polygonInProgress->points.size() <= 2 )
+			{
+				cout << "cant finalize. cant make polygon" << endl;
+			}
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::S ) )
 		{
-			WriteFile();
+			if( mode == "neutral")
+			{
+				polygonInProgress->points.clear();
+				string fName;
+				//cin >> fName;
+				mode = "transition1";
+				fName = "test1";
+				cout << "writing to file: " << fName << ".brknk" << endl;
+				WriteFile(fName);
+			}
 		}
+		
+		
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::BackSpace ) )
+		{
+			if( mode == "neutral" && polygonInProgress->points.size() > 0 && backspace )
+			{
+				polygonInProgress->points.pop_back();
+				backspace = false;
+			}
+		}
+		else
+			backspace = true;
 
-		Draw();
+		if( mode == "set player" )
+		{
+			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
+		}
+		else
+			playerSprite.setPosition( playerPosition );
+
 		w->setView( view );
+		Draw();
+		w->draw( playerSprite );
 		w->display();
 	}
 	

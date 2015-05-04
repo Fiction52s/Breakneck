@@ -341,7 +341,7 @@ LineIntersection lineIntersection( Vector2f a, Vector2f b, Vector2f c, Vector2f 
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( x,y );
 	//	window->draw( cs );
-		cout << "cirlce pos: " << cs.getPosition().x << ", " << cs.getPosition().y << endl;
+		//cout << "circle pos: " << cs.getPosition().x << ", " << cs.getPosition().y << endl;
 	}
 
 
@@ -349,7 +349,7 @@ LineIntersection lineIntersection( Vector2f a, Vector2f b, Vector2f c, Vector2f 
 }
 
 Contact *currentContact;
-Contact *collideeEdge( Actor &a, const CollisionBox &b, Edge *e )
+Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 {
 	Vector2f oldPosition = a.position - a.velocity;
 	float left = a.position.x + b.offset.x - b.rw;
@@ -389,7 +389,13 @@ Contact *collideeEdge( Actor &a, const CollisionBox &b, Edge *e )
 		}
 		else
 		{
+			if( edgeLeft <= left )
+				corner.x = left;
+			else if ( edgeRight >= right )
+				corner.x = right;
+			//else
 			//aabb
+			//cout << "this prob" << endl;
 		}
 
 		if( edgeNormal.y > 0 )
@@ -403,6 +409,187 @@ Contact *collideeEdge( Actor &a, const CollisionBox &b, Edge *e )
 		else
 		{
 			//aabb
+			if( edgeTop <= top )
+			corner.y = top;
+			else if ( edgeBottom >= bottom )
+				corner.y = bottom;
+			//else
+			//cout << "this 2" << endl;
+		}
+
+		int res = cross( corner - e->v0, e->v1 - e->v0 );
+
+		double measureNormal = dot( edgeNormal, normalize(-a.velocity) );
+
+		if( res < 0 )// && ( a.velocity.x != 0 || a.velocity.y != 0 )  )	
+		{
+			
+			Vector2f invVel = normalize(-a.velocity);
+
+
+
+			LineIntersection li = lineIntersection( corner, corner - (a.velocity), e->v0, e->v1 );
+
+			//assert( li.parallel == false );
+			if( li.parallel )
+			{
+				return NULL;
+			}
+			Vector2f intersect = li.position;
+
+			float intersectQuantity = e->GetQuantity( intersect );
+
+			if( intersectQuantity < 0 )
+			{
+				float minx = min( intersect.x, corner.x );
+				float maxx = max( intersect.x, corner.x );
+				float miny = min( intersect.y, corner.y );
+				float maxy = max( intersect.y, corner.y );
+
+				LineIntersection vertical = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x, e->v0.y - 1 ) );
+			//	intersect = lii.position;
+
+				LineIntersection horizontal = lineIntersection( intersect, corner, e->v0, Vector2f( e->v0.x-1, e->v0.y ) );
+			//	intersect = lii1.position;
+
+				float verticalDist = dot( vertical.position - corner, intersect - corner );//length( lii.position - corner )* dot(normalize(lii.position - corner), normalize( intersect - corner )) ;
+				float horizontalDist =dot( horizontal.position - corner, intersect - corner ); //length( lii1.position - corner )* dot(normalize(lii1.position - corner), normalize( intersect - corner )) ;
+
+//				if( distanceI <= 0 && distanceI1 <= 0 )
+//					assert( false && "bbbbsdfdf" );
+				bool vertOK = false;
+				bool horiOK = false;
+				if( !vertical.parallel && verticalDist >= 0 )// && length(vertical.position - corner) < length( intersect - corner ) )
+				{
+					vertOK = true;
+				}
+
+				if( !horizontal.parallel && horizontalDist >= 0 )//&& length(horizontal.position - corner) < length( intersect - corner ))
+				{
+					horiOK = true;
+				}
+				if( vertOK && horiOK ) 
+				{
+					if( verticalDist <= horizontalDist)//length( vertical.position - corner ) < length( horizontal.position - corner ) )
+					{
+						intersect = vertical.position;
+					}
+					else
+					{
+						intersect = horizontal.position;
+					}
+					//intersect = lii.position;
+				//	cout << "case 0" << endl;
+				}
+				else if( vertOK )
+				{
+					intersect = vertical.position;
+				//	cout << "case 1" << endl;
+				}
+				else if( horiOK )
+				{
+					//cout << "case 2" << endl;
+					intersect = horizontal.position;
+				}
+				else
+				{
+				//	cout << "case failure" << endl;
+					//return NULL;
+				//	assert( false && "case error" );
+				}
+			}
+			else if( intersectQuantity > length( e->v1 - e->v0 ) )
+			{
+
+
+				float minx = min( intersect.x, corner.x );
+				float maxx = max( intersect.x, corner.x );
+				float miny = min( intersect.y, corner.y );
+				float maxy = max( intersect.y, corner.y );
+
+				LineIntersection vertical = lineIntersection( intersect, corner, e->v1, Vector2f( e->v1.x, e->v1.y - 1 ) );
+			//	intersect = lii.position;
+
+				LineIntersection horizontal = lineIntersection( intersect, corner, e->v1, Vector2f( e->v1.x-1, e->v1.y ) );
+			//	intersect = lii1.position;
+
+				float verticalDist = dot( vertical.position - corner, intersect - corner );//length(lii.position - corner) * dot(normalize(lii.position - corner), normalize( intersect - corner )) ;
+				float horizontalDist = dot( horizontal.position - corner, intersect - corner );//length( lii1.position - corner ) * dot(normalize(lii1.position - corner), normalize( intersect - corner )) ;
+
+			//	if( distanceI < 0 && distanceI1 < 0 )
+				//	assert( false && "bbbbsdfdf" );
+				bool vertOK = false;
+				bool horiOK = false;
+				if( !vertical.parallel && verticalDist >= 0 )// && length(vertical.position - corner) < length( intersect - corner ) )
+				{
+					vertOK = true;
+				}
+
+				if( !horizontal.parallel && horizontalDist >= 0 )//&& length(horizontal.position - corner) < length( intersect - corner ))
+				{
+					horiOK = true;
+				}
+				if( vertOK && horiOK ) 
+				{
+					if( verticalDist <= horizontalDist )//length( vertical.position - corner ) < length( horizontal.position - corner ) )
+					{
+						intersect = vertical.position;
+					}
+					else
+					{
+						intersect = horizontal.position;
+					}
+					//intersect = lii.position;
+				//	cout << "case 0" << endl;
+				}
+				else if( vertOK )
+				{
+					intersect = vertical.position;
+				//	cout << "case 1" << endl;
+				}
+				else if( horiOK )
+				{
+					//cout << "case 2" << endl;
+					intersect = horizontal.position;
+				}
+				else
+				{
+				//	cout << "case failure" << endl;
+					//return NULL;
+				//	assert( false && "case error" );
+				}
+
+			
+			}
+			if( dot( normalize( -a.velocity ), normalize(intersect - corner ) ) < .99 )
+			{
+				return NULL;
+			}
+			double pri = -cross( normalize((corner - a.velocity) - e->v0), normalize( e->v1 - e->v0 ) );
+			//double pri = -cross( normalize((corner) - e->v0), normalize( e->v1 - e->v0 ) );
+			//double pri = length( intersect - (corner - a.velocity ) );
+			//cout << "pri: " << pri <<" .... " << e->v0.x << ", " << e->v0.y << " .. " << e->v1.x << ", " << e->v1.y << endl;
+			if( pri < 0 )
+			{
+				//cout << "BUSTED---------------" << endl;
+				//return NULL;
+			}
+
+			intersectQuantity = e->GetQuantity( intersect );
+			//cout << "intersectQuantity2222: " << intersectQuantity << endl;
+			
+
+			//cs.setPosition( bottomLeft - invVel );
+			//window->draw( cs );
+
+			//Vector2f p = intersect - corner;
+			currentContact->position = intersect;
+			currentContact->resolution = intersect - corner;
+			currentContact->collisionPriority = pri;//dot(intersect - ( corner + invVel), e->Normal());
+			currentContact->edge = e;
+
+			return currentContact;
+			//a.position = a.position + p;
 		}
 
 		
@@ -411,7 +598,7 @@ Contact *collideeEdge( Actor &a, const CollisionBox &b, Edge *e )
 	return NULL;
 }
 
-Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
+Contact *collideeEdge( Actor &a, const CollisionBox &b, Edge *e )
 {
 	Vector2f oldPosition = a.position - a.velocity;
 	float left = a.position.x + b.offset.x - b.rw;
@@ -931,8 +1118,8 @@ void collideRectRect()
 int main()
 {
 	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	window->setPosition( Vector2i(800, 0 ));
+		sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	//window->setPosition( Vector2i(800, 0 ));
 	sf::Vector2i pos( 0, 0 );
 
 	//window->setPosition( pos );
@@ -943,6 +1130,10 @@ int main()
 	View view( sf::Vector2f(  300, 300 ), sf::Vector2f( 960, 540 ) );
 	window->setView( view );
 
+	EditSession es(window );
+	es.Run( "test1" );
+
+	window->setVerticalSyncEnabled( true );
 
 	currentContact = new Contact;
 
@@ -1187,9 +1378,9 @@ int main()
 	double accumulator = TIMESTEP + .1;
 
 	Vector2f otherPlayerPos;
+	
 
-	EditSession es(window );
-	es.Run( "test1" );
+	
 
 	while( true )
 	{
@@ -1202,10 +1393,10 @@ int main()
 
 		accumulator += frameTime;
 
-		window->clear();
 		
 		while ( accumulator >= TIMESTEP  )
         {
+			window->clear();
 			float f = 10;			
 			player.velocity = Vector2f( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
@@ -1233,8 +1424,10 @@ int main()
 			player.UpdatePrePhysics();
 
 			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-			
-			player.position += player.velocity;
+			float xkl = 1;
+			for( int jkl = 0; jkl < xkl; ++jkl )
+			{
+			player.position += player.velocity / xkl;
 			float minPriority = 1000000;
 			Edge *minEdge = NULL;
 			Vector2f res(0,0);
@@ -1279,11 +1472,21 @@ int main()
 			{
 				
 				Contact *c = collideEdge( player, b, minEdge );
-				cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
+				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
 				otherPlayerPos = player.position;
 				player.position += c->resolution;
+
+				sf::CircleShape cs;
+				cs.setFillColor( Color::Magenta );
+				
+				cs.setRadius( 20 );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setPosition( c->position );
+				window->draw( cs );
 				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+				cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
 				 
+			}
 			}
 			
 
@@ -1312,16 +1515,8 @@ int main()
 		rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
 		rs.setPosition( otherPlayerPos );
 		rs.setFillColor( Color::Blue );
-		window->draw( rs );
 		window->draw( circle );
 		window->draw(line, numPoints * 2, sf::Lines);
-
-		/*Event ev;
-		window->pollEvent( ev );
-		if( ev.type == Event::Resized )
-		{
-			window->setSize( 
-		}*/
 
 		window->display();
 
