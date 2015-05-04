@@ -240,7 +240,7 @@ void EditSession::Run( string fileName )
 	bool panning = false;
 	Vector2f panAnchor;
 	bool backspace = true;
-	double minimumEdgeLength = 1;
+	double minimumEdgeLength = 16;
 
 
 	while( !quit )
@@ -349,8 +349,11 @@ void EditSession::Run( string fileName )
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::B) )
 		{
-			if( mode == "neutral" && polygonInProgress->points.size() == 0 )
+			if( mode == "neutral" )
+			{
 				mode = "set player";
+				polygonInProgress->points.clear();
+			}
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) )
 		{

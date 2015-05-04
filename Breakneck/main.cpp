@@ -1420,7 +1420,7 @@ int main()
 		while ( accumulator >= TIMESTEP  )
         {
 			window->clear();
-			float f = 20;			
+			float f = 50;			
 			player.velocity = Vector2f( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
