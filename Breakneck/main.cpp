@@ -471,7 +471,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				{
 					cout << "case failure" << endl;
 					//return NULL;
-				//	assert( false && "case error" );
+					assert( false && "case error" );
 				}
 			}
 			else if( intersectQuantity > length( e->v1 - e->v0 ) )
@@ -532,7 +532,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				{
 					cout << "case failure" << endl;
 					//return NULL;
-				//	assert( false && "case error" );
+					assert( false && "case error" );
 				}
 
 			
@@ -548,8 +548,8 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			//cout << "pri: " << pri <<" .... " << e->v0.x << ", " << e->v0.y << " .. " << e->v1.x << ", " << e->v1.y << endl;
 			if( pri < -1 )
 			{
-				cout << "BUSTED--------------- " << pri  << endl;
-				return NULL;
+				cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
+				//return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );
@@ -573,10 +573,6 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 	}
 
 	return NULL;
-}
-
-Contact *collideWithEdges( Actor &a, const CollisionBox &b )
-{
 }
 
 void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
@@ -746,7 +742,7 @@ int main()
 		while ( accumulator >= TIMESTEP  )
         {
 			window->clear();
-			float f = 50;			
+			float f = 20;			
 			player.velocity = Vector2f( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
@@ -773,7 +769,7 @@ int main()
 			player.UpdatePrePhysics();
 
 			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-			float xkl = 2;
+			float xkl = 1;
 			for( int jkl = 0; jkl < xkl; ++jkl )
 			{
 			player.position += player.velocity / xkl;
@@ -787,8 +783,40 @@ int main()
 				if( c != NULL )
 				{
 					collisionNumber++;
-					if( c->collisionPriority <= minPriority )
+					cout << "pri: " << c->collisionPriority << endl;
+					if( c->collisionPriority <= minPriority || minPriority < -1 )
 					{
+					/*	if( minPriority <= 0 )
+						{
+							if( c->collisionPriority >= 0 )
+							{
+								minPriority = c->collisionPriority;
+								minEdge = edges[i];
+								res = c->resolution;
+								cout << "blaeefiahfhreawiphitw" << endl;
+							}
+							else
+							{
+								if( c->collisionPriority > minPriority )
+								{
+									minPriority = c->collisionPriority;
+									minEdge = edges[i];
+									res = c->resolution;
+									cout << "blaeefiahfhreawiphitwfdfdfdfdfdfdfdf" << endl;
+								}
+							}
+						}*/
+					/*	if( minPriority < -1 && c->collisionPriority < -1 )
+						{
+							if( length( c->resolution ) < length( res ) )
+							{
+								minPriority = c->collisionPriority;
+								minEdge = edges[i];
+								res = c->resolution;
+							}
+						}
+						else*/
+						
 						if( c->collisionPriority == minPriority )
 						{
 							if( length(c->resolution) > length(res) )
