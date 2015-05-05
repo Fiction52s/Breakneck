@@ -3,16 +3,10 @@
 #include <fstream>
 #include <assert.h>
 #include <iostream>
+#include "VectorMath.h"
 
 using namespace std;
 using namespace sf;
-
-double length1( Vector2f v)
-{
-	double vx = v.x;
-	double vy = v.y;
-	return sqrt( vx * vx + vy * vy );
-}
 
 void Polygon::Finalize()
 {
@@ -254,7 +248,7 @@ void EditSession::Run( string fileName )
 		{
 			if( mode == "neutral" )
 			{
-				if( length1( worldPos - polygonInProgress->points.back() ) >= minimumEdgeLength)
+				if( length( worldPos - polygonInProgress->points.back() ) >= minimumEdgeLength)
 					polygonInProgress->points.push_back( worldPos );
 			}
 			else if( mode == "set player" )

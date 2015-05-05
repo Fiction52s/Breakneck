@@ -1,9 +1,11 @@
-#ifndef __EDIT_SESSION__
-#define __EDIT_SESSION__
 #include <string>
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <list>
+
+#ifndef __EDIT_SESSION__
+#define __EDIT_SESSION__
+
 
 struct Polygon
 {

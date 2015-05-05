@@ -1,0 +1,15 @@
+#include <SFML/Graphics.hpp>
+
+#ifndef __VECTOR_MATH_H__
+#define __VECTOR_MATH_H__
+
+double cross( sf::Vector2f a, sf::Vector2f b );
+
+
+double length( sf::Vector2f v);
+
+sf::Vector2f normalize( sf::Vector2f v );
+
+double dot( sf::Vector2f a, sf::Vector2f b );
+
+#endif
