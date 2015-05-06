@@ -224,6 +224,75 @@ struct Actor
 
 	void UpdatePhysics()
 	{
+		float xkl = 2;
+			for( int jkl = 0; jkl < xkl; ++jkl )
+			{
+			player.position += player.velocity / xkl;
+			float minPriority = 1000000;
+			Edge *minEdge = NULL;
+			Vector2f res(0,0);
+			int collisionNumber = 0;
+			for( int i = 0; i < numPoints; ++i )
+			{
+				Contact *c = collideEdge( player, b, edges[i] );
+				if( c != NULL )
+				{
+					collisionNumber++;
+					if( c->collisionPriority <= minPriority || minPriority < -1 )
+					{	
+						if( c->collisionPriority == minPriority )
+						{
+							if( length(c->resolution) > length(res) )
+							{
+								minPriority = c->collisionPriority;
+								minEdge = edges[i];
+								res = c->resolution;
+							}
+						}
+						else
+						{
+
+							minPriority = c->collisionPriority;
+							minEdge = edges[i];
+							res = c->resolution;
+						}
+					}
+				}
+			}
+
+
+			cout << "collisionNumber: " << collisionNumber << endl;
+			if( minEdge != NULL )
+			{
+				
+				Contact *c = collideEdge( player, b, minEdge );
+				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
+				otherPlayerPos = player.position;
+				player.position += c->resolution;
+
+				sf::CircleShape cs;
+				cs.setFillColor( Color::Magenta );
+				
+				cs.setRadius( 20 );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setPosition( c->position );
+				window->draw( cs );
+				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+				//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
+				Color lc = Color::Green;
+				sf::Vertex linez[] =
+				{
+					sf::Vertex(sf::Vector2f(minEdge->v0.x + 1, minEdge->v0.y + 1), lc),
+					sf::Vertex(sf::Vector2f(minEdge->v1.x + 1, minEdge->v1.y + 1), lc),
+					sf::Vertex(sf::Vector2f(minEdge->v0.x - 1, minEdge->v0.y - 1), lc),
+					sf::Vertex(sf::Vector2f(minEdge->v1.x - 1, minEdge->v1.y - 1), lc)
+				};
+
+				window->draw(linez, 4, sf::Lines);
+				
+				
+			}
+			}
 	}
 
 	void UpdatePostPhysics()
@@ -413,7 +482,67 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 
 			float intersectQuantity = e->GetQuantity( intersect );
 			Vector2f collisionPosition = intersect;
-			if( intersectQuantity < 0 )
+
+
+			if( intersectQuantity < 0 || intersectQuantity > length( e->v1 - e->v0 ) )
+			{
+				float leftDist = edgeLeft - right;
+				float rightDist = edgeRight - left;
+				float topDist = edgeTop - bottom;
+				float bottomDist = edgeBottom - top;
+
+				float resolveDist = 10000;
+				float resolveLeft = 10000;
+				float resolveRight = 10000;
+				float resolveTop = 10000;
+				float resolveBottom = 10000;
+				if( left <= edgeRight && a.velocity.x < 0 )
+				{
+					resolveLeft = (edgeRight - left) / abs(normalize(a.velocity).x);
+				}
+				else if( right >= edgeLeft && a.velocity.x > 0 )
+				{
+					resolveRight = (right - edgeLeft) / abs(normalize(a.velocity).x);
+				}
+
+				if( top <= edgeBottom && a.velocity.y < 0 )
+				{
+					resolveTop = (edgeBottom - top) / abs(normalize(a.velocity).y);// / abs(a.velocity.x);
+				}
+				else if( bottom >= edgeTop && a.velocity.y > 0 )
+				{
+					resolveBottom = (bottom- edgeTop) / abs(normalize(a.velocity).y);// / abs(a.velocity.x);
+				}
+
+
+				resolveDist = min( resolveTop, min( resolveBottom, min( resolveLeft, resolveRight) ) );
+
+
+				currentContact->resolution = normalize(-a.velocity) * resolveDist;
+
+				if( resolveDist == 10000 || length( currentContact->resolution) > length(a.velocity) + 10 )
+				{
+					cout << "formally an error" << endl;
+					return NULL;
+				}
+
+				
+				assert( resolveDist != 10000 );
+				
+				double pri = length( a.velocity + currentContact->resolution );
+				//double pri = length( Vector2f( a.velocity.x / currentContact->resolution.x, a.velocity.y / currentContact->resolution.y ) );
+			//	double pri = 0;
+				currentContact->collisionPriority = pri;
+				if( intersectQuantity < 0 )
+				currentContact->position = e->v0;
+				else 
+					currentContact->position = e->v1;
+				return currentContact;
+				cout << "here!!!: " << currentContact->resolution.x << ", "
+					<< currentContact->resolution.y << endl;
+			}
+
+			/*if( intersectQuantity < 0 )
 			{
 				collisionPosition = e->v0;
 				cout << "under: " << e->v0.x << ", " << e->v0.y << endl;
@@ -446,7 +575,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				}
 				if( vertOK && horiOK ) 
 				{
-					if( verticalDist <= horizontalDist)//length( vertical.position - corner ) < length( horizontal.position - corner ) )
+					if( verticalDist / abs(a.velocity.y) <= horizontalDist / abs(a.velocity.x) )
 					{
 						intersect = vertical.position;
 					}
@@ -473,8 +602,9 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 					//return NULL;
 					assert( false && "case error" );
 				}
-			}
-			else if( intersectQuantity > length( e->v1 - e->v0 ) )
+			}*/
+			if( false )
+			//else if( intersectQuantity > length( e->v1 - e->v0 ) )
 			{
 				collisionPosition = e->v1;
 				cout << "over: " << e->v0.x << ", " << e->v0.y << endl;
@@ -507,7 +637,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 				}
 				if( vertOK && horiOK ) 
 				{
-					if( verticalDist <= horizontalDist )//length( vertical.position - corner ) < length( horizontal.position - corner ) )
+					if( verticalDist / abs(a.velocity.y) <= horizontalDist / abs(a.velocity.x) )
 					{
 						intersect = vertical.position;
 					}
@@ -537,6 +667,14 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 
 			
 			}
+			else
+			{
+				
+			}
+			currentContact->resolution = intersect - corner;
+
+			if( length( currentContact->resolution ) > length( a.velocity ) + 10 )
+				return NULL;
 			if( dot( normalize( -a.velocity ), normalize(intersect - corner ) ) < .999 )
 			{
 			//	return NULL;
@@ -549,7 +687,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 			if( pri < -1 )
 			{
 				cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
-				//return NULL;
+				return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );
@@ -561,7 +699,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 
 			//Vector2f p = intersect - corner;
 			currentContact->position = collisionPosition;//intersect;
-			currentContact->resolution = intersect - corner;
+			
 			currentContact->collisionPriority = pri;//dot(intersect - ( corner + invVel), e->Normal());
 			currentContact->edge = e;
 
@@ -742,7 +880,7 @@ int main()
 		while ( accumulator >= TIMESTEP  )
         {
 			window->clear();
-			float f = 20;			
+			float f = 30;			
 			player.velocity = Vector2f( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
@@ -769,106 +907,7 @@ int main()
 			player.UpdatePrePhysics();
 
 			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-			float xkl = 1;
-			for( int jkl = 0; jkl < xkl; ++jkl )
-			{
-			player.position += player.velocity / xkl;
-			float minPriority = 1000000;
-			Edge *minEdge = NULL;
-			Vector2f res(0,0);
-			int collisionNumber = 0;
-			for( int i = 0; i < numPoints; ++i )
-			{
-				Contact *c = collideEdge( player, b, edges[i] );
-				if( c != NULL )
-				{
-					collisionNumber++;
-					cout << "pri: " << c->collisionPriority << endl;
-					if( c->collisionPriority <= minPriority || minPriority < -1 )
-					{
-					/*	if( minPriority <= 0 )
-						{
-							if( c->collisionPriority >= 0 )
-							{
-								minPriority = c->collisionPriority;
-								minEdge = edges[i];
-								res = c->resolution;
-								cout << "blaeefiahfhreawiphitw" << endl;
-							}
-							else
-							{
-								if( c->collisionPriority > minPriority )
-								{
-									minPriority = c->collisionPriority;
-									minEdge = edges[i];
-									res = c->resolution;
-									cout << "blaeefiahfhreawiphitwfdfdfdfdfdfdfdf" << endl;
-								}
-							}
-						}*/
-					/*	if( minPriority < -1 && c->collisionPriority < -1 )
-						{
-							if( length( c->resolution ) < length( res ) )
-							{
-								minPriority = c->collisionPriority;
-								minEdge = edges[i];
-								res = c->resolution;
-							}
-						}
-						else*/
-						
-						if( c->collisionPriority == minPriority )
-						{
-							if( length(c->resolution) > length(res) )
-							{
-								minPriority = c->collisionPriority;
-								minEdge = edges[i];
-								res = c->resolution;
-							}
-						}
-						else
-						{
-
-							minPriority = c->collisionPriority;
-							minEdge = edges[i];
-							res = c->resolution;
-						}
-					}
-				}
-			}
-
-
-			cout << "collisionNumber: " << collisionNumber << endl;
-			if( minEdge != NULL )
-			{
-				
-				Contact *c = collideEdge( player, b, minEdge );
-				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
-				otherPlayerPos = player.position;
-				player.position += c->resolution;
-
-				sf::CircleShape cs;
-				cs.setFillColor( Color::Magenta );
-				
-				cs.setRadius( 20 );
-				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-				cs.setPosition( c->position );
-				window->draw( cs );
-				cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
-				//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
-				Color lc = Color::Green;
-				sf::Vertex linez[] =
-				{
-					sf::Vertex(sf::Vector2f(minEdge->v0.x + 1, minEdge->v0.y + 1), lc),
-					sf::Vertex(sf::Vector2f(minEdge->v1.x + 1, minEdge->v1.y + 1), lc),
-					sf::Vertex(sf::Vector2f(minEdge->v0.x - 1, minEdge->v0.y - 1), lc),
-					sf::Vertex(sf::Vector2f(minEdge->v1.x - 1, minEdge->v1.y - 1), lc)
-				};
-
-				window->draw(linez, 4, sf::Lines);
-				 
-			}
-			}
+			
 			
 
 			player.UpdatePostPhysics();

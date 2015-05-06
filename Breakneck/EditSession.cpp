@@ -234,7 +234,7 @@ void EditSession::Run( string fileName )
 	bool panning = false;
 	Vector2f panAnchor;
 	bool backspace = true;
-	double minimumEdgeLength = 16;
+	double minimumEdgeLength = 1;
 
 
 	while( !quit )
