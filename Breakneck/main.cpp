@@ -193,7 +193,7 @@ struct Actor
 		frame = 0;
 
 		ground = NULL;
-		groundSpeed = 10;
+		groundSpeed = 3;
 
 		//CollisionBox b;
 		b.isCircle = false;
@@ -256,6 +256,12 @@ struct Actor
 				{
 					extra -= length( ground->v1 - ground->v0 );
 					ground = ground->edge1;
+					if( ground->Normal().y >= 0 )
+					{
+						ground = NULL;
+						position.y -= 10;
+						return;
+					}
 			//		assert( ground->edge1 != NULL && "not setting edge2");
 				}
 				Edge *e = ground->edge1;
@@ -332,8 +338,12 @@ struct Actor
 
 				window->draw(linez, 4, sf::Lines);
 				
-				ground = minEdge;
-				edgeQuantity = minEdge->GetQuantity( c->position );
+				if( minEdge->Normal().y < 0 )
+				{
+					ground = minEdge;
+					edgeQuantity = minEdge->GetQuantity( c->position );
+				}
+				
 
 				
 			}
@@ -372,6 +382,7 @@ struct Actor
 		}
 
 		++frame;
+		//cout << "end frame: " << position.x << ", " << position.y << endl;
 	}
 
 
@@ -872,6 +883,22 @@ int main()
 	Vector2f otherPlayerPos;
 	
 	float zoomMultiple = 1;
+
+	Color borderColor = sf::Color::Green;
+	int max = 1000000;
+	sf::Vertex border[] =
+	{
+		sf::Vertex(sf::Vector2f(-max, -max), borderColor ),
+		sf::Vertex(sf::Vector2f(-max, max), borderColor),
+		sf::Vertex(sf::Vector2f(-max, max), borderColor),
+		sf::Vertex(sf::Vector2f(max, max), borderColor),
+		sf::Vertex(sf::Vector2f(max, max), borderColor),
+		sf::Vertex(sf::Vector2f(max, -max), borderColor),
+		sf::Vertex(sf::Vector2f(max, -max), borderColor),
+		sf::Vertex(sf::Vector2f(-max, -max), borderColor)
+	};
+
+	
 	
 
 	while( true )
@@ -889,7 +916,7 @@ int main()
 		while ( accumulator >= TIMESTEP  )
         {
 			window->clear();
-			float f = 30;			
+			float f = 100;			
 			player.velocity = Vector2f( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
@@ -950,9 +977,12 @@ int main()
 				{
 					zoomMultiple = 1;
 				}
+				else if( zoomMultiple > 65536 )
+				{
+					zoomMultiple = 65536;
+				}
 			}
 		}
-
 		view.setSize( Vector2f( 960 * zoomMultiple, 540 * zoomMultiple ) );
 		view.setCenter( player.position );
 		window->setView( view );
@@ -969,7 +999,11 @@ int main()
 		window->draw( circle );
 		window->draw(line, numPoints * 2, sf::Lines);
 
+		window->draw(border, 8, sf::Lines);
+
 		window->display();
+
+
 
 	/*	while( true )
 		{

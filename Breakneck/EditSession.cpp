@@ -74,10 +74,10 @@ bool Polygon::IsClockwise()
 	assert( points.size() > 0 );
 
 
-    Vector2f *pointArray = new Vector2f[points.size()];
+    Vector2i *pointArray = new Vector2i[points.size()];
 
 	int i = 0;
-	for( list<Vector2f>::iterator it = points.begin(); it != points.end(); ++it )
+	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
 	{
 		pointArray[i] = (*it);
 		++i;
@@ -86,7 +86,7 @@ bool Polygon::IsClockwise()
     int sum = 0;
 	for (int i = 0; i < points.size(); ++i)
     {
-        Vector2f first, second;
+        Vector2i first, second;
         if (i == 0)
         {
             first = pointArray[points.size() - 1];
@@ -100,6 +100,9 @@ bool Polygon::IsClockwise()
 
         sum += (second.x - first.x) * (second.y + first.y);
     }
+
+	delete [] pointArray;
+
     return sum < 0;
 }
 
@@ -196,14 +199,14 @@ void EditSession::WriteFile(string fileName)
 	}
 
 	of << pointCount << endl;
-	of << playerPosition.x << " " << playerPosition.y << endl;
+	of << (int)playerPosition.x << " " << (int)playerPosition.y << endl;
 
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		of << (*it)->material << " " << (*it)->points.size() << endl;
 		for( list<Vector2f>::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 		{
-			of << (*it2).x << " " << (*it2).y << endl;
+			of << (int)(*it2).x << " " << (int)(*it2).y << endl;
 		}
 	}
 }
@@ -236,6 +239,19 @@ void EditSession::Run( string fileName )
 	bool backspace = true;
 	double minimumEdgeLength = 1;
 
+	Color borderColor = sf::Color::Green;
+	int max = 1000000;
+	sf::Vertex border[] =
+	{
+		sf::Vertex(sf::Vector2f(-max, -max), borderColor ),
+		sf::Vertex(sf::Vector2f(-max, max), borderColor),
+		sf::Vertex(sf::Vector2f(-max, max), borderColor),
+		sf::Vertex(sf::Vector2f(max, max), borderColor),
+		sf::Vertex(sf::Vector2f(max, max), borderColor),
+		sf::Vertex(sf::Vector2f(max, -max), borderColor),
+		sf::Vertex(sf::Vector2f(max, -max), borderColor),
+		sf::Vertex(sf::Vector2f(-max, -max), borderColor)
+	};
 
 	while( !quit )
 	{
@@ -290,6 +306,10 @@ void EditSession::Run( string fileName )
 				if( zoomMultiple < 1 )
 				{
 					zoomMultiple = 1;
+				}
+				else if( zoomMultiple > 65536 )
+				{
+					zoomMultiple = 65536;
 				}
 			
 				Vector2f ff = view.getCenter();//worldPos - ( - (  .5f * view.getSize() ) );
@@ -359,9 +379,10 @@ void EditSession::Run( string fileName )
 				polygonInProgress = new Polygon();
 			}
 
-			if( polygonInProgress->points.size() <= 2 )
+			if( polygonInProgress->points.size() <= 2 && polygonInProgress->points.size() > 0  )
 			{
 				cout << "cant finalize. cant make polygon" << endl;
+				polygonInProgress->points.clear();
 			}
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::S ) )
@@ -397,7 +418,10 @@ void EditSession::Run( string fileName )
 		else
 			playerSprite.setPosition( playerPosition );
 
+
+		//cout << zoomMultiple << endl;
 		w->setView( view );
+		w->draw(border, 8, sf::Lines);
 		Draw();
 		w->draw( playerSprite );
 		w->display();

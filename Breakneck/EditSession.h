@@ -9,7 +9,7 @@
 
 struct Polygon
 {
-	std::list<sf::Vector2f> points;
+	std::list<sf::Vector2i> points;
 	std::string material;
 	void Finalize();
 	void Draw( sf::RenderTarget * rt);
@@ -26,7 +26,7 @@ struct EditSession
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
 	std::list<Polygon*> polygons;
-	sf::Vector2f playerPosition;
+	sf::Vector2i playerPosition;
 	Polygon *polygonInProgress;
 	sf::RenderWindow *w;
 	std::string mode;
