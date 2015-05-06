@@ -30,7 +30,8 @@ struct Edge
 	//material ---
 	Edge()
 	{
-		
+		edge0 = NULL;
+		edge1 = NULL;
 	}
 
 	Vector2f Normal()
@@ -155,6 +156,8 @@ Tileset * GetTileset( const string & s, int tileWidth, int tileHeight )
 	//make sure to set up tileset here
 }
 
+struct Actor;
+Contact * collideEdge( const Actor &a, const CollisionBox &b, Edge * e );
 struct Actor
 {
 	enum Action
@@ -168,8 +171,12 @@ struct Actor
 	Sprite *sprite;
 	Tileset *tilesetStand;
 	Tileset *tilesetRun;
-
+	CollisionBox b;
+	
+	Edge *ground;
+	float edgeQuantity;
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
+	float groundSpeed;
 	Actor::Actor()
 	{
 		sprite = new Sprite;
@@ -184,6 +191,18 @@ struct Actor
 
 		currentAction = RUN;
 		frame = 0;
+
+		ground = NULL;
+		groundSpeed = 10;
+
+		//CollisionBox b;
+		b.isCircle = false;
+		b.offsetAngle = 0;
+		b.offset.x = 0;
+		b.offset.y = 0;
+		b.rw = 32;
+		b.rh = 32;
+		b.type = b.Physics;
 	}
 
 	void ActionEnded()
@@ -222,19 +241,42 @@ struct Actor
 		
 	}
 
-	void UpdatePhysics()
+	void UpdatePhysics( Edge **edges, int numPoints )
 	{
-		float xkl = 2;
-			for( int jkl = 0; jkl < xkl; ++jkl )
+		if( ground != NULL )
+		{
+			float z = groundSpeed * 10;
+			edgeQuantity += z;
+			if( edgeQuantity >= length( ground->v1 - ground->v0 ) )
 			{
-			player.position += player.velocity / xkl;
+				float extra = edgeQuantity -  length( ground->v1 - ground->v0 );
+				ground = ground->edge1;
+			//	assert( ground->edge1 != NULL && "not setting edge");
+				while( extra >= length( ground->v1 - ground->v0 ) )
+				{
+					extra -= length( ground->v1 - ground->v0 );
+					ground = ground->edge1;
+			//		assert( ground->edge1 != NULL && "not setting edge2");
+				}
+				Edge *e = ground->edge1;
+				//assert( e != NULL );
+				//cout << "e: " << e->v0.x << ", " << e->v0.y << ", " << e->v1.x << ", " << e->v1.y << endl;
+				edgeQuantity = extra;
+
+			}
+			return;
+		}
+		float xkl = 2;
+		for( int jkl = 0; jkl < xkl; ++jkl )
+		{
+			position += velocity / xkl;
 			float minPriority = 1000000;
 			Edge *minEdge = NULL;
 			Vector2f res(0,0);
 			int collisionNumber = 0;
 			for( int i = 0; i < numPoints; ++i )
 			{
-				Contact *c = collideEdge( player, b, edges[i] );
+				Contact *c = collideEdge( *this , b, edges[i] );
 				if( c != NULL )
 				{
 					collisionNumber++;
@@ -265,10 +307,10 @@ struct Actor
 			if( minEdge != NULL )
 			{
 				
-				Contact *c = collideEdge( player, b, minEdge );
+				Contact *c = collideEdge( *this, b, minEdge );
 				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
-				otherPlayerPos = player.position;
-				player.position += c->resolution;
+				
+				position += c->resolution;
 
 				sf::CircleShape cs;
 				cs.setFillColor( Color::Magenta );
@@ -290,13 +332,22 @@ struct Actor
 
 				window->draw(linez, 4, sf::Lines);
 				
+				ground = minEdge;
+				edgeQuantity = minEdge->GetQuantity( c->position );
+
 				
 			}
-			}
+		}
 	}
 
 	void UpdatePostPhysics()
 	{
+		if( ground != NULL )
+		{
+			position = ground->GetPoint( edgeQuantity );//Vector2f( collisionPosition.x, collisionPosition.y );
+		}
+
+
 		//cout << "updating" << endl;
 		switch( currentAction )
 		{
@@ -331,48 +382,9 @@ struct Actor
 	CollisionBox *physBox;
 };
 
-struct LineIntersection
-{
-	LineIntersection(const Vector2f &pos, bool p )
-	{
-		position = pos;
-		parallel = p;
-	}
-
-	Vector2f position;
-	bool parallel;
-};
-
-LineIntersection lineIntersection( Vector2f a, Vector2f b, Vector2f c, Vector2f d )
-{
-	double ax = a.x;
-	double ay = a.y;
-	double bx = b.x;
-	double by = b.y;
-	double cx = c.x;
-	double cy = c.y;
-	double dx = d.x;
-	double dy = d.y;
-
-	double x= 0,y = 0;
-	bool parallel = false;
-	if( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) == 0 )
-	{
-		parallel = true;
-	}
-	else
-	{
-		x = ((ax * by - ay * bx ) * ( cx - dx ) - (ax - bx ) * ( cx * dy - cy * dx ))
-			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
-		y = ((ax * by - ay * bx ) * ( cy - dy ) - (ay - by ) * ( cx * dy - cy * dx ))
-			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
-	}
-
-	return LineIntersection( Vector2f(x,y), parallel );
-}
 
 Contact *currentContact;
-Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
+Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e )
 {
 	Vector2f oldPosition = a.position - a.velocity;
 	float left = a.position.x + b.offset.x - b.rw;
@@ -713,6 +725,7 @@ Contact *collideEdge( Actor &a, const CollisionBox &b, Edge *e )
 	return NULL;
 }
 
+
 void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
 {
 	if( b.isCircle && b1.isCircle )
@@ -745,7 +758,7 @@ int main()
 	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
 	
-	View view( sf::Vector2f(  300, 300 ), sf::Vector2f( 960, 540 ) );
+	View view( sf::Vector2f(  300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	window->setView( view );
 
 	EditSession es(window );
@@ -806,9 +819,13 @@ int main()
 			ee->v0 = points[i+currentEdgeIndex];
 			if( i < polyPoints - 1 )
 				ee->v1 = points[i+1 + currentEdgeIndex];
+			else
+				ee->v1 = points[currentEdgeIndex];
+		}
 
-		
-
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			Edge * ee = edges[i + currentEdgeIndex];
 			if( i == 0 )
 			{
 				ee->edge0 = edges[currentEdgeIndex + polyPoints - 1];
@@ -818,7 +835,7 @@ int main()
 			{
 				ee->edge0 = edges[currentEdgeIndex + i - 1];
 				ee->edge1 = edges[currentEdgeIndex];
-				ee->v1 = points[currentEdgeIndex];
+				
 			}
 			else
 			{
@@ -845,14 +862,6 @@ int main()
 	circle.setFillColor( Color::Blue );
 
 
-	CollisionBox b;
-	b.isCircle = false;
-	b.offsetAngle = 0;
-	b.offset.x = 0;
-	b.offset.y = 0;
-	b.rw = 32;
-	b.rh = 32;
-	b.type = b.Physics;
 
 	
 
@@ -862,7 +871,7 @@ int main()
 
 	Vector2f otherPlayerPos;
 	
-
+	float zoomMultiple = 1;
 	
 
 	while( true )
@@ -908,7 +917,7 @@ int main()
 
 			//Vector2f rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
 			
-			
+			player.UpdatePhysics( edges, numPoints );
 
 			player.UpdatePostPhysics();
 
@@ -922,7 +931,29 @@ int main()
 		}
 		}
 
-		view.setSize( Vector2f( 960 * 1, 540 * 1 ) );
+
+		sf::Event ev;
+		while( window->pollEvent( ev ) )
+		{
+			if( ev.type == Event::MouseWheelMoved )
+			{
+				if( ev.mouseWheel.delta > 0 )
+				{
+					zoomMultiple /= 2;
+				}
+				else if( ev.mouseWheel.delta < 0 )
+				{
+					zoomMultiple *= 2;
+				}
+				
+				if( zoomMultiple < 1 )
+				{
+					zoomMultiple = 1;
+				}
+			}
+		}
+
+		view.setSize( Vector2f( 960 * zoomMultiple, 540 * zoomMultiple ) );
 		view.setCenter( player.position );
 		window->setView( view );
 
