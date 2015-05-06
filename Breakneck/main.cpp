@@ -814,7 +814,7 @@ int main()
 		int currentEdgeIndex = pointCounter;
 		for( int i = 0; i < polyPoints; ++i )
 		{
-			float px, py;
+			int px, py;
 			is >> px;
 			is >> py;
 			

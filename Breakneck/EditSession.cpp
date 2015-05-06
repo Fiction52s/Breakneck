@@ -18,15 +18,15 @@ void Polygon::Finalize()
 	//cout << "points size: " << points.size() << endl;
 	if( points.size() > 0 )
 	{
-		list<Vector2f>::iterator it = points.begin(); 
-		lines[0] = (*it);
-		lines[2 * points.size() - 1 ] = (*it);
+		list<Vector2i>::iterator it = points.begin(); 
+		lines[0] = sf::Vector2f( (*it).x, (*it).y );
+		lines[2 * points.size() - 1 ] = sf::Vector2f( (*it).x, (*it).y );
 		++it;
 		++i;
 		while( it != points.end() )
 		{
-			lines[i] = (*it);
-			lines[++i] = (*it); 
+			lines[i] = sf::Vector2f( (*it).x, (*it).y );
+			lines[++i] = sf::Vector2f( (*it).x, (*it).y ); 
 			++i;
 			++it;
 		}
@@ -56,13 +56,13 @@ void Polygon::FixWinding()
     else
     {
 		cout << "fixing winding" << endl;
-        list<Vector2f> temp;
-		for( list<Vector2f>::iterator it = points.begin(); it != points.end(); ++it )
+        list<Vector2i> temp;
+		for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
 		{
 			temp.push_front( (*it) );
 		}
 		points.clear();
-		for( list<Vector2f>::iterator it = temp.begin(); it != temp.end(); ++it )
+		for( list<Vector2i>::iterator it = temp.begin(); it != temp.end(); ++it )
 		{
 			points.push_back( (*it) );
 		}          
@@ -122,9 +122,9 @@ void EditSession::Draw()
 		cs.setFillColor( Color::Green );
 
 		
-		for( list<Vector2f>::iterator it = polygonInProgress->points.begin(); it != polygonInProgress->points.end(); ++it )
+		for( list<Vector2i>::iterator it = polygonInProgress->points.begin(); it != polygonInProgress->points.end(); ++it )
 		{
-			cs.setPosition( (*it) );
+			cs.setPosition( (*it).x, (*it).y );
 			w->draw( cs );
 		}
 
@@ -161,12 +161,12 @@ bool EditSession::OpenFile( string fileName )
 			is >> polyPoints;
 			
 			numPoints -= polyPoints;
-			float x,y;
+			int x,y;
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				is >> x;
 				is >> y;
-				poly->points.push_back( Vector2f( x,y ) );
+				poly->points.push_back( Vector2i(x,y) );
 			}
 
 			poly->Finalize();
@@ -199,14 +199,14 @@ void EditSession::WriteFile(string fileName)
 	}
 
 	of << pointCount << endl;
-	of << (int)playerPosition.x << " " << (int)playerPosition.y << endl;
+	of << playerPosition.x << " " << playerPosition.y << endl;
 
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		of << (*it)->material << " " << (*it)->points.size() << endl;
-		for( list<Vector2f>::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+		for( list<Vector2i>::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 		{
-			of << (int)(*it2).x << " " << (int)(*it2).y << endl;
+			of << (*it2).x << " " << (*it2).y << endl;
 		}
 	}
 }
@@ -224,8 +224,8 @@ void EditSession::Run( string fileName )
 	w->setVerticalSyncEnabled( false );
 
 	OpenFile( fileName );
-
-	view.setCenter( playerPosition );
+	Vector2f vs( playerPosition.x, playerPosition.y );
+	view.setCenter( vs );
 
 	mode = "neutral";
 	bool quit = false;
@@ -264,12 +264,16 @@ void EditSession::Run( string fileName )
 		{
 			if( mode == "neutral" )
 			{
-				if( length( worldPos - polygonInProgress->points.back() ) >= minimumEdgeLength)
-					polygonInProgress->points.push_back( worldPos );
+				if( length( worldPos - Vector2f(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength)
+				{
+					Vector2i worldi( worldPos.x, worldPos.y );
+					polygonInProgress->points.push_back( worldi  );
+				}
 			}
 			else if( mode == "set player" )
 			{
-				playerPosition = worldPos;
+				playerPosition.x = (int)worldPos.x;
+				playerPosition.y = (int)worldPos.y;//Vector2i( worldPos.x, worldPos.y );
 				mode = "transition";
 			}
 			
@@ -414,9 +418,10 @@ void EditSession::Run( string fileName )
 		if( mode == "set player" )
 		{
 			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
+			cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
 		}
 		else
-			playerSprite.setPosition( playerPosition );
+			playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
 
 		//cout << zoomMultiple << endl;
