@@ -290,7 +290,7 @@ struct Actor
 					if( groundSpeed > maxNormalRun )
 						groundSpeed = maxNormalRun;
 				}
-				facingRight = false;
+				facingRight = true;
 			}
 
 			break;
@@ -474,7 +474,17 @@ struct Actor
 			sprite->setPosition( position.x, position.y );
 			
 			sprite->setTexture( *(tilesetStand->texture));
-			sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+			//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+			if( facingRight )
+			{
+				sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tilesetStand->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			//sprite->setRotation(  );
 
@@ -491,8 +501,16 @@ struct Actor
 			sprite->setPosition( position.x, position.y );
 			
 			sprite->setTexture( *(tilesetRun->texture));
-
-			sprite->setTextureRect( tilesetRun->GetSubRect( frame / 4 ) );
+			if( facingRight )
+			{
+				sprite->setTextureRect( tilesetRun->GetSubRect( frame / 4 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tilesetRun->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 
 			if( ground != NULL )
