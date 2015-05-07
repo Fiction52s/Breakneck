@@ -1,8 +1,8 @@
 #include "Input.h"
 #include <math.h>
 
-#define PI 3.14159265359
 
+#define PI 3.14159265359
 const DWORD GameController::LEFT_STICK_DEADZONE = 7849;
 const DWORD GameController::RIGHT_STICK_DEADZONE = 8689;
 const DWORD GameController::TRIGGER_THRESHOLD = 30;
@@ -82,16 +82,16 @@ bool GameController::UpdateState()
 
 	if( result == ERROR_SUCCESS )
 	{
-		float LX = state.Gamepad.sThumbLX;
-		float LY = state.Gamepad.sThumbLY;
+		double LX = state.Gamepad.sThumbLX;
+		double LY = state.Gamepad.sThumbLY;
 		//i dont think i need a magnitude, magnitude should be calculated for differences
 		//between controller states by some other function
-		float magnitude = sqrt( LX * LX + LY * LY );
+		double magnitude = sqrt( LX * LX + LY * LY );
 
-		float normalizedLX = LX / magnitude;
-		float normalizedLY = LY / magnitude;
+		double normalizedLX = LX / magnitude;
+		double normalizedLY = LY / magnitude;
 
-		float normalizedMagnitude = 0;
+		double normalizedMagnitude = 0;
 
 		if( magnitude > LEFT_STICK_DEADZONE )
 		{
@@ -112,13 +112,13 @@ bool GameController::UpdateState()
 		if( normalizedLX < 0.0f )
 			m_state.leftStickRadians += PI;
 
-		float RX = state.Gamepad.sThumbRX;
-		float RY = state.Gamepad.sThumbRY;
+		double RX = state.Gamepad.sThumbRX;
+		double RY = state.Gamepad.sThumbRY;
 
 		magnitude = sqrt( RX * RX + RY * RY );
 
-		float normalizedRX = RX / magnitude;
-		float normalizedRY = RY / magnitude;
+		double normalizedRX = RX / magnitude;
+		double normalizedRY = RY / magnitude;
 
 		if( magnitude > RIGHT_STICK_DEADZONE )
 		{

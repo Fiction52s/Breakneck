@@ -3,7 +3,7 @@
 using namespace std;
 using namespace sf;
 
-double cross( sf::Vector2f a, sf::Vector2f b )
+double cross( sf::Vector2<double> a, sf::Vector2<double> b )
 {
 	double ax = a.x;
 	double ay = a.y;
@@ -14,23 +14,23 @@ double cross( sf::Vector2f a, sf::Vector2f b )
 }
 
 
-double length( sf::Vector2f v)
+double length( sf::Vector2<double> v)
 {
 	double vx = v.x;
 	double vy = v.y;
 	return sqrt( vx * vx + vy * vy );
 }
 
-sf::Vector2f normalize( sf::Vector2f v )
+sf::Vector2<double> normalize( sf::Vector2<double> v )
 {
 	double vLen = length( v );
 	if( vLen > 0 )
-		return sf::Vector2f( v.x / vLen, v.y / vLen );
+		return sf::Vector2<double>( v.x / vLen, v.y / vLen );
 	else
-		return sf::Vector2f( 0, 0 );
+		return sf::Vector2<double>( 0, 0 );
 }
 
-double dot( sf::Vector2f a, sf::Vector2f b )
+double dot( sf::Vector2<double> a, sf::Vector2<double> b )
 {
 	double ax = a.x;
 	double ay = a.y;
@@ -40,13 +40,13 @@ double dot( sf::Vector2f a, sf::Vector2f b )
 }
 
 
-LineIntersection::LineIntersection(const sf::Vector2f &pos, bool p )
+LineIntersection::LineIntersection(const sf::Vector2<double> &pos, bool p )
 {
 	position = pos;
 	parallel = p;
 }
 
-LineIntersection lineIntersection( sf::Vector2f a, Vector2f b, Vector2f c, Vector2f d )
+LineIntersection lineIntersection( sf::Vector2<double> a, Vector2<double> b, Vector2<double> c, Vector2<double> d )
 {
 	double ax = a.x;
 	double ay = a.y;
@@ -71,6 +71,6 @@ LineIntersection lineIntersection( sf::Vector2f a, Vector2f b, Vector2f c, Vecto
 			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
 	}
 
-	return LineIntersection( sf::Vector2f(x,y), parallel );
+	return LineIntersection( sf::Vector2<double>(x,y), parallel );
 }
 

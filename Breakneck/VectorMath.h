@@ -3,22 +3,24 @@
 #ifndef __VECTOR_MATH_H__
 #define __VECTOR_MATH_H__
 
-double cross( sf::Vector2f a, sf::Vector2f b );
+double cross( sf::Vector2<double> a, sf::Vector2<double> b );
 
+#define PI 3.14159265359
+double length( sf::Vector2<double> v);
 
-double length( sf::Vector2f v);
+sf::Vector2<double> normalize( sf::Vector2<double> v );
 
-sf::Vector2f normalize( sf::Vector2f v );
-
-double dot( sf::Vector2f a, sf::Vector2f b );
+double dot( sf::Vector2<double> a, sf::Vector2<double> b );
 
 struct LineIntersection
 {
-	LineIntersection(const sf::Vector2f &pos, bool p );
-	sf::Vector2f position;
+	LineIntersection(const sf::Vector2<double> &pos, bool p );
+	sf::Vector2<double> position;
 	bool parallel;
 };
 
-LineIntersection lineIntersection( sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::Vector2f d );
+LineIntersection lineIntersection( sf::Vector2<double> a, sf::Vector2<double> b, sf::Vector2<double> c, sf::Vector2<double> d );
+
+
 
 #endif

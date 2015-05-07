@@ -18,10 +18,10 @@ struct ControllerState
 {
 	ControllerState();
 	void Set( const ControllerState &state );
-	float leftStickMagnitude; // 0 - 1.0
-	float leftStickRadians;
-	float rightStickMagnitude; // 0 - 1.0
-	float rightStickRadians;
+	double leftStickMagnitude; // 0 - 1.0
+	double leftStickRadians;
+	double rightStickMagnitude; // 0 - 1.0
+	double rightStickRadians;
 	BYTE leftTrigger;
 	BYTE rightTrigger;
 	bool start;

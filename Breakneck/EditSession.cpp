@@ -83,7 +83,7 @@ bool Polygon::IsClockwise()
 		++i;
 	}
 
-    int sum = 0;
+    long long int sum = 0;
 	for (int i = 0; i < points.size(); ++i)
     {
         Vector2i first, second;
@@ -103,6 +103,7 @@ bool Polygon::IsClockwise()
 
 	delete [] pointArray;
 
+	//cout << "summm: " << sum << endl;
     return sum < 0;
 }
 
@@ -213,7 +214,7 @@ void EditSession::WriteFile(string fileName)
 
 void EditSession::Run( string fileName )
 {
-	View view( sf::Vector2f(  300, 300 ), sf::Vector2f( 960, 540 ) );
+	View view( sf::Vector2f( 300, 300 ), sf::Vector2f( 960, 540 ) );
 	w->setView( view );
 	Texture playerTex;
 	playerTex.loadFromFile( "stand.png" );
@@ -224,18 +225,19 @@ void EditSession::Run( string fileName )
 	w->setVerticalSyncEnabled( false );
 
 	OpenFile( fileName );
-	Vector2f vs( playerPosition.x, playerPosition.y );
-	view.setCenter( vs );
+	//Vector2f vs(  );
+	view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
 
 	mode = "neutral";
 	bool quit = false;
 	polygonInProgress = new Polygon();
-	float zoomMultiple = 1;
-	Vector2f prevWorldPos;
+	double zoomMultiple = 1;
+	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
-	Vector2f worldPos = w->mapPixelToCoords(sf::Mouse::getPosition( *w ));
+	Vector2f tempWorldPos = w->mapPixelToCoords(sf::Mouse::getPosition( *w ));
+	Vector2<double> worldPos = Vector2<double>( tempWorldPos.x, tempWorldPos.y );
 	bool panning = false;
-	Vector2f panAnchor;
+	Vector2<double> panAnchor;
 	bool backspace = true;
 	double minimumEdgeLength = 1;
 
@@ -243,14 +245,14 @@ void EditSession::Run( string fileName )
 	int max = 1000000;
 	sf::Vertex border[] =
 	{
-		sf::Vertex(sf::Vector2f(-max, -max), borderColor ),
-		sf::Vertex(sf::Vector2f(-max, max), borderColor),
-		sf::Vertex(sf::Vector2f(-max, max), borderColor),
-		sf::Vertex(sf::Vector2f(max, max), borderColor),
-		sf::Vertex(sf::Vector2f(max, max), borderColor),
-		sf::Vertex(sf::Vector2f(max, -max), borderColor),
-		sf::Vertex(sf::Vector2f(max, -max), borderColor),
-		sf::Vertex(sf::Vector2f(-max, -max), borderColor)
+		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor ),
+		sf::Vertex(sf::Vector2<float>(-max, max), borderColor),
+		sf::Vertex(sf::Vector2<float>(-max, max), borderColor),
+		sf::Vertex(sf::Vector2<float>(max, max), borderColor),
+		sf::Vertex(sf::Vector2<float>(max, max), borderColor),
+		sf::Vertex(sf::Vector2<float>(max, -max), borderColor),
+		sf::Vertex(sf::Vector2<float>(max, -max), borderColor),
+		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
 	};
 
 	while( !quit )
@@ -258,13 +260,15 @@ void EditSession::Run( string fileName )
 		w->clear();
 		 prevWorldPos = worldPos;
 		 pixelPos = sf::Mouse::getPosition( *w );
-		 worldPos = w->mapPixelToCoords(pixelPos);
+		 Vector2f tempWorldPos = w->mapPixelToCoords(pixelPos);
+		 worldPos.x = tempWorldPos.x;
+		 worldPos.y = tempWorldPos.y;
 
 		if( Mouse::isButtonPressed( Mouse::Left ) )
 		{
 			if( mode == "neutral" )
 			{
-				if( length( worldPos - Vector2f(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength)
+				if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength)
 				{
 					Vector2i worldi( worldPos.x, worldPos.y );
 					polygonInProgress->points.push_back( worldi  );
@@ -316,11 +320,13 @@ void EditSession::Run( string fileName )
 					zoomMultiple = 65536;
 				}
 			
-				Vector2f ff = view.getCenter();//worldPos - ( - (  .5f * view.getSize() ) );
+				Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
 				view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
 				w->setView( view );
-				Vector2f newWorldPos = w->mapPixelToCoords(pixelPos);
-				view.setCenter( ff + ( worldPos - newWorldPos ) );
+				Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
+				Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
+				Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
+				view.setCenter( tempCenter.x, tempCenter.y );
 				w->setView( view );
 				//cout << "altering dleta: " << ev.mouseWheel.delta << endl;
 			}
@@ -330,7 +336,7 @@ void EditSession::Run( string fileName )
 		{
 			if( Mouse::isButtonPressed( Mouse::Middle ) )
 			{
-				//Vector2f fff(prevWorldPos - w->mapPixelToCoords(Vector2i(ev.mouseMove.x, ev.mouseMove.y )));
+				//Vector2<double> fff(prevWorldPos - w->mapPixelToCoords(Vector2i(ev.mouseMove.x, ev.mouseMove.y )));
 				//if( length( move ) > 
 				//view.move( fff );
 				//view.setCenter( w->mapPixelToCoords(Mouse::getPosition( *w ) ) );//Vector2i(ev.mouseMove.x, ev.mouseMove.y )) );
@@ -358,7 +364,8 @@ void EditSession::Run( string fileName )
 		if( panning )
 		{
 
-			view.move( panAnchor - worldPos );
+			Vector2<double> temp = panAnchor - worldPos;
+			view.move( Vector2f( temp.x, temp.y ) );
 		}
 
 		if( sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
