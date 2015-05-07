@@ -10,7 +10,7 @@
 #include "VectorMath.h"
 #include "Input.h"
 
-#define TIMESTEP 1.f / 60.f
+#define TIMESTEP 1.0 / 60.0
 
 using namespace std;
 using namespace sf;
@@ -122,8 +122,9 @@ struct Tileset
 	IntRect GetSubRect( int localID )
 	{
 		int xi,yi;
-		yi = localID / (texture->getSize().x / tileWidth );
 		xi = localID % (texture->getSize().x / tileWidth );
+		yi = localID / (texture->getSize().x / tileWidth );
+		
 
 		return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight ); 
 	}
@@ -177,6 +178,7 @@ struct Actor
 		Count
 	};
 
+	bool collision;
 	Sprite *sprite;
 	Tileset *tilesetStand;
 	Tileset *tilesetRun;
@@ -193,35 +195,55 @@ struct Actor
 	double groundSpeed;
 	double maxNormalRun;
 	double runAccel;
+	double maxFallSpeed;
+	double gravity;
 	bool facingRight;
+	double jumpStrength;
+	double airAccel;
+	double maxAirXSpeed;
+	double maxAirXSpeedNormal;
 
 	Actor::Actor()
 	{
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
-		actionLength[STAND] = 18 * 4;
+		actionLength[STAND] = 18 * 8;
 		tilesetStand = GetTileset( "stand.png", 64, 64 );
 
 		actionLength[RUN] = 10 * 4;
 		tilesetRun = GetTileset( "run.png", 128, 64 );
 
-		actionLength[JUMP] = 9;
+		actionLength[JUMP] = 2;
 		tilesetJump = GetTileset( "jump.png", 64, 64 );
 
 		actionLength[LAND] = 1;
-		tilesetJump = GetTileset( "land.png", 64, 64 );
+		tilesetLand = GetTileset( "land.png", 64, 64 );
 
-		actionLength[DASH] = 7;
-		tilesetJump = GetTileset( "dash.png", 64, 64 );
+		actionLength[DASH] = 120;
+		tilesetDash = GetTileset( "dash.png", 64, 64 );
+
+		actionLength[WALLCLING] = 1;
+		tilesetWallcling = GetTileset( "wallcling.png", 64, 64 );
+
+		actionLength[SLIDE] = 1;
+		tilesetSlide = GetTileset( "slide.png", 64, 64 );		
 
 		action = RUN;
 		frame = 0;
 
+		gravity = 2;
+		maxFallSpeed = 100;
+
 		ground = NULL;
 		groundSpeed = 0;
 		maxNormalRun = 30;
-		runAccel = .25;
+		runAccel = 2;
 		facingRight = true;
+		collision = false;
+		jumpStrength = 20;
+		airAccel = 2;
+		maxAirXSpeed = 30;
+		maxAirXSpeedNormal = 10;
 
 		//CollisionBox b;
 		b.isCircle = false;
@@ -244,6 +266,11 @@ struct Actor
 				break;
 			case RUN:
 				frame = 0;
+			case JUMP:
+				frame = 1;
+				break;
+			case LAND:
+				frame = 0;
 				break;
 			}
 		}
@@ -257,22 +284,48 @@ struct Actor
 		switch( action )
 		{
 		case STAND:
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
 			if( currInput.Left() || currInput.Right() )
 			{
 				action = RUN;
-				frame = 1;
+				frame = 0;
 				break;
 			}
+			
 			break;
 		case RUN:
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
 			if(!( currInput.Left() || currInput.Right() ))
 			{
 				action = STAND;
-				frame = 1;
+				frame = 0;
 				break;
 			}
 			break;
 		case JUMP:
+			break;
+		case LAND:
+			if( currInput.Left() || currInput.Right() )
+			{
+				action = RUN;
+				frame = 0;
+			}
+			else
+			{
+				action = STAND;
+				frame = 0;
+			}
+
 			break;
 		}
 
@@ -311,12 +364,51 @@ struct Actor
 
 			break;
 		case JUMP:
+			if( frame == 0 )
+			{
+				if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
+				{
+					velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
+					if( velocity.y > 0 )
+						velocity.y = 0;
+					velocity.y -= jumpStrength;
+					ground = NULL;
+				}
+			}
+			else
+			{
+				
+				if( currInput.Left() )
+				{
+					//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
+					//{
+						velocity.x -= airAccel;
+					//}
+					
+				}
+				else if( currInput.Right() )
+				{
+					//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
+					//{
+						velocity.x += airAccel;
+					//}
+				}
+			}
 			break;
 		}
 
+
+		if( velocity.x > maxAirXSpeed )
+			velocity.x = maxAirXSpeed;
+		else if( velocity.x < -maxAirXSpeed )
+			velocity.x = -maxAirXSpeed;
+
+		velocity += V2d( 0, gravity );
+		if( velocity.y > maxFallSpeed )
+			velocity.y = maxFallSpeed;
 	//	cout << "position: " << position.x << ", " << position.y << endl;
 	//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-		
+		collision = false;
 	}
 
 	void UpdatePhysics( Edge **edges, int numPoints )
@@ -324,7 +416,7 @@ struct Actor
 		if( ground != NULL )
 		{
 
-			double z = groundSpeed * 5;
+			double z = groundSpeed;
 			edgeQuantity += z;
 
 			if( z > 0)
@@ -396,6 +488,9 @@ struct Actor
 			}
 			return;
 		}
+
+		
+
 		double xkl = 2;
 		for( int jkl = 0; jkl < xkl; ++jkl )
 		{
@@ -436,7 +531,8 @@ struct Actor
 			//cout << "collisionNumber: " << collisionNumber << endl;
 			if( minEdge != NULL )
 			{
-				
+				collision = true;
+
 				Contact *c = collideEdge( *this, b, minEdge );
 				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
 				
@@ -478,30 +574,43 @@ struct Actor
 	{
 		if( ground != NULL )
 		{
+			if( collision )
+			{
+				action = LAND;
+				frame = 0;
+			}
 			Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 			position = groundPoint + ground->Normal() * 32.0;//Vector2<double>( collisionPosition.x, collisionPosition.y );
 		}
 			//sprite->setRotation( PI );
 
+		
+		
+
+
+
 		//cout << "updating" << endl;
+
 		switch( action )
 		{
 		case STAND:
-			sprite->setPosition( position.x, position.y );
+			
 			
 			sprite->setTexture( *(tilesetStand->texture));
+			
+			
 			//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
 			if( facingRight )
 			{
-				sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+				sprite->setTextureRect( tilesetStand->GetSubRect( frame / 8 ) );
 			}
 			else
 			{
-				sf::IntRect ir = tilesetStand->GetSubRect( frame / 4 );
+				sf::IntRect ir = tilesetStand->GetSubRect( frame / 8 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			//sprite->setRotation(  );
 
 
@@ -514,7 +623,7 @@ struct Actor
 			//cout << "setting to frame: " << frame / 4 << endl;
 			break;
 		case RUN:
-			sprite->setPosition( position.x, position.y );
+			
 			
 			sprite->setTexture( *(tilesetRun->texture));
 			if( facingRight )
@@ -527,7 +636,7 @@ struct Actor
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			
 
 			if( ground != NULL )
 			{
@@ -537,8 +646,64 @@ struct Actor
 			}
 			break;
 		case JUMP:
+			sprite->setTexture( *(tilesetJump->texture));
+			{
+			sf::IntRect ir;
+
+
+			
+
+			if( frame == 0 )
+			{
+				ir = tilesetJump->GetSubRect( 0 );
+			}
+			else if( velocity.y < 0 )
+			{
+				ir = tilesetJump->GetSubRect( 1 );
+			}
+			else if( velocity.y == 0 )
+			{
+				ir = tilesetJump->GetSubRect( 2 );
+			}
+			else
+			{
+				ir = tilesetJump->GetSubRect( 8 );
+			}
+
+			if( frame > 0 )
+			{
+				sprite->setRotation( 0 );
+			}
+
+			if( !facingRight )
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			else
+			{
+				sprite->setTextureRect( ir );
+			}
+			}
+			break;
+		case LAND: 
+			sprite->setTexture( *(tilesetLand->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tilesetLand->GetSubRect( frame / 4 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tilesetLand->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			sprite->setRotation( angle / PI * 180 );
 			break;
 		}
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
 
 		++frame;
 		//cout << "end frame: " << position.x << ", " << position.y << endl;
@@ -1058,7 +1223,8 @@ int main()
 	};
 
 	
-
+	bool skipped = false;
+	bool oneFrameMode = false;
 	while( true )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1111,7 +1277,7 @@ int main()
 				}
 			
 			double f = 30;			
-			player.velocity = Vector2<double>( 0, 0 );
+			//player.velocity = Vector2<double>( 0, 0 );
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
 			{
 
@@ -1220,18 +1386,31 @@ int main()
 		window->display();
 
 
-
-	/*	while( true )
+		if( oneFrameMode )
+		while( true )
 		{
-			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
+			{
+				skipped = true;
+				
+				currentTime = gameClock.getElapsedTime().asSeconds() - TIMESTEP;
+
 				break;
-			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Left ) )
+			}
+			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
+			{
+				skipped = false;
+				//break;
+			}
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::L ) )
+			{
+				oneFrameMode = false;
 				break;
-			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Up ) )
-				break;
-			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Down) )
-				break;
-		}*/
+			}
+		}
+
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
+				oneFrameMode = true;
 
 		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
 				return 0;
