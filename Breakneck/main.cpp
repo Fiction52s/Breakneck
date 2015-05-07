@@ -169,13 +169,22 @@ struct Actor
 	{
 		STAND,
 		RUN,
+		DASH,
+		SLIDE,
+		WALLCLING,
 		JUMP,
+		LAND,
 		Count
 	};
 
 	Sprite *sprite;
 	Tileset *tilesetStand;
 	Tileset *tilesetRun;
+	Tileset *tilesetDash;
+	Tileset *tilesetSlide;
+	Tileset *tilesetWallcling;
+	Tileset *tilesetJump;
+	Tileset *tilesetLand;
 	CollisionBox b;
 	
 	Edge *ground;
@@ -196,7 +205,14 @@ struct Actor
 		actionLength[RUN] = 10 * 4;
 		tilesetRun = GetTileset( "run.png", 128, 64 );
 
-		actionLength[JUMP] = 5;
+		actionLength[JUMP] = 9;
+		tilesetJump = GetTileset( "jump.png", 64, 64 );
+
+		actionLength[LAND] = 1;
+		tilesetJump = GetTileset( "land.png", 64, 64 );
+
+		actionLength[DASH] = 7;
+		tilesetJump = GetTileset( "dash.png", 64, 64 );
 
 		action = RUN;
 		frame = 0;
