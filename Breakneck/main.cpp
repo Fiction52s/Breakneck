@@ -495,33 +495,38 @@ struct Actor
 		for( int jkl = 0; jkl < xkl; ++jkl )
 		{
 			position += velocity / xkl;
-			double minPriority = 1000000;
-			Edge *minEdge = NULL;
+			//double minPriority = 1000000;
 			Vector2<double> res(0,0);
 			int collisionNumber = 0;
+			Contact minContact;
+			minContact.collisionPriority = 1000000;
 			for( int i = 0; i < numPoints; ++i )
 			{
 				Contact *c = collideEdge( *this , b, edges[i] );
 				if( c != NULL )
 				{
 					collisionNumber++;
-					if( c->collisionPriority <= minPriority || minPriority < -1 )
+					if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
 					{	
-						if( c->collisionPriority == minPriority )
+						if( c->collisionPriority == minContact.collisionPriority )
 						{
-							if( length(c->resolution) > length(res) )
+							if( length(c->resolution) > length(minContact.resolution) )
 							{
-								minPriority = c->collisionPriority;
-								minEdge = edges[i];
-								res = c->resolution;
+								minContact.collisionPriority = c->collisionPriority;
+								minContact.edge = edges[i];
+								minContact.resolution = c->resolution;
+								minContact.position = c->position;
+								collision = true;
 							}
 						}
 						else
 						{
 
-							minPriority = c->collisionPriority;
-							minEdge = edges[i];
-							res = c->resolution;
+							minContact.collisionPriority = c->collisionPriority;
+							minContact.edge = edges[i];
+							minContact.resolution = c->resolution;
+							minContact.position = c->position;
+							collision = true;
 						}
 					}
 				}
@@ -529,39 +534,40 @@ struct Actor
 
 
 			//cout << "collisionNumber: " << collisionNumber << endl;
-			if( minEdge != NULL )
+			if( collision )
 			{
-				collision = true;
-
-				Contact *c = collideEdge( *this, b, minEdge );
-				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
 				
-				position += c->resolution;
+
+			//	Contact *c = collideEdge( *this, b, minEdge );
+				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
+			//	assert( res.x == c->resolution.x && res.y == c->resolution.y );
+				position += minContact.resolution;//c->resolution;
 
 				sf::CircleShape cs;
 				cs.setFillColor( Color::Magenta );
 				
 				cs.setRadius( 20 );
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-				cs.setPosition( c->position.x, c->position.y );
+			//	cs.setPosition( c->position.x, c->position.y );
+				cs.setPosition( minContact.position.x, minContact.position.y );
 				window->draw( cs );
 				//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
 				//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
 				Color lc = Color::Green;
 				sf::Vertex linez[] =
 				{
-					sf::Vertex(sf::Vector2<float>(minEdge->v0.x + 1, minEdge->v0.y + 1), lc),
-					sf::Vertex(sf::Vector2<float>(minEdge->v1.x + 1, minEdge->v1.y + 1), lc),
-					sf::Vertex(sf::Vector2<float>(minEdge->v0.x - 1, minEdge->v0.y - 1), lc),
-					sf::Vertex(sf::Vector2<float>(minEdge->v1.x - 1, minEdge->v1.y - 1), lc)
+					sf::Vertex(sf::Vector2<float>(minContact.edge->v0.x + 1, minContact.edge->v0.y + 1), lc),
+					sf::Vertex(sf::Vector2<float>(minContact.edge->v1.x + 1, minContact.edge->v1.y + 1), lc),
+					sf::Vertex(sf::Vector2<float>(minContact.edge->v0.x - 1, minContact.edge->v0.y - 1), lc),
+					sf::Vertex(sf::Vector2<float>(minContact.edge->v1.x - 1, minContact.edge->v1.y - 1), lc)
 				};
 
 				window->draw(linez, 4, sf::Lines);
 				
-				if( minEdge->Normal().y < 0 )
+				if( minContact.edge->Normal().y < 0 )
 				{
-					ground = minEdge;
-					edgeQuantity = minEdge->GetQuantity( c->position );
+					ground = minContact.edge;
+					edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				}
 				
 
