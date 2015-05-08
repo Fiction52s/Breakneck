@@ -60,9 +60,17 @@ struct Edge
 	{
 		//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 
 		//normal to use dot product to get cos(0) =1
-		Vector2<double> vv = normalize(p - v0);
+		Vector2<double> vv = p - v0;
 		Vector2<double> e = normalize(v1 - v0);
-		return dot( vv, e ) * length( p - v0 );                          
+		return dot( vv, e );
+	}
+
+	double GetQuantityGivenX( double x )
+	{
+
+		Vector2<double> e = normalize(v1 - v0);
+		double deltax = x - v0.x;
+		double factor = deltax / e.y;
 	}
 };
 
@@ -192,6 +200,8 @@ struct Actor
 	Edge *ground;
 	double edgeQuantity;
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
+	double groundOffsetX;
+
 	double groundSpeed;
 	double maxNormalRun;
 	double runAccel;
@@ -240,17 +250,18 @@ struct Actor
 		runAccel = 2;
 		facingRight = true;
 		collision = false;
-		jumpStrength = 20;
+		jumpStrength = 40;
 		airAccel = 2;
 		maxAirXSpeed = 30;
 		maxAirXSpeedNormal = 10;
+		groundOffsetX = 0;
 
 		//CollisionBox b;
 		b.isCircle = false;
 		b.offsetAngle = 0;
 		b.offset.x = 0;
 		b.offset.y = 0;
-		b.rw = 32;
+		b.rw = 10;
 		b.rh = 32;
 		b.type = b.Physics;
 	}
@@ -413,6 +424,8 @@ struct Actor
 
 	void UpdatePhysics( Edge **edges, int numPoints )
 	{
+		bool leftGround = false;
+		V2d trueVel = velocity;
 		if( ground != NULL )
 		{
 
@@ -430,26 +443,33 @@ struct Actor
 					if( ground->Normal().y >= 0 )
 					{
 						ground = NULL;
-						position.y += 10;
-						return;
+						leftGround = true;
+						
+						//position.y += 10;
+						//return;
 					}
 				//	assert( ground->edge1 != NULL && "not setting edge");
-					while( extra >= length( ground->v1 - ground->v0 ) )
+					while( !leftGround && extra >= length( ground->v1 - ground->v0 ) )
 					{
 						extra -= length( ground->v1 - ground->v0 );
 						ground = ground->edge1;
 						if( ground->Normal().y >= 0 )
 						{
 							ground = NULL;
-							position.y += 10;
-							return;
+							//position.y += 10;
+							leftGround = true;
+							break;
+						//	return;
 						}
 				//		assert( ground->edge1 != NULL && "not setting edge2");
 					}
+					if( !leftGround )
+					{
 					Edge *e = ground->edge1;
 						//assert( e != NULL );
 				//cout << "e: " << e->v0.x << ", " << e->v0.y << ", " << e->v1.x << ", " << e->v1.y << endl;
 					edgeQuantity = extra;
+					}
 
 				}
 			}
@@ -463,29 +483,33 @@ struct Actor
 					if( ground->Normal().y >= 0 )
 					{
 						ground = NULL;
-						//position.y += 10;
-						return;
+						leftGround = true;
 					}
 				//	assert( ground->edge1 != NULL && "not setting edge");
-					while( extra > length( ground->v1 - ground->v0 ) )
+					while( !leftGround && extra > length( ground->v1 - ground->v0 ) )
 					{
 						extra -= length( ground->v1 - ground->v0 );
 						ground = ground->edge0;
 						if( ground->Normal().y >= 0 )
 						{
 							ground = NULL;
-							//position.y += 10;
-							return;
+							leftGround = true;
+							break;
 						}
 				//		assert( ground->edge1 != NULL && "not setting edge2");
 					}
+					if( !leftGround )
+					{
 					Edge *e = ground->edge0;
 						//assert( e != NULL );
 				//cout << "e: " << e->v0.x << ", " << e->v0.y << ", " << e->v1.x << ", " << e->v1.y << endl;
 					edgeQuantity = length( ground->v1 - ground->v0 ) - extra;
+					}
 				}
 
 			}
+			
+			if( leftGround )
 			return;
 		}
 
@@ -566,6 +590,7 @@ struct Actor
 				
 				if( minContact.edge->Normal().y < 0 )
 				{
+					groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 					ground = minContact.edge;
 					edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				}
@@ -586,7 +611,20 @@ struct Actor
 				frame = 0;
 			}
 			Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
-			position = groundPoint + ground->Normal() * 32.0;//Vector2<double>( collisionPosition.x, collisionPosition.y );
+			position = groundPoint;
+			V2d gn = ground->Normal();
+			if( gn.x > 0 )
+				position.x += b.rw;
+			else if( gn.x < 0 )
+				position.x -= b.rw;
+
+			//if( gn.y > 0 )
+			//	position.y += 32;
+			if( gn.y < 0 )
+				position.y -= b.rh;
+
+		//+ ground->Normal() * 32.0;//Vector2<double>( collisionPosition.x, collisionPosition.y );
+		//	position.x += groundOffsetX;
 		}
 			//sprite->setRotation( PI );
 
@@ -1375,9 +1413,12 @@ int main()
 		view.setCenter( player.position.x, player.position.y );
 		window->setView( view );
 
+		
+		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
+		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 		bDraw.setPosition( player.position.x, player.position.y );
-		bDraw.setRotation( player.sprite->getRotation() );
-		//window->draw( bDraw );
+	//	bDraw.setRotation( player.sprite->getRotation() );
+		window->draw( bDraw );
 
 		window->draw( *(player.sprite) );
 		sf::RectangleShape rs;
