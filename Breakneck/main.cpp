@@ -171,7 +171,7 @@ Tileset * GetTileset( const string & s, int tileWidth, int tileHeight )
 }
 
 struct Actor;
-Contact * collideEdge( const Actor &a, const CollisionBox &b, Edge * e );
+Contact * collideEdge( const Actor &a, const CollisionBox &b, Edge * e, const V2d &vel );
 struct Actor
 {
 	enum Action
@@ -421,6 +421,96 @@ struct Actor
 	//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 		collision = false;
 	}
+	Contact minContact;
+	bool ResolvePhysics( Edge** edges, int numPoints, V2d vel )
+	{
+		position += vel;
+		bool col = false;
+		int collisionNumber = 0;
+			
+		minContact.collisionPriority = 1000000;
+		for( int i = 0; i < numPoints; ++i )
+		{
+			if( edges[i] == ground )
+			{
+				//cout << "does in fact equal ground!" << endl;
+				continue;
+			}
+			Contact *c = collideEdge( *this , b, edges[i], vel );
+			if( c != NULL )
+			{
+				collisionNumber++;
+				if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
+				{	
+					if( c->collisionPriority == minContact.collisionPriority )
+					{
+						if( length(c->resolution) > length(minContact.resolution) )
+						{
+							minContact.collisionPriority = c->collisionPriority;
+							minContact.edge = edges[i];
+							minContact.resolution = c->resolution;
+							minContact.position = c->position;
+							col = true;
+						}
+					}
+					else
+					{
+
+						minContact.collisionPriority = c->collisionPriority;
+						minContact.edge = edges[i];
+						minContact.resolution = c->resolution;
+						minContact.position = c->position;
+						col = true;
+					}
+				}
+			}
+		}
+
+
+		//cout << "collisionNumber: " << collisionNumber << endl;
+		if( false )
+		{
+				
+
+		//	Contact *c = collideEdge( *this, b, minEdge );
+			//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
+		//	assert( res.x == c->resolution.x && res.y == c->resolution.y );
+			position += minContact.resolution;//c->resolution;
+
+			sf::CircleShape cs;
+			cs.setFillColor( Color::Magenta );
+				
+			cs.setRadius( 20 );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		//	cs.setPosition( c->position.x, c->position.y );
+			cs.setPosition( minContact.position.x, minContact.position.y );
+			window->draw( cs );
+			//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
+			//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
+			Color lc = Color::Green;
+			sf::Vertex linez[] =
+			{
+				sf::Vertex(sf::Vector2<float>(minContact.edge->v0.x + 1, minContact.edge->v0.y + 1), lc),
+				sf::Vertex(sf::Vector2<float>(minContact.edge->v1.x + 1, minContact.edge->v1.y + 1), lc),
+				sf::Vertex(sf::Vector2<float>(minContact.edge->v0.x - 1, minContact.edge->v0.y - 1), lc),
+				sf::Vertex(sf::Vector2<float>(minContact.edge->v1.x - 1, minContact.edge->v1.y - 1), lc)
+			};
+
+			window->draw(linez, 4, sf::Lines);
+				
+			if( minContact.edge->Normal().y < 0 )
+			{
+				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
+				ground = minContact.edge;
+				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
+			}
+				
+
+				
+		}
+
+		return col;
+	}
 
 	void UpdatePhysics( Edge **edges, int numPoints )
 	{
@@ -431,6 +521,19 @@ struct Actor
 
 			double z = groundSpeed;
 			edgeQuantity += z;
+			V2d ffff = normalize( ground->v1 - ground->v0 ) * z;
+			//if( ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * z) )
+			{
+				//edgeQuantity = ground->GetQuantity( ground->GetPoint( edgeQuantity ) - minContact.resolution * 10.0);
+				//edgeQuantity = ground->GetQuantity( ground->GetPoint( edgeQuantity - z ) );
+				//edgeQuantity -= ( length(minContact.resolution) - z );
+				//cout << "real vel: " << ffff.x << ", " << ffff.y << endl; 
+				//cout << "really resolving: " << z <<", " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+			}
+			//else
+			{
+			//	cout << "not resolving" << endl;
+			}
 
 			if( z > 0)
 			{
@@ -444,9 +547,6 @@ struct Actor
 					{
 						ground = NULL;
 						leftGround = true;
-						
-						//position.y += 10;
-						//return;
 					}
 				//	assert( ground->edge1 != NULL && "not setting edge");
 					while( !leftGround && extra >= length( ground->v1 - ground->v0 ) )
@@ -465,10 +565,8 @@ struct Actor
 					}
 					if( !leftGround )
 					{
-					Edge *e = ground->edge1;
-						//assert( e != NULL );
-				//cout << "e: " << e->v0.x << ", " << e->v0.y << ", " << e->v1.x << ", " << e->v1.y << endl;
-					edgeQuantity = extra;
+						Edge *e = ground->edge1;
+						edgeQuantity = extra;
 					}
 
 				}
@@ -500,104 +598,37 @@ struct Actor
 					}
 					if( !leftGround )
 					{
-					Edge *e = ground->edge0;
-						//assert( e != NULL );
-				//cout << "e: " << e->v0.x << ", " << e->v0.y << ", " << e->v1.x << ", " << e->v1.y << endl;
-					edgeQuantity = length( ground->v1 - ground->v0 ) - extra;
+						Edge *e = ground->edge0;
+						edgeQuantity = length( ground->v1 - ground->v0 ) - extra;
 					}
 				}
 
 			}
-			
-			if( leftGround )
-			return;
 		}
 
-		
 
-		double xkl = 2;
-		for( int jkl = 0; jkl < xkl; ++jkl )
+		if( ground == NULL )
 		{
-			position += velocity / xkl;
-			//double minPriority = 1000000;
-			Vector2<double> res(0,0);
-			int collisionNumber = 0;
-			Contact minContact;
-			minContact.collisionPriority = 1000000;
-			for( int i = 0; i < numPoints; ++i )
-			{
-				Contact *c = collideEdge( *this , b, edges[i] );
-				if( c != NULL )
-				{
-					collisionNumber++;
-					if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
-					{	
-						if( c->collisionPriority == minContact.collisionPriority )
-						{
-							if( length(c->resolution) > length(minContact.resolution) )
-							{
-								minContact.collisionPriority = c->collisionPriority;
-								minContact.edge = edges[i];
-								minContact.resolution = c->resolution;
-								minContact.position = c->position;
-								collision = true;
-							}
-						}
-						else
-						{
-
-							minContact.collisionPriority = c->collisionPriority;
-							minContact.edge = edges[i];
-							minContact.resolution = c->resolution;
-							minContact.position = c->position;
-							collision = true;
-						}
-					}
-				}
-			}
-
-
-			//cout << "collisionNumber: " << collisionNumber << endl;
+		collision = ResolvePhysics( edges, numPoints, velocity / 2.0 );
+		if( collision )
+		{
+			position += minContact.resolution;
+		}
+		else
+		{
+			collision = ResolvePhysics( edges, numPoints, velocity / 2.0 );
 			if( collision )
 			{
-				
-
-			//	Contact *c = collideEdge( *this, b, minEdge );
-				//cout << "priority at: " << minEdge->Normal().x << ", " << minEdge->Normal().y << ": " << minPriority << endl;
-			//	assert( res.x == c->resolution.x && res.y == c->resolution.y );
-				position += minContact.resolution;//c->resolution;
-
-				sf::CircleShape cs;
-				cs.setFillColor( Color::Magenta );
-				
-				cs.setRadius( 20 );
-				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			//	cs.setPosition( c->position.x, c->position.y );
-				cs.setPosition( minContact.position.x, minContact.position.y );
-				window->draw( cs );
-				//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
-				//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
-				Color lc = Color::Green;
-				sf::Vertex linez[] =
-				{
-					sf::Vertex(sf::Vector2<float>(minContact.edge->v0.x + 1, minContact.edge->v0.y + 1), lc),
-					sf::Vertex(sf::Vector2<float>(minContact.edge->v1.x + 1, minContact.edge->v1.y + 1), lc),
-					sf::Vertex(sf::Vector2<float>(minContact.edge->v0.x - 1, minContact.edge->v0.y - 1), lc),
-					sf::Vertex(sf::Vector2<float>(minContact.edge->v1.x - 1, minContact.edge->v1.y - 1), lc)
-				};
-
-				window->draw(linez, 4, sf::Lines);
-				
-				if( minContact.edge->Normal().y < 0 )
-				{
-					groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
-					ground = minContact.edge;
-					edgeQuantity = minContact.edge->GetQuantity( minContact.position );
-				}
-				
-
-				
+				position += minContact.resolution;
 			}
+		}
+
+		if( collision && minContact.edge->Normal().y < 0 )
+		{
+			groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
+			ground = minContact.edge;
+			edgeQuantity = minContact.edge->GetQuantity( minContact.position );
+		}
 		}
 	}
 
@@ -763,9 +794,9 @@ struct Actor
 
 
 Contact *currentContact;
-Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e )
+Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d &vel )
 {
-	Vector2<double> oldPosition = a.position - a.velocity;
+	Vector2<double> oldPosition = a.position - vel;
 	double left = a.position.x + b.offset.x - b.rw;
 	double right = a.position.x + b.offset.x + b.rw;
 	double top = a.position.y + b.offset.y - b.rh;
@@ -853,16 +884,16 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e )
 
 		int res = cross( corner - e->v0, e->v1 - e->v0 );
 
-		double measureNormal = dot( edgeNormal, normalize(-a.velocity) );
+		double measureNormal = dot( edgeNormal, normalize(-vel) );
 
-		if( res < 0 && measureNormal >= 0 && ( a.velocity.x != 0 || a.velocity.y != 0 )  )	
+		if( res < 0 && measureNormal >= 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
 			
-			Vector2<double> invVel = normalize(-a.velocity);
+			Vector2<double> invVel = normalize(-vel);
 
 
 
-			LineIntersection li = lineIntersection( corner, corner - (a.velocity), e->v0, e->v1 );
+			LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
 
 			//assert( li.parallel == false );
 			if( li.parallel )
@@ -889,29 +920,29 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e )
 				double resolveBottom = 10000;
 				if( left <= edgeRight && a.velocity.x < 0 )
 				{
-					resolveLeft = (edgeRight - left) / abs(normalize(a.velocity).x);
+					resolveLeft = (edgeRight - left) / abs(normalize(vel).x);
 				}
 				else if( right >= edgeLeft && a.velocity.x > 0 )
 				{
-					resolveRight = (right - edgeLeft) / abs(normalize(a.velocity).x);
+					resolveRight = (right - edgeLeft) / abs(normalize(vel).x);
 				}
 
 				if( top <= edgeBottom && a.velocity.y < 0 )
 				{
-					resolveTop = (edgeBottom - top) / abs(normalize(a.velocity).y);// / abs(a.velocity.x);
+					resolveTop = (edgeBottom - top) / abs(normalize(vel).y);// / abs(a.velocity.x);
 				}
 				else if( bottom >= edgeTop && a.velocity.y > 0 )
 				{
-					resolveBottom = (bottom- edgeTop) / abs(normalize(a.velocity).y);// / abs(a.velocity.x);
+					resolveBottom = (bottom- edgeTop) / abs(normalize(vel).y);// / abs(a.velocity.x);
 				}
 
 
 				resolveDist = min( resolveTop, min( resolveBottom, min( resolveLeft, resolveRight) ) );
 
 
-				currentContact->resolution = normalize(-a.velocity) * resolveDist;
+				currentContact->resolution = normalize(-vel) * resolveDist;
 
-				if( resolveDist == 10000 || length( currentContact->resolution) > length(a.velocity) + 10 )
+				if( resolveDist == 10000 || length( currentContact->resolution) > length(vel) + 10 )
 				{
 					cout << "formally an error" << endl;
 					return NULL;
@@ -920,7 +951,7 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e )
 				
 				assert( resolveDist != 10000 );
 				
-				double pri = length( a.velocity + currentContact->resolution );
+				double pri = length( vel + currentContact->resolution );
 				//double pri = length( Vector2<double>( a.velocity.x / currentContact->resolution.x, a.velocity.y / currentContact->resolution.y ) );
 			//	double pri = 0;
 				currentContact->collisionPriority = pri;
@@ -1064,13 +1095,13 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e )
 			}
 			currentContact->resolution = intersect - corner;
 
-			if( length( currentContact->resolution ) > length( a.velocity ) + 10 )
+			if( length( currentContact->resolution ) > length( vel ) + 10 )
 				return NULL;
-			if( dot( normalize( -a.velocity ), normalize(intersect - corner ) ) < .999 )
+			if( dot( normalize( -vel ), normalize(intersect - corner ) ) < .999 )
 			{
 			//	return NULL;
 			}
-			double pri = dot( intersect - ( corner - a.velocity ), normalize( a.velocity ) );
+			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
 				//cross( (corner - a.velocity) - e->v0, normalize( e->v1 - e->v0 ) );
 			//double pri = -cross( normalize((corner) - e->v0), normalize( e->v1 - e->v0 ) );
 			//double pri = length( intersect - (corner - a.velocity ) );
