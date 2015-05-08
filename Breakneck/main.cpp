@@ -522,13 +522,10 @@ struct Actor
 			double z = groundSpeed;
 			edgeQuantity += z;
 			V2d ffff = normalize( ground->v1 - ground->v0 ) * z;
-			//if( ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * z) )
+			V2d oldPos = position;
+			if( ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * z) )
 			{
-				//edgeQuantity = ground->GetQuantity( ground->GetPoint( edgeQuantity ) - minContact.resolution * 10.0);
-				//edgeQuantity = ground->GetQuantity( ground->GetPoint( edgeQuantity - z ) );
-				//edgeQuantity -= ( length(minContact.resolution) - z );
-				//cout << "real vel: " << ffff.x << ", " << ffff.y << endl; 
-				//cout << "really resolving: " << z <<", " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+				edgeQuantity = ground->GetQuantity( ground->GetPoint( edgeQuantity ) + minContact.resolution);
 			}
 			//else
 			{
