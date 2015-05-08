@@ -198,6 +198,8 @@ struct Actor
 	CollisionBox b;
 	
 	Edge *ground;
+	int numActiveEdges;
+	Edge ** activeEdges;
 	double edgeQuantity;
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 	double groundOffsetX;
@@ -215,6 +217,10 @@ struct Actor
 
 	Actor::Actor()
 	{
+		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
+		numActiveEdges = 0;
+
+
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
 		actionLength[STAND] = 18 * 8;
@@ -431,11 +437,22 @@ struct Actor
 		minContact.collisionPriority = 1000000;
 		for( int i = 0; i < numPoints; ++i )
 		{
-			if( edges[i] == ground )
+			bool match = false;
+			for( int j = 0; j < numActiveEdges; ++j )
 			{
-				//cout << "does in fact equal ground!" << endl;
-				continue;
+				if( edges[i] == activeEdges[j] )
+				{
+					match = true;
+					break;
+				}
 			}
+
+			if( ground == edges[i] )
+				continue;
+
+			if( match )
+				continue;
+
 			Contact *c = collideEdge( *this , b, edges[i], vel );
 			if( c != NULL )
 			{
@@ -518,6 +535,7 @@ struct Actor
 		V2d trueVel = velocity;
 		if( ground != NULL )
 		{
+			numActiveEdges = 0;
 
 			double z = groundSpeed;
 			edgeQuantity += z;
@@ -526,10 +544,6 @@ struct Actor
 			if( ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * z) )
 			{
 				edgeQuantity = ground->GetQuantity( ground->GetPoint( edgeQuantity ) + minContact.resolution);
-			}
-			//else
-			{
-			//	cout << "not resolving" << endl;
 			}
 
 			if( z > 0)
@@ -620,11 +634,14 @@ struct Actor
 			}
 		}
 
-		if( collision && minContact.edge->Normal().y < 0 )
+
+		if( collision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh )
 		{
 			groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 			ground = minContact.edge;
 			edgeQuantity = minContact.edge->GetQuantity( minContact.position );
+			velocity.x = 0;
+			velocity.y = 0;
 		}
 		}
 	}
@@ -637,6 +654,7 @@ struct Actor
 			{
 				action = LAND;
 				frame = 0;
+				//velocity.y = 0;
 			}
 			Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 			position = groundPoint;
@@ -915,20 +933,20 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 				double resolveRight = 10000;
 				double resolveTop = 10000;
 				double resolveBottom = 10000;
-				if( left <= edgeRight && a.velocity.x < 0 )
+				if( left <= edgeRight && vel.x < 0 )
 				{
 					resolveLeft = (edgeRight - left) / abs(normalize(vel).x);
 				}
-				else if( right >= edgeLeft && a.velocity.x > 0 )
+				else if( right >= edgeLeft && vel.x > 0 )
 				{
 					resolveRight = (right - edgeLeft) / abs(normalize(vel).x);
 				}
 
-				if( top <= edgeBottom && a.velocity.y < 0 )
+				if( top <= edgeBottom && vel.y < 0 )
 				{
 					resolveTop = (edgeBottom - top) / abs(normalize(vel).y);// / abs(a.velocity.x);
 				}
-				else if( bottom >= edgeTop && a.velocity.y > 0 )
+				else if( bottom >= edgeTop && vel.y > 0 )
 				{
 					resolveBottom = (bottom- edgeTop) / abs(normalize(vel).y);// / abs(a.velocity.x);
 				}
