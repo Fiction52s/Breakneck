@@ -1245,6 +1245,8 @@ struct Actor
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				velocity.x = 0;
 				velocity.y = 0;
+				offsetX = position.x - minContact.position.x;
+				cout << "offfff: " << offsetX << endl;
 			}
 		}
 	}
@@ -1259,11 +1261,6 @@ struct Actor
 				frame = 0;
 
 				V2d gn = ground->Normal();
-
-				if( gn.x > 0 )
-					offsetX =  b.rw;
-				else if( gn.x < 0 )
-					offsetX = -b.rw;
 			}
 			Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 			position = groundPoint;
@@ -1276,6 +1273,7 @@ struct Actor
 			//	offsetX = -b.rw;
 
 			position.x += offsetX;
+			cout << "offsetx: " << offsetX << endl;
 
 			//if( gn.y > 0 )
 			//	position.y += 32;
