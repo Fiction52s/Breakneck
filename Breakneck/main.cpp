@@ -257,7 +257,7 @@ struct Actor
 		runAccel = 2;
 		facingRight = true;
 		collision = false;
-		jumpStrength = 40;
+		jumpStrength = 30;
 		airAccel = 2;
 		maxAirXSpeed = 30;
 		maxAirXSpeedNormal = 10;
@@ -614,7 +614,7 @@ struct Actor
 				}
 			}*/
 			
-			cout << "num active edges: " << numActiveEdges << endl;
+		//	cout << "num active edges: " << numActiveEdges << endl;
 			//V2d ffff = normalize( ground->v1 - ground->v0 ) * z;
 			
 			/*if( ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * z) )
@@ -646,12 +646,206 @@ struct Actor
 			double extra = 0;
 			bool leaveGround = false;
 
-			edgeQuantity += groundSpeed;
 
-			if( edgeQuantity < 0 )
+			double movement = groundSpeed;
+			double q = edgeQuantity;
+			while( movement != 0 )
+			{
+				V2d gNormal = ground->Normal();
+				q += movement;
+
+				if( q < 0 )
+				{
+					Edge *next = ground->edge0;
+					V2d nNormal = next->Normal();	
+
+					double extra = -q;
+					if( gNormal.x > 0 )
+					{
+						if( nNormal.x < 0 )
+						{
+							offsetX -= extra;
+							if( offsetX < -b.rw )
+							{
+								offsetX = -b.rw;
+								movement = offsetX + b.rw;
+								ground = next;
+								q = length( ground->v1 - ground->v0 );
+							}
+							else
+							{
+								q = 0;
+								movement = 0;
+							}
+						}
+					}
+				}
+				else if( q > length( ground->v1 - ground->v0 ) )
+				{
+					Edge *next = ground->edge1;
+					V2d nNormal = next->Normal();	
+
+					double extra = q - length( ground->v1 - ground->v0 );
+
+					if( gNormal.x < 0 )
+					{
+						if( nNormal.x > 0 )
+						{
+							offsetX += extra;
+							if( offsetX > b.rw )
+							{
+								offsetX = b.rw;
+								movement = offsetX - b.rw;
+								ground = next;
+								q = 0;
+							}
+							else
+							{
+								movement = 0;
+								q = length( ground->v1 - ground->v0 );
+							}
+						}
+					}
+				}
+				else
+				{
+					q -= movement;
+					if( gNormal.x > 0 && offsetX < b.rw )
+					{
+						offsetX += movement;
+						if( offsetX > b.rw )
+						{
+							movement = offsetX - b.rw;
+							offsetX = b.rw;
+						}
+						else
+							movement = 0;
+					}
+					else if( gNormal.x < 0 && offsetX > -b.rw )
+					{
+						offsetX += movement;
+						if( offsetX < -b.rw )
+						{
+							movement = offsetX + b.rw;
+							offsetX = -b.rw;
+						}
+						else
+							movement = 0;
+					}
+					q += movement;
+					movement = 0;
+				}
+			}
+
+				edgeQuantity = q;
+			}
+			//cout << edgeQuantity << ", " << length( ground->v1 - ground->v0 ) << ", " << groundSpeed << endl;
+			//assert( edgeQuantity >= 0 && edgeQuantity <= length( ground->v1 - ground->v0 ) );
+
+			/*	if( edgeQuantity + movement < 0 )
+				{
+					Edge *next = ground->edge0;
+					V2d nNormal = next->Normal();	
+
+					if( gNormal.x > 0 )
+					{
+						if( nNormal.x < 0 )
+						{
+							offsetX += movement;
+							if( offsetX < -b.rw )
+							{
+								movement = -b.rw - movement;
+							}
+							else
+								movement = 0;
+						}
+					}
+				}
+				else if( edgeQuantity + movement > length( ground->v1 - ground->v0 ) )
+				{
+					Edge *next = ground->edge1;
+					V2d nNormal = next->Normal();	
+
+					if( gNormal.x < 0 )
+					{
+						if( nNormal.x > 0 )
+						{
+							offsetX += movement;
+							if( offsetX > b.rw )
+							{
+								movement = offsetX - b.rw;
+							}
+							else
+								movement = 0;
+						}
+					}
+				}
+				else if( movement > 0 && gNormal.x > 0 && offsetX < b.rw )
+				{
+					offsetX += movement;
+					if( offsetX > b.rw )
+					{
+						movement = offsetX - b.rw;
+					}
+					else
+						movement = 0;
+				}
+				else if( movement < 0 && gNormal.x < 0 && offsetX > -b.rw )
+				{
+					offsetX += movement;
+					if( offsetX < -b.rw )
+					{
+						movement = -b.rw - movement;
+					}
+					else
+						movement = 0;
+				}
+
+				edgeQuantity += movement;
+
+				
+				if( edgeQuantity < 0 )
+				{
+
+				}
+			}*/
+
+
+			
+
+		
+
+		/*	if( edgeQuantity < 0 )
+			{
+				while( edgeQuantity < 0 )
+				{
+					V2d gn = ground->Normal();
+					Edge *next = ground->edge0;
+					V2d nn = next->Normal();	
+
+					if( nn.y >= 0 )
+					{
+						//go into the air
+					}
+					else
+					{
+
+					}
+				}
+			}
+			else if( edgeQuantity > length( ground->v1 - ground->v0 ) )
+			{
+				double extra = edgeQuantity - length( ground->v1 - ground->v0 );
+
+			}*/
+		//}
+
+
+			/*if( edgeQuantity < 0 )
 			while( edgeQuantity < 0 )
 			{
-		
+				//bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v0 - ground->v1 ) * (groundSpeed - edgeQuantity)  );
+
 				extra = edgeQuantity;
 
 				V2d gNormal = ground->Normal();
@@ -734,9 +928,25 @@ struct Actor
 
 				edgeQuantity += extra;
 			}
-		}
+			else
+			{
+				V2d gNormal = ground->Normal();
+				if( gNormal.x > 0 && offsetX < b.rw && groundSpeed > 0 )
+				{
 
-		cout << "offsetx: " << offsetX << endl;
+					edgeQuantity -= groundSpeed;
+					offsetX += groundSpeed;
+					if( offsetX >= b.rw )
+					{
+						extra = offsetX - b.rw;
+						offsetX = b.rw;
+					}
+					
+				}
+			}
+		}*/
+
+		//cout << "offsetx: " << offsetX << endl;
 
 
 		/*	edgeQuantity += groundSpeed;
