@@ -660,6 +660,14 @@ struct Actor
 					V2d nNormal = next->Normal();	
 
 					double extra = -q;
+
+					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * (movement + extra ) );
+					if( hit )
+					{
+						q = ground->GetQuantity( ground->v0 + minContact.resolution);
+						break;
+					}
+
 					if( gNormal.x > 0 )
 					{
 						if( nNormal.x < 0 )
@@ -723,6 +731,16 @@ struct Actor
 
 					double extra = q - length( ground->v1 - ground->v0 );
 
+
+					//assert( movement > 0 );
+					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * (movement - extra ) );
+					if( hit )
+					{
+						q = ground->GetQuantity( ground->v1 + minContact.resolution);
+						break;
+					}
+
+
 					if( gNormal.x < 0 )
 					{
 						if( nNormal.x > 0 )
@@ -730,16 +748,40 @@ struct Actor
 							offsetX += extra;
 							if( offsetX > b.rw )
 							{
+								double over = offsetX - b.rw;
 								offsetX = b.rw;
-								movement = offsetX - b.rw;
-								ground = next;
-								q = 0;
+
+								bool hit = ResolvePhysics( edges, numPoints, V2d( extra - over, 0 ) );
+								if( hit )
+								{
+									//cout << "h 2" << endl;
+									//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+									q = length( ground->v1 - ground->v0 );
+									movement = 0;
+									offsetX += minContact.resolution.x;
+								//	cout << "fixing here" << endl;
+								}
+								else
+								{
+									movement = offsetX - b.rw;
+									ground = next;
+									q = 0;
+								}
 							}
 							else
 							{
+
+								bool hit = ResolvePhysics( edges, numPoints, V2d( extra, 0 ) );
+								if( hit )
+								{
+									offsetX += minContact.resolution.x;
+								}
+
 								movement = 0;
 								q = length( ground->v1 - ground->v0 );
 							}
+
+
 						}
 					}
 				}
