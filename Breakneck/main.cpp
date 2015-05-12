@@ -689,7 +689,12 @@ struct Actor
 						break;
 					}
 
-					if( (nNormal.x >= 0 && offsetX == b.rw) || ( nNormal.x <= 0 && offsetX == -b.rw ))
+					if( nNormal.y > 0 )
+					{
+						//dont transfer
+						break;
+					}
+					else if( (nNormal.x >= 0 && offsetX == b.rw) || ( nNormal.x <= 0 && offsetX == -b.rw ))
 					{
 						ground = next;
 						q = length( ground->v1 - ground->v0 );
@@ -763,11 +768,16 @@ struct Actor
 						{
 
 						}
-						cout << "hitting" << endl;
 						
 					}
 
-					if( (nNormal.x <= 0 && offsetX == -b.rw) || ( nNormal.x >= 0 && offsetX == b.rw ) )
+
+					if( nNormal.y > 0 )
+					{
+						//dont transfer
+						break;
+					}
+					else if( (nNormal.x <= 0 && offsetX == -b.rw) || ( nNormal.x >= 0 && offsetX == b.rw ) )
 					{
 						q = 0;
 						movement = extra;
@@ -897,6 +907,18 @@ struct Actor
 			if( collision )
 			{
 				position += minContact.resolution;
+
+				//V2d ff = (velocity / 2.0 ) + minContact.resolution );
+			//	V2d extraVel = (velocity / 2.0 ) * cross( normalize( velocity ), normalize(minContact.edge->Normal() ));
+					//V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * (velocity / 2.0 );
+				V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
+				cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
+				if( minContact.edge->Normal().y >= 0 )
+					{
+						collision = ResolvePhysics( edges, numPoints, extraVel );
+						if( collision )
+							position += minContact.resolution;
+					}
 			}
 			else
 			{
@@ -904,6 +926,18 @@ struct Actor
 				if( collision )
 				{
 					position += minContact.resolution;
+					//V2d extraVel = (velocity / 2.0 ) * cross( normalize( velocity ), normalize(minContact.edge->Normal() ));
+					//V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * ;
+				//	V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * -minContact.resolution;
+					V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
+
+					if( minContact.edge->Normal().y >= 0 )
+					{
+						collision = ResolvePhysics( edges, numPoints, extraVel );
+						if( collision )
+							position += minContact.resolution;
+					}
+					cout << "extra vel 2: " << extraVel.x << ", " << extraVel.y << endl;
 				}
 			}
 
@@ -913,8 +947,8 @@ struct Actor
 				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
-				velocity.x = 0;
-				velocity.y = 0;
+				//velocity.x = 0;
+				//velocity.y = 0;
 				offsetX = position.x - minContact.position.x;
 				//cout << "offfff: " << offsetX << endl;
 			}
@@ -1455,8 +1489,8 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 int main()
 {
 	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	window->setPosition( Vector2i(800, 0 ));
+		sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	//window->setPosition( Vector2i(800, 0 ));
 	sf::Vector2i pos( 0, 0 );
 
 	//window->setPosition( pos );
