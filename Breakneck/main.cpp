@@ -985,13 +985,19 @@ struct Actor
 			//	V2d extraVel = (velocity / 2.0 ) * cross( normalize( velocity ), normalize(minContact.edge->Normal() ));
 					//V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * (velocity / 2.0 );
 				V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
+
+				velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
 				cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
 				if( minContact.edge->Normal().y >= 0 )
+				{
+					collision = ResolvePhysics( edges, numPoints, extraVel );
+					if( collision )
 					{
-						collision = ResolvePhysics( edges, numPoints, extraVel );
-						if( collision )
-							position += minContact.resolution;
+						position += minContact.resolution;
+						velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+
 					}
+				}
 			}
 			else
 			{
@@ -1004,11 +1010,16 @@ struct Actor
 				//	V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * -minContact.resolution;
 					V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
 
+					velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+
 					if( minContact.edge->Normal().y >= 0 )
 					{
 						collision = ResolvePhysics( edges, numPoints, extraVel );
 						if( collision )
+						{
 							position += minContact.resolution;
+							velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+						}
 					}
 					cout << "extra vel 2: " << extraVel.x << ", " << extraVel.y << endl;
 				}
