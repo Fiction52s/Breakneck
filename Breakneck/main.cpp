@@ -667,13 +667,49 @@ struct Actor
 							offsetX -= extra;
 							if( offsetX < -b.rw )
 							{
+								double over = offsetX + b.rw;
 								offsetX = -b.rw;
-								movement = offsetX + b.rw;
-								ground = next;
-								q = length( ground->v1 - ground->v0 );
+
+								bool hit = ResolvePhysics( edges, numPoints, V2d( -extra - over, 0 ) );
+								if( hit )
+								{
+									//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+									q = 0;
+									movement = 0;
+									offsetX += minContact.resolution.x;
+								//	cout << "fixing here" << endl;
+								}
+								else
+								{
+									movement = offsetX + b.rw;
+									ground = next;
+									q = length( ground->v1 - ground->v0 );
+								}
+								
+
+
+								//bool hit = ResolvePhysics( edges, numPoints, V2d( -(extra + movement), 0 ));
+								//if( hit )
+								//{
+								//	
+								//	//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+								//	offsetX += minContact.resolution.x;
+								//	cout << "hit: " << offsetX << endl;
+								//	q = 0;
+								//	break;
+								//}
+
+								
 							}
 							else
 							{
+								bool hit = ResolvePhysics( edges, numPoints, V2d( -extra, 0 ) );
+								if( hit )
+								{
+								//	cout << "hit 2" << endl;
+									offsetX += minContact.resolution.x;
+								//	cout << "fixing here" << endl;
+								}
 								q = 0;
 								movement = 0;
 							}
@@ -732,13 +768,27 @@ struct Actor
 						else
 							movement = 0;
 					}
+
+
 					q += movement;
+
+					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * movement );
+					if( hit )
+					{
+						//cout << "hit 3" << endl;
+						q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+					}
 					movement = 0;
+					
 				}
+
+
 			}
 
 				edgeQuantity = q;
-			}
+		}
+
+		
 			//cout << edgeQuantity << ", " << length( ground->v1 - ground->v0 ) << ", " << groundSpeed << endl;
 			//assert( edgeQuantity >= 0 && edgeQuantity <= length( ground->v1 - ground->v0 ) );
 
@@ -1246,7 +1296,7 @@ struct Actor
 				velocity.x = 0;
 				velocity.y = 0;
 				offsetX = position.x - minContact.position.x;
-				cout << "offfff: " << offsetX << endl;
+				//cout << "offfff: " << offsetX << endl;
 			}
 		}
 	}
@@ -1273,7 +1323,7 @@ struct Actor
 			//	offsetX = -b.rw;
 
 			position.x += offsetX;
-			cout << "offsetx: " << offsetX << endl;
+		//	cout << "offsetx: " << offsetX << endl;
 
 			//if( gn.y > 0 )
 			//	position.y += 32;
@@ -1785,8 +1835,8 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 int main()
 {
 	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	//window->setPosition( Vector2i(800, 0 ));
+		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	window->setPosition( Vector2i(800, 0 ));
 	sf::Vector2i pos( 0, 0 );
 
 	//window->setPosition( pos );
