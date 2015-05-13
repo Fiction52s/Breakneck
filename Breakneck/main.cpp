@@ -668,27 +668,27 @@ struct Actor
 						
 
 						V2d edgeNormal = minContact.edge->Normal();
-						if( edgeNormal.y < 0 && edgeNormal.x <= 0 && gNormal.x >= 0 && offsetX == b.rw )
+						if( minContact.position.y < position.y + b.rh && edgeNormal.y < 0 && edgeNormal.x <= 0 && gNormal.x >= 0 && offsetX == b.rw )
 						{
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position );
 							offsetX = -b.rw;
 							break;
 						}
-						else if( edgeNormal.y < 0 && edgeNormal.x >= 0 && gNormal.x <= 0 && offsetX == -b.rw )
+						else if(minContact.position.y < position.y + b.rh && edgeNormal.y < 0 && edgeNormal.x >= 0 && gNormal.x <= 0 && offsetX == -b.rw )
 						{
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position );
 							offsetX = b.rw;
 							break;
 						}
-						else if( edgeNormal.y <= 0 )
+						else if( minContact.position.y < position.y + b.rh &&edgeNormal.y <= 0 )
 						{
-							if( minContact.position.y < position.y + b.rh )
-							{
+							//if( minContact.position.y < position.y + b.rh )
+							//{
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								break;
-							}
+							//}
 						}
 						else
 						{
@@ -774,27 +774,27 @@ struct Actor
 						q = ground->GetQuantity( ground->v1 + minContact.resolution);
 					
 						V2d edgeNormal = minContact.edge->Normal();
-						if( edgeNormal.y < 0 && edgeNormal.x <= 0 && gNormal.x >= 0 && offsetX == b.rw )
+						if( minContact.position.y < position.y + b.rh && edgeNormal.y < 0 && edgeNormal.x <= 0 && gNormal.x >= 0 && offsetX == b.rw )
 						{
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position );
 							offsetX = -b.rw;
 							break;
 						}
-						else if( edgeNormal.y < 0 && edgeNormal.x >= 0 && gNormal.x <= 0 && offsetX == -b.rw )
+						else if( minContact.position.y < position.y + b.rh && edgeNormal.y < 0 && edgeNormal.x >= 0 && gNormal.x <= 0 && offsetX == -b.rw )
 						{
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position );
 							offsetX = b.rw;
 							break;
 						}
-						else if( edgeNormal.y <= 0 )
+						else if( minContact.position.y < position.y + b.rh && edgeNormal.y <= 0 )
 						{
-							if( minContact.position.y < position.y + b.rh )
-							{
+							//if( minContact.position.y < position.y + b.rh )
+							//{
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								break;
-							}
+							//}
 						}
 						else
 						{
@@ -903,50 +903,132 @@ struct Actor
 					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * movement );
 					if( hit )
 					{
-						cout << "blah: " << (normalize( ground->v1 - ground->v0 ) * movement).x << ", " << (normalize( ground->v1 - ground->v0 ) * movement).y << endl;
+						//cout << "blah: " << (normalize( ground->v1 - ground->v0 ) * movement).x << ", " << (normalize( ground->v1 - ground->v0 ) * movement).y << endl;
 						V2d edgeNormal = minContact.edge->Normal();
-						cout << "hit here: " << edgeNormal.x << ", " << edgeNormal.y << endl;
-						cout << "edge: " << (int)minContact.edge << ", " << (int)ground << endl;
-						cout << "f: " << ground->v0.x <<", " << ground->v0.y << " . . " << ground->v1.x << ", " << ground->v1.y << " . . " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << " . . "
-							<< minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
-						cout << "res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+						//cout << "hit here: " << edgeNormal.x << ", " << edgeNormal.y << endl;
+						//cout << "edge: " << (int)minContact.edge << ", " << (int)ground << endl;
+						//cout << "f: " << ground->v0.x <<", " << ground->v0.y << " . . " << ground->v1.x << ", " << ground->v1.y << " . . " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << " . . "
+						//	<< minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
+					//	cout << "res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 						
 
 					//	if( edgeNormal.x != 0 )
 						
+						if( minContact.position.y >= position.y + minContact.resolution.y + b.rh )
+						{
+							
+						if( movement > 0 )
+						{
+							//ignore
+							if( minContact.edge == ground->edge0 )
+							{
+								break;
+							}
+						}
+						else if( movement < 0 )
+						{
+							if( minContact.edge == ground->edge1 )
+							{
+								break;
+							}
+							//ignore
+						}
 
+						if( minContact.position == minContact.edge->v1 )
+						{
+							if( minContact.edge->Normal().y >= 0 )
+							{
+								minContact.edge = minContact.edge->edge1;
+								q = 0;
+							}
+						}
+						else if( minContact.position == minContact.edge->v0 )
+						{
+							if( minContact.edge->Normal().y >= 0 )
+							{
+								minContact.edge = minContact.edge->edge0;
+								q = length( minContact.edge->v1 - minContact.edge->v0 );
+							}
+						}
+							//cout << "ELAERJET" << endl;
+
+
+						if( gNormal.y < 0 && (gNormal.x > 0 && movement < 0) || (gNormal.x < 0 && movement > 0 ) )
+						{
+							break;
+							//dont collide
+						}
+						else if( gNormal.x == 0 )
+						{
+							if( movement > 0 && gNormal.x < 0 )
+							{
+								ground = minContact.edge;
+								q = ground->GetQuantity( minContact.position );
+								offsetX = -b.rw;
+								break;
+								//change edge
+							}
+							else if( movement < 0 && gNormal.x < 0 )
+							{
+								ground = minContact.edge;
+								q = ground->GetQuantity( minContact.position );
+								offsetX = b.rw;
+								break;
+							}
+						}
+						else if( gNormal.y < 0 )
+						{
+							//collide with everything
+							ground = minContact.edge;
+							q = ground->GetQuantity( minContact.position );
+							cout << "pos " << minContact.position.x << ", " << minContact.position.y << endl;
+							cout << "edge0: " << ground->v0.x << ", " << ground->v0.y << endl;
+							offsetX = (position.x + minContact.resolution.x) - minContact.position.x;
+							cout << "blah blah: " << q << " " << ground->Normal().x << ", " << ground->Normal().y << endl;
+							break;
+						}
+						else
+						{
+							break;
+							//do nothing
+						}
+						}
+						else
+						{
+							cout << "here" << endl;
+							cout << "diff: " << minContact.position.y - (position.y + b.rh) << endl;
+							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+								break;
+						}
 
 						
-						if( edgeNormal.y < 0 && edgeNormal.x < 0 && gNormal.x >= 0 && offsetX == b.rw )
+						/*if( minContact.position.y > position.y + b.rh - 1 && edgeNormal.y < 0 && edgeNormal.x < 0 && gNormal.x >= 0 && offsetX == b.rw )
 						{
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position );
 							offsetX = -b.rw;
 							break;
 						}
-						else if( edgeNormal.y < 0 && edgeNormal.x > 0 && gNormal.x <= 0 && offsetX == -b.rw )
+						else if( minContact.position.y > position.y + b.rh - 1 && edgeNormal.y < 0 && edgeNormal.x > 0 && gNormal.x <= 0 && offsetX == -b.rw )
 						{
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position );
 							offsetX = b.rw;
 							break;
 						}
-						else if( edgeNormal.y <= 0 )
+						else if( minContact.position.y > position.y + b.rh - 1 && edgeNormal.y <= 0 )
 						{
-							if( minContact.position.y < position.y + b.rh )
-							{
+							
+							//	cout << "here" << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								break;
-							}
-							
-
 						}
 						else
 						{
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 							//cout << "hitting" << endl;
 							break;
-						}
+						}*/
 						
 
 
@@ -986,7 +1068,7 @@ struct Actor
 					//V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * (velocity / 2.0 );
 				V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
 
-				velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+				velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
 				cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
 				if( minContact.edge->Normal().y >= 0 )
 				{
@@ -994,7 +1076,7 @@ struct Actor
 					if( collision )
 					{
 						position += minContact.resolution;
-						velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+						velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
 
 					}
 				}
@@ -1010,7 +1092,7 @@ struct Actor
 				//	V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * -minContact.resolution;
 					V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
 
-					velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+					velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
 
 					if( minContact.edge->Normal().y >= 0 )
 					{
@@ -1018,7 +1100,7 @@ struct Actor
 						if( collision )
 						{
 							position += minContact.resolution;
-							velocity = -dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * velocity;
+							velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
 						}
 					}
 					cout << "extra vel 2: " << extraVel.x << ", " << extraVel.y << endl;
