@@ -665,6 +665,7 @@ struct Actor
 				 || ( gNormal.x < 0 && q == length( ground->v1 - ground->v0 ) && ground->edge1->Normal().x > 0 )
 				 ) )
 				{
+					cout << "case 1" << endl;
 					double extra;
 					if( movement > 0 )
 						extra = (offsetX + movement) - b.rw;
@@ -687,41 +688,38 @@ struct Actor
 					{
 						if( ( m > 0 && offsetX > -b.rw) || ( m < 0 && offsetX < b.rw ) )
 						{
-							velocity = V2d( movement, 0 );
+					/*	velocity = V2d( movement, 0 );
 							bool hit = ResolvePhysics( edges, numPoints, V2d( extra, 0 ));
 							if( hit )
 								position += minContact.resolution;
 							leftGround = true;
 							ground = NULL;
-							break;
+							break;*/
 						}
 						else
 						{
-							velocity = normalize(ground->v1 - ground->v0 ) * movement;						
+						/*	velocity = normalize(ground->v1 - ground->v0 ) * movement;						
 							bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * extra);
 							if( hit )
 								position += minContact.resolution;
 							leftGround = true;
 							ground = NULL;
-							break;
+							break;*/
 							}
 												
 					}
 					
-					cout << "blahhh" << endl;
 					if(!( m > -.0001 && m < .0001 ) )
 					{
 						offsetX += m;
 						
 						bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
-						cout << "m: " << m << endl;
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
 							V2d eNorm = minContact.edge->Normal();
-							cout << "hit " << endl;
 							if( eNorm.y < 0 )
 							{
-								if( minContact.position.y >= position.y + b.rh )
+								if( minContact.position.y >= position.y + b.rh - 5 )
 								{
 									if( m > 0 && eNorm.x < 0 )
 									{
@@ -737,12 +735,25 @@ struct Actor
 									}
 
 								}
+								else
+								{
+									offsetX += minContact.resolution.x;
+									cout << "one" << endl;
+									break;
+								}
+							}
+							else
+							{
+								cout << "two" << endl;
+									offsetX += minContact.resolution.x;
+									break;
 							}
 						}
 					}
 				}
 				else if( movement > 0 && q == length( ground->v1 - ground->v0 ) )
 				{
+					cout << "case 22" << endl;
 					//cout << "HERE" << endl;
 					//case where he leaves edge and case where he transfers to another edge
 					Edge *next = ground->edge1;
@@ -755,7 +766,7 @@ struct Actor
 					}
 					else
 					{
-						velocity = normalize(ground->v1 - ground->v0 ) * movement;
+					/*	velocity = normalize(ground->v1 - ground->v0 ) * movement;
 						
 						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * extra);
 						if( hit )
@@ -764,7 +775,7 @@ struct Actor
 						ground = NULL;
 						//movement = 0;
 						//dont transfer
-						break;
+						break;*/
 					}
 
 
@@ -772,7 +783,7 @@ struct Actor
 				}
 				else if( movement < 0 && q == 0 )
 				{
-					//cout << "HERE" << endl;
+					cout << "HERE" << endl;
 					Edge *next = ground->edge0;
 					V2d nNorm = next->Normal();
 
@@ -783,7 +794,7 @@ struct Actor
 					}
 					else
 					{
-						velocity = normalize(ground->v1 - ground->v0 ) * movement;
+						/*(velocity = normalize(ground->v1 - ground->v0 ) * movement;
 						
 						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * -extra);
 						if( hit )
@@ -793,11 +804,12 @@ struct Actor
 
 						//movement = 0;
 						//dont transfer
-						break;
+						break;*/
 					}
 				}
 				else if( gNormal.x == 0 )
 				{
+					cout << "no way" << endl;
 					double extra;
 					if( movement > 0 )
 						extra = (q + movement) - length( ground->v1 - ground->v0 );
@@ -851,6 +863,7 @@ struct Actor
 				}
 				else if( ( gNormal.x > 0 && movement > 0 ) || ( gNormal.x < 0 && movement < 0 ) )
 				{
+					cout << "hwat" << endl;
 					//down
 					double extra;
 					if( movement > 0 )
@@ -872,6 +885,7 @@ struct Actor
 							q = 0;
 						}
 						movement = extra;
+						m -= extra;
 					}
 					else
 					{
@@ -910,6 +924,7 @@ struct Actor
 				}
 				else if( ( gNormal.x < 0 && movement > 0 ) || ( gNormal.x > 0 && movement < 0 ) )
 				{
+					cout << "blahz" << endl;
 					double extra;
 					if( movement > 0 )
 						extra = (q + movement) - length( ground->v1 - ground->v0 );
@@ -931,6 +946,7 @@ struct Actor
 							q = 0;
 						}
 						movement = extra;
+						m -= extra;
 					}
 					else
 					{
@@ -946,6 +962,7 @@ struct Actor
 						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
+							cout << "000000000000000" << endl;
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 							break;
 						}
