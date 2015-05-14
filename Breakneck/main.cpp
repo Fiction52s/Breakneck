@@ -656,7 +656,7 @@ struct Actor
 			double q = edgeQuantity;
 
 			V2d gNormal = ground->Normal();
-
+			
 			while( movement != 0 )
 			{
 				//cout << "looping: " << movement << ", " << q << ", , " << length( ground->v1 - ground->v0 ) << endl;
@@ -680,17 +680,27 @@ struct Actor
 				bool c1 = gNormal.x <= 0 && q == groundLength;
 				bool d1 = offsetX == -b.rw;
 				bool g1 = offsetX == b.rw;
+				bool t1 = gNormal.x >= 0 && q == groundLength;
 				
-
 				Edge *e0 = ground->edge0;
 				Edge *e1 = ground->edge1;
 				V2d e0n = e0->Normal();
 				V2d e1n = e1->Normal();
+
+				bool cond1right = movement > 0 && offsetX == b.rw && e1->Normal().x > 0;
+				bool cond2right = movement > 0 && offsetX == -b.rw && e1->Normal().x < 0;
+
+				bool cond1left = movement < 0 && offsetX == b.rw && e0->Normal().x > 0;
+				bool cond2left = movement < 0 && offsetX == -b.rw && e0->Normal().x < 0;
+
+				
 				//bool f1 = ( movement > 0 && offsetX < b.rw && gNormal.x <= 0 && (e1n.y >= 0 || e1n.x > 0 )  ) || (movement < 0 && offsetX > -b.rw && gNormal.x >= 0 && (e0n.y >= 0 || e0n.x < 0 )  );
 				bool f1 = ( movement > 0 && offsetX < b.rw  ) || (movement < 0 && offsetX > -b.rw  );
 
 
-				if( q == 0 && movement < 0 && (( d1 && gNormal.x < 0 && e0->Normal().x < 0 ) || (g1 && gNormal.x > 0 && e0->Normal().x > 0 ) ))
+				if( q == 0 && movement < 0 
+					&& (( offsetX == -b.rw && e0->Normal().x < 0 )
+						|| (offsetX == b.rw && e0->Normal().x > 0 ) ))
 					/*&& (( d1 
 					&& (e0->Normal().x <= 0 || ( e0->Normal().x > 0 && e0->Normal().y >= 0 ) ) ) 
 					
@@ -707,8 +717,8 @@ struct Actor
 					else break;
 				}
 				else if( q == groundLength && movement > 0 
-					&& (( d1 && e1->Normal().x <= 0 ) 
-					|| ( g1 && e1->Normal().x >= 0 )) )
+					&& (( offsetX == b.rw && e1->Normal().x > 0 )
+					|| (offsetX == -b.rw && e1->Normal().x < 0 ) ))
 				{
 					Edge *next = ground->edge1;
 					if( next->Normal().y < 0 )
@@ -717,11 +727,12 @@ struct Actor
 						q = 0;
 
 						cout << "a" << endl;
+						//assert( false );
 					}
 					else
 						break;
 				}
-				else if( f1 && (a1  || c1 ) )
+				else if( f1 && (a1  || b1 || c1 || t1 ) )
 				{
 					cout << "rep" << endl;
 					if( movement > 0 )
@@ -808,7 +819,8 @@ struct Actor
 				else
 				{
 				//	cout << "q: " << q << endl;
-					cout << offsetX << ", " << movement << " " << gNormal.x << ", " << gNormal.y << " " << q << endl;
+					//cout << offsetX << ", " << movement << " " << gNormal.x << ", " << gNormal.y << " " << q << endl;
+					//cout << "a1: " << a1 << " c1 " << c1 << " f1 " << f1 << endl;
 					if( movement > 0 )
 						extra = (q + movement) - groundLength;
 					else 
@@ -1276,6 +1288,7 @@ struct Actor
 				}
 				
 			}
+			cout << "offsetxxx: " << offsetX << ", " << gNormal.x << ", " << gNormal.y << endl;
 
 
 		/*	if( gNormal.x == 0 )
@@ -2534,6 +2547,43 @@ int main()
 		window->clear();
 		while ( accumulator >= TIMESTEP  )
         {
+			if( oneFrameMode )
+				while( true )
+				{
+					if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
+					{
+						skipped = true;
+				
+						currentTime = gameClock.getElapsedTime().asSeconds() - TIMESTEP;
+
+						break;
+					}
+					if( !sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
+					{
+						skipped = false;
+						//break;
+					}
+					if( sf::Keyboard::isKeyPressed( sf::Keyboard::L ) )
+					{
+
+						//oneFrameMode = false;
+						break;
+					}
+					if( sf::Keyboard::isKeyPressed( sf::Keyboard::M ) )
+					{
+
+						oneFrameMode = false;
+						break;
+					}
+				}
+
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
+				oneFrameMode = true;
+
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+				return 0;
+
+
 
 			prevInput = currInput;
 			controller.UpdateState();
@@ -2684,34 +2734,7 @@ int main()
 		window->display();
 
 
-		if( oneFrameMode )
-		while( true )
-		{
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
-			{
-				skipped = true;
-				
-				currentTime = gameClock.getElapsedTime().asSeconds() - TIMESTEP;
-
-				break;
-			}
-			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
-			{
-				skipped = false;
-				//break;
-			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::L ) )
-			{
-				oneFrameMode = false;
-				break;
-			}
-		}
-
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
-				oneFrameMode = true;
-
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
-				return 0;
+		
 
 		
 
