@@ -239,7 +239,7 @@ void EditSession::Run( string fileName )
 	bool panning = false;
 	Vector2<double> panAnchor;
 	bool backspace = true;
-	double minimumEdgeLength = 4;
+	double minimumEdgeLength = 8;
 
 	Color borderColor = sf::Color::Green;
 	int max = 1000000;
