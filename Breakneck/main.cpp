@@ -2134,6 +2134,7 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 			aabbCollision = true;
 		}
 
+	V2d opp;
 	if( aabbCollision )
 	{
 		Vector2<double> corner(0,0);
@@ -2142,52 +2143,72 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 		if( edgeNormal.x > 0 )
 		{
 			corner.x = left;
+			opp.x = right;
 		}
 		else if( edgeNormal.x < 0 )
 		{
 			corner.x = right;
+			opp.x = left;
 		}
 		else
 		{
 			if( edgeLeft <= left )
+			{
 				corner.x = left;
+				opp.x = right;
+			}
 			else if ( edgeRight >= right )
+			{
 				corner.x = right;
+				opp.x = left;
+			}
 			else
 			{
 				corner.x = (edgeLeft + edgeRight) / 2;
+				opp.x = corner.x;
 			}
-			//aabb
-			//cout << "this prob" << endl;
 		}
 
 		if( edgeNormal.y > 0 )
 		{
 			corner.y = top;
+			opp.y = bottom;
 		}
 		else if( edgeNormal.y < 0 )
 		{
 			corner.y = bottom;
+			opp.y = top;
 		}
 		else
 		{
 			//aabb
 			if( edgeTop <= top )
-			corner.y = top;
+			{
+				corner.y = top;
+				opp.y = bottom;
+			}
 			else if ( edgeBottom >= bottom )
+			{
 				corner.y = bottom;
+				opp.y = top;
+			}
 			else
+			{
 				corner.y = (edgeTop+ edgeBottom) / 2;
-			//else
-			//cout << "this 2" << endl;
+				opp.y = corner.y;
+			}
 		}
 
-		int res = cross( corner - e->v0, e->v1 - e->v0 );
+		double res = cross( corner - e->v0, e->v1 - e->v0 );
+		double resOpp = cross( opp - e->v0, e->v1 - e->v0 );
+
+
+
 
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
 
 		//cout << "measureNormal: " << measureNormal << endl	
-		if( res < 0 && measureNormal >= 0 && ( vel.x != 0 || vel.y != 0 )  )	
+		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
 			
 			Vector2<double> invVel = normalize(-vel);
@@ -2265,135 +2286,7 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 					<< currentContact->resolution.y << endl;
 			}
 
-			/*if( intersectQuantity < 0 )
-			{
-				collisionPosition = e->v0;
-				cout << "under: " << e->v0.x << ", " << e->v0.y << endl;
-				double minx = min( intersect.x, corner.x );
-				double maxx = max( intersect.x, corner.x );
-				double miny = min( intersect.y, corner.y );
-				double maxy = max( intersect.y, corner.y );
-
-				LineIntersection vertical = lineIntersection( intersect, corner, e->v0, Vector2<double>( e->v0.x, e->v0.y - 1 ) );
-			//	intersect = lii.position;
-
-				LineIntersection horizontal = lineIntersection( intersect, corner, e->v0, Vector2<double>( e->v0.x-1, e->v0.y ) );
-			//	intersect = lii1.position;
-
-				double verticalDist = dot( vertical.position - corner, intersect - corner );//length( lii.position - corner )* dot(normalize(lii.position - corner), normalize( intersect - corner )) ;
-				double horizontalDist =dot( horizontal.position - corner, intersect - corner ); //length( lii1.position - corner )* dot(normalize(lii1.position - corner), normalize( intersect - corner )) ;
-
-//				if( distanceI <= 0 && distanceI1 <= 0 )
-//					assert( false && "bbbbsdfdf" );
-				bool vertOK = false;
-				bool horiOK = false;
-				if( !vertical.parallel && verticalDist >= 0 )// && length(vertical.position - corner) < length( intersect - corner ) )
-				{
-					vertOK = true;
-				}
-
-				if( !horizontal.parallel && horizontalDist >= 0 )//&& length(horizontal.position - corner) < length( intersect - corner ))
-				{
-					horiOK = true;
-				}
-				if( vertOK && horiOK ) 
-				{
-					if( verticalDist / abs(a.velocity.y) <= horizontalDist / abs(a.velocity.x) )
-					{
-						intersect = vertical.position;
-					}
-					else
-					{
-						intersect = horizontal.position;
-					}
-					//intersect = lii.position;
-				//	cout << "case 0" << endl;
-				}
-				else if( vertOK )
-				{
-					intersect = vertical.position;
-				//	cout << "case 1" << endl;
-				}
-				else if( horiOK )
-				{
-					//cout << "case 2" << endl;
-					intersect = horizontal.position;
-				}
-				else
-				{
-					cout << "case failure" << endl;
-					//return NULL;
-					assert( false && "case error" );
-				}
-			}*/
-			if( false )
-			//else if( intersectQuantity > length( e->v1 - e->v0 ) )
-			{
-				collisionPosition = e->v1;
-				cout << "over: " << e->v0.x << ", " << e->v0.y << endl;
-				double minx = min( intersect.x, corner.x );
-				double maxx = max( intersect.x, corner.x );
-				double miny = min( intersect.y, corner.y );
-				double maxy = max( intersect.y, corner.y );
-
-				LineIntersection vertical = lineIntersection( intersect, corner, e->v1, Vector2<double>( e->v1.x, e->v1.y - 1 ) );
-			//	intersect = lii.position;
-
-				LineIntersection horizontal = lineIntersection( intersect, corner, e->v1, Vector2<double>( e->v1.x-1, e->v1.y ) );
-			//	intersect = lii1.position;
-
-				double verticalDist = dot( vertical.position - corner, intersect - corner );//length(lii.position - corner) * dot(normalize(lii.position - corner), normalize( intersect - corner )) ;
-				double horizontalDist = dot( horizontal.position - corner, intersect - corner );//length( lii1.position - corner ) * dot(normalize(lii1.position - corner), normalize( intersect - corner )) ;
-
-			//	if( distanceI < 0 && distanceI1 < 0 )
-				//	assert( false && "bbbbsdfdf" );
-				bool vertOK = false;
-				bool horiOK = false;
-				if( !vertical.parallel && verticalDist >= 0 )// && length(vertical.position - corner) < length( intersect - corner ) )
-				{
-					vertOK = true;
-				}
-
-				if( !horizontal.parallel && horizontalDist >= 0 )//&& length(horizontal.position - corner) < length( intersect - corner ))
-				{
-					horiOK = true;
-				}
-				if( vertOK && horiOK ) 
-				{
-					if( verticalDist / abs(a.velocity.y) <= horizontalDist / abs(a.velocity.x) )
-					{
-						intersect = vertical.position;
-					}
-					else
-					{
-						intersect = horizontal.position;
-					}
-					//intersect = lii.position;
-				//	cout << "case 0" << endl;
-				}
-				else if( vertOK )
-				{
-					intersect = vertical.position;
-				//	cout << "case 1" << endl;
-				}
-				else if( horiOK )
-				{
-					//cout << "case 2" << endl;
-					intersect = horizontal.position;
-				}
-				else
-				{
-					cout << "case failure" << endl;
-					//return NULL;
-					assert( false && "case error" );
-				}
-
 			
-			}
-			else
-			{
-				
-			}
 			currentContact->resolution = intersect - corner;
 
 			if( length( currentContact->resolution ) > length( vel ) + 10 )
@@ -2403,10 +2296,7 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 			//	return NULL;
 			}
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
-				//cross( (corner - a.velocity) - e->v0, normalize( e->v1 - e->v0 ) );
-			//double pri = -cross( normalize((corner) - e->v0), normalize( e->v1 - e->v0 ) );
-			//double pri = length( intersect - (corner - a.velocity ) );
-			//cout << "pri: " << pri <<" .... " << e->v0.x << ", " << e->v0.y << " .. " << e->v1.x << ", " << e->v1.y << endl;
+
 			if( pri < -1 )
 			{
 				cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
