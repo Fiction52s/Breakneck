@@ -700,11 +700,11 @@ struct Actor
 				bool transferLeft =  q == 0 && movement < 0
 					&& ((gNormal.x == 0 && e0->Normal().x == 0 )
 					|| ( offsetX == -b.rw && e0->Normal().x <= 0 ) 
-					|| (offsetX == b.rw && e0->Normal().x >= 0));
+					|| (offsetX == b.rw && e0->Normal().x >= 0 && e0->Normal().y != 0 ));
 				bool transferRight = q == groundLength && movement > 0 
 					&& ((gNormal.x == 0 && e1->Normal().x == 0 )
 					|| ( offsetX == b.rw && e1->Normal().x >= 0 )
-					|| (offsetX == -b.rw && e1->Normal().x <= 0 ) );
+					|| (offsetX == -b.rw && e1->Normal().x <= 0 && e0->Normal().y != 0 ) );
 			//	bool fallOffLeft = q == 0 && movement < 0
 				//bool changeOffset = movement > 0 && offsetX < b.rw && q == groundLength && e1->Normal().x > 0;
 				//bool test = movement > 0  && offsetX < b.rw && q == 0 && gNormal.x > 0;
