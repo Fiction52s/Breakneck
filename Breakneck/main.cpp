@@ -703,6 +703,7 @@ struct Actor
 				bool transferRight = q == groundLength && movement > 0 
 					&& (( offsetX == b.rw && e1->Normal().x >= 0 )
 					|| (offsetX == -b.rw && e1->Normal().x <= 0 ) );
+			//	bool fallOffLeft = q == 0 && movement < 0
 				//bool changeOffset = movement > 0 && offsetX < b.rw && q == groundLength && e1->Normal().x > 0;
 				//bool test = movement > 0  && offsetX < b.rw && q == 0 && gNormal.x > 0;
 				//bool test1 = movement < 0 && offsetX > -b.rw && q == 0 && e0->Normal().x < 0;
@@ -715,6 +716,7 @@ struct Actor
 				//cout << "gn: " << gNormal.x << ", " << gNormal.y << endl;
 				//cout << "e0n: " << e0n.x << ", " << e0n.y << ", " << offsetX  << endl;
 				//cout << "e1n: " << e1n.x << ", " << e1n.y << ", " << offsetX  << endl;
+				
 				if( transferLeft )
 					/*&& (( d1 
 					&& (e0->Normal().x <= 0 || ( e0->Normal().x > 0 && e0->Normal().y >= 0 ) ) ) 
@@ -729,7 +731,20 @@ struct Actor
 						ground = next;
 						q = length( ground->v1 - ground->v0 );	
 					}
-					else break;
+					else
+					{
+						velocity = normalize(ground->v1 - ground->v0 ) * movement;
+						
+						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * extra);
+						if( hit )
+							position += minContact.resolution;
+						leftGround = true;
+						ground = NULL;
+						//movement = 0;
+						//dont transfer
+						break;
+					}
+					//else break;
 				}
 				else if( transferRight )
 				{
@@ -744,7 +759,19 @@ struct Actor
 						//assert( false );
 					}
 					else
+					{
+						velocity = normalize(ground->v1 - ground->v0 ) * movement;
+						
+						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * extra);
+						if( hit )
+							position += minContact.resolution;
+						leftGround = true;
+						ground = NULL;
+						//movement = 0;
+						//dont transfer
 						break;
+					}
+
 				}
 				else if( changeOffset )
 				{
