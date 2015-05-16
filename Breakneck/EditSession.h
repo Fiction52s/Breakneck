@@ -2,6 +2,7 @@
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <list>
+#include "VectorMath.h"
 
 #ifndef __EDIT_SESSION__
 #define __EDIT_SESSION__
@@ -11,11 +12,13 @@ struct Polygon
 {
 	Polygon();
 	std::list<sf::Vector2i> points;
+	sf::Vector2i *pointArray;
 	std::string material;
 	void Finalize();
 	void Draw( sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
+	bool ContainsPoint( sf::Vector2f p );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 };

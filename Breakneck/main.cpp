@@ -227,14 +227,14 @@ struct Actor
 		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		numActiveEdges = 0;
 
-
+		//assert( Shader::isAvailable() && "help me" );
 		/*const std::string fragmentShader = \
 			"void main()" \
 			"{" \
 			"    ..." \
 			"}";
 
-		//assert( Shader::isAvailable() && "help me" );
+		assert( Shader::isAvailable() && "help me" );
 		if (!sh.loadFromFile("player_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
@@ -266,8 +266,8 @@ struct Actor
 		actionLength[SLIDE] = 1;
 		tilesetSlide = GetTileset( "slide.png", 64, 64 );		
 
-		action = RUN;
-		frame = 0;
+		action = JUMP;
+		frame = 1;
 
 		gravity = 2;
 		maxFallSpeed = 100;
@@ -779,14 +779,14 @@ struct Actor
 						break;
 					}
 
-					cout << "a" << endl;
+					//cout << "a" << endl;
 					Edge *next = ground->edge1;
 					if( next->Normal().y < 0 )
 					{
 						ground = next;
 						q = 0;
 
-						cout << "aa" << endl;
+						//cout << "aa" << endl;
 						//assert( false );
 					}
 					else
@@ -1695,8 +1695,8 @@ struct Actor
 				{
 					angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}
-			//	sprite->setOrigin( 0, 2 * b.rh );
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+				sprite->setOrigin( b.rw, 2 * b.rh );
+				//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 				V2d pp = ground->GetPoint( edgeQuantity );
 				sprite->setPosition( pp.x, pp.y );
 				sprite->setRotation( angle / PI * 180 );
@@ -2051,7 +2051,7 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-	bool aaa = false;
+	bool aaa = true;
 
 	if( aaa )
 	{
@@ -2062,7 +2062,7 @@ int main()
 	else
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 	
 	sf::Vector2i pos( 0, 0 );
@@ -2434,7 +2434,7 @@ int main()
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 		bDraw.setPosition( player.position.x, player.position.y );
 	//	bDraw.setRotation( player.sprite->getRotation() );
-	//	window->draw( bDraw );
+		window->draw( bDraw );
 
 		window->draw( *(player.sprite) );//, &player.sh );
 		sf::RectangleShape rs;

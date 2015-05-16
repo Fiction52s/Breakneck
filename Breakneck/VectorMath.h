@@ -19,6 +19,8 @@ struct LineIntersection
 	bool parallel;
 };
 
+
+
 LineIntersection lineIntersection( sf::Vector2<double> a, sf::Vector2<double> b, sf::Vector2<double> c, sf::Vector2<double> d );
 
 

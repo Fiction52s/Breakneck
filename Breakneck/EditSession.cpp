@@ -3,7 +3,6 @@
 #include <fstream>
 #include <assert.h>
 #include <iostream>
-#include "VectorMath.h"
 #include "poly2tri/poly2tri.h"
 
 using namespace std;
@@ -37,6 +36,7 @@ void Polygon::Finalize()
 	cdt->Triangulate();
 	vector<p2t::Triangle*> tris;
 	tris = cdt->GetTriangles();
+	
 
 	va = new VertexArray( sf::Triangles , tris.size() * 3 );
 	VertexArray & v = *va;
@@ -73,6 +73,8 @@ void Polygon::Finalize()
 			++it;
 		}
 	}
+
+	
 	
 
 	//p2t::Sweep
@@ -111,6 +113,27 @@ void Polygon::Draw( RenderTarget *rt )
 {
 //	rt->draw(lines, points.size()*2, sf::Lines );
 	rt->draw( *va );
+}
+
+bool Polygon::ContainsPoint( Vector2f test )
+{
+	int pointCount = points.size();
+
+	int i, j, c = 0;
+
+	list<Vector2i>::iterator it = points.begin();
+	list<Vector2i>::iterator jt = points.end();
+	jt--;
+	
+	for (; it != points.end(); jt = it++ ) 
+	{
+		Vector2f point((*it).x, (*it).y );
+		Vector2f pointJ((*jt).x, (*jt).y );
+		if ( ((point.y>test.y) != (pointJ.y>test.y)) &&
+			(test.x < (pointJ.x-point.x) * (test.y-point.y) / (pointJ.y-point.y) + point.x) )
+				c = !c;
+	}
+	return c;
 }
 
 void Polygon::FixWinding()
@@ -401,6 +424,19 @@ void EditSession::Run( string fileName )
 		}
 		else if( ev.type == Event::MouseMoved )
 		{
+			for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+			{
+				bool blahz = (*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) );
+				if( blahz )
+				{
+					cout << "Point in polygon!!!   " << (*it) << endl;
+					break;
+				}
+				else
+				{
+					//cout << "Point in polygon!!!   " << (*it) << endl;
+				}
+			}
 			if( Mouse::isButtonPressed( Mouse::Middle ) )
 			{
 				//Vector2<double> fff(prevWorldPos - w->mapPixelToCoords(Vector2i(ev.mouseMove.x, ev.mouseMove.y )));
