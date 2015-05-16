@@ -40,14 +40,15 @@ void Polygon::Finalize()
 
 	va = new VertexArray( sf::Triangles , tris.size() * 3 );
 	VertexArray & v = *va;
+	Color testColor( 0x75, 0x70, 0x90 );
 	for( int i = 0; i < tris.size(); ++i )
 	{	
 		p2t::Point *p = tris[i]->GetPoint( 0 );	
 		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
 		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		v[i*3] = Vertex( Vector2f( p->x, p->y ), Color::Red );
-		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), Color::Red );
-		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), Color::Red );
+		v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
 	}
 
 	delete cdt;
@@ -279,6 +280,7 @@ void EditSession::WriteFile(string fileName)
 
 void EditSession::Run( string fileName )
 {
+	Color testColor( 0x75, 0x70, 0x90 );
 	View view( sf::Vector2f( 300, 300 ), sf::Vector2f( 960, 540 ) );
 	w->setView( view );
 	Texture playerTex;

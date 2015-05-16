@@ -190,6 +190,8 @@ struct Actor
 		Count
 	};
 
+
+	Shader sh;
 	bool collision;
 	Sprite *sprite;
 	Tileset *tilesetStand;
@@ -224,6 +226,21 @@ struct Actor
 	{
 		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		numActiveEdges = 0;
+
+
+		/*const std::string fragmentShader = \
+			"void main()" \
+			"{" \
+			"    ..." \
+			"}";
+
+		//assert( Shader::isAvailable() && "help me" );
+		if (!sh.loadFromFile("player_shader.frag", sf::Shader::Fragment))
+		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+		{
+			cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "player shader not loaded" );
+		}*/
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -541,8 +558,7 @@ struct Actor
 		{
 			numActiveEdges = 1;
 
-		//	double z = groundSpeed;
-		//	edgeQuantity += z;
+
 
 			activeEdges[0] = ground;
 			/*if( z > 0 )
@@ -655,7 +671,7 @@ struct Actor
 			double q = edgeQuantity;
 
 			
-			cout << "offsetx : " << offsetX << endl;
+			//cout << "offsetx : " << offsetX << endl;
 			while( movement != 0 )
 			{
 				//cout << "looping: " << movement << ", " << q << ", , " << length( ground->v1 - ground->v0 ) << endl;
@@ -876,7 +892,7 @@ struct Actor
 				else
 				{
 				//	cout << "q: " << q << endl;
-					cout << offsetX << ", " << movement << " " << gNormal.x << ", " << gNormal.y << " " << q << endl;
+					//cout << offsetX << ", " << movement << " " << gNormal.x << ", " << gNormal.y << " " << q << endl;
 					//cout << "a1: " << a1 << " c1 " << c1 << " f1 " << f1 << endl;
 					if( movement > 0 )
 						extra = (q + movement) - groundLength;
@@ -930,19 +946,19 @@ struct Actor
 				
 					if(!approxEquals( m, 0 ) )
 					{
-						cout << "run" << endl;
+					//	cout << "run" << endl;
 						
 						bool down = true;//(gNormal.x >= 0 && groundSpeed > 0) || (gNormal.x <= 0 && groundSpeed < 0 );
 						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							cout << "dfdfdsfd: " << offsetX << " " << groundSpeed << ", " << gNormal.x << ",, " << gNormal.y << "  " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
+						//	cout << "dfdfdsfd: " << offsetX << " " << groundSpeed << ", " << gNormal.x << ",, " << gNormal.y << "  " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 						//	bool extraCond = m > 0 && gNormal.x > 0 && ground->edge1->Normal().x > 0 && minContact.edge == 
 							if( down)
 							{
-								cout << "errer: " << m << endl;
+						//		cout << "errer: " << m << endl;
 							V2d eNorm = minContact.edge->Normal();
-							cout << "zerrer: " << eNorm.x << ", " << eNorm.y << endl;
+						//	cout << "zerrer: " << eNorm.x << ", " << eNorm.y << endl;
 							if( minContact.position.y > position.y + b.rh - 5 && eNorm.y >= 0 )
 							{
 								if( minContact.position == minContact.edge->v0 ) 
@@ -951,7 +967,7 @@ struct Actor
 									{
 										minContact.edge = minContact.edge->edge0;
 										eNorm = minContact.edge->Normal();
-										cout << "fdfd" << endl;
+							//			cout << "fdfd" << endl;
 									}
 								}
 								else if( minContact.position == minContact.edge->v1 )
@@ -960,7 +976,7 @@ struct Actor
 									{
 										minContact.edge = minContact.edge->edge1;
 										eNorm = minContact.edge->Normal();
-										cout << "fsdfdsfdsfdfd" << endl;
+						//				cout << "fsdfdsfdsfdfd" << endl;
 									}
 								}
 							}
@@ -985,8 +1001,8 @@ struct Actor
 									s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
 									s.setFillColor( Color::White );
 									s.setPosition( minContact.position.x, minContact.position.y );
-									window->draw( s );
-									cout << "glitch " << endl;
+									//window->draw( s );
+								//	cout << "glitch " << endl;
 									ground = minContact.edge;
 									q = ground->GetQuantity( minContact.position );
 									V2d eNorm = minContact.edge->Normal();			
@@ -1017,7 +1033,7 @@ struct Actor
 								}
 								else
 								{
-									cout << "xx" << endl;
+							//		cout << "xx" << endl;
 									
 									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 									break;
@@ -1027,7 +1043,7 @@ struct Actor
 							{
 								//if( eNorm.y == 0 && eNorm.x < 0 )
 								//	offsetX = -b.rw;
-								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+						//		cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								break;
 							}
@@ -1036,7 +1052,7 @@ struct Actor
 							else
 							{
 							//else if( 
-								cout << "Sdfsdfd" << endl;
+						//		cout << "Sdfsdfd" << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								break;
 							}
@@ -1627,10 +1643,28 @@ struct Actor
 
 			if( ground != NULL )
 			{
-				double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				double angle = 0;
+				//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
+				if( offsetX < b.rw && offsetX > -b.rw )
+				{
+
+				}
+				else
+				{
+					angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				}
+
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+				V2d pp = ground->GetPoint( edgeQuantity );
+				sprite->setPosition( pp.x, pp.y );
 				sprite->setRotation( angle / PI * 180 );
+
+
 				//cout << "angle: " << angle / PI * 180  << endl;
 			}
+
+			//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			//sprite->setPosition( position.x, position.y );
 			//cout << "setting to frame: " << frame / 4 << endl;
 			break;
 		case RUN:
@@ -1651,8 +1685,22 @@ struct Actor
 
 			if( ground != NULL )
 			{
-				double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				double angle = 0;
+				//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
+				if( offsetX < b.rw && offsetX > -b.rw )
+				{
+
+				}
+				else
+				{
+					angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				}
+			//	sprite->setOrigin( 0, 2 * b.rh );
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+				V2d pp = ground->GetPoint( edgeQuantity );
+				sprite->setPosition( pp.x, pp.y );
 				sprite->setRotation( angle / PI * 180 );
+				//sprite->setPosition( position.x, position.y );
 				//cout << "angle: " << angle / PI * 180  << endl;
 			}
 			break;
@@ -1695,6 +1743,9 @@ struct Actor
 				sprite->setTextureRect( ir );
 			}
 			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+
 			break;
 		case LAND: 
 			sprite->setTexture( *(tilesetLand->texture));
@@ -1710,11 +1761,14 @@ struct Actor
 			}
 			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			sprite->setRotation( angle / PI * 180 );
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+
 			break;
 		}
 
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
+		
 
 		++frame;
 		//cout << "end frame: " << position.x << ", " << position.y << endl;
@@ -1997,9 +2051,20 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
+	bool aaa = false;
+
+	if( aaa )
+	{
+		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	window->setPosition( Vector2i(800, 0 ));
+		window->setPosition( Vector2i(800, 0 ));
+	}
+	else
+	{
+		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
+		sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	}
+	
 	sf::Vector2i pos( 0, 0 );
 
 	//window->setPosition( pos );
@@ -2113,14 +2178,15 @@ int main()
 
 		VertexArray *va = new VertexArray( sf::Triangles , tris.size() * 3 );
 		VertexArray & v = *va;
+		Color testColor( 0x75, 0x70, 0x90 );
 		for( int i = 0; i < tris.size(); ++i )
 		{	
 			p2t::Point *p = tris[i]->GetPoint( 0 );	
 			p2t::Point *p1 = tris[i]->GetPoint( 1 );	
 			p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-			v[i*3] = Vertex( Vector2f( p->x, p->y ), Color::Red );
-			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), Color::Red );
-			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), Color::Red );
+			v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
 		}
 
 		polygons.push_back( va );
@@ -2368,9 +2434,9 @@ int main()
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 		bDraw.setPosition( player.position.x, player.position.y );
 	//	bDraw.setRotation( player.sprite->getRotation() );
-		window->draw( bDraw );
+	//	window->draw( bDraw );
 
-		window->draw( *(player.sprite) );
+		window->draw( *(player.sprite) );//, &player.sh );
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(64, 64) );
 		rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
