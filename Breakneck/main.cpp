@@ -9,6 +9,7 @@
 #include "EditSession.h"
 #include "VectorMath.h"
 #include "Input.h"
+#include "poly2tri/poly2tri.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -506,8 +507,6 @@ struct Actor
 		//	cs.setPosition( c->position.x, c->position.y );
 			cs.setPosition( minContact.position.x, minContact.position.y );
 			window->draw( cs );
-			//cout << "resolution: " << c->resolution.x << ", " << c->resolution.y << endl;
-			//cout << "cpos: " << c->position.x << ", " << c->position.y << endl;
 			Color lc = Color::Green;
 			sf::Vertex linez[] =
 			{
@@ -656,7 +655,7 @@ struct Actor
 			double q = edgeQuantity;
 
 			
-			
+			cout << "offsetx : " << offsetX << endl;
 			while( movement != 0 )
 			{
 				//cout << "looping: " << movement << ", " << q << ", , " << length( ground->v1 - ground->v0 ) << endl;
@@ -704,21 +703,21 @@ struct Actor
 				bool transferRight = q == groundLength && movement > 0 
 					&& ((gNormal.x == 0 && e1->Normal().x == 0 )
 					|| ( offsetX == b.rw && e1->Normal().x >= 0 )
-					|| (offsetX == -b.rw && e1->Normal().x <= 0 && e0->Normal().y != 0 ) );
+					|| (offsetX == -b.rw && e1->Normal().x <= 0 && e1->Normal().y != 0 ) );
 			//	bool fallOffLeft = q == 0 && movement < 0
 				//bool changeOffset = movement > 0 && offsetX < b.rw && q == groundLength && e1->Normal().x > 0;
 				//bool test = movement > 0  && offsetX < b.rw && q == 0 && gNormal.x > 0;
 				//bool test1 = movement < 0 && offsetX > -b.rw && q == 0 && e0->Normal().x < 0;
 				//bool test2 = movement < 0 && offsetX > -b.rw && q == groundLength && gNormal.x < 0;
 				bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0->Normal().x < 0) || (q == groundLength && gNormal.x < 0) );
-				bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1->Normal().x >= 0 ) || (q == 0 && gNormal.x >= 0) );
+				
+				bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1->Normal().x > 0 ) || (q == 0 && gNormal.x > 0) );
 				bool changeOffset = offsetLeft || offsetRight;
 				
 				//cout << transferLeft << " " << transferRight << " " << changeOffset << endl;
 				//cout << "gn: " << gNormal.x << ", " << gNormal.y << endl;
 				//cout << "e0n: " << e0n.x << ", " << e0n.y << ", " << offsetX  << endl;
 				//cout << "e1n: " << e1n.x << ", " << e1n.y << ", " << offsetX  << endl;
-				
 				if( transferLeft )
 					/*&& (( d1 
 					&& (e0->Normal().x <= 0 || ( e0->Normal().x > 0 && e0->Normal().y >= 0 ) ) ) 
@@ -726,6 +725,13 @@ struct Actor
 					|| ( g1 
 					&& (e0->Normal().x >= 0 || ( e0->Normal().x < 0 && e0->Normal().y >= 0 )) ) ))*/
 				{
+					if( e0n.y == 0 && e0n.x > 0 )
+					{
+						offsetX = b.rw;
+						cout <<"YEAH" << endl;
+						break;
+					}
+
 					cout << "b" << endl;
 					Edge *next = ground->edge0;
 					if( next->Normal().y < 0 )
@@ -750,6 +756,13 @@ struct Actor
 				}
 				else if( transferRight )
 				{
+					if( e1n.y == 0 && e1n.x < 0)
+					{
+						cout <<"YEAH2" << endl;
+						offsetX = -b.rw;
+						break;
+					}
+
 					cout << "a" << endl;
 					Edge *next = ground->edge1;
 					if( next->Normal().y < 0 )
@@ -775,7 +788,7 @@ struct Actor
 					}
 
 				}
-				else if( changeOffset )
+				else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 				{
 					cout << "rep: " << offsetX << " " << gNormal.x << ", " << gNormal.y << endl;
 					if( movement > 0 )
@@ -812,7 +825,7 @@ struct Actor
 					if(!approxEquals( m, 0 ) )
 					{
 						
-						//cout << "BLAH: " << m << endl;
+						cout << "BLAH: " << m << endl;
 						
 						bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -859,6 +872,7 @@ struct Actor
 					
 
 				}
+				//else if( 
 				else
 				{
 				//	cout << "q: " << q << endl;
@@ -871,16 +885,38 @@ struct Actor
 						extra = (q + movement);
 					}
 
+					if( gNormal.x == 0 && ( (movement > 0 && extra + offsetX > 0) || (movement < 0 && extra + offsetX < 0) ))
+					{
+						//extra -= offsetX;
+						//m -= extra;
+						
+						cout << "extra: " << extra << endl;
+						/*(if( movement > 0 && extra > 0 )
+						{
+							q = groundLength - b.rw * 2;
+						}
+						else if( movement < 0 && extra < 0 )
+						{
+							q = b.rw * 2;
+						}*/
+						//movement = 0;
+					}
+					
 					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 					{
 						if( movement > 0 )
 						{
 							q = groundLength;
+							//if( gNormal.x == 0 )
+							//	q -= b.rw;
+							
 					//		cout << "zeh" << endl;
 						}
 						else
 						{
 							q = 0;
+							//if( gNormal.x == 0)
+							//	q += 2 * b.rw;
 						}
 						movement = extra;
 						m -= extra;
@@ -989,6 +1025,8 @@ struct Actor
 							}
 							else
 							{
+								//if( eNorm.y == 0 && eNorm.x < 0 )
+								//	offsetX = -b.rw;
 								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								break;
@@ -1008,9 +1046,18 @@ struct Actor
 					}
 					else
 					{
+						//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+								
 						cout << "secret" << endl;
 						break;
+					/*	if( movement > 0 )
+							offsetX = -b.rw;
+						else
+							offsetX = b.rw;
+						break;*/
 					}
+
+					
 				}
 			
 				
@@ -1994,6 +2041,11 @@ int main()
 
 	int pointCounter = 0;
 
+	list<VertexArray*> polygons;
+
+	
+	//polygons = new VertexArray*[
+
 	Edge **edges = new Edge*[numPoints];
 	while( pointCounter < numPoints )
 	{
@@ -2045,6 +2097,43 @@ int main()
 				ee->edge1 = edges[currentEdgeIndex + i + 1];
 			}
 		}
+
+		vector<p2t::Point*> polyline;
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			polyline.push_back( new p2t::Point( points[currentEdgeIndex +i].x, points[currentEdgeIndex +i].y ) );
+
+		}
+
+		p2t::CDT * cdt = new p2t::CDT( polyline );
+	
+		cdt->Triangulate();
+		vector<p2t::Triangle*> tris;
+		tris = cdt->GetTriangles();
+
+		VertexArray *va = new VertexArray( sf::Triangles , tris.size() * 3 );
+		VertexArray & v = *va;
+		for( int i = 0; i < tris.size(); ++i )
+		{	
+			p2t::Point *p = tris[i]->GetPoint( 0 );	
+			p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+			p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+			v[i*3] = Vertex( Vector2f( p->x, p->y ), Color::Red );
+			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), Color::Red );
+			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), Color::Red );
+		}
+
+		polygons.push_back( va );
+
+		delete cdt;
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			delete polyline[i];
+		//	delete tris[i];
+		}
+
+
+
 	}
 	
 	sf::Vertex *line = new sf::Vertex[numPoints*2];
@@ -2288,7 +2377,11 @@ int main()
 		rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
 		rs.setFillColor( Color::Blue );
 		//window->draw( circle );
-		window->draw(line, numPoints * 2, sf::Lines);
+		//window->draw(line, numPoints * 2, sf::Lines);
+		for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+		{
+			window->draw( *(*it ) );
+		}
 		//window->draw(border, 8, sf::Lines);
 
 		window->display();

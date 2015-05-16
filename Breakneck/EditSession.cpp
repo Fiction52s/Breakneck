@@ -4,18 +4,59 @@
 #include <assert.h>
 #include <iostream>
 #include "VectorMath.h"
+#include "poly2tri/poly2tri.h"
 
 using namespace std;
 using namespace sf;
 
+
+Polygon::Polygon()
+{
+	va = NULL;
+	lines = NULL;
+}
+
 void Polygon::Finalize()
 {
+
 	material = "mat";
 	lines = new sf::Vertex[points.size()*2+1];
 	int i = 0;
 
 	FixWinding();
 	//cout << "points size: " << points.size() << endl;
+
+	vector<p2t::Point*> polyline;
+	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		polyline.push_back( new p2t::Point((*it).x, (*it).y ) );
+	}
+
+	p2t::CDT * cdt = new p2t::CDT( polyline );
+	
+	cdt->Triangulate();
+	vector<p2t::Triangle*> tris;
+	tris = cdt->GetTriangles();
+
+	va = new VertexArray( sf::Triangles , tris.size() * 3 );
+	VertexArray & v = *va;
+	for( int i = 0; i < tris.size(); ++i )
+	{	
+		p2t::Point *p = tris[i]->GetPoint( 0 );	
+		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+		v[i*3] = Vertex( Vector2f( p->x, p->y ), Color::Red );
+		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), Color::Red );
+		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), Color::Red );
+	}
+
+	delete cdt;
+	for( int i = 0; i < points.size(); ++i )
+	{
+		delete polyline[i];
+	//	delete tris[i];
+	}
+
 	if( points.size() > 0 )
 	{
 		list<Vector2i>::iterator it = points.begin(); 
@@ -31,6 +72,29 @@ void Polygon::Finalize()
 			++it;
 		}
 	}
+	
+
+	//p2t::Sweep
+	//va = new VertexArray( sf::Triangles, points.size() * 3 );
+/*	vector<int> working_set;
+	list<vector<int>> monotone_poly_list;
+	int i = 0;
+	for( int i = 0; i < points.size(); ++i )
+		working_set.push_back( i++ );
+
+	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		
+	}
+
+	while( true )
+	{
+		vector<int> sorted_vertex_list;
+		int n = 0;
+		for( int i = 0, 
+	}*/
+
+
 
 	
 	/*for( ; it != points.end(); ++it )
@@ -44,7 +108,8 @@ void Polygon::Finalize()
 
 void Polygon::Draw( RenderTarget *rt )
 {
-	rt->draw(lines, points.size()*2, sf::Lines );
+//	rt->draw(lines, points.size()*2, sf::Lines );
+	rt->draw( *va );
 }
 
 void Polygon::FixWinding()
@@ -108,7 +173,7 @@ bool Polygon::IsClockwise()
 }
 
 EditSession::EditSession( RenderWindow *wi)
-	:w( wi )
+	:w( wi ), zoomMultiple( 1 )
 {
 }
 
@@ -118,7 +183,7 @@ void EditSession::Draw()
 	if( psize > 0 )
 	{
 		CircleShape cs;
-		cs.setRadius( 10 );
+		cs.setRadius( 5 * zoomMultiple  );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setFillColor( Color::Green );
 
@@ -231,7 +296,7 @@ void EditSession::Run( string fileName )
 	mode = "neutral";
 	bool quit = false;
 	polygonInProgress = new Polygon();
-	double zoomMultiple = 1;
+	zoomMultiple = 1;
 	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
 	Vector2f tempWorldPos = w->mapPixelToCoords(sf::Mouse::getPosition( *w ));
@@ -268,7 +333,7 @@ void EditSession::Run( string fileName )
 		{
 			if( mode == "neutral" )
 			{
-				if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength)
+				if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength * zoomMultiple )
 				{
 					Vector2i worldi( worldPos.x, worldPos.y );
 					polygonInProgress->points.push_back( worldi  );

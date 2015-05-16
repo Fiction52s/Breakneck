@@ -9,6 +9,7 @@
 
 struct Polygon
 {
+	Polygon();
 	std::list<sf::Vector2i> points;
 	std::string material;
 	void Finalize();
@@ -16,6 +17,7 @@ struct Polygon
 	void FixWinding();
 	bool IsClockwise();
 	sf::Vertex *lines;
+	sf::VertexArray *va;
 };
 
 struct EditSession
@@ -31,6 +33,7 @@ struct EditSession
 	sf::RenderWindow *w;
 	std::string mode;
 	std::string currentFile;
+	double zoomMultiple;
 	
 	
 };
