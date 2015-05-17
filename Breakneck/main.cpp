@@ -175,7 +175,7 @@ Tileset * GetTileset( const string & s, int tileWidth, int tileHeight )
 }
 
 struct Actor;
-Contact * collideEdge( const Actor &a, const CollisionBox &b, Edge * e, const V2d &vel );
+Contact * collideEdge( V2d position, const CollisionBox &b, Edge * e, const V2d &vel );
 struct Actor
 {
 	enum Action
@@ -475,7 +475,7 @@ struct Actor
 		//	if( match )
 		//		continue;
 
-			Contact *c = collideEdge( *this , b, edges[i], vel );
+			Contact *c = collideEdge( position , b, edges[i], vel );
 			if( c != NULL )
 			{
 				collisionNumber++;
@@ -975,19 +975,10 @@ struct Actor
 					else
 					{
 						//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-								
+						edgeQuantity = q;
 						cout << "secret" << endl;
-						break;
-					/*	if( movement > 0 )
-							offsetX = -b.rw;
-						else
-							offsetX = b.rw;
-						break;*/
+						//break;
 					}
-				//	cout << "adding stolen: " << steal << ", groundspeed: " << groundSpeed << endl;
-					//if( steal != 0 )
-					//	movement = steal;
-
 					
 				}
 				if( movement == extra )
@@ -1146,11 +1137,7 @@ struct Actor
 				}
 				else if( collision )
 				{
-					//if( newVel.x != 0 || newVel.y !=0 )
-					//{
 						velocity = newVel;
-					//	cout << "setting new velocity: " << velocity.x << ", " << velocity.y << endl;
-					//}
 				}
 
 				if( length( extraVel ) > 0 )
@@ -1159,8 +1146,6 @@ struct Actor
 					movementVec = stealVec;
 			}
 		}
-
-		//cout << "vel2: " << velocity.x << ", " << velocity.y << endl;
 	}
 
 	void UpdatePostPhysics()
@@ -1179,21 +1164,11 @@ struct Actor
 			
 			V2d gn = ground->Normal();
 
-			//if( gn.x > 0 )
-			//	offsetX =  b.rw;
-			//else if( gn.x < 0 )
-			//	offsetX = -b.rw;
-
 			position.x += offsetX;
-		//	cout << "offsetx: " << offsetX << endl;
 
-			//if( gn.y > 0 )
-			//	position.y += 32;
 			if( gn.y < 0 )
 				position.y -= b.rh;
 
-		//+ ground->Normal() * 32.0;//Vector2<double>( collisionPosition.x, collisionPosition.y );
-		//	position.x += groundOffsetX;
 		}
 		else
 		{
@@ -1204,14 +1179,6 @@ struct Actor
 			}
 		}
 
-			//sprite->setRotation( PI );
-
-		
-		
-
-
-
-		//cout << "updating" << endl;
 
 		switch( action )
 		{
@@ -1380,13 +1347,13 @@ struct Actor
 
 
 Contact *currentContact;
-Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d &vel )
+Contact *collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel )
 {
-	Vector2<double> oldPosition = a.position - vel;
-	double left = a.position.x + b.offset.x - b.rw;
-	double right = a.position.x + b.offset.x + b.rw;
-	double top = a.position.y + b.offset.y - b.rh;
-	double bottom = a.position.y + b.offset.y + b.rh;
+	Vector2<double> oldPosition = position - vel;
+	double left = position.x + b.offset.x - b.rw;
+	double right = position.x + b.offset.x + b.rw;
+	double top = position.y + b.offset.y - b.rh;
+	double bottom = position.y + b.offset.y + b.rh;
 
 	
 
@@ -1409,7 +1376,7 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 		
 	}
 
-	Vector2<double> half = (oldPosition + a.position ) / 2.0;
+	Vector2<double> half = (oldPosition + position ) / 2.0;
 		double halfLeft = half.x - b.rw;
 		double halfRight = half.x + b.rw;
 		double halfTop = half.y - b.rh;
@@ -1493,7 +1460,6 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
 
-		//cout << "measureNormal: " << measureNormal << endl	
 		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
 			
@@ -1503,7 +1469,6 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 
 			LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
 
-			//assert( li.parallel == false );
 			if( li.parallel )
 			{
 				return NULL;
@@ -1512,18 +1477,6 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 
 			double intersectQuantity = e->GetQuantity( intersect );
 			Vector2<double> collisionPosition = intersect;
-
-			/*if( e->Normal().y == 0 )
-			{
-				if( 
-				{
-
-				}
-				else
-				{
-				}
-			}*/
-
 
 			if( intersectQuantity < 0 || intersectQuantity > length( e->v1 - e->v0 ) )
 			{
@@ -1571,8 +1524,7 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 				assert( resolveDist != 10000 );
 				
 				double pri = length( vel + currentContact->resolution );
-				//double pri = length( Vector2<double>( a.velocity.x / currentContact->resolution.x, a.velocity.y / currentContact->resolution.y ) );
-			//	double pri = 0;
+			
 				currentContact->collisionPriority = pri;
 				if( intersectQuantity < 0 )
 				currentContact->position = e->v0;
@@ -1589,33 +1541,24 @@ Contact *collideEdge( const Actor &a, const CollisionBox &b, Edge *e, const V2d 
 
 			if( length( currentContact->resolution ) > length( vel ) + 10 )
 				return NULL;
-			if( dot( normalize( -vel ), normalize(intersect - corner ) ) < .999 )
-			{
-			//	return NULL;
-			}
+
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
 
 			if( pri < -1 )
 			{
-				cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
+				//cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
 				return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );
-			//cout << "intersectQuantity2222: " << intersectQuantity << endl;
 			
-
-			//cs.setPosition( bottomLeft - invVel );
-			//window->draw( cs );
-
-			//Vector2<double> p = intersect - corner;
-			currentContact->position = collisionPosition;//intersect;
+			currentContact->position = collisionPosition;
 			
-			currentContact->collisionPriority = pri;//dot(intersect - ( corner + invVel), e->Normal());
+			currentContact->collisionPriority = pri;
 			currentContact->edge = e;
 
 			return currentContact;
-			//a.position = a.position + p;
+
 		}
 
 		

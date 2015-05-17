@@ -191,7 +191,6 @@ bool Polygon::IsClockwise()
 {
 	assert( points.size() > 0 );
 
-
     Vector2i *pointArray = new Vector2i[points.size()];
 
 	int i = 0;
@@ -221,7 +220,6 @@ bool Polygon::IsClockwise()
 
 	delete [] pointArray;
 
-	//cout << "summm: " << sum << endl;
     return sum < 0;
 }
 
@@ -245,11 +243,7 @@ void EditSession::Draw()
 		{
 			cs.setPosition( (*it).x, (*it).y );
 			w->draw( cs );
-		}
-
-	//	cs.setPosition( 0, 0 );
-	//	w->draw( cs );
-		
+		}		
 	}
 
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -450,7 +444,7 @@ void EditSession::Run( string fileName )
 				{
 					zoomMultiple *= 2;
 				}
-				//zoomMultiple -= ev.mouseWheel.delta * 10; //( prevDelta - ev.mouseWheel.delta )/ 100.f;
+
 				if( zoomMultiple < 1 )
 				{
 					zoomMultiple = 1;
@@ -468,7 +462,6 @@ void EditSession::Run( string fileName )
 				Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
 				view.setCenter( tempCenter.x, tempCenter.y );
 				w->setView( view );
-				//cout << "altering dleta: " << ev.mouseWheel.delta << endl;
 			}
 		
 		}
@@ -477,12 +470,6 @@ void EditSession::Run( string fileName )
 			
 			if( Mouse::isButtonPressed( Mouse::Middle ) )
 			{
-				//Vector2<double> fff(prevWorldPos - w->mapPixelToCoords(Vector2i(ev.mouseMove.x, ev.mouseMove.y )));
-				//if( length( move ) > 
-				//view.move( fff );
-				//view.setCenter( w->mapPixelToCoords(Mouse::getPosition( *w ) ) );//Vector2i(ev.mouseMove.x, ev.mouseMove.y )) );
-				//cout << "blah: " << fff.x << ", " << fff.y << endl; 
-				//w->setView( view );
 			}
 		}
 		else if( ev.type == Event::MouseButtonPressed )
@@ -511,7 +498,6 @@ void EditSession::Run( string fileName )
 						if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
 						{
 							emptySpace = false;
-							//(*it)->selected = !(*it)->selected;
 							(*it)->SetSelected( !((*it)->selected ) );
 
 							break;
@@ -570,7 +556,6 @@ void EditSession::Run( string fileName )
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) )
 		{
-			//cout << "mode: set player" << endl;
 			if( mode == "neutral" && polygonInProgress->points.size() > 2 )
 			{
 				polygonInProgress->Finalize();
@@ -590,7 +575,6 @@ void EditSession::Run( string fileName )
 			{
 				polygonInProgress->points.clear();
 				string fName;
-				//cin >> fName;
 				mode = "transition1";
 				fName = "test1";
 				cout << "writing to file: " << fName << ".brknk" << endl;
@@ -618,8 +602,6 @@ void EditSession::Run( string fileName )
 		else
 			playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
-
-		//cout << zoomMultiple << endl;
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);
 		Draw();
