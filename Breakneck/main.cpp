@@ -555,8 +555,9 @@ struct Actor
 		leftGround = false;
 		//V2d trueVel = velocity;
 		double movement = 0;
-		double maxMovement = 5;
+		double maxMovement = 10;
 		V2d movementVec;
+		V2d lastExtra( 0, 0 );
 
 		if( ground != NULL ) movement = groundSpeed;
 		else
@@ -564,13 +565,14 @@ struct Actor
 			//movement = length( velocity );
 			movementVec = velocity;
 		}
-
+		
 		while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
 		{
-			double steal = 0;
+			
 
 			if( ground != NULL )
 			{
+				double steal = 0;
 				if( movement > 0 )
 				{
 					if( movement > maxMovement )
@@ -974,14 +976,14 @@ struct Actor
 						//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								
 						cout << "secret" << endl;
-					//	break;
+						break;
 					/*	if( movement > 0 )
 							offsetX = -b.rw;
 						else
 							offsetX = b.rw;
 						break;*/
 					}
-					cout << "adding stolen: " << steal << ", groundspeed: " << groundSpeed << endl;
+				//	cout << "adding stolen: " << steal << ", groundspeed: " << groundSpeed << endl;
 					//if( steal != 0 )
 					//	movement = steal;
 
@@ -1000,35 +1002,123 @@ struct Actor
 			}
 			else
 			{
-				collision = ResolvePhysics( edges, numPoints, velocity / 2.0 );
+				V2d stealVec(0,0);
+				double moveLength = length( movementVec );
+				V2d velDir = normalize( velocity );
+				if( moveLength > maxMovement )
+				{
+					stealVec = velDir * ( moveLength - maxMovement);
+					movementVec = velDir * maxMovement;
+				}
+
+				V2d newVel( 0, 0 );
+				
+				collision = ResolvePhysics( edges, numPoints, movementVec );
+				V2d extraVel(0,0);
 				if( collision )
 				{
 					position += minContact.resolution;
+					Edge *e = minContact.edge;
+					V2d en = e->Normal();
+					Edge *e0 = e->edge0;
+					Edge *e1 = e->edge1;
+					V2d e0n = e0->Normal();
+					V2d e1n = e1->Normal();
 
-					V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
-	
-					movementVec = extraVel;
-					velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
+					V2d extraDir =  normalize( minContact.edge->v1 - minContact.edge->v0 );
+				//	if( ( minContact.position == e->v0 && en.x <= 0 && (e0n.x >= 0 || e0n.y > 0 ) ) 
+				//		|| ( minContact.position == e->v1 && en.x <= 0 && (e1n.x >= 0 || e1n.y > 0 ) ) )
+				//	{
+				//		extraDir = V2d( -1, 0 );
+				//	}
+					if( (minContact.position == e->v0 && en.x < 0 && en.y < 0 ) )
+					{
+						V2d te = e0->v0 - e0->v1;
+						if( te.x > 0 )
+						{
+							
+							extraDir = V2d( 0, -1 );
+						}
+					}
+					else if( (minContact.position == e->v1 && en.x < 0 && en.y > 0 ) )
+					{
+						V2d te = e1->v1 - e1->v0;
+						if( te.x > 0 )
+						{
+							extraDir = V2d( 0, -1 );
+						
+						}
+					}
+
+					else if( (minContact.position == e->v1 && en.x > 0 && en.y < 0 ) )
+					{
+						V2d te = e1->v1 - e1->v0;
+						if( te.x < 0 )
+						{
+							extraDir = V2d( 0, 1 );
+						}
+					}
+					else if( (minContact.position == e->v0 && en.x > 0 && en.y > 0 ) )
+					{
+						V2d te = e0->v0 - e0->v1;
+						if( te.x < 0 )
+						{
+							extraDir = V2d( 0, 1 );
+						}
+					}
+
+
+					else if( (minContact.position == e->v1 && en.x > 0 && en.y > 0 ) )
+					{
+						V2d te = e1->v1 - e1->v0;
+						if( te.y < 0 )
+						{
+							extraDir = V2d( -1, 0 );
+						}
+					}
+					else if( (minContact.position == e->v0 && en.x < 0 && en.y > 0 ) )
+					{
+						V2d te = e0->v0 - e0->v1;
+						if( te.y < 0 )
+						{
+							extraDir = V2d( -1, 0 );
+						}
+					}
+
+					
+					//en.y <= 0 && e0n.y >= 0  ) 
+					//	|| ( minContact.position == e->v1 && en.y <= 0 && e1n.y >= 0 ) )
+					/*{
+						if( en.x < 0 )
+						{
+							extraDir = V2d( 0, -1 );
+						}
+						else
+						{
+							extraDir = V2d( 0, 1 );
+						}
+					}*/
+					extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
+					newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+
+					if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
+					{
+						//extraVel.x = 0;
+						//extraVel.y = 0;
+						break;
+						//newVel.x = 0;
+						//newVel.y = 0;
+						
+					}
+					lastExtra.x = extraVel.x;
+					lastExtra.y = extraVel.y;
+
 					cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
 				}
-				else
+				else if( length( stealVec ) == 0 )
 				{
-					collision = ResolvePhysics( edges, numPoints, velocity / 2.0 );
-					if( collision )
-					{
-						position += minContact.resolution;
-				
-						V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
-
-						velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
-						movementVec = extraVel;
-						cout << "extra vel 2: " << extraVel.x << ", " << extraVel.y << endl;
-					}
-					else
-					{
-						movementVec.x = 0;
-						movementVec.y = 0;
-					}
+					movementVec.x = 0;
+					movementVec.y = 0;
 				}
 
 
@@ -1038,15 +1128,28 @@ struct Actor
 					ground = minContact.edge;
 					edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 					double groundLength = length( ground->v1 - ground->v0 );
-					groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ));
+					groundSpeed = length( velocity );
+					if( velocity.x < 0 )
+					{
+						groundSpeed = -groundSpeed;
+					}
+
 					movement = 0;
-					//velocity.x = 0;
-					//velocity.y = 0;
+			
 					offsetX = position.x - minContact.position.x;
-					//if( ground->Normal().x == 0 )
-					//	offsetX = -b.rw;
-					//cout << "offfff: " << offsetX << endl;
 				}
+				else
+				{
+					if( newVel.x != 0 || newVel.y !=0 )
+					{
+						velocity = newVel;
+					}
+				}
+
+				if( length( extraVel ) > 0 )
+					movementVec = stealVec + extraVel;
+				else
+					movementVec = stealVec;
 			}
 		}
 	}
