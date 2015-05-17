@@ -19,8 +19,11 @@ struct Polygon
 	void FixWinding();
 	bool IsClockwise();
 	bool ContainsPoint( sf::Vector2f p );
+	void SetSelected( bool select );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
+	int vaSize;
+	bool selected;
 };
 
 struct EditSession

@@ -9,10 +9,12 @@ using namespace std;
 using namespace sf;
 
 
+
 Polygon::Polygon()
 {
 	va = NULL;
 	lines = NULL;
+	selected = false;
 }
 
 void Polygon::Finalize()
@@ -37,8 +39,9 @@ void Polygon::Finalize()
 	vector<p2t::Triangle*> tris;
 	tris = cdt->GetTriangles();
 	
-
-	va = new VertexArray( sf::Triangles , tris.size() * 3 );
+	vaSize = tris.size() * 3;
+	va = new VertexArray( sf::Triangles , vaSize );
+	
 	VertexArray & v = *va;
 	Color testColor( 0x75, 0x70, 0x90 );
 	for( int i = 0; i < tris.size(); ++i )
@@ -51,6 +54,7 @@ void Polygon::Finalize()
 		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
 	}
 
+	//assert( tris.size() * 3 == points.size() );
 	delete cdt;
 	for( int i = 0; i < points.size(); ++i )
 	{
@@ -111,8 +115,33 @@ void Polygon::Finalize()
 
 void Polygon::Draw( RenderTarget *rt )
 {
+
 //	rt->draw(lines, points.size()*2, sf::Lines );
+
 	rt->draw( *va );
+}
+
+void Polygon::SetSelected( bool select )
+{
+	selected = select;
+	Color selectCol( 0x77, 0xBB, 0xDD );
+	if( selected )
+	{
+		for( int i = 0; i < vaSize; ++i )
+		{
+			VertexArray & v = *va;
+			v[i].color = selectCol;
+		}
+	}
+	else
+	{
+		Color testColor( 0x75, 0x70, 0x90 );
+		for( int i = 0; i < vaSize; ++i )
+		{
+			VertexArray & v = *va;
+			v[i].color = testColor;
+		}
+	}
 }
 
 bool Polygon::ContainsPoint( Vector2f test )
@@ -218,8 +247,8 @@ void EditSession::Draw()
 			w->draw( cs );
 		}
 
-		cs.setPosition( 0, 0 );
-		w->draw( cs );
+	//	cs.setPosition( 0, 0 );
+	//	w->draw( cs );
 		
 	}
 
@@ -358,10 +387,30 @@ void EditSession::Run( string fileName )
 		{
 			if( mode == "neutral" )
 			{
-				if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength * zoomMultiple )
+				bool emptySpace = true;
+				for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 				{
-					Vector2i worldi( worldPos.x, worldPos.y );
-					polygonInProgress->points.push_back( worldi  );
+					if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+					{
+						emptySpace = false;
+						//(*it)->selected = !((*it)->selected);
+						//cout << "Point in polygon!!!   " << (*it) << endl;
+						break;
+					}
+				}
+
+				if( emptySpace )
+				{
+					if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength * zoomMultiple )
+					{
+						Vector2i worldi( worldPos.x, worldPos.y );
+						polygonInProgress->points.push_back( worldi  );
+
+					}
+				}
+				else
+				{
+					polygonInProgress->points.clear();
 				}
 			}
 			else if( mode == "set player" )
@@ -424,19 +473,7 @@ void EditSession::Run( string fileName )
 		}
 		else if( ev.type == Event::MouseMoved )
 		{
-			for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-			{
-				bool blahz = (*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) );
-				if( blahz )
-				{
-					cout << "Point in polygon!!!   " << (*it) << endl;
-					break;
-				}
-				else
-				{
-					//cout << "Point in polygon!!!   " << (*it) << endl;
-				}
-			}
+			
 			if( Mouse::isButtonPressed( Mouse::Middle ) )
 			{
 				//Vector2<double> fff(prevWorldPos - w->mapPixelToCoords(Vector2i(ev.mouseMove.x, ev.mouseMove.y )));
@@ -454,6 +491,7 @@ void EditSession::Run( string fileName )
 				panning = true;
 				panAnchor = worldPos;
 			}
+			
 		}
 		else if( ev.type == Event::MouseButtonReleased )
 		{
@@ -461,12 +499,47 @@ void EditSession::Run( string fileName )
 			{
 				panning = false;
 			}
+			else if( ev.mouseButton.button == Mouse::Button::Left )
+			{
+				
+				if( mode == "neutral" )
+				{
+					bool emptySpace = true;
+					for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+						{
+							emptySpace = false;
+							//(*it)->selected = !(*it)->selected;
+							(*it)->SetSelected( !((*it)->selected ) );
+
+							break;
+						}
+					}
+
+					if( emptySpace )
+					{
+
+					}
+					else
+					{
+						polygonInProgress->points.clear();
+					}
+
+				}
+			}
+			else if( ev.mouseButton.button == Mouse::Button::Right )
+			{
+				for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+				{
+					(*it)->SetSelected( false );					
+				}
+			}
 		}
 		}
 
 		if( panning )
 		{
-
 			Vector2<double> temp = panAnchor - worldPos;
 			view.move( Vector2f( temp.x, temp.y ) );
 		}
@@ -481,6 +554,21 @@ void EditSession::Run( string fileName )
 			{
 				mode = "set player";
 				polygonInProgress->points.clear();
+			}
+		}
+		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Delete ) )
+		{
+			list<Polygon*>::iterator it = polygons.begin();
+			while( it != polygons.end() )
+			{
+				if( (*it)->selected )
+					polygons.erase( it++ );
+				else
+					++it;
+			/*	else
+				{
+					++it;
+				}*/
 			}
 		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) )

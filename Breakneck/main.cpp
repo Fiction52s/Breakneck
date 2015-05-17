@@ -2051,7 +2051,7 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-	bool aaa = true;
+	bool aaa = false;
 
 	if( aaa )
 	{
@@ -2062,7 +2062,7 @@ int main()
 	else
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 	
 	sf::Vector2i pos( 0, 0 );
