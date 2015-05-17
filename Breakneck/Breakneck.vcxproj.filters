@@ -51,6 +51,9 @@
     <ClCompile Include="poly2tri\sweep\sweep_context.cc">
       <Filter>poly2tri</Filter>
     </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PlayerChar.h">
@@ -85,6 +88,12 @@
     </ClInclude>
     <ClInclude Include="poly2tri\sweep\advancing_front.h">
       <Filter>poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

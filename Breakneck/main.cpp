@@ -10,6 +10,7 @@
 #include "VectorMath.h"
 #include "Input.h"
 #include "poly2tri/poly2tri.h"
+#include "Physics.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -18,111 +19,10 @@ using namespace sf;
 
 RenderWindow *window;
 
-
+#define V2d sf::Vector2<double>
 GameController controller(0);
 ControllerState prevInput;
 ControllerState currInput;
-
-
-struct Edge
-{
-	Vector2<double> v0;
-	Vector2<double> v1;
-	Edge * GetEdge0();
-	Edge * GetEdge1();
-	Edge *edge0;
-	Edge *edge1;
-
-	//material ---
-	Edge()
-	{
-		edge0 = NULL;
-		edge1 = NULL;
-	}
-
-	Vector2<double> Normal()
-	{
-		Vector2<double> v = v1 - v0;
-		Vector2<double> temp = normalize( v );
-		return Vector2<double>( temp.y, -temp.x );
-	}
-
-	Vector2<double> GetPoint( double quantity )
-	{
-		//gets the point on a line w/ length quantity in the direction of the edge vector
-		Vector2<double> e( v1 - v0 );
-		e = normalize( e );
-		return v0 + quantity * e;
-	}
-
-	
-
-	double GetQuantity( Vector2<double> p )
-	{
-		//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 
-		//normal to use dot product to get cos(0) =1
-		Vector2<double> vv = p - v0;
-		Vector2<double> e = normalize(v1 - v0);
-		return dot( vv, e );
-	}
-
-	double GetQuantityGivenX( double x )
-	{
-
-		Vector2<double> e = normalize(v1 - v0);
-		double deltax = x - v0.x;
-		double factor = deltax / e.y;
-	}
-};
-
-#define V2d sf::Vector2<double>
-
-struct CollisionBox
-{
-
-	enum BoxType
-	{
-		Physics,
-		Hit,
-		Hurt
-	};
-
-	Vector2<double> offset;
-	double offsetAngle;
-	
-	double rw; //radius or half width
-	double rh; //radius or half height
-	bool isCircle;
-	BoxType type;
-
-	Vector2<double> GetAxis1( Vector2<double> actorPos )
-	{
-	/*	double left = actorPos.x + offset.x - rw;
-		double right = actorPos.x + offset.x + rw;
-		double top = actorPos.y + offset.y - rh;
-		double bottom = actorPos.y + offset.y + rh;
-		Vector2<double> topLeft( left, top );
-		Vector2<double> topRight( right, top );
-		Vector2<double> bottomLeft( left, bottom );
-
-		topLeft.x = cos( offsetAngle ) * topLeft.x + sin( offsetAngle ) * topLeft.y;
-		topLeft.y = -sin( offsetAngle ) * topLeft.x + cos( offsetAngle ) * topLeft.y;*/
-	}
-};
-
-struct Contact
-{
-	Contact()
-		:edge( NULL )
-	{
-		collisionPriority = 0;
-	}
-		
-	double collisionPriority;	
-	Vector2<double> position;
-	Vector2<double> resolution;
-	Edge *edge;
-};
 
 bool approxEquals( double a, double b )
 {
