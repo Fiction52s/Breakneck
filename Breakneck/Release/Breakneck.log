@@ -1,0 +1,98 @@
+﻿Build started 5/16/2015 11:16:14 PM.
+     1>Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Release\Breakneck.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Users\Shephard\Libraries\SFML-2.0_2\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D SFML_STATIC /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt EditSession.cpp
+         EditSession.cpp
+     1>EditSession.cpp(47): warning C4018: '<' : signed/unsigned mismatch
+     1>EditSession.cpp(52): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(52): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(54): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(54): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(59): warning C4018: '<' : signed/unsigned mismatch
+     1>EditSession.cpp(68): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(68): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(69): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(69): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(74): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(74): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(75): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(75): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(159): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(159): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(160): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(160): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(165): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+     1>EditSession.cpp(151): warning C4101: 'i' : unreferenced local variable
+     1>EditSession.cpp(151): warning C4101: 'j' : unreferenced local variable
+     1>EditSession.cpp(205): warning C4018: '<' : signed/unsigned mismatch
+     1>EditSession.cpp(239): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(246): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(246): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(367): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(367): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(368): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(368): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(369): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(369): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(370): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(370): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(371): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(371): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(372): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(372): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(373): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(373): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(374): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(374): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(394): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(394): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(407): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>EditSession.cpp(407): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>EditSession.cpp(464): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(464): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(469): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(469): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(490): warning C4482: nonstandard extension used: enum 'sf::Mouse::Button' used in qualified name
+     1>EditSession.cpp(499): warning C4482: nonstandard extension used: enum 'sf::Mouse::Button' used in qualified name
+     1>EditSession.cpp(503): warning C4482: nonstandard extension used: enum 'sf::Mouse::Button' used in qualified name
+     1>EditSession.cpp(511): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(511): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(532): warning C4482: nonstandard extension used: enum 'sf::Mouse::Button' used in qualified name
+     1>EditSession.cpp(545): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(545): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(623): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(623): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe" /NOLOGO /LIBPATH:"C:\Users\Shephard\Libraries\SFML-2.0_2\lib" "sfml-graphics-s.lib" "sfml-main.lib" "sfml-system-s.lib" "sfml-window-s.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Breakneck.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.lib" /MACHINE:X86 Release\EditSession.obj
+         Release\Input.obj
+         Release\main.obj
+         Release\PlayerChar.obj
+         Release\shapes.obj
+         Release\advancing_front.obj
+         Release\cdt.obj
+         Release\sweep.obj
+         Release\sweep_context.obj
+         Release\SurfaceMover.obj
+         Release\VectorMath.obj
+         Generating code
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\common\shapes.cc(239): warning C4715: 'p2t::Triangle::PointCCW' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\common\shapes.cc(226): warning C4715: 'p2t::Triangle::PointCW' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\common\shapes.cc(167): warning C4715: 'p2t::Triangle::Index' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\sweep\sweep.cc(772): warning C4715: 'p2t::Sweep::NextFlipPoint' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\editsession.cpp(307): warning C4715: 'EditSession::OpenFile' : not all control paths return a value
+         Finished generating code
+         Breakneck.vcxproj -> C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe;#1" /manifest Release\Breakneck.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Release\Breakneck.unsuccessfulbuild".
+         Touching "Release\Breakneck.lastbuildstate".
+     1>Done Building Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.37

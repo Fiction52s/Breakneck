@@ -557,7 +557,7 @@ void EditSession::Run( string fileName )
 				polygonInProgress->points.clear();
 			}
 		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Delete ) )
+		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Tilde ) )
 		{
 			list<Polygon*>::iterator it = polygons.begin();
 			while( it != polygons.end() )

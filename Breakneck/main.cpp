@@ -274,7 +274,7 @@ struct Actor
 
 		ground = NULL;
 		groundSpeed = 0;
-		maxNormalRun = 100;
+		maxNormalRun = 30;
 		runAccel = 2;
 		facingRight = true;
 		collision = false;
@@ -630,11 +630,11 @@ struct Actor
 
 				bool transferLeft =  q == 0 && movement < 0
 					&& ((gNormal.x == 0 && e0->Normal().x == 0 )
-					|| ( offsetX == -b.rw && e0->Normal().x <= 0 ) 
+					|| ( offsetX == -b.rw && (e0->Normal().x <= 0 || e0->Normal().y > 0) ) 
 					|| (offsetX == b.rw && e0->Normal().x >= 0 && e0->Normal().y != 0 ));
 				bool transferRight = q == groundLength && movement > 0 
 					&& ((gNormal.x == 0 && e1->Normal().x == 0 )
-					|| ( offsetX == b.rw && e1->Normal().x >= 0 )
+					|| ( offsetX == b.rw && ( e1->Normal().x >= 0 || e1->Normal().y > 0 ))
 					|| (offsetX == -b.rw && e1->Normal().x <= 0 && e1->Normal().y != 0 ) );
 				bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0->Normal().x < 0) || (q == groundLength && gNormal.x < 0) );
 				
@@ -685,6 +685,8 @@ struct Actor
 						offsetX = -b.rw;
 						break;
 					}
+
+
 
 					//cout << "a" << endl;
 					Edge *next = ground->edge1;
@@ -1002,6 +1004,7 @@ struct Actor
 				if( collision )
 				{
 					position += minContact.resolution;
+
 					V2d extraVel = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length(minContact.resolution);
 	
 					movementVec = extraVel;
@@ -1532,9 +1535,9 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-	bool aaa = true;
+	bool fullWindow = false;
 
-	if( aaa )
+	if( fullWindow )
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
