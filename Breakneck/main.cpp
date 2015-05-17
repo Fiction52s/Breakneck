@@ -552,12 +552,13 @@ struct Actor
 	bool leftGround;
 	void UpdatePhysics( Edge **edges, int numPoints )
 	{
+		//cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
 		leftGround = false;
 		//V2d trueVel = velocity;
 		double movement = 0;
 		double maxMovement = 10;
 		V2d movementVec;
-		V2d lastExtra( 0, 0 );
+		V2d lastExtra( 100000, 100000 );
 
 		if( ground != NULL ) movement = groundSpeed;
 		else
@@ -861,7 +862,7 @@ struct Actor
 						//	bool extraCond = m > 0 && gNormal.x > 0 && ground->edge1->Normal().x > 0 && minContact.edge == 
 							if( down)
 							{
-								cout << "errer: " << m << endl;
+								//cout << "errer: " << m << endl;
 							V2d eNorm = minContact.edge->Normal();
 						//	cout << "zerrer: " << eNorm.x << ", " << eNorm.y << endl;
 							if( minContact.position.y > position.y + b.rh - 5 && eNorm.y >= 0 )
@@ -1004,7 +1005,7 @@ struct Actor
 			{
 				V2d stealVec(0,0);
 				double moveLength = length( movementVec );
-				V2d velDir = normalize( velocity );
+				V2d velDir = normalize( movementVec );
 				if( moveLength > maxMovement )
 				{
 					stealVec = velDir * ( moveLength - maxMovement);
@@ -1014,7 +1015,7 @@ struct Actor
 				V2d newVel( 0, 0 );
 				
 				collision = ResolvePhysics( edges, numPoints, movementVec );
-				V2d extraVel(0,0);
+				V2d extraVel(0, 0);
 				if( collision )
 				{
 					position += minContact.resolution;
@@ -1100,11 +1101,16 @@ struct Actor
 					}*/
 					extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 					newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-
+					
+					if( length( stealVec ) > 0 )
+					{
+						stealVec = length( stealVec ) * extraDir;
+					}
 					if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 					{
 						//extraVel.x = 0;
 						//extraVel.y = 0;
+						cout << "glitchffff" << endl;
 						break;
 						//newVel.x = 0;
 						//newVel.y = 0;
@@ -1113,7 +1119,7 @@ struct Actor
 					lastExtra.x = extraVel.x;
 					lastExtra.y = extraVel.y;
 
-					cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
+				//	cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
 				}
 				else if( length( stealVec ) == 0 )
 				{
@@ -1138,12 +1144,13 @@ struct Actor
 			
 					offsetX = position.x - minContact.position.x;
 				}
-				else
+				else if( collision )
 				{
-					if( newVel.x != 0 || newVel.y !=0 )
-					{
+					//if( newVel.x != 0 || newVel.y !=0 )
+					//{
 						velocity = newVel;
-					}
+					//	cout << "setting new velocity: " << velocity.x << ", " << velocity.y << endl;
+					//}
 				}
 
 				if( length( extraVel ) > 0 )
@@ -1152,6 +1159,8 @@ struct Actor
 					movementVec = stealVec;
 			}
 		}
+
+		//cout << "vel2: " << velocity.x << ", " << velocity.y << endl;
 	}
 
 	void UpdatePostPhysics()
