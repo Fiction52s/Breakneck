@@ -552,25 +552,20 @@ struct Actor
 	bool leftGround;
 	void UpdatePhysics( Edge **edges, int numPoints )
 	{
-		//cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
 		leftGround = false;
-		//V2d trueVel = velocity;
 		double movement = 0;
-		double maxMovement = 10;
+		double maxMovement = min( b.rw, b.rh );
 		V2d movementVec;
 		V2d lastExtra( 100000, 100000 );
 
 		if( ground != NULL ) movement = groundSpeed;
 		else
 		{
-			//movement = length( velocity );
 			movementVec = velocity;
 		}
 		
 		while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
 		{
-			
-
 			if( ground != NULL )
 			{
 				double steal = 0;
@@ -600,7 +595,6 @@ struct Actor
 
 
 				double m = movement;
-			//	double extra;
 				double groundLength = length( ground->v1 - ground->v0 ); 
 
 				if( approxEquals( q, 0 ) )
@@ -608,28 +602,15 @@ struct Actor
 				else if( approxEquals( q, groundLength ) )
 					q = groundLength;
 
+				if( approxEquals( offsetX, b.rw ) )
+					offsetX = b.rw;
+				else if( approxEquals( offsetX, -b.rw ) )
+					offsetX = -b.rw;
 
-				bool a1 = gNormal.x >= 0 && q == 0;
-				bool b1 = gNormal.x <= 0 && q == 0;
-				bool c1 = gNormal.x <= 0 && q == groundLength;
-				bool d1 = offsetX == -b.rw;
-				bool g1 = offsetX == b.rw;
-				bool t1 = gNormal.x >= 0 && q == groundLength;
-				
 				Edge *e0 = ground->edge0;
 				Edge *e1 = ground->edge1;
 				V2d e0n = e0->Normal();
 				V2d e1n = e1->Normal();
-
-				bool cond1right = movement > 0 && offsetX == b.rw && e1->Normal().x > 0;
-				bool cond2right = movement > 0 && offsetX == -b.rw && e1->Normal().x < 0;
-
-				bool cond1left = movement < 0 && offsetX == b.rw && e0->Normal().x > 0;
-				bool cond2left = movement < 0 && offsetX == -b.rw && e0->Normal().x < 0;				
-
-
-				//bool f1 = ( movement > 0 && offsetX < b.rw && gNormal.x <= 0 && (e1n.y >= 0 || e1n.x > 0 )  ) || (movement < 0 && offsetX > -b.rw && gNormal.x >= 0 && (e0n.y >= 0 || e0n.x < 0 )  );
-				bool f1 = ( movement > 0 && offsetX < b.rw  ) || (movement < 0 && offsetX > -b.rw  );
 
 				bool transferLeft =  q == 0 && movement < 0
 					&& ((gNormal.x == 0 && e0->Normal().x == 0 )
@@ -644,20 +625,8 @@ struct Actor
 				bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1->Normal().x > 0 ) || (q == 0 && gNormal.x > 0) );
 				bool changeOffset = offsetLeft || offsetRight;
 				
-				//cout << transferLeft << " " << transferRight << " " << changeOffset << endl;
-				//cout << "gn: " << gNormal.x << ", " << gNormal.y << endl;
-				//cout << "e0n: " << e0n.x << ", " << e0n.y << ", " << offsetX  << endl;
-				//cout << "e1n: " << e1n.x << ", " << e1n.y << ", " << offsetX  << endl;
 				if( transferLeft )
 				{
-					if( e0n.y == 0 && e0n.x > 0 )
-					{
-						offsetX = b.rw;
-						cout <<"YEAH" << endl;
-						break;
-					}
-
-					cout << "b" << endl;
 					Edge *next = ground->edge0;
 					if( next->Normal().y < 0 )
 					{
@@ -667,39 +636,18 @@ struct Actor
 					else
 					{
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-						//movement = extra;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						//bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * extra);
-						//if( hit )
-						//	position += minContact.resolution;
 						leftGround = true;
 						ground = NULL;
-						//movement = 0;
-						//dont transfer
-						//break;
 					}
-					//else break;
 				}
 				else if( transferRight )
 				{
-					if( e1n.y == 0 && e1n.x < 0)
-					{
-						cout <<"YEAH2" << endl;
-						offsetX = -b.rw;
-						break;
-					}
-
-
-
-					//cout << "a" << endl;
 					Edge *next = ground->edge1;
 					if( next->Normal().y < 0 )
 					{
 						ground = next;
 						q = 0;
-
-						//cout << "aa" << endl;
-						//assert( false );
 					}
 					else
 					{
@@ -714,7 +662,6 @@ struct Actor
 				}
 				else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 				{
-					cout << "rep: " << offsetX << " " << gNormal.x << ", " << gNormal.y << endl;
 					if( movement > 0 )
 						extra = (offsetX + movement) - b.rw;
 					else 
@@ -735,8 +682,6 @@ struct Actor
 						{
 							offsetX = -b.rw;
 						}
-
-
 					}
 					else
 					{
@@ -744,13 +689,8 @@ struct Actor
 						offsetX += m;
 					}
 
-
-
 					if(!approxEquals( m, 0 ) )
 					{
-						
-						cout << "BLAH: " << m << endl;
-						
 						bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
@@ -778,49 +718,25 @@ struct Actor
 								else
 								{
 									offsetX += minContact.resolution.x;
-									//cout << "one" << endl;
 									break;
 								}
 							}
 							else
 							{
-								//cout << "two" << endl;
 									offsetX += minContact.resolution.x;
 									break;
 							}
 						}
 					}
-
-					
-					//	position += minContact.resolution;
-					
-
 				}
-				//else if( 
 				else
 				{
-
-					//	cout << "q: " << q << endl;
-					//cout << offsetX << ", " << movement << " " << gNormal.x << ", " << gNormal.y << " " << q << endl;
-					//cout << "a1: " << a1 << " c1 " << c1 << " f1 " << f1 << endl;
-					//double steal = 0;
 					if( movement > 0 )
-					{
-						if( movement > maxMovement )
-						{
-					//		steal = movement - maxMovement;
-					//		movement = maxMovement;
-						}
-						
+					{	
 						extra = (q + movement) - groundLength;
 					}
 					else 
 					{
-						if( movement < -maxMovement )
-						{
-					//		steal = movement + maxMovement;
-					//		movement = -maxMovement;
-						}
 						extra = (q + movement);
 					}
 					
@@ -829,16 +745,10 @@ struct Actor
 						if( movement > 0 )
 						{
 							q = groundLength;
-							//if( gNormal.x == 0 )
-							//	q -= b.rw;
-							
-					//		cout << "zeh" << endl;
 						}
 						else
 						{
 							q = 0;
-							//if( gNormal.x == 0)
-							//	q += 2 * b.rw;
 						}
 						movement = extra;
 						m -= extra;
@@ -851,118 +761,78 @@ struct Actor
 					}
 				
 					if(!approxEquals( m, 0 ) )
-					{
-					//	cout << "run" << endl;
-						
-						bool down = true;//(gNormal.x >= 0 && groundSpeed > 0) || (gNormal.x <= 0 && groundSpeed < 0 );
+					{	
+						bool down = true;
 						bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-						//	cout << "dfdfdsfd: " << offsetX << " " << groundSpeed << ", " << gNormal.x << ",, " << gNormal.y << "  " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
-						//	bool extraCond = m > 0 && gNormal.x > 0 && ground->edge1->Normal().x > 0 && minContact.edge == 
 							if( down)
 							{
-								//cout << "errer: " << m << endl;
-							V2d eNorm = minContact.edge->Normal();
-						//	cout << "zerrer: " << eNorm.x << ", " << eNorm.y << endl;
-							if( minContact.position.y > position.y + b.rh - 5 && eNorm.y >= 0 )
-							{
-								if( minContact.position == minContact.edge->v0 ) 
+								V2d eNorm = minContact.edge->Normal();
+								if( minContact.position.y > position.y + b.rh - 5 && eNorm.y >= 0 )
 								{
-									if( minContact.edge->edge0->Normal().y <= 0 )
+									if( minContact.position == minContact.edge->v0 ) 
 									{
-										minContact.edge = minContact.edge->edge0;
-										eNorm = minContact.edge->Normal();
-							//			cout << "fdfd" << endl;
+										if( minContact.edge->edge0->Normal().y <= 0 )
+										{
+											minContact.edge = minContact.edge->edge0;
+											eNorm = minContact.edge->Normal();
+										}
+									}
+									else if( minContact.position == minContact.edge->v1 )
+									{
+										if( minContact.edge->edge1->Normal().y <= 0 )
+										{
+											minContact.edge = minContact.edge->edge1;
+											eNorm = minContact.edge->Normal();
+										}
 									}
 								}
-								else if( minContact.position == minContact.edge->v1 )
+
+
+
+								if( eNorm.y < 0 )
 								{
-									if( minContact.edge->edge1->Normal().y <= 0 )
+									//bool 
+									if( minContact.position.y >= position.y + minContact.resolution.y + b.rh - 5 )
 									{
-										minContact.edge = minContact.edge->edge1;
-										eNorm = minContact.edge->Normal();
-						//				cout << "fsdfdsfdsfdfd" << endl;
-									}
-								}
-							}
+										double test = position.x + minContact.resolution.x - minContact.position.x;
+										if( test < -b.rw || test > b.rw )
+										{
+											cout << "BROKEN OFFSET: " << test << endl;
+										}
+										else
+										{	
+											ground = minContact.edge;
+											q = ground->GetQuantity( minContact.position );
+											V2d eNorm = minContact.edge->Normal();			
 
+											offsetX = position.x + minContact.resolution.x - minContact.position.x;
+										}
 
-
-							if( eNorm.y < 0 )
-							{
-								//bool 
-								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh - 5 )
-								{
-									double test = position.x + minContact.resolution.x - minContact.position.x;
-									if( test < -b.rw || test > b.rw )
-									{
-										cout << "BROKEN OFFSET: " << test << endl;
+										if( offsetX < -b.rw || offsetX > b.rw )
+										{
+											cout << "BROKEN OFFSET: " << offsetX << endl;
+											assert( false && "T_T" );
+										}
 									}
 									else
 									{
-									CircleShape s;
-									
-									s.setRadius( 10 );
-									s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
-									s.setFillColor( Color::White );
-									s.setPosition( minContact.position.x, minContact.position.y );
-									//window->draw( s );
-								//	cout << "glitch " << endl;
-									ground = minContact.edge;
-									q = ground->GetQuantity( minContact.position );
-									V2d eNorm = minContact.edge->Normal();			
-
-									/*if( abs(q - length( ground->v1 - ground->v0 ) ) < .001 )
-									{
-										q = length( ground->v1 - ground->v0 );
+										q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+										edgeQuantity = q;
+										break;
 									}
-									else if( abs( q ) < .001 )
-									{
-										q = 0;
-									}*/
-
-									offsetX = position.x + minContact.resolution.x - minContact.position.x;
-									}
-
-										if( offsetX < -b.rw || offsetX > b.rw )
-									{
-										cout << "BROKEN OFFSET: " << offsetX << endl;
-										assert( false && "T_T" );
-									}
-									//assert( offsetX >= -b.rw && offsetX <= b.rw );
-									//cout << "setting offsetx : " << offsetX << endl;
-									//if( eNorm.x > 0 )
-									//	offsetX = b.rw;
-									//if( eNorm.x < 0 )
-									//	offsetX = -b.rw;
 								}
 								else
 								{
-							//	cout << "q: " << q << ", new q: " << ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution) << endl;
-								//	offsetX = b.rw;
-							//	cout << "point: " << minContact.position.x << ", " << minContact.position.y << endl;
-							//	cout << "ResL: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+									//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 									edgeQuantity = q;
-									//q += b.rw;
 									break;
 								}
 							}
 							else
 							{
-								//if( eNorm.y == 0 && eNorm.x < 0 )
-								//	offsetX = -b.rw;
-								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
-								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-								edgeQuantity = q;
-								break;
-							}
-							}
-							//else if( minContact.position.y < position.y + minContact.resolution.y + b.rh - 5 )
-							else
-							{
-							//else if( 
 								cout << "Sdfsdfd" << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								edgeQuantity = q;
@@ -974,10 +844,10 @@ struct Actor
 					}
 					else
 					{
-						//q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 						edgeQuantity = q;
-						cout << "secret" << endl;
-						//break;
+						cout << "secret: " << gNormal.x << ", " << gNormal.y << " extra: " << extra <<  endl;
+				//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
+						break;
 					}
 					
 				}
@@ -985,10 +855,6 @@ struct Actor
 					movement += steal;
 				else
 					movement = steal;
-				//if( steal != 0 )
-				//	movement = steal;
-
-			//	movement += steal - m;
 
 				edgeQuantity = q;
 			}
