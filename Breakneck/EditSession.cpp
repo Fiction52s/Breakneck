@@ -385,8 +385,9 @@ void EditSession::Run( string fileName )
 
 		if( Mouse::isButtonPressed( Mouse::Left ) )
 		{
-			if( mode == "neutral" )
+			if( mode == "neutral" && !panning )
 			{
+
 				bool emptySpace = true;
 				for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 				{

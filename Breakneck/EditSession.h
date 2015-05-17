@@ -12,7 +12,6 @@ struct Polygon
 {
 	Polygon();
 	std::list<sf::Vector2i> points;
-	sf::Vector2i *pointArray;
 	std::string material;
 	void Finalize();
 	void Draw( sf::RenderTarget * rt);

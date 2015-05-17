@@ -1511,7 +1511,7 @@ struct Actor
 				//velocity.x = 0;
 				//velocity.y = 0;
 				velocity = dot( normalize( velocity ), normalize( minContact.edge->v1 - minContact.edge->v0 ) ) * normalize( minContact.edge->v1 - minContact.edge->v0 ) * length( velocity );
-				/*cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
+				cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
 				if( minContact.edge->Normal().y >= 0 )
 				{
 					collision = ResolvePhysics( edges, numPoints, extraVel );
@@ -1522,7 +1522,7 @@ struct Actor
 
 					}
 				}
-				*/
+				
 			}
 			else
 			{
@@ -1695,10 +1695,11 @@ struct Actor
 				{
 					angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}
-				sprite->setOrigin( b.rw, 2 * b.rh );
-				//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-				V2d pp = ground->GetPoint( edgeQuantity );
-				sprite->setPosition( pp.x, pp.y );
+				//sprite->setOrigin( b.rw, 2 * b.rh );
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+				//V2d pp = ground->GetPoint( edgeQuantity );
+				//sprite->setPosition( pp.x, pp.y );
+				sprite->setPosition( position.x, position.y );
 				sprite->setRotation( angle / PI * 180 );
 				//sprite->setPosition( position.x, position.y );
 				//cout << "angle: " << angle / PI * 180  << endl;
