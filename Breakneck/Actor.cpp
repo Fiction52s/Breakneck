@@ -15,6 +15,7 @@ Actor::Actor( GameSession *gs )
 		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		numActiveEdges = 0;
 
+		cout << "shader available: " << Shader::isAvailable() << endl;
 		//assert( Shader::isAvailable() && "help me" );
 		/*const std::string fragmentShader = \
 			"void main()" \
@@ -33,26 +34,50 @@ Actor::Actor( GameSession *gs )
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
-		actionLength[STAND] = 18 * 8;
-		tilesetStand = owner->GetTileset( "stand.png", 64, 64 );
 
-		actionLength[RUN] = 10 * 4;
-		tilesetRun = owner->GetTileset( "run.png", 128, 64 );
-
-		actionLength[JUMP] = 2;
-		tilesetJump = owner->GetTileset( "jump.png", 64, 64 );
-
-		actionLength[LAND] = 1;
-		tilesetLand = owner->GetTileset( "land.png", 64, 64 );
+		actionLength[DAIR] = 10;
+		tileset[DAIR] = owner->GetTileset( "dair.png", 128, 64 );
 
 		actionLength[DASH] = 120;
-		tilesetDash = owner->GetTileset( "dash.png", 64, 64 );
+		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
 
-		actionLength[WALLCLING] = 1;
-		tilesetWallcling = owner->GetTileset( "wallcling.png", 64, 64 );
+		actionLength[DOUBLE] = 30;
+		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
+
+		actionLength[FAIR] = 10;
+		tileset[FAIR] = owner->GetTileset( "fair.png", 128, 64 );
+
+		actionLength[JUMP] = 2;
+		tileset[JUMP] = owner->GetTileset( "jump.png", 64, 64 );
+
+		actionLength[LAND] = 1;
+		tileset[LAND] = owner->GetTileset( "land.png", 64, 64 );
+
+		actionLength[RUN] = 10 * 4;
+		tileset[RUN] = owner->GetTileset( "run.png", 128, 64 );
 
 		actionLength[SLIDE] = 1;
-		tilesetSlide = owner->GetTileset( "slide.png", 64, 64 );		
+		tileset[SLIDE] = owner->GetTileset( "slide.png", 64, 64 );
+
+		actionLength[SPRINT] = 8;
+		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
+
+		actionLength[STAND] = 20;
+		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
+
+		actionLength[STANDN] = 5;
+		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
+
+		actionLength[UAIR] = 9;
+		tileset[UAIR] = owner->GetTileset( "uair.png", 128, 128 );
+
+		actionLength[WALLCLING] = 1;
+		tileset[WALLCLING] = owner->GetTileset( "wallcling.png", 64, 64 );
+
+		actionLength[WALLJUMP] = 7;
+		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
+
+		
 
 		action = JUMP;
 		frame = 1;
@@ -601,7 +626,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					//offsetX = -offsetX;
 			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
-					break;
+					//break;
 				}
 					
 			}
@@ -852,17 +877,16 @@ void Actor::UpdatePostPhysics()
 	case STAND:
 			
 			
-		sprite->setTexture( *(tilesetStand->texture));
-			
+		sprite->setTexture( *(tileset[STAND]->texture));
 			
 		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
 		if( facingRight )
 		{
-			sprite->setTextureRect( tilesetStand->GetSubRect( frame / 8 ) );
+			sprite->setTextureRect( tileset[STAND]->GetSubRect( frame / 8 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tilesetStand->GetSubRect( frame / 8 );
+			sf::IntRect ir = tileset[STAND]->GetSubRect( frame / 8 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -899,14 +923,14 @@ void Actor::UpdatePostPhysics()
 	case RUN:
 			
 			
-		sprite->setTexture( *(tilesetRun->texture));
+		sprite->setTexture( *(tileset[RUN]->texture));
 		if( facingRight )
 		{
-			sprite->setTextureRect( tilesetRun->GetSubRect( frame / 4 ) );
+			sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tilesetRun->GetSubRect( frame / 4 );
+			sf::IntRect ir = tileset[RUN]->GetSubRect( frame / 4 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -935,7 +959,7 @@ void Actor::UpdatePostPhysics()
 		}
 		break;
 	case JUMP:
-		sprite->setTexture( *(tilesetJump->texture));
+		sprite->setTexture( *(tileset[JUMP]->texture));
 		{
 		sf::IntRect ir;
 
@@ -944,19 +968,23 @@ void Actor::UpdatePostPhysics()
 
 		if( frame == 0 )
 		{
-			ir = tilesetJump->GetSubRect( 0 );
+			ir = tileset[JUMP]->GetSubRect( 0 );
+		}
+		else if( velocity.y < - 10 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 1 );
 		}
 		else if( velocity.y < 0 )
 		{
-			ir = tilesetJump->GetSubRect( 1 );
+			ir = tileset[JUMP]->GetSubRect( 2 );
 		}
-		else if( velocity.y == 0 )
+		else if( velocity.y == 0  )
 		{
-			ir = tilesetJump->GetSubRect( 2 );
+			ir = tileset[JUMP]->GetSubRect( 3 );
 		}
 		else
 		{
-			ir = tilesetJump->GetSubRect( 8 );
+			ir = tileset[JUMP]->GetSubRect( 8 );
 		}
 
 		if( frame > 0 )
@@ -978,14 +1006,14 @@ void Actor::UpdatePostPhysics()
 
 		break;
 	case LAND: 
-		sprite->setTexture( *(tilesetLand->texture));
+		sprite->setTexture( *(tileset[LAND]->texture));
 		if( facingRight )
 		{
-			sprite->setTextureRect( tilesetLand->GetSubRect( frame / 4 ) );
+			sprite->setTextureRect( tileset[LAND]->GetSubRect( frame / 4 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tilesetLand->GetSubRect( frame / 4 );
+			sf::IntRect ir = tileset[LAND]->GetSubRect( frame / 4 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}

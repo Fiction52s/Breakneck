@@ -11,13 +11,21 @@ struct Actor
 {
 	enum Action
 	{
-		STAND,
-		RUN,
+		DAIR,
 		DASH,
-		SLIDE,
-		WALLCLING,
+		DOUBLE,
+		FAIR,
 		JUMP,
 		LAND,
+		LAND2,
+		RUN,
+		SLIDE,
+		SPRINT,
+		STAND,
+		STANDN,
+		UAIR,
+		WALLCLING,
+		WALLJUMP,
 		Count
 	};
 
@@ -39,13 +47,7 @@ struct Actor
 	sf::Shader sh;
 	bool collision;
 	sf::Sprite *sprite;
-	Tileset *tilesetStand;
-	Tileset *tilesetRun;
-	Tileset *tilesetDash;
-	Tileset *tilesetSlide;
-	Tileset *tilesetWallcling;
-	Tileset *tilesetJump;
-	Tileset *tilesetLand;
+	Tileset *tileset[Count];
 	CollisionBox b;
 	ControllerState prevInput;
 	ControllerState currInput;

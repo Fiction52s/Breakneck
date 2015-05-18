@@ -435,14 +435,6 @@ int GameSession::Run( string fileName )
 
 		window->display();
 
-
-		
-
-		
-
-
-		
-		
 		
 	}
 
