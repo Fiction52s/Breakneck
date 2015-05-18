@@ -5,6 +5,7 @@
 
 struct Tileset
 {
+	~Tileset();
 	sf::IntRect GetSubRect( int localID );
 
 	sf::Texture * texture;

@@ -18,6 +18,27 @@ GameSession::GameSession(GameController &c, RenderWindow *rw)
 {
 }
 
+
+GameSession::~GameSession()
+{
+	delete va;
+	for( int i = 0; i < numPoints; ++i )
+	{
+		delete edges[i];
+	}
+	delete [] edges;
+
+	for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		delete (*it);
+	}
+
+	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+	{
+		delete (*it);
+	}
+}
+
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
@@ -166,7 +187,7 @@ void GameSession::Run( string fileName )
 	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
 	//window->setFramerateLimit( 60 );
-	window->setMouseCursorVisible( false );
+	window->setMouseCursorVisible( true );
 
 	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	window->setView( view );
@@ -400,4 +421,6 @@ void GameSession::Run( string fileName )
 		
 		
 	}
+
+	delete [] line;
 }

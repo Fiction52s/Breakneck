@@ -3,6 +3,11 @@
 using namespace std;
 using namespace sf;
 
+Tileset::~Tileset()
+{
+	delete texture;
+}
+
 IntRect Tileset::GetSubRect( int localID )
 {
 	int xi,yi;

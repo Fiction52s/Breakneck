@@ -29,6 +29,7 @@ struct Polygon
 struct EditSession
 {
 	EditSession( sf::RenderWindow *w);
+	~EditSession();
 	void Run(std::string fileName );
 	void Draw();
 	bool OpenFile( std::string fileName );

@@ -17,6 +17,12 @@ Polygon::Polygon()
 	selected = false;
 }
 
+Polygon::~Polygon()
+{
+	delete [] lines;
+	delete va;
+}
+
 void Polygon::Finalize()
 {
 
@@ -228,6 +234,15 @@ EditSession::EditSession( RenderWindow *wi)
 {
 }
 
+EditSession::~EditSession()
+{
+	delete polygonInProgress;
+	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		delete (*it);
+	}
+}
+
 void EditSession::Draw()
 {
 	int psize = polygonInProgress->points.size();
@@ -389,8 +404,6 @@ void EditSession::Run( string fileName )
 					if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
 					{
 						emptySpace = false;
-						//(*it)->selected = !((*it)->selected);
-						//cout << "Point in polygon!!!   " << (*it) << endl;
 						break;
 					}
 				}
@@ -550,7 +563,10 @@ void EditSession::Run( string fileName )
 			while( it != polygons.end() )
 			{
 				if( (*it)->selected )
+				{
+					delete (*it);
 					polygons.erase( it++ );
+				}
 				else
 					++it;
 			}

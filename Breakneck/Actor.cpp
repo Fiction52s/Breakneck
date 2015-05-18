@@ -589,7 +589,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				else
 				{
 					edgeQuantity = q;
-					cout << "secret: " << gNormal.x << ", " << gNormal.y << " extra: " << extra <<  endl;
+					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+					offsetX = -offsetX;
 			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
 					break;
 				}
