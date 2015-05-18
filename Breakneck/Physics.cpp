@@ -180,7 +180,6 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
-			
 			Vector2<double> invVel = normalize(-vel);
 
 
@@ -264,8 +263,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			if( pri < -1 )
 			{
-				//cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
-				return NULL;
+				cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
+				//return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );

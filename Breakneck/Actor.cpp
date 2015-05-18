@@ -8,6 +8,7 @@ using namespace sf;
 using namespace std;
 
 #define V2d sf::Vector2<double>
+
 Actor::Actor( GameSession *gs )
 	:owner( gs )
 	{
@@ -406,7 +407,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				cout << "slide: " << q << ", " << offsetX << endl;
+				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -448,6 +449,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								{
 									ground = minContact.edge;
 									q = ground->GetQuantity( minContact.position );
+									edgeQuantity = q;
 									offsetX = -b.rw;
 									continue;
 								}
@@ -455,6 +457,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								{
 									ground = minContact.edge;
 									q = ground->GetQuantity( minContact.position );
+									edgeQuantity = q;
 									offsetX = b.rw;
 									continue;
 								}
@@ -463,12 +466,14 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 							else
 							{
 								offsetX += minContact.resolution.x;
+								groundSpeed = 0;
 								break;
 							}
 						}
 						else
 						{
 								offsetX += minContact.resolution.x;
+								groundSpeed = 0;
 								break;
 						}
 					}
@@ -551,7 +556,6 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 										V2d eNorm = minContact.edge->Normal();			
-
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 									}
 
@@ -564,6 +568,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								else
 								{
 									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+									groundSpeed = 0;
 									edgeQuantity = q;
 									break;
 								}
@@ -572,6 +577,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 							{
 								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+								groundSpeed = 0;
 								edgeQuantity = q;
 								break;
 							}
@@ -580,6 +586,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 						{
 							cout << "Sdfsdfd" << endl;
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+							groundSpeed = 0;
 							edgeQuantity = q;
 							break;
 						}
@@ -617,7 +624,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 			V2d newVel( 0, 0 );
 				
-			cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
+			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
 			collision = ResolvePhysics( edges, numPoints, movementVec );
 			V2d extraVel(0, 0);
 			if( collision )
@@ -655,6 +662,23 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					}
 				}
 
+				else if( (minContact.position == e->v1 && en.x < 0 && en.y < 0 ) )
+				{
+					V2d te = e1->v1 - e1->v0;
+					if( te.x < 0 )
+					{
+						extraDir = V2d( 0, 1 );
+						
+					}
+				}
+				else if( (minContact.position == e->v0 && en.x > 0 && en.y < 0 ) )
+				{
+					V2d te = e0->v0 - e0->v1;
+					if( te.x > 0 )
+					{	
+						extraDir = V2d( 0, -1 );
+					}
+				}
 				else if( (minContact.position == e->v1 && en.x > 0 && en.y < 0 ) )
 				{
 					V2d te = e1->v1 - e1->v0;
@@ -669,17 +693,32 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.x < 0 )
 					{
 						extraDir = V2d( 0, 1 );
+						cout << "this thing" << endl;
 					}
 				}
 
+			//	if( approxEquals(minContact.position.x, e->v1.x) && approxEquals(minContact.position.y, e->v1.y) && en.x < 0 && en.y < 0 )
+			//	{
+			//		cout << "________________________________" << endl;
+			//	}
+			//	else if( approxEquals(minContact.position.x, e->v0.x) && approxEquals(minContact.position.y, e->v0.y) && en.x > 0 && en.y > 0 )
+			//	{
+			//		cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
+			//	}
+			//	else
+				{
+					cout << "edge normal : " << minContact.edge->Normal().x << ", "<< minContact.edge->Normal().y << endl;
 
-				else if( (minContact.position == e->v1 && en.x > 0 && en.y > 0 ) )
+				}
+
+
+				if( (minContact.position == e->v1 && en.x > 0 && en.y > 0 ) )
 				{
 					V2d te = e1->v1 - e1->v0;
 					if( te.y < 0 )
 					{
 						extraDir = V2d( -1, 0 );
-						cout << "here" << endl;
+						//cout << "here" << endl;
 					}
 				}
 				else if( (minContact.position == e->v0 && en.x < 0 && en.y > 0 ) )
@@ -713,10 +752,11 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				}
 				if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 				{
+					cout << "glitcffff: " << extraVel.x << ", " << extraVel.y << endl;
 					//extraVel.x = 0;
 					//extraVel.y = 0;
-					cout << "glitchffff" << endl;
-					break;
+					//cout << "glitchffff" << endl;
+					//break;
 					//newVel.x = 0;
 					//newVel.y = 0;
 						

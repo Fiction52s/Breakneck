@@ -56,9 +56,9 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-	bool fullWindow = true;
+	bool fullWindow = false ;
 
-	if( fullWindow )
+	if( !fullWindow )
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
@@ -89,7 +89,7 @@ int main()
 	while( result == 0 )
 	{
 		EditSession es(window );
-		int result = es.Run( "test1", lastViewCenter, lastViewSize );
+		result = es.Run( "test1", lastViewCenter, lastViewSize );
 		if( result > 0 )
 			break;
 		GameSession gs( controller, window );
