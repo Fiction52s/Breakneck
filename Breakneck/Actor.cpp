@@ -1,10 +1,15 @@
 #include "Actor.h"
+#include "GameSession.h"
+#include "VectorMath.h"
+#include <iostream>
+#include <assert.h>
 
 using namespace sf;
 using namespace std;
 
 #define V2d sf::Vector2<double>
-Actor::Actor()
+Actor::Actor( GameSession *gs )
+	:owner( gs )
 	{
 		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		numActiveEdges = 0;
@@ -28,25 +33,25 @@ Actor::Actor()
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
 		actionLength[STAND] = 18 * 8;
-		tilesetStand = GetTileset( "stand.png", 64, 64 );
+		tilesetStand = owner->GetTileset( "stand.png", 64, 64 );
 
 		actionLength[RUN] = 10 * 4;
-		tilesetRun = GetTileset( "run.png", 128, 64 );
+		tilesetRun = owner->GetTileset( "run.png", 128, 64 );
 
 		actionLength[JUMP] = 2;
-		tilesetJump = GetTileset( "jump.png", 64, 64 );
+		tilesetJump = owner->GetTileset( "jump.png", 64, 64 );
 
 		actionLength[LAND] = 1;
-		tilesetLand = GetTileset( "land.png", 64, 64 );
+		tilesetLand = owner->GetTileset( "land.png", 64, 64 );
 
 		actionLength[DASH] = 120;
-		tilesetDash = GetTileset( "dash.png", 64, 64 );
+		tilesetDash = owner->GetTileset( "dash.png", 64, 64 );
 
 		actionLength[WALLCLING] = 1;
-		tilesetWallcling = GetTileset( "wallcling.png", 64, 64 );
+		tilesetWallcling = owner->GetTileset( "wallcling.png", 64, 64 );
 
 		actionLength[SLIDE] = 1;
-		tilesetSlide = GetTileset( "slide.png", 64, 64 );		
+		tilesetSlide = owner->GetTileset( "slide.png", 64, 64 );		
 
 		action = JUMP;
 		frame = 1;
@@ -257,7 +262,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	//	if( match )
 	//		continue;
 
-		Contact *c = collideEdge( position , b, edges[i], vel );
+		Contact *c = owner->coll.collideEdge( position , b, edges[i], vel );
 		if( c != NULL )
 		{
 			collisionNumber++;

@@ -11,6 +11,7 @@
 struct Polygon
 {
 	Polygon();
+	~Polygon();
 	std::list<sf::Vector2i> points;
 	std::string material;
 	void Finalize();

@@ -1,23 +1,168 @@
 //game session
 
 #include "GameSession.h"
+#include <fstream>
+#include <iostream>
+#include <assert.h>
+#include "Actor.h"
+#include "poly2tri/poly2tri.h"
+#include "VectorMath.h"
 
-
+#define TIMESTEP 1.0 / 60.0
 
 using namespace std;
 using namespace sf;
 
-GameSession::GameSession()
+GameSession::GameSession(GameController &c, RenderWindow *rw)
+	:controller(c),va(NULL),edges(NULL), window(rw), player( this )
 {
+}
+
+Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
+{
+	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+	{
+		if( (*it)->sourceName == s )
+		{
+			return (*it);
+		}
+	}
+
+
+	//not found
+
+
+	Tileset *t = new Tileset();
+	t->texture = new Texture();
+	t->texture->loadFromFile( s );
+	t->tileWidth = tileWidth;
+	t->tileHeight = tileHeight;
+	tilesetList.push_back( t );
+
+	return t;
+	//make sure to set up tileset here
 }
 
 bool GameSession::OpenFile( string fileName )
 {
+	currentFile = fileName;
 
+	ifstream is;
+	is.open( fileName + ".brknk" );
+	if( is.is_open() )
+	{
+		is >> numPoints;
+		points = new Vector2<double>[numPoints];
+		
+
+		is >> player.position.x;
+		is >> player.position.y;
+
+		int pointsLeft = numPoints;
+
+		int pointCounter = 0;
+
+		edges = new Edge*[numPoints];
+
+		while( pointCounter < numPoints )
+		{
+			string matStr;
+			is >> matStr;
+			int polyPoints;
+			is >> polyPoints;
+
+			int currentEdgeIndex = pointCounter;
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				int px, py;
+				is >> px;
+				is >> py;
+			
+				points[pointCounter].x = px;
+				points[pointCounter].y = py;
+				++pointCounter;
+			}
+
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				Edge *ee = new Edge();
+				edges[currentEdgeIndex + i] = ee;
+				ee->v0 = points[i+currentEdgeIndex];
+				if( i < polyPoints - 1 )
+					ee->v1 = points[i+1 + currentEdgeIndex];
+				else
+					ee->v1 = points[currentEdgeIndex];
+			}
+
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				Edge * ee = edges[i + currentEdgeIndex];
+				if( i == 0 )
+				{
+					ee->edge0 = edges[currentEdgeIndex + polyPoints - 1];
+					ee->edge1 = edges[currentEdgeIndex + 1];
+				}
+				else if( i == polyPoints - 1 )
+				{
+					ee->edge0 = edges[currentEdgeIndex + i - 1];
+					ee->edge1 = edges[currentEdgeIndex];
+				
+				}
+				else
+				{
+					ee->edge0 = edges[currentEdgeIndex + i - 1];
+					ee->edge1 = edges[currentEdgeIndex + i + 1];
+				}
+			}
+
+			vector<p2t::Point*> polyline;
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				polyline.push_back( new p2t::Point( points[currentEdgeIndex +i].x, points[currentEdgeIndex +i].y ) );
+
+			}
+
+			p2t::CDT * cdt = new p2t::CDT( polyline );
+	
+			cdt->Triangulate();
+			vector<p2t::Triangle*> tris;
+			tris = cdt->GetTriangles();
+
+			va = new VertexArray( sf::Triangles , tris.size() * 3 );
+			VertexArray & v = *va;
+			Color testColor( 0x75, 0x70, 0x90 );
+			for( int i = 0; i < tris.size(); ++i )
+			{	
+				p2t::Point *p = tris[i]->GetPoint( 0 );	
+				p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+				p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+				v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+				v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+				v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+			}
+
+			polygons.push_back( va );
+
+			delete cdt;
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				delete polyline[i];
+			//	delete tris[i];
+			}
+		}
+		is.close();
+	}
+	else
+	{
+
+		//new file
+		assert( false && "error getting file to edit " );
+	}
 }
 
 void GameSession::Run( string fileName )
 {
+	
 	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
 	//window->setFramerateLimit( 60 );
@@ -28,127 +173,15 @@ void GameSession::Run( string fileName )
 
 	window->setVerticalSyncEnabled( true );
 
-	Collider coll;
-
 	
 	sf::RectangleShape bDraw;
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 
-	ifstream is;
-	is.open( "test1.brknk" );
 
-	int numPoints;
-	is >> numPoints;
-	Vector2<double> *points = new Vector2<double>[numPoints];
-	list<Vector2<double>> lvec;
-
-	Actor player;
-	//player.position = Vector2<double>( -500, 300 );
-
-	is >> player.position.x;
-	is >> player.position.y;
-
-	int pointsLeft = numPoints;
-
-	int pointCounter = 0;
-
-	list<VertexArray*> polygons;
-
+	OpenFile( fileName );
 	
-	//polygons = new VertexArray*[
-
-	Edge **edges = new Edge*[numPoints];
-	while( pointCounter < numPoints )
-	{
-		string matStr;
-		is >> matStr;
-		int polyPoints;
-		is >> polyPoints;
-
-		int currentEdgeIndex = pointCounter;
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			int px, py;
-			is >> px;
-			is >> py;
-			
-			points[pointCounter].x = px;
-			points[pointCounter].y = py;
-			++pointCounter;
-		}
-
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			Edge *ee = new Edge();
-			edges[currentEdgeIndex + i] = ee;
-			ee->v0 = points[i+currentEdgeIndex];
-			if( i < polyPoints - 1 )
-				ee->v1 = points[i+1 + currentEdgeIndex];
-			else
-				ee->v1 = points[currentEdgeIndex];
-		}
-
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			Edge * ee = edges[i + currentEdgeIndex];
-			if( i == 0 )
-			{
-				ee->edge0 = edges[currentEdgeIndex + polyPoints - 1];
-				ee->edge1 = edges[currentEdgeIndex + 1];
-			}
-			else if( i == polyPoints - 1 )
-			{
-				ee->edge0 = edges[currentEdgeIndex + i - 1];
-				ee->edge1 = edges[currentEdgeIndex];
-				
-			}
-			else
-			{
-				ee->edge0 = edges[currentEdgeIndex + i - 1];
-				ee->edge1 = edges[currentEdgeIndex + i + 1];
-			}
-		}
-
-		vector<p2t::Point*> polyline;
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			polyline.push_back( new p2t::Point( points[currentEdgeIndex +i].x, points[currentEdgeIndex +i].y ) );
-
-		}
-
-		p2t::CDT * cdt = new p2t::CDT( polyline );
-	
-		cdt->Triangulate();
-		vector<p2t::Triangle*> tris;
-		tris = cdt->GetTriangles();
-
-		VertexArray *va = new VertexArray( sf::Triangles , tris.size() * 3 );
-		VertexArray & v = *va;
-		Color testColor( 0x75, 0x70, 0x90 );
-		for( int i = 0; i < tris.size(); ++i )
-		{	
-			p2t::Point *p = tris[i]->GetPoint( 0 );	
-			p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-			p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-			v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
-		}
-
-		polygons.push_back( va );
-
-		delete cdt;
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			delete polyline[i];
-		//	delete tris[i];
-		}
-
-
-
-	}
 	
 	sf::Vertex *line = new sf::Vertex[numPoints*2];
 	for( int i = 0; i < numPoints; ++i )
@@ -245,7 +278,7 @@ void GameSession::Run( string fileName )
 				oneFrameMode = true;
 
 		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
-				return 0;
+				return;
 
 
 
@@ -253,7 +286,7 @@ void GameSession::Run( string fileName )
 			player.prevInput = currInput;
 			controller.UpdateState();
 			currInput = controller.GetState();
-			player.currInput = currInput;
+			
 
 			if( currInput.leftStickMagnitude > .4 )
 				{
@@ -286,53 +319,7 @@ void GameSession::Run( string fileName )
 					if( y < -threshold )
 						currInput.altPad += 1 << 1;
 				}
-			
-			double f = 30;			
-			//player.velocity = Vector2<double>( 0, 0 );
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) )
-			{
-
-				if( player.ground == NULL )
-				{
-					player.velocity += Vector2<double>( f, 0 );
-				}
-				else
-				{
-					//player.groundSpeed = abs(player.groundSpeed);
-				}
-				
-				//break;
-			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Left ) )
-			{
-				if( player.ground == NULL )
-				{
-					player.velocity += Vector2<double>( -f, 0 );
-				}
-				else
-				{
-					//player.groundSpeed = -abs(player.groundSpeed);
-				}
-
-				//break;
-			}
-//			if( !( sf::Keyboard::isKeyPressed( sf::Keyboard::Right ) || sf::Keyboard::isKeyPressed( sf::Keyboard::Left ) )
-//			{
-				
-//			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Up ) )
-			{
-				player.velocity += Vector2<double>( 0, -f );
-				//break;
-			}
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Down ) )
-			{
-				player.velocity += Vector2<double>( 0, f );
-				//break;
-			}
-
-			
-
+			player.currInput = currInput;
 			player.UpdatePrePhysics();
 
 			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
@@ -413,7 +400,4 @@ void GameSession::Run( string fileName )
 		
 		
 	}
-
-	window->close();
-	delete window;
 }

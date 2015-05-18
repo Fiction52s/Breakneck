@@ -39,6 +39,11 @@ double dot( sf::Vector2<double> a, sf::Vector2<double> b )
 	return ax * bx + ay * by;
 }
 
+bool approxEquals( double a, double b )
+{
+	return abs( a - b ) < .00001;
+}
+
 
 LineIntersection::LineIntersection(const sf::Vector2<double> &pos, bool p )
 {

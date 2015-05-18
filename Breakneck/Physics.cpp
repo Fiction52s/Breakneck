@@ -1,5 +1,7 @@
 #include "Physics.h"
 #include "VectorMath.h"
+#include <iostream>
+#include <assert.h>
 
 using namespace sf;
 using namespace std;

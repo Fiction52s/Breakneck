@@ -326,6 +326,7 @@ void EditSession::WriteFile(string fileName)
 
 void EditSession::Run( string fileName )
 {
+	w->setMouseCursorVisible( true );
 	Color testColor( 0x75, 0x70, 0x90 );
 	View view( sf::Vector2f( 300, 300 ), sf::Vector2f( 960, 540 ) );
 	w->setView( view );

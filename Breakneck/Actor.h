@@ -6,6 +6,7 @@
 #ifndef __ACTOR_H__
 #define __ACTOR_H__
 
+struct GameSession;
 struct Actor
 {
 	enum Action
@@ -20,7 +21,7 @@ struct Actor
 		Count
 	};
 
-	Actor();
+	Actor( GameSession *owner );
 
 	void ActionEnded();
 
@@ -32,6 +33,7 @@ struct Actor
 		int numPoints );
 	void UpdatePostPhysics();
 
+	GameSession *owner;
 	bool leftGround;
 	Contact minContact;
 	sf::Shader sh;
