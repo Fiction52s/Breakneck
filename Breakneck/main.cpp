@@ -79,12 +79,19 @@ int main()
 	
 	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	window->setView( view );
+	
+	bool edit = false;
 
-	EditSession es(window );
-	es.Run( "test1" );
-
-	GameSession gs( controller, window );
-	gs.Run( "test1" );
+	int result = 0;
+	while( result == 0 )
+	{
+		EditSession es(window );
+		int result = es.Run( "test1" );
+		if( result > 0 )
+			break;
+		GameSession gs( controller, window );
+		result = gs.Run( "test1" );
+	}
 
 	window->close();
 	delete window;

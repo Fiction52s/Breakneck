@@ -21,7 +21,6 @@ GameSession::GameSession(GameController &c, RenderWindow *rw)
 
 GameSession::~GameSession()
 {
-	delete va;
 	for( int i = 0; i < numPoints; ++i )
 	{
 		delete edges[i];
@@ -181,7 +180,7 @@ bool GameSession::OpenFile( string fileName )
 	}
 }
 
-void GameSession::Run( string fileName )
+int GameSession::Run( string fileName )
 {
 	
 	//window->setPosition( pos );
@@ -249,7 +248,13 @@ void GameSession::Run( string fileName )
 	
 	bool skipped = false;
 	bool oneFrameMode = false;
-	while( true )
+	bool quit = false;
+	bool t = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
+	bool s = t;
+	t = false;
+	
+	int returnVal = 0;
+	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
 		double frameTime = newTime - currentTime;
@@ -297,9 +302,25 @@ void GameSession::Run( string fileName )
 
 		if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
 				oneFrameMode = true;
+		if( !s && sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
+		{
+			quit = true;
+			break;
+			//t = true;
+		}
+		else if( s && !sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
+		{
+			s = false;
+
+		}
+
 
 		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
-				return;
+		{
+			quit = true;
+			returnVal = 1;
+			break;
+		}
 
 
 
@@ -423,4 +444,5 @@ void GameSession::Run( string fileName )
 	}
 
 	delete [] line;
+	return returnVal;
 }

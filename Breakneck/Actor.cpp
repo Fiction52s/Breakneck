@@ -406,6 +406,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
+				cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 

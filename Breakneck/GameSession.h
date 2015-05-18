@@ -9,7 +9,7 @@ struct GameSession
 {
 	GameSession(GameController &c, sf::RenderWindow *rw);
 	~GameSession();
-	void Run( std::string fileName );
+	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	sf::RenderWindow *window;
 	std::string currentFile;

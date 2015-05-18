@@ -339,8 +339,9 @@ void EditSession::WriteFile(string fileName)
 	}
 }
 
-void EditSession::Run( string fileName )
+int EditSession::Run( string fileName )
 {
+	int returnVal = 0;
 	w->setMouseCursorVisible( true );
 	Color testColor( 0x75, 0x70, 0x90 );
 	View view( sf::Vector2f( 300, 300 ), sf::Vector2f( 960, 540 ) );
@@ -383,6 +384,9 @@ void EditSession::Run( string fileName )
 		sf::Vertex(sf::Vector2<float>(max, -max), borderColor),
 		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
 	};
+
+	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
+	
 
 	while( !quit )
 	{
@@ -545,11 +549,26 @@ void EditSession::Run( string fileName )
 			view.move( Vector2f( temp.x, temp.y ) );
 		}
 
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
+		if( !s && sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
 		{
 			quit = true;
+			break;
+			//t = true;
 		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::B) )
+		else if( s && !sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
+		{
+			s = false;
+
+		}
+
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+		{
+			quit = true;
+			returnVal = 1;
+			break;
+		}
+
+		if( sf::Keyboard::isKeyPressed( sf::Keyboard::B) )
 		{
 			if( mode == "neutral" )
 			{
@@ -626,7 +645,7 @@ void EditSession::Run( string fileName )
 		w->display();
 	}
 	
-	
+	return returnVal;
 	
 }
 

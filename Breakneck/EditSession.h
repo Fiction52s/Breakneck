@@ -30,7 +30,7 @@ struct EditSession
 {
 	EditSession( sf::RenderWindow *w);
 	~EditSession();
-	void Run(std::string fileName );
+	int Run(std::string fileName );
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
