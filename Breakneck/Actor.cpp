@@ -67,7 +67,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[STAND] = 20;
 		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
 
-		actionLength[STANDN] = 5;
+		actionLength[STANDN] = 5 * 2;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
 
 		actionLength[UAIR] = 9;
@@ -76,7 +76,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[WALLCLING] = 1;
 		tileset[WALLCLING] = owner->GetTileset( "wallcling.png", 64, 64 );
 
-		actionLength[WALLJUMP] = 7;
+		actionLength[WALLJUMP] = 7 * 2;
 		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
 		}
 
@@ -137,6 +137,10 @@ void Actor::ActionEnded()
 			action = JUMP;
 			frame = 1;
 			break;
+		case STANDN:
+			action = STAND;
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -145,24 +149,31 @@ void Actor::UpdatePrePhysics()
 {
 	ActionEnded();
 
-
+	//choose action
 	switch( action )
 	{
 	case STAND:
-		if( currInput.A && !prevInput.A )
 		{
-			action = JUMP;
-			frame = 0;
-			break;
-		}
-		if( currInput.Left() || currInput.Right() )
-		{
-			action = RUN;
-			frame = 0;
-			break;
-		}
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
+			else if( currInput.Left() || currInput.Right() )
+			{
+				action = RUN;
+				frame = 0;
+				break;
+			}
+			else if( currInput.X && !prevInput.X )
+			{
+				action = STANDN;
+				frame = 0;
+			}
 			
-		break;
+			break;
+		}
 	case RUN:
 		if( currInput.A && !prevInput.A )
 		{
@@ -201,11 +212,14 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+	//react to action
 	switch( action )
 	{
 	case STAND:
+		{
 		groundSpeed = 0;
 		break;
+		}
 	case RUN:
 		if( currInput.Left() )
 		{
@@ -291,6 +305,24 @@ void Actor::UpdatePrePhysics()
 					velocity.x = -wallJumpStrength.x;
 				}
 				velocity.y = -wallJumpStrength.y;
+			}
+			else if( frame > 10 )
+			{
+			if( currInput.Left() )
+			{
+				//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
+				//{
+					velocity.x -= airAccel;
+				//}
+					
+			}
+			else if( currInput.Right() )
+			{
+				//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
+				//{
+					velocity.x += airAccel;
+				//}
+			}
 			}
 			break;
 		}
@@ -794,7 +826,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			//	}
 			//	else
 				{
-					cout << "edge normal : " << minContact.edge->Normal().x << ", "<< minContact.edge->Normal().y << endl;
+					//cout << "edge normal : " << minContact.edge->Normal().x << ", "<< minContact.edge->Normal().y << endl;
 
 				}
 
@@ -832,7 +864,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				}*/
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-				//cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
+				cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
 				if( length( stealVec ) > 0 )
 				{
 					stealVec = length( stealVec ) * normalize( extraVel );
@@ -840,10 +872,10 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 				{
 					cout << "glitcffff: " << extraVel.x << ", " << extraVel.y << endl;
-					//extraVel.x = 0;
+					//extraVel.x = 0;k
 					//extraVel.y = 0;
 					//cout << "glitchffff" << endl;
-					//break;
+					break;
 					//newVel.x = 0;
 					//newVel.y = 0;
 						
@@ -903,6 +935,10 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 void Actor::UpdatePostPhysics()
 {
+	//if( collision )
+	//	cout << "collision" << endl;
+	//else
+	//	cout << "no collision" << endl;
 	if( ground != NULL )
 	{
 		if( collision )
@@ -911,9 +947,6 @@ void Actor::UpdatePostPhysics()
 			frame = 0;
 
 			V2d gn = ground->Normal();
-
-
-
 		}
 		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 		position = groundPoint;
@@ -930,7 +963,7 @@ void Actor::UpdatePostPhysics()
 	{
 		if( collision )
 		{
-			cout << "wallcling" << endl;
+			//cout << "wallcling" << endl;
 			if( length( wallNormal ) > 0 )
 			{
 				action = WALLCLING;
@@ -948,11 +981,11 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
-
+	//display action
 	switch( action )
 	{
 	case STAND:
-			
+		{	
 			
 		sprite->setTexture( *(tileset[STAND]->texture));
 			
@@ -997,8 +1030,9 @@ void Actor::UpdatePostPhysics()
 		//sprite->setPosition( position.x, position.y );
 		//cout << "setting to frame: " << frame / 4 << endl;
 		break;
+		}
 	case RUN:
-			
+		{	
 			
 		sprite->setTexture( *(tileset[RUN]->texture));
 		if( facingRight )
@@ -1035,29 +1069,44 @@ void Actor::UpdatePostPhysics()
 			//cout << "angle: " << angle / PI * 180  << endl;
 		}
 		break;
+		}
 	case JUMP:
+		{
 		sprite->setTexture( *(tileset[JUMP]->texture));
 		{
 		sf::IntRect ir;
-
-
-			
 
 		if( frame == 0 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 0 );
 		}
-		else if( velocity.y < - 10 )
+		else if( velocity.y < -15)
 		{
 			ir = tileset[JUMP]->GetSubRect( 1 );
 		}
-		else if( velocity.y < 0 )
+		else if( velocity.y < 12 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 2 );
 		}
-		else if( velocity.y == 0  )
+		else if( velocity.y < 14 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 3 );
+		}
+		else if( velocity.y < 18 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 4 );
+		}
+		else if( velocity.y < 34)
+		{
+			ir = tileset[JUMP]->GetSubRect( 5 );
+		}
+		else if( velocity.y < 37 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 6 );
+		}
+		else if( velocity.y < 40 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 7 );
 		}
 		else
 		{
@@ -1082,6 +1131,7 @@ void Actor::UpdatePostPhysics()
 		sprite->setPosition( position.x, position.y );
 
 		break;
+		}
 	case LAND: 
 		{
 		sprite->setTexture( *(tileset[LAND]->texture));
@@ -1125,11 +1175,28 @@ void Actor::UpdatePostPhysics()
 			sprite->setTexture( *(tileset[WALLJUMP]->texture));
 			if( facingRight )
 			{
-				sprite->setTextureRect( tileset[WALLJUMP]->GetSubRect( frame / 4 ) );
+				sprite->setTextureRect( tileset[WALLJUMP]->GetSubRect( frame / 2 ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[WALLJUMP]->GetSubRect( frame / 4 );
+				sf::IntRect ir = tileset[WALLJUMP]->GetSubRect( frame / 2 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case STANDN:
+		{
+			sprite->setTexture( *(tileset[STANDN]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 2 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 2 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
