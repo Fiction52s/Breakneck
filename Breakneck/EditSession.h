@@ -30,7 +30,9 @@ struct EditSession
 {
 	EditSession( sf::RenderWindow *w);
 	~EditSession();
-	int Run(std::string fileName );
+	int Run(std::string fileName, 
+		sf::Vector2f cameraPos, 
+		sf::Vector2f cameraSize );
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);

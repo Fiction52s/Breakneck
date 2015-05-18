@@ -83,14 +83,19 @@ int main()
 	bool edit = false;
 
 	int result = 0;
+
+	Vector2f lastViewSize( 0, 0 );
+	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
 		EditSession es(window );
-		int result = es.Run( "test1" );
+		int result = es.Run( "test1", lastViewCenter, lastViewSize );
 		if( result > 0 )
 			break;
 		GameSession gs( controller, window );
 		result = gs.Run( "test1" );
+		lastViewCenter = gs.lastViewCenter;
+		lastViewSize = gs.lastViewSize;
 	}
 
 	window->close();

@@ -26,6 +26,8 @@ struct GameSession
 	GameController &controller;
 	Collider coll;
 	std::list<sf::VertexArray*> polygons;
+	sf::Vector2f lastViewSize;
+	sf::Vector2f lastViewCenter;
 };
 
 #endif

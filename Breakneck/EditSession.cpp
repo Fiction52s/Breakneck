@@ -339,12 +339,15 @@ void EditSession::WriteFile(string fileName)
 	}
 }
 
-int EditSession::Run( string fileName )
+int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
 	Color testColor( 0x75, 0x70, 0x90 );
-	View view( sf::Vector2f( 300, 300 ), sf::Vector2f( 960, 540 ) );
+	View view( cameraPos, cameraSize );
+	if( cameraSize.x == 0 && cameraSize.y == 0 )
+		view.setSize( 960, 540 );
+
 	w->setView( view );
 	Texture playerTex;
 	playerTex.loadFromFile( "stand.png" );
@@ -356,7 +359,8 @@ int EditSession::Run( string fileName )
 
 	OpenFile( fileName );
 	//Vector2f vs(  );
-	view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
+	if( cameraSize.x == 0 && cameraSize.y == 0 )
+		view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
 
 	mode = "neutral";
 	bool quit = false;

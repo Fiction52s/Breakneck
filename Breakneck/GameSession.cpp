@@ -406,7 +406,10 @@ int GameSession::Run( string fileName )
 			}
 		}
 		view.setSize( Vector2f( 960 * zoomMultiple, 540 * zoomMultiple ) );
+		lastViewSize = view.getSize();
+		
 		view.setCenter( player.position.x, player.position.y );
+		lastViewCenter = view.getCenter();
 		window->setView( view );
 
 		
