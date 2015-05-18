@@ -34,7 +34,9 @@ Actor::Actor( GameSession *gs )
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
-
+		
+		//tileset setup
+		{
 		actionLength[DAIR] = 10;
 		tileset[DAIR] = owner->GetTileset( "dair.png", 128, 64 );
 
@@ -76,26 +78,30 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[WALLJUMP] = 7;
 		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
-
-		
+		}
 
 		action = JUMP;
 		frame = 1;
 
 		gravity = 2;
-		maxFallSpeed = 30;
+		maxFallSpeed = 60;
+
+		wallJumpStrength.x = 15;
+		wallJumpStrength.y = 30;
+		clingSpeed = 3;
 
 		ground = NULL;
 		groundSpeed = 0;
-		maxNormalRun = 30;
-		runAccel = 2;
+		maxNormalRun = 100;
+		runAccel = 1;
 		facingRight = true;
 		collision = false;
 		jumpStrength = 30;
-		airAccel = 2;
-		maxAirXSpeed = 30;
+		airAccel = 1;
+		maxAirXSpeed = 100;
 		maxAirXSpeedNormal = 10;
 		groundOffsetX = 0;
+
 
 		//CollisionBox b;
 		b.isCircle = false;
@@ -123,6 +129,13 @@ void Actor::ActionEnded()
 			break;
 		case LAND:
 			frame = 0;
+			break;
+		case WALLCLING:
+			frame = 0;
+			break;
+		case WALLJUMP:
+			action = JUMP;
+			frame = 1;
 			break;
 		}
 	}
@@ -179,6 +192,13 @@ void Actor::UpdatePrePhysics()
 		}
 
 		break;
+	case WALLCLING:
+		if( (facingRight && currInput.Right()) || (!facingRight && currInput.Left() ) )
+		{
+			action = WALLJUMP;
+			frame = 0;
+			//facingRight = !facingRight;
+		}
 	}
 
 	switch( action )
@@ -247,6 +267,33 @@ void Actor::UpdatePrePhysics()
 			}
 		}
 		break;
+	case WALLCLING:
+		{
+			
+			if( velocity.y > clingSpeed )
+			{
+				//cout << "running wallcling" << endl;
+				velocity.y = clingSpeed;
+			}
+			break;
+		}
+		
+	case WALLJUMP:
+		{
+			if( frame == 0 )
+			{
+				if( facingRight )
+				{
+					velocity.x = wallJumpStrength.x;
+				}
+				else
+				{
+					velocity.x = -wallJumpStrength.x;
+				}
+				velocity.y = -wallJumpStrength.y;
+			}
+			break;
+		}
 	}
 
 
@@ -255,9 +302,12 @@ void Actor::UpdatePrePhysics()
 	else if( velocity.x < -maxAirXSpeed )
 		velocity.x = -maxAirXSpeed;
 
-	velocity += V2d( 0, gravity );
-	if( velocity.y > maxFallSpeed )
-		velocity.y = maxFallSpeed;
+	if( ground == NULL )
+	{
+		velocity += V2d( 0, gravity );
+		if( velocity.y > maxFallSpeed )
+			velocity.y = maxFallSpeed;
+	}
 //	cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 	collision = false;
@@ -327,7 +377,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 	double maxMovement = min( b.rw, b.rh );
 	V2d movementVec;
 	V2d lastExtra( 100000, 100000 );
-
+	wallNormal.x = 0;
+	wallNormal.y = 0;
 	if( ground != NULL ) movement = groundSpeed;
 	else
 	{
@@ -651,10 +702,11 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			V2d newVel( 0, 0 );
 				
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
-			collision = ResolvePhysics( edges, numPoints, movementVec );
+			bool tempCollision = ResolvePhysics( edges, numPoints, movementVec );
 			V2d extraVel(0, 0);
-			if( collision )
+			if( tempCollision  )
 			{
+				collision = true;
 				position += minContact.resolution;
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
@@ -662,6 +714,12 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				Edge *e1 = e->edge1;
 				V2d e0n = e0->Normal();
 				V2d e1n = e1->Normal();
+
+				if( minContact.edge->Normal().x == 1 || minContact.edge->Normal().x == -1 )
+				{
+					wallNormal = minContact.edge->Normal();
+				}
+
 
 				V2d extraDir =  normalize( minContact.edge->v1 - minContact.edge->v0 );
 			//	if( ( minContact.position == e->v0 && en.x <= 0 && (e0n.x >= 0 || e0n.y > 0 ) ) 
@@ -674,8 +732,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					V2d te = e0->v0 - e0->v1;
 					if( te.x > 0 )
 					{
-							
 						extraDir = V2d( 0, -1 );
+						wallNormal = extraDir;
 					}
 				}
 				else if( (minContact.position == e->v1 && en.x < 0 && en.y > 0 ) )
@@ -684,7 +742,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.x > 0 )
 					{
 						extraDir = V2d( 0, -1 );
-						
+						wallNormal = extraDir;
 					}
 				}
 
@@ -694,7 +752,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.x < 0 )
 					{
 						extraDir = V2d( 0, 1 );
-						
+						wallNormal = extraDir;
 					}
 				}
 				else if( (minContact.position == e->v0 && en.x > 0 && en.y < 0 ) )
@@ -703,6 +761,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.x > 0 )
 					{	
 						extraDir = V2d( 0, -1 );
+						wallNormal = extraDir;
 					}
 				}
 				else if( (minContact.position == e->v1 && en.x > 0 && en.y < 0 ) )
@@ -711,6 +770,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.x < 0 )
 					{
 						extraDir = V2d( 0, 1 );
+						wallNormal = extraDir;
 					}
 				}
 				else if( (minContact.position == e->v0 && en.x > 0 && en.y > 0 ) )
@@ -719,7 +779,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.x < 0 )
 					{
 						extraDir = V2d( 0, 1 );
-						cout << "this thing" << endl;
+						wallNormal = extraDir;
+						//cout << "this thing" << endl;
 					}
 				}
 
@@ -799,24 +860,24 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			}
 
 			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << collision << endl;
-			if( collision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh  )
+			if( tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh  )
 			{
 				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
-				groundSpeed = length( velocity );
-				if( velocity.x < 0 )
+				groundSpeed = velocity.x;//length( velocity );
+			/*	if( velocity.x < 0 )
 				{
 					groundSpeed = -groundSpeed;
-				}
+				}*/
 
 				movement = 0;
 			
 				offsetX = position.x - minContact.position.x;
 				//cout << "groundinggg" << endl;
 			}
-			else if( collision )
+			else if( tempCollision )
 			{
 					velocity = newVel;
 			}
@@ -850,6 +911,9 @@ void Actor::UpdatePostPhysics()
 			frame = 0;
 
 			V2d gn = ground->Normal();
+
+
+
 		}
 		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 		position = groundPoint;
@@ -864,6 +928,19 @@ void Actor::UpdatePostPhysics()
 	}
 	else
 	{
+		if( collision )
+		{
+			cout << "wallcling" << endl;
+			if( length( wallNormal ) > 0 )
+			{
+				action = WALLCLING;
+				frame = 0;
+				if( wallNormal.x > 0)
+					facingRight = true;
+				else
+					facingRight = false;
+			}
+		}
 		if( leftGround )
 		{
 			action = JUMP;
@@ -1006,6 +1083,7 @@ void Actor::UpdatePostPhysics()
 
 		break;
 	case LAND: 
+		{
 		sprite->setTexture( *(tileset[LAND]->texture));
 		if( facingRight )
 		{
@@ -1024,6 +1102,41 @@ void Actor::UpdatePostPhysics()
 		sprite->setPosition( position.x, position.y );
 
 		break;
+		}
+	case WALLCLING:
+		{
+		sprite->setTexture( *(tileset[WALLCLING]->texture));
+		if( facingRight )
+		{
+			sprite->setTextureRect( tileset[WALLCLING]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[WALLCLING]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		break;
+		}
+	case WALLJUMP:
+		{
+			sprite->setTexture( *(tileset[WALLJUMP]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[WALLJUMP]->GetSubRect( frame / 4 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[WALLJUMP]->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
 	}
 
 		
