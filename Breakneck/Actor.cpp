@@ -617,6 +617,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 			V2d newVel( 0, 0 );
 				
+			cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
 			collision = ResolvePhysics( edges, numPoints, movementVec );
 			V2d extraVel(0, 0);
 			if( collision )
@@ -678,6 +679,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					if( te.y < 0 )
 					{
 						extraDir = V2d( -1, 0 );
+						cout << "here" << endl;
 					}
 				}
 				else if( (minContact.position == e->v0 && en.x < 0 && en.y > 0 ) )
@@ -704,10 +706,10 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				}*/
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-					
+				//cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
 				if( length( stealVec ) > 0 )
 				{
-					stealVec = length( stealVec ) * extraDir;
+					stealVec = length( stealVec ) * normalize( extraVel );
 				}
 				if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 				{
@@ -730,8 +732,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movementVec.y = 0;
 			}
 
-
-			if( collision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh )
+			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << collision << endl;
+			if( collision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh  )
 			{
 				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
@@ -746,6 +748,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movement = 0;
 			
 				offsetX = position.x - minContact.position.x;
+				//cout << "groundinggg" << endl;
 			}
 			else if( collision )
 			{
@@ -753,9 +756,20 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			}
 
 			if( length( extraVel ) > 0 )
+			{
 				movementVec = stealVec + extraVel;
+			//	cout << "x1: " << movementVec.x << ", " << movementVec.y << endl;
+			}
+
 			else
+			{
 				movementVec = stealVec;
+				//cout << "x2:  " << movementVec.x << ", " << movementVec.y << endl;
+			//	cout << "x21: " << stealVec.x << ", " << stealVec.y << endl;
+				//cout << "x22: " << movementVec.x << ", " << movementVec.y << endl;
+			}
+
+
 		}
 	}
 }
