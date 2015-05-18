@@ -68,7 +68,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actor.cpp" />
     <ClCompile Include="EditSession.cpp" />
+    <ClCompile Include="GameSession.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Physics.cpp" />
@@ -79,11 +81,13 @@
     <ClCompile Include="poly2tri\sweep\sweep.cc" />
     <ClCompile Include="poly2tri\sweep\sweep_context.cc" />
     <ClCompile Include="SurfaceMover.cpp" />
+    <ClCompile Include="Tileset.cpp" />
     <ClCompile Include="VectorMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
     <ClInclude Include="EditSession.h" />
+    <ClInclude Include="GameSession.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="PlayerChar.h" />
@@ -94,6 +98,7 @@
     <ClInclude Include="poly2tri\sweep\sweep.h" />
     <ClInclude Include="poly2tri\sweep\sweep_context.h" />
     <ClInclude Include="SurfaceMover.h" />
+    <ClInclude Include="Tileset.h" />
     <ClInclude Include="VectorMath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

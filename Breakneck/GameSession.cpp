@@ -1,110 +1,30 @@
-#include <iostream>
-//#include "PlayerChar.h"
-#include <SFML/System.hpp>
-#include <SFML/Graphics.hpp>
-#include <assert.h>
-#include <fstream>
-#include <list> 
-#include <stdlib.h>
-#include "EditSession.h"
-#include "VectorMath.h"
-#include "Input.h"
-#include "poly2tri/poly2tri.h"
-#include "Physics.h"
-#include "Actor.h"
-#include "Tileset.h"
+//game session
+
+#include "GameSession.h"
 
 
-#define TIMESTEP 1.0 / 60.0
 
 using namespace std;
 using namespace sf;
 
-RenderWindow *window;
-
-#define V2d sf::Vector2<double>
-GameController controller(0);
-ControllerState prevInput;
-ControllerState currInput;
-
-
-
-list<Tileset*> tilesetList;
-
-Tileset * GetTileset( const string & s, int tileWidth, int tileHeight )
+GameSession::GameSession()
 {
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	{
-		if( (*it)->sourceName == s )
-		{
-			return (*it);
-		}
-	}
-
-
-	//not found
-
-
-	Tileset *t = new Tileset();
-	t->texture = new Texture();
-	t->texture->loadFromFile( s );
-	t->tileWidth = tileWidth;
-	t->tileHeight = tileHeight;
-	tilesetList.push_back( t );
-
-	return t;
-	//make sure to set up tileset here
 }
 
-
-void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
+bool GameSession::OpenFile( string fileName )
 {
-	if( b.isCircle && b1.isCircle )
-	{
-		//circle circle
-	}
-	else if( b.isCircle )
-	{
-		//circle rect
-	}
-	else if( b1.isCircle )
-	{
-		//circle rect
-	}
-	else
-	{
-		//rect rect
-	}
+
 }
 
-int main()
+void GameSession::Run( string fileName )
 {
-	bool fullWindow = false;
-
-	if( fullWindow )
-	{
-		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-		window->setPosition( Vector2i(800, 0 ));
-	}
-	else
-	{
-		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	}
-	
-	sf::Vector2i pos( 0, 0 );
-
 	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
 	//window->setFramerateLimit( 60 );
-	window->setMouseCursorVisible( true );
-	
+	window->setMouseCursorVisible( false );
+
 	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	window->setView( view );
-
-	EditSession es(window );
-	es.Run( "test1" );
 
 	window->setVerticalSyncEnabled( true );
 
@@ -497,4 +417,3 @@ int main()
 	window->close();
 	delete window;
 }
-

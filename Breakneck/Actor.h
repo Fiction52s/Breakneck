@@ -1,3 +1,8 @@
+#include <SFML/Graphics.hpp>
+#include "Tileset.h"
+#include "Physics.h"
+#include "Input.h"
+
 #ifndef __ACTOR_H__
 #define __ACTOR_H__
 
@@ -15,10 +20,23 @@ struct Actor
 		Count
 	};
 
+	Actor();
 
-	Shader sh;
+	void ActionEnded();
+
+	void UpdatePrePhysics();
+	
+	bool ResolvePhysics( Edge** edges, 
+		int numPoints, sf::Vector2<double> vel );
+	void UpdatePhysics( Edge **edges, 
+		int numPoints );
+	void UpdatePostPhysics();
+
+	bool leftGround;
+	Contact minContact;
+	sf::Shader sh;
 	bool collision;
-	Sprite *sprite;
+	sf::Sprite *sprite;
 	Tileset *tilesetStand;
 	Tileset *tilesetRun;
 	Tileset *tilesetDash;
@@ -27,6 +45,9 @@ struct Actor
 	Tileset *tilesetJump;
 	Tileset *tilesetLand;
 	CollisionBox b;
+	ControllerState prevInput;
+	ControllerState currInput;
+	
 	
 	Edge *ground;
 	int numActiveEdges;
@@ -47,24 +68,10 @@ struct Actor
 	double maxAirXSpeed;
 	double maxAirXSpeedNormal;
 
-	Actor();
-
-	void ActionEnded();
-
-	void UpdatePrePhysics();
-	Contact minContact;
-	bool ResolvePhysics( Edge** edges, int numPoints, V2d vel );
-
-	bool leftGround;
-	void UpdatePhysics( Edge **edges, int numPoints );
-
-	void UpdatePostPhysics();
-
-
 	Action action;
 	int frame;
-	Vector2<double> position;
-	Vector2<double> velocity;
+	sf::Vector2<double> position;
+	sf::Vector2<double> velocity;
 	CollisionBox *physBox;
 };
 
