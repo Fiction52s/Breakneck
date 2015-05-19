@@ -184,10 +184,10 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 		
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
-
+		cout << "all" << endl;
 		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
-			//cout << "vezzzzz: " << vel.x << ", " << vel.y << endl;
+			cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 			Vector2<double> invVel = normalize(-vel);
 
 

@@ -620,7 +620,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					q += m;
 				}
 				
-				if(!approxEquals( m, 0 ) )
+				if(m != 0 )//!approxEquals( m, 0 ) )
 				{	
 					bool down = true;
 					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
@@ -657,7 +657,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh - 5 )
 								{
 									double test = position.x + minContact.resolution.x - minContact.position.x;
-									if( test < -b.rw || test > b.rw )
+									
+									if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
 									{
 										cout << "BROKEN OFFSET: " << test << endl;
 									}
@@ -669,11 +670,11 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 									}
 
-									if( offsetX < -b.rw || offsetX > b.rw )
+									/*if( offsetX < -b.rw || offsetX > b.rw )
 									{
 										cout << "BROKEN OFFSET: " << offsetX << endl;
 										assert( false && "T_T" );
-									}
+									}*/
 								}
 								else
 								{
