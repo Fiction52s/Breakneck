@@ -213,11 +213,12 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				if( left <= edgeRight && vel.x < 0 )
 				{
 					cout << "choose L" << endl;
-					resolveLeft = dot( V2d(edgeRight - left, 0), normalize( -vel ) );// / abs(normalize(vel).x);
+					resolveLeft = ( edgeRight - left ) / abs( normalize( vel).x);//dot( V2d(edgeRight - left, 0), normalize( -vel ) );// / abs(normalize(vel).x);
 				}
 				else if( right >= edgeLeft && vel.x > 0 )
 				{
-					resolveRight = (right - edgeLeft);// / abs(normalize(vel).x);
+					resolveRight = (right - edgeLeft) / abs(normalize(vel).x);
+					//dot( V2d((right - edgeLeft),0), normalize( -vel ) );//
 				}
 				else
 				{
@@ -227,11 +228,12 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				if( top <= edgeBottom && vel.y < 0 )
 				{
 					cout << "choose T" << endl;
-					resolveTop = dot( V2d( 0, (edgeBottom - top)), normalize( -vel ) );// / abs(normalize(vel).y);// / abs(a.velocity.x);
+					resolveTop = (edgeBottom - top) / abs(normalize(vel).y );//dot( V2d( 0, (edgeBottom - top)), normalize( -vel ) );// / abs(normalize(vel).y);// / abs(a.velocity.x);
 				}
 				else if( bottom >= edgeTop && vel.y > 0 )
 				{
-					resolveBottom = (bottom- edgeTop);// / abs(normalize(vel).y);// / abs(a.velocity.x);
+					resolveBottom = (bottom- edgeTop) / abs(normalize(vel).y);// / abs(a.velocity.x);
+					//dot( V2d( 0, (bottom - edgeTop)), normalize( -vel ) );//
 				}
 				else
 				{
@@ -269,29 +271,29 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			
 			currentContact->resolution = intersect - corner;
-			cout << "intersect quantity: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
-			cout << "inter: " << intersect.x << ", " << intersect.y << endl;
-			cout << "corner: " << corner.x << ", " << corner.y << endl;
-			cout << "testing: " << dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ))  << endl;
+		//	cout << "intersect quantity: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
+		//	cout << "inter: " << intersect.x << ", " << intersect.y << endl;
+		//	cout << "corner: " << corner.x << ", " << corner.y << endl;
+		//	cout << "testing: " << dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ))  << endl;
 
 			if( length( currentContact->resolution ) > length( vel ) + 10 )
 			{
-				cout << "resolution: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
-				cout << "vel: " << vel.x << ", " << vel.y << endl;
+		//		cout << "resolution: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
+		//		cout << "vel: " << vel.x << ", " << vel.y << endl;
 				cout << "returning null--" << endl;	
 				//return NULL;
 			}
 			else
 			{
-				cout << "what: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
+		//		cout << "what: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 			}
 
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
 
 			if( pri < -1 )
 			{
-				cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
-				//return NULL;
+			cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;
+				return NULL;
 			}
 
 			intersectQuantity = e->GetQuantity( intersect );
