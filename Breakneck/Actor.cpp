@@ -472,7 +472,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			bool transferRight = q == groundLength && movement > 0 
 				&& ((gNormal.x == 0 && e1->Normal().x == 0 )
 				|| ( offsetX == b.rw && ( e1->Normal().x >= 0 || e1->Normal().y > 0 ))
-				|| (offsetX == -b.rw && e1->Normal().x <= 0 ));//&& e1->Normal().y != 0 ) );
+				|| (offsetX == -b.rw && e1->Normal().x <= 0 && e1->Normal().y != 0 ) );
 			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0->Normal().x < 0) || (q == groundLength && gNormal.x < 0) );
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1->Normal().x > 0 ) || (q == 0 && gNormal.x > 0) );
@@ -511,6 +511,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 						
 					leftGround = true;
 					ground = NULL;
+					cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}
 
 			}
@@ -707,6 +708,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				{
 					edgeQuantity = q;
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+					break;
 					//offsetX = -offsetX;
 			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
 					//break;
