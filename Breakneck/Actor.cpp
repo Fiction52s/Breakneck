@@ -739,7 +739,8 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			if( tempCollision  )
 			{
 				collision = true;
-				position += minContact.resolution;
+			//	if( length( minContact.resolution ) <= length(movementVec) )
+					position += minContact.resolution;
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;
@@ -880,8 +881,11 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					//newVel.y = 0;
 						
 				}
+				if( length( extraVel ) > 0 )
+				{
 				lastExtra.x = extraVel.x;
 				lastExtra.y = extraVel.y;
+				}
 
 			//	cout << "extra vel 1: " << extraVel.x << ", " << extraVel.y << endl;
 			}
@@ -907,7 +911,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movement = 0;
 			
 				offsetX = position.x - minContact.position.x;
-				//cout << "groundinggg" << endl;
+				cout << "groundinggg" << endl;
 			}
 			else if( tempCollision )
 			{
@@ -964,7 +968,8 @@ void Actor::UpdatePostPhysics()
 		if( collision )
 		{
 			//cout << "wallcling" << endl;
-			if( length( wallNormal ) > 0 )
+			//if( length( wallNormal ) > 0 )
+			if( false )
 			{
 				action = WALLCLING;
 				frame = 0;
