@@ -64,7 +64,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[SPRINT] = 8;
 		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
 
-		actionLength[STAND] = 20;
+		actionLength[STAND] = 20 * 8;
 		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
 
 		actionLength[STANDN] = 5 * 2;

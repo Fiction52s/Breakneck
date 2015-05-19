@@ -417,7 +417,7 @@ int GameSession::Run( string fileName )
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 		bDraw.setPosition( player.position.x, player.position.y );
 	//	bDraw.setRotation( player.sprite->getRotation() );
-		window->draw( bDraw );
+	//	window->draw( bDraw );
 
 		window->draw( *(player.sprite) );//, &player.sh );
 		sf::RectangleShape rs;

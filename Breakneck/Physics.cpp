@@ -290,7 +290,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 						<< currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 
 
-					//return NULL;
+					return NULL;
 				}
 
 				
