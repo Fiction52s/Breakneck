@@ -205,6 +205,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			//cout << "testing: " << dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ))  << endl;
 			if( intersectQuantity < 0 || intersectQuantity > length( e->v1 - e->v0 ) )
 			{
+				cout << "this option" << endl;
 				double leftDist = edgeLeft - right;
 				double rightDist = edgeRight - left;
 				double topDist = edgeTop - bottom;
@@ -254,7 +255,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				}
 				else
 				{
-					cout << "top: " << top << ", " << edgeTop << endl;
+					//cout << "top: " << top << ", " << edgeTop << endl;
 				}
 
 
@@ -299,10 +300,14 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			
 				currentContact->collisionPriority = pri;
 				if( intersectQuantity < 0 )
-				currentContact->position = e->v0;
-				else 
+				{
+					currentContact->position = e->v0;
+				}
+				else
+				{
 					currentContact->position = e->v1;
-
+				}
+				currentContact->edge = e;
 				return currentContact;
 				//cout << "here!!!: " << currentContact->resolution.x << ", "
 				//	<< currentContact->resolution.y << endl;
@@ -494,7 +499,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 		//		cout << "vel: " << vel.x << ", " << vel.y << endl;
 				
 				cout << "returning null--" << endl;	
-			//	return NULL;
+				return NULL;
 			}
 			else
 			{

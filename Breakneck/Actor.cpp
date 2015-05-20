@@ -189,7 +189,36 @@ void Actor::UpdatePrePhysics()
 		}
 		break;
 	case JUMP:
-		break;
+		{
+			//cout << CheckWall( true ) << endl;
+			if( velocity.x <= 0 )
+			{
+				if( CheckWall( false ) )
+				{
+					if( currInput.Right() )
+					{
+						action = WALLJUMP;
+						frame = 0;
+						facingRight = true;
+					}
+				}
+			}
+			
+			if( velocity.x >= 0 )
+			{
+				if( CheckWall( true ) )
+				{
+					if( currInput.Left() )
+					{
+						action = WALLJUMP;
+						frame = 0;
+						facingRight = false;
+					}
+				}
+			}
+
+			break;
+		}
 	case LAND:
 		if( currInput.Left() || currInput.Right() )
 		{
@@ -281,7 +310,7 @@ void Actor::UpdatePrePhysics()
 				//}
 			}
 			//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
-			cout << CheckWall( true ) << endl;
+			
 		}
 		break;
 	case WALLCLING:
@@ -363,23 +392,25 @@ void Actor::UpdatePrePhysics()
 //	cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 	collision = false;
-
+	
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
+	
 }
 
 bool Actor::CheckWall( bool right )
 {
+	double wallThresh = 2;
 	V2d vel;
 	if( right )
 	{
-		vel.x = 10;
+		vel.x = wallThresh;
 	}
 	else
 	{
-		vel.x = -10;
+		vel.x = -wallThresh;
 	}
-	V2d newPos = position + vel;
+	V2d newPos = (position) + vel;
 	Contact test;
 	test.collisionPriority = 10000;
 	test.edge = NULL;
@@ -388,8 +419,8 @@ bool Actor::CheckWall( bool right )
 		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel );
 		if( c != NULL )
 		{
-			if( (c->collisionPriority < test.collisionPriority && c->collisionPriority >= 0 )
-				|| (test.collisionPriority == 10000 ) )
+			if( (c->collisionPriority < test.collisionPriority ))//&& c->collisionPriority >= 0 )
+			//	|| (test.collisionPriority == 10000 ) )
 			{
 				test.collisionPriority = c->collisionPriority;
 				test.edge = c->edge;
@@ -403,14 +434,40 @@ bool Actor::CheckWall( bool right )
 	bool wally = false;
 	if( test.edge != NULL )
 	{
-		
-		
+		double quant = test.edge->GetQuantity( test.position );
+		bool zero = false;
+		bool one = false;
+		if( quant <= 0 )
+		{
+			zero = true;
+			quant = 0;
+		}
+		else if( quant >= length( test.edge->v1 - test.edge->v0 ) )
+		{
+			one = true;
+			quant = length( test.edge->v1 - test.edge->v0 );
+		}
+
+		if( !zero && !one )
+			return false;
+
+		//cout << "zero: " << zero << ", one: " << one << endl;
+		//cout << "haha: "  << quant << ", " << length( test.edge->v1 - test.edge->v0 ) << endl;
 		Edge *e = test.edge;
 		V2d en = e->Normal();
 		Edge *e0 = e->edge0;
 		Edge *e1 = e->edge1;
 
-		cout << "here: " << test.position.x << ", " << test.position.y << " .. " << e->v0.x << ", " << e->v0.y << endl;	
+	//	cout << "here: " << test.position.x << ", " << test.position.y << " .. " << e->v0.x << ", " << e->v0.y << endl;	
+
+		/*CircleShape cs;
+		cs.setFillColor( Color::Cyan );
+		cs.setRadius( 10 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( e->GetPoint( quant ).x, e->GetPoint( quant ).y );
+
+		owner->window->draw( cs );*/
+
 
 		if( approxEquals(en.x,1) || approxEquals(en.x,-1) )
 		{
@@ -418,17 +475,19 @@ bool Actor::CheckWall( bool right )
 			return true;
 		}
 
-		if( (test.position == e->v0 && en.x < 0 && en.y < 0 ) )
+		if( (zero && en.x < 0 && en.y < 0 ) )
 		{
-			cout << "?>>>>>" << endl;
+			//cout << "?>>>>>" << endl;
 			V2d te = e0->v0 - e0->v1;
 			if( te.x > 0 )
 			{
 				return true;
 			}
 		}
-		else if( (test.position == e->v1 && en.x < 0 && en.y > 0 ) )
+		
+		if( (one && en.x < 0 && en.y > 0 ) )
 		{
+			//cout << "%%%%%" << endl;
 			V2d te = e1->v1 - e1->v0;
 			if( te.x > 0 )
 			{
@@ -436,7 +495,7 @@ bool Actor::CheckWall( bool right )
 			}
 		}
 
-		else if( (test.position == e->v1 && en.x < 0 && en.y < 0 ) )
+		if( (one && en.x < 0 && en.y < 0 ) )
 		{
 			V2d te = e1->v1 - e1->v0;
 			if( te.x < 0 )
@@ -444,7 +503,8 @@ bool Actor::CheckWall( bool right )
 				return true;
 			}
 		}
-		else if( (test.position == e->v0 && en.x > 0 && en.y < 0 ) )
+		
+		if( (zero && en.x > 0 && en.y < 0 ) )
 		{
 			V2d te = e0->v0 - e0->v1;
 			if( te.x > 0 )
@@ -452,7 +512,8 @@ bool Actor::CheckWall( bool right )
 				return true;
 			}
 		}
-		else if( (test.position == e->v1 && en.x > 0 && en.y < 0 ) )
+	
+		if( ( one && en.x > 0 && en.y < 0 ) )
 		{
 			V2d te = e1->v1 - e1->v0;
 			if( te.x < 0 )
@@ -460,7 +521,7 @@ bool Actor::CheckWall( bool right )
 				return true;
 			}
 		}
-		else if( (test.position == e->v0 && en.x > 0 && en.y > 0 ) )
+		if( (zero && en.x > 0 && en.y > 0 ) )
 		{
 			V2d te = e0->v0 - e0->v1;
 			if( te.x < 0 )
@@ -468,10 +529,11 @@ bool Actor::CheckWall( bool right )
 				return true;
 			}
 		}
-		else
+		
+
 		{
-			cout << en.x << ", " << en.y << endl;
-			cout << "misery" << endl;
+		//	cout << en.x << ", " << en.y << endl;
+		//	cout << "misery" << endl;
 		}
 	}
 	return false;
@@ -481,6 +543,9 @@ bool Actor::CheckWall( bool right )
 bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
 	position += vel;
+
+	
+
 	bool col = false;
 	int collisionNumber = 0;
 			
@@ -1076,6 +1141,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 void Actor::UpdatePostPhysics()
 {
+	
 	//if( collision )
 	//	cout << "collision" << endl;
 	//else
