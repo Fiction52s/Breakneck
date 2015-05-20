@@ -15,21 +15,13 @@ Actor::Actor( GameSession *gs )
 		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		numActiveEdges = 0;
 
-		cout << "shader available: " << Shader::isAvailable() << endl;
-		//assert( Shader::isAvailable() && "help me" );
-		/*const std::string fragmentShader = \
-			"void main()" \
-			"{" \
-			"    ..." \
-			"}";
-
 		assert( Shader::isAvailable() && "help me" );
 		if (!sh.loadFromFile("player_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
 			cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "player shader not loaded" );
-		}*/
+		}
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -37,7 +29,7 @@ Actor::Actor( GameSession *gs )
 		
 		//tileset setup
 		{
-		actionLength[DAIR] = 10;
+		actionLength[DAIR] = 10 * 2;
 		tileset[DAIR] = owner->GetTileset( "dair.png", 128, 64 );
 
 		actionLength[DASH] = 120;
@@ -46,7 +38,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[DOUBLE] = 30;
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 
-		actionLength[FAIR] = 10;
+		actionLength[FAIR] = 10 * 2;
 		tileset[FAIR] = owner->GetTileset( "fair.png", 128, 64 );
 
 		actionLength[JUMP] = 2;
@@ -70,13 +62,13 @@ Actor::Actor( GameSession *gs )
 		actionLength[STANDN] = 5 * 2;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
 
-		actionLength[UAIR] = 9;
+		actionLength[UAIR] = 9 * 3;
 		tileset[UAIR] = owner->GetTileset( "uair.png", 128, 128 );
 
 		actionLength[WALLCLING] = 1;
 		tileset[WALLCLING] = owner->GetTileset( "wallcling.png", 64, 64 );
 
-		actionLength[WALLJUMP] = 7 * 2;
+		actionLength[WALLJUMP] = 9 * 2;
 		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
 		}
 
@@ -86,7 +78,7 @@ Actor::Actor( GameSession *gs )
 		gravity = 2;
 		maxFallSpeed = 60;
 
-		wallJumpStrength.x = 15;
+		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 30;
 		clingSpeed = 3;
 
@@ -140,6 +132,18 @@ void Actor::ActionEnded()
 		case STANDN:
 			action = STAND;
 			frame = 0;
+			break;
+		case FAIR:
+			action = JUMP;
+			frame = 1;
+			break;
+		case DAIR:
+			action = JUMP;
+			frame = 1;
+			break;
+		case UAIR:
+			action = JUMP;
+			frame = 1;
 			break;
 		}
 	}
@@ -200,6 +204,7 @@ void Actor::UpdatePrePhysics()
 						action = WALLJUMP;
 						frame = 0;
 						facingRight = true;
+						break;
 					}
 				}
 			}
@@ -213,8 +218,31 @@ void Actor::UpdatePrePhysics()
 						action = WALLJUMP;
 						frame = 0;
 						facingRight = false;
+						break;
 					}
 				}
+			}
+
+			if( currInput.X && !prevInput.X )
+			{
+				if( !currInput.Left() && !currInput.Right() )
+				{
+					if( currInput.Up() )
+					{
+						action = UAIR;
+						frame = 0;
+						break;
+					}
+					else if( currInput.Down() )
+					{
+						action = DAIR;
+						frame = 0;
+						break;
+					}
+				}
+
+				action = FAIR;
+				frame = 0;
 			}
 
 			break;
@@ -233,12 +261,27 @@ void Actor::UpdatePrePhysics()
 
 		break;
 	case WALLCLING:
-		if( (facingRight && currInput.Right()) || (!facingRight && currInput.Left() ) )
 		{
+			if( (facingRight && currInput.Right()) || (!facingRight && currInput.Left() ) )
+			{
 
-			action = WALLJUMP;
-			frame = 0;
-			//facingRight = !facingRight;
+				action = WALLJUMP;
+				frame = 0;
+				//facingRight = !facingRight;
+			}
+			break;
+		}
+	case FAIR:
+		{
+			break;
+		}
+	case DAIR:
+		{
+			break;
+		}
+	case UAIR:
+		{
+			break;
 		}
 	}
 
@@ -373,6 +416,18 @@ void Actor::UpdatePrePhysics()
 				//}
 			}
 			}
+			break;
+		}
+	case FAIR:
+		{
+			break;
+		}
+	case DAIR:
+		{
+			break;
+		}
+	case UAIR:
+		{
 			break;
 		}
 	}
@@ -1413,11 +1468,11 @@ void Actor::UpdatePostPhysics()
 			else
 			{
 				sf::IntRect ir = tileset[WALLJUMP]->GetSubRect( frame / 2 );
-				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
+
 			break;
 		}
 	case STANDN:
@@ -1431,6 +1486,57 @@ void Actor::UpdatePostPhysics()
 			{
 				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 2 );
 				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case FAIR:
+		{
+	
+			sprite->setTexture( *(tileset[FAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case DAIR:
+		{
+	
+			sprite->setTexture( *(tileset[DAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[DAIR]->GetSubRect( frame / 2 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[DAIR]->GetSubRect( frame / 2 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case UAIR:
+		{
+	
+			sprite->setTexture( *(tileset[UAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[UAIR]->GetSubRect( frame / 3 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
