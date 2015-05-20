@@ -32,7 +32,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[DAIR] = 10 * 2;
 		tileset[DAIR] = owner->GetTileset( "dair.png", 128, 64 );
 
-		actionLength[DASH] = 120;
+		actionLength[DASH] = 80;
 		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
 
 		actionLength[DOUBLE] = 30;
@@ -75,12 +75,16 @@ Actor::Actor( GameSession *gs )
 		action = JUMP;
 		frame = 1;
 
+
+
 		gravity = 2;
 		maxFallSpeed = 60;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 30;
 		clingSpeed = 3;
+
+		dashSpeed = 20;
 
 		ground = NULL;
 		groundSpeed = 0;
@@ -199,6 +203,11 @@ void Actor::UpdatePrePhysics()
 			frame = 0;
 			break;
 		}
+		else if( currInput.B && !prevInput.B )
+		{
+				action = DASH;
+				frame = 0;
+		}
 		break;
 	case JUMP:
 		{
@@ -293,6 +302,25 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
+			else if( !currInput.B )
+			{
+				if( currInput.Left() || currInput.Right() )
+				{
+					action = RUN;
+					frame = 0;
+				}
+				else
+				{
+					action = STAND;
+					frame = 0;
+				}
+			}
 			break;
 		}
 	}
@@ -444,6 +472,28 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			if( currInput.Left() && facingRight )
+			{
+				facingRight = false;
+				groundSpeed = -dashSpeed;
+				frame = 0;
+			}
+			else if( currInput.Right() && !facingRight )
+			{
+				facingRight = true;
+				groundSpeed = dashSpeed;
+				frame = 0;
+			}
+			else if( !facingRight )
+			{
+				if( groundSpeed > -dashSpeed )
+					groundSpeed = -dashSpeed;
+			}
+			else
+			{
+				if( groundSpeed < dashSpeed )
+					groundSpeed = dashSpeed;
+			}
 			break;
 		}
 	}
@@ -1588,6 +1638,8 @@ void Actor::UpdatePostPhysics()
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
+			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			sprite->setRotation( angle / PI * 180 );
 			break;
 		}
 	}

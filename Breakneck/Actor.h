@@ -72,6 +72,8 @@ struct Actor
 	double maxAirXSpeed;
 	double maxAirXSpeedNormal;
 
+	double dashSpeed;
+
 	sf::Vector2<double> wallJumpStrength;
 	double clingSpeed;
 
