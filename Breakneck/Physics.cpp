@@ -184,10 +184,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 		
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
-		cout << "all" << endl;
 		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
-			cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
+			//cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 			Vector2<double> invVel = normalize(-vel);
 
 
@@ -196,7 +195,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 			if( li.parallel || abs( testing ) == 1 )
 			{
-				cout << "returning null1" << endl;
+				//cout << "returning null1" << endl;
 				return NULL;
 			}
 			Vector2<double> intersect = li.position;
@@ -267,10 +266,10 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//	return NULL;
 				}
 
-				if( resolveDist == resolveTop ) cout << "T" << endl;
+			/*	if( resolveDist == resolveTop ) cout << "T" << endl;
 				else if( resolveDist == resolveBottom ) cout << "B" << endl;
 				else if( resolveDist == resolveLeft ) cout << "L" << endl;
-				else if( resolveDist == resolveRight ) cout << "R" << endl;
+				else if( resolveDist == resolveRight ) cout << "R" << endl;*/
 
 
 
@@ -280,7 +279,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//cout << "resolution toooo: " << currentContact->resolution.x  << ", " << currentContact->resolution.y << endl;
 				//cout << "dist: " << resolveDist << endl;
 
-				if( resolveDist == 10000 || length( currentContact->resolution) > length(vel) + 10 )
+				if( resolveDist == 10000 || length( currentContact->resolution) > length(vel) + 1 )
 				{
 					//resolve
 				//	if( resolveDist == 10000kmkkkkkkkkkkkkkkkkk )
@@ -319,7 +318,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				if( edgeNormal.x < 0 && edgeNormal.y < 0 && right >= edgeLeft && vel.x > 0  )
 				{
 					
-						cout << "aa 1" << endl;
+					//	cout << "aa 1" << endl;
 						currentContact->resolution = normalize(-vel) * (right - edgeLeft) ;//V2d( 0, 0 );
 						//cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 					
@@ -327,14 +326,14 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				else if( edgeNormal.x < 0 && edgeNormal.y > 0 && edgeBottom >= top && vel.y < 0  )
 				{
 					
-						cout << "aa 2" << endl;
+						//cout << "aa 2" << endl;
 						currentContact->resolution = normalize(-vel) * (edgeBottom - top) ;//V2d( 0, 0 );
 						//cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 					
 				}
 				else if( edgeNormal.x > 0 && edgeNormal.y > 0 && edgeRight >= left && vel.x < 0  )
 				{
-					cout << "aa 3" << endl;
+					//cout << "aa 3" << endl;
 						
 						currentContact->resolution = normalize(-vel) * (edgeRight - left) ;//V2d( 0, 0 );
 					//	cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
@@ -342,7 +341,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				}
 				else if( edgeNormal.x > 0 && edgeNormal.y < 0 && bottom >= edgeTop && vel.y > 0  )
 				{
-					cout << "aa 4" << endl;
+				//	cout << "aa 4" << endl;
 						
 						currentContact->resolution = normalize(-vel) * (bottom - edgeTop) ;//V2d( 0, 0 );
 					//	cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
@@ -436,7 +435,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 				if( edgeNormal.x < 0 && edgeNormal.y < 0 && bottom >= edgeTop && vel.y > 0  )
 				{
-					cout << "bb 1" << endl;
+					//cout << "bb 1" << endl;
 						
 						currentContact->resolution = normalize(-vel) * (bottom - edgeTop) ;//V2d( 0, 0 );
 						//cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
@@ -444,7 +443,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				}
 				else if( edgeNormal.x < 0 && edgeNormal.y > 0 && right >= edgeLeft && vel.x > 0  )
 				{
-					cout << "bb 2" << endl;
+					//cout << "bb 2" << endl;
 						
 						currentContact->resolution = normalize(-vel) * (right - edgeLeft) ;//V2d( 0, 0 );
 						//cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
@@ -452,7 +451,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				}
 				else if( edgeNormal.x > 0 && edgeNormal.y > 0 && edgeBottom >= top && vel.y < 0  )
 				{
-					cout << "bb 3" << endl;
+					//cout << "bb 3" << endl;
 						
 						currentContact->resolution = normalize(-vel) * (edgeBottom - top) ;//V2d( 0, 0 );
 					//	cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
@@ -460,7 +459,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				}
 				else if( edgeNormal.x > 0 && edgeNormal.y < 0 && edgeRight >= left && vel.x <= 0  )
 				{
-					cout << "bb 4" << endl;
+					//cout << "bb 4" << endl;
 						currentContact->resolution = normalize(-vel) * (edgeRight - left);//V2d( 0, 0 );
 					//	cout << "oneeee: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 					
@@ -499,7 +498,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else
 			{
-				cout << "what: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
+				//cout << "what: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 			}
 
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );

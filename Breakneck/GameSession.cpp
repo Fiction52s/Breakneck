@@ -198,7 +198,7 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-
+	bool bdrawdraw = true;
 
 	OpenFile( fileName );
 	
@@ -417,6 +417,7 @@ int GameSession::Run( string fileName )
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 		bDraw.setPosition( player.position.x, player.position.y );
 	//	bDraw.setRotation( player.sprite->getRotation() );
+		if( bdrawdraw)
 		window->draw( bDraw );
 
 		window->draw( *(player.sprite) );//, &player.sh );

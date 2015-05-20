@@ -206,6 +206,7 @@ void Actor::UpdatePrePhysics()
 	case WALLCLING:
 		if( (facingRight && currInput.Right()) || (!facingRight && currInput.Left() ) )
 		{
+
 			action = WALLJUMP;
 			frame = 0;
 			//facingRight = !facingRight;
@@ -279,6 +280,8 @@ void Actor::UpdatePrePhysics()
 					velocity.x += airAccel;
 				//}
 			}
+			//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
+			cout << CheckWall( true ) << endl;
 		}
 		break;
 	case WALLCLING:
@@ -289,6 +292,23 @@ void Actor::UpdatePrePhysics()
 				//cout << "running wallcling" << endl;
 				velocity.y = clingSpeed;
 			}
+			if( currInput.Left() )
+			{
+				//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
+				//{
+					velocity.x -= airAccel;
+				//}
+					
+			}
+			else if( currInput.Right() )
+			{
+				//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
+				//{
+					velocity.x += airAccel;
+				//}
+			}
+
+			
 			break;
 		}
 		
@@ -343,6 +363,119 @@ void Actor::UpdatePrePhysics()
 //	cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 	collision = false;
+
+	oldVelocity.x = velocity.x;
+	oldVelocity.y = velocity.y;
+}
+
+bool Actor::CheckWall( bool right )
+{
+	V2d vel;
+	if( right )
+	{
+		vel.x = 10;
+	}
+	else
+	{
+		vel.x = -10;
+	}
+	V2d newPos = position + vel;
+	Contact test;
+	test.collisionPriority = 10000;
+	test.edge = NULL;
+	for( int i = 0; i < owner->numPoints; ++i )
+	{
+		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel );
+		if( c != NULL )
+		{
+			if( (c->collisionPriority < test.collisionPriority && c->collisionPriority >= 0 )
+				|| (test.collisionPriority == 10000 ) )
+			{
+				test.collisionPriority = c->collisionPriority;
+				test.edge = c->edge;
+				test.position = c->position;
+				test.resolution = c->resolution;
+			}
+		
+		}
+	}
+
+	bool wally = false;
+	if( test.edge != NULL )
+	{
+		
+		
+		Edge *e = test.edge;
+		V2d en = e->Normal();
+		Edge *e0 = e->edge0;
+		Edge *e1 = e->edge1;
+
+		cout << "here: " << test.position.x << ", " << test.position.y << " .. " << e->v0.x << ", " << e->v0.y << endl;	
+
+		if( approxEquals(en.x,1) || approxEquals(en.x,-1) )
+		{
+			//wallNormal = minContact.edge->Normal();
+			return true;
+		}
+
+		if( (test.position == e->v0 && en.x < 0 && en.y < 0 ) )
+		{
+			cout << "?>>>>>" << endl;
+			V2d te = e0->v0 - e0->v1;
+			if( te.x > 0 )
+			{
+				return true;
+			}
+		}
+		else if( (test.position == e->v1 && en.x < 0 && en.y > 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.x > 0 )
+			{
+				return true;
+			}
+		}
+
+		else if( (test.position == e->v1 && en.x < 0 && en.y < 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.x < 0 )
+			{
+				return true;
+			}
+		}
+		else if( (test.position == e->v0 && en.x > 0 && en.y < 0 ) )
+		{
+			V2d te = e0->v0 - e0->v1;
+			if( te.x > 0 )
+			{	
+				return true;
+			}
+		}
+		else if( (test.position == e->v1 && en.x > 0 && en.y < 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.x < 0 )
+			{
+				return true;
+			}
+		}
+		else if( (test.position == e->v0 && en.x > 0 && en.y > 0 ) )
+		{
+			V2d te = e0->v0 - e0->v1;
+			if( te.x < 0 )
+			{
+				return true;
+			}
+		}
+		else
+		{
+			cout << en.x << ", " << en.y << endl;
+			cout << "misery" << endl;
+		}
+	}
+	return false;
+
 }
 
 bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
@@ -404,6 +537,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 
 void Actor::UpdatePhysics( Edge **edges, int numPoints )
 {
+//	cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
@@ -751,7 +885,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				V2d e0n = e0->Normal();
 				V2d e1n = e1->Normal();
 
-				if( minContact.edge->Normal().x == 1 || minContact.edge->Normal().x == -1 )
+				if( approxEquals(minContact.edge->Normal().x,1) || approxEquals(minContact.edge->Normal().x,-1) )
 				{
 					wallNormal = minContact.edge->Normal();
 				}
@@ -868,7 +1002,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				}*/
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-				cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
+				//cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
 				if( length( stealVec ) > 0 )
 				{
 					stealVec = length( stealVec ) * normalize( extraVel );
@@ -914,7 +1048,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movement = 0;
 			
 				offsetX = position.x - minContact.position.x;
-				cout << "groundinggg" << endl;
+				//cout << "groundinggg" << endl;
 			}
 			else if( tempCollision )
 			{
@@ -971,17 +1105,42 @@ void Actor::UpdatePostPhysics()
 		if( collision )
 		{
 			//cout << "wallcling" << endl;
-			//if( length( wallNormal ) > 0 )
-			if( false )
+			if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
+			//if( false )
 			{
-				action = WALLCLING;
-				frame = 0;
-				if( wallNormal.x > 0)
-					facingRight = true;
+				
+				if( wallNormal.y > 0)
+				{
+					cout << "facing right: " << endl;
+					if( currInput.Left() )
+					{
+						facingRight = true;
+						action = WALLCLING;
+						frame = 0;
+					}
+				}
 				else
-					facingRight = false;
+				{
+					if( currInput.Right() )
+					{
+						cout << "facing left: " << endl;
+						facingRight = false;
+						action = WALLCLING;
+						frame = 0;
+					}
+					
+				}
 			}
 		}
+		else
+		
+
+		if( action == WALLCLING && length( wallNormal ) == 0 )
+			{
+				action = JUMP;
+				frame = 1;
+			}
+
 		if( leftGround )
 		{
 			action = JUMP;

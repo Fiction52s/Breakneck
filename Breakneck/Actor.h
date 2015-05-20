@@ -40,7 +40,7 @@ struct Actor
 	void UpdatePhysics( Edge **edges, 
 		int numPoints );
 	void UpdatePostPhysics();
-
+	bool CheckWall( bool right );
 	GameSession *owner;
 	bool leftGround;
 	Contact minContact;
@@ -51,7 +51,7 @@ struct Actor
 	CollisionBox b;
 	ControllerState prevInput;
 	ControllerState currInput;
-	
+	sf::Vector2<double> oldVelocity;
 	
 	Edge *ground;
 	int numActiveEdges;
