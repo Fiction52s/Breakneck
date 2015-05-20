@@ -145,6 +145,9 @@ void Actor::ActionEnded()
 			action = JUMP;
 			frame = 1;
 			break;
+		case DASH:
+			action = STAND;
+			frame = 0;
 		}
 	}
 }
@@ -173,6 +176,11 @@ void Actor::UpdatePrePhysics()
 			else if( currInput.X && !prevInput.X )
 			{
 				action = STANDN;
+				frame = 0;
+			}
+			else if( currInput.B && !prevInput.B )
+			{
+				action = DASH;
 				frame = 0;
 			}
 			
@@ -280,6 +288,10 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case UAIR:
+		{
+			break;
+		}
+	case DASH:
 		{
 			break;
 		}
@@ -427,6 +439,10 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case UAIR:
+		{
+			break;
+		}
+	case DASH:
 		{
 			break;
 		}
@@ -1537,6 +1553,37 @@ void Actor::UpdatePostPhysics()
 			else
 			{
 				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case DASH:
+		{
+	
+			sprite->setTexture( *(tileset[DASH]->texture));
+
+			sf::IntRect ir;
+			if( frame < 10 )
+			{
+				ir = tileset[DASH]->GetSubRect( frame / 2 );
+			}
+			else if( frame < actionLength[DASH] - 2 )
+			{
+				ir = tileset[DASH]->GetSubRect( 5 );
+			}
+			else
+				ir = tileset[DASH]->GetSubRect( 6 );
+			
+
+
+			if( facingRight )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
