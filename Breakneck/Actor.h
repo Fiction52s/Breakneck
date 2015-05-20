@@ -22,6 +22,7 @@ struct Actor
 		SLIDE,
 		SPRINT,
 		STAND,
+		STANDD,
 		STANDN,
 		UAIR,
 		WALLCLING,
@@ -73,6 +74,10 @@ struct Actor
 	double maxAirXSpeedNormal;
 
 	double dashSpeed;
+
+	double doubleJumpStrength;
+	bool hasDoubleJump;
+
 
 	sf::Vector2<double> wallJumpStrength;
 	double clingSpeed;

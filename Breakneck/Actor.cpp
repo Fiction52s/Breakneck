@@ -47,17 +47,23 @@ Actor::Actor( GameSession *gs )
 		actionLength[LAND] = 1;
 		tileset[LAND] = owner->GetTileset( "land.png", 64, 64 );
 
+		actionLength[LAND2] = 1;
+		tileset[LAND2] = owner->GetTileset( "land2.png", 64, 64 );
+
 		actionLength[RUN] = 10 * 4;
 		tileset[RUN] = owner->GetTileset( "run.png", 128, 64 );
 
 		actionLength[SLIDE] = 1;
 		tileset[SLIDE] = owner->GetTileset( "slide.png", 64, 64 );
 
-		actionLength[SPRINT] = 8;
+		actionLength[SPRINT] = 8 * 4;
 		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
 
 		actionLength[STAND] = 20 * 8;
 		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
+
+		actionLength[STANDD] = 6 * 2;
+		tileset[STANDD] = owner->GetTileset( "standd.png", 128, 64 );
 
 		actionLength[STANDN] = 5 * 2;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
@@ -85,6 +91,9 @@ Actor::Actor( GameSession *gs )
 		clingSpeed = 3;
 
 		dashSpeed = 20;
+
+		hasDoubleJump = true;
+		doubleJumpStrength = 30;
 
 		ground = NULL;
 		groundSpeed = 0;
@@ -126,6 +135,9 @@ void Actor::ActionEnded()
 		case LAND:
 			frame = 0;
 			break;
+		case LAND2:
+			frame = 0;
+			break;
 		case WALLCLING:
 			frame = 0;
 			break;
@@ -134,6 +146,10 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case STANDN:
+			action = STAND;
+			frame = 0;
+			break;
+		case STANDD:
 			action = STAND;
 			frame = 0;
 			break;
@@ -152,6 +168,17 @@ void Actor::ActionEnded()
 		case DASH:
 			action = STAND;
 			frame = 0;
+			break;
+		case DOUBLE:
+			action = JUMP;
+			frame = 1;
+			break;
+		case SLIDE:
+			frame = 0;
+			break;
+		case SPRINT:
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -173,70 +200,184 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.Left() || currInput.Right() )
 			{
-				action = RUN;
-				frame = 0;
+				if( currInput.Down() )
+				{
+					action = SPRINT;
+					frame = 0;
+				}
+				else
+				{
+					action = RUN;
+					frame = 0;
+				}
 				break;
+				
 			}
 			else if( currInput.X && !prevInput.X )
 			{
-				action = STANDN;
-				frame = 0;
+				if( currInput.Down() )
+				{
+					action = STANDD;
+					frame = 0;
+				}
+				else
+				{
+					action = STANDN;
+					frame = 0;
+				}
 			}
 			else if( currInput.B && !prevInput.B )
 			{
 				action = DASH;
 				frame = 0;
 			}
+			else if( currInput.Down() )
+			{
+				action = SLIDE;
+				frame = 0;
+			}
 			
 			break;
 		}
 	case RUN:
-		if( currInput.A && !prevInput.A )
 		{
-			action = JUMP;
-			frame = 0;
-			break;
-		}
-		if(!( currInput.Left() || currInput.Right() ))
-		{
-			action = STAND;
-			frame = 0;
-			break;
-		}
-		else if( currInput.B && !prevInput.B )
-		{
-				action = DASH;
+			
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
 				frame = 0;
+				break;
+			}
+
+
+
+			if(!( currInput.Left() || currInput.Right() ))
+			{
+				if( currInput.Down())
+				{
+					action = SLIDE;
+					frame = 0;
+				}
+				else
+				{
+					action = STAND;
+					frame = 0;
+				}
+				break;
+				
+			}
+			else
+			{
+				if( facingRight && currInput.Left() )
+				{
+					groundSpeed = 0;
+					facingRight = false;
+					frame = 0;
+					break;
+				}
+				else if( !facingRight && currInput.Right() )
+				{
+					groundSpeed = 0;
+					facingRight = true;
+					frame = 0;
+					break;
+				}
+				else if( currInput.Down() )
+				{
+					action = SPRINT;
+					frame = 0;
+					break;
+				}
+
+			}
+			if( currInput.B && !prevInput.B )
+			{
+					action = DASH;
+					frame = 0;
+					break;
+			}
+			break;
 		}
-		break;
 	case JUMP:
 		{
-			//cout << CheckWall( true ) << endl;
-			if( velocity.x <= 0 )
+			if( hasDoubleJump && currInput.A && !prevInput.A )
 			{
-				if( CheckWall( false ) )
+				action = DOUBLE;
+				frame = 0;
+				break;
+			}
+			//cout << CheckWall( true ) << endl;
+			
+			if( CheckWall( false ) )
+			{
+				if( currInput.Right() && !prevInput.Right() )
 				{
-					if( currInput.Right() )
-					{
-						action = WALLJUMP;
-						frame = 0;
-						facingRight = true;
-						break;
-					}
+					action = WALLJUMP;
+					frame = 0;
+					facingRight = true;
+					break;
 				}
 			}
 			
-			if( velocity.x >= 0 )
-			{
-				if( CheckWall( true ) )
+			
+			if( CheckWall( true ) )
+			{				
+				if( currInput.Left() && !prevInput.Left() )
 				{
-					if( currInput.Left() )
+					action = WALLJUMP;
+					frame = 0;
+					facingRight = false;
+					break;
+				}
+			}
+
+	
+			if( currInput.X && !prevInput.X )
+			{
+				if( !currInput.Left() && !currInput.Right() )
+				{
+					if( currInput.Up() )
 					{
-						action = WALLJUMP;
+						action = UAIR;
 						frame = 0;
-						facingRight = false;
 						break;
 					}
+					else if( currInput.Down() )
+					{
+						action = DAIR;
+						frame = 0;
+						break;
+					}
+				}
+
+				action = FAIR;
+				frame = 0;
+			}
+
+			break;
+		}
+		case DOUBLE:
+		{
+			if( CheckWall( false ) )
+			{
+				if( currInput.Right() && !prevInput.Right() )
+				{
+					action = WALLJUMP;
+					frame = 0;
+					facingRight = true;
+					break;
+				}
+			}
+			
+			
+			if( CheckWall( true ) )
+			{				
+				if( currInput.Left() && !prevInput.Left() )
+				{
+					action = WALLJUMP;
+					frame = 0;
+					facingRight = false;
+					break;
 				}
 			}
 
@@ -265,6 +406,8 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case LAND:
+	case LAND2:
+			{
 		if( currInput.Left() || currInput.Right() )
 		{
 			action = RUN;
@@ -277,6 +420,7 @@ void Actor::UpdatePrePhysics()
 		}
 
 		break;
+		}
 	case WALLCLING:
 		{
 			if( (facingRight && currInput.Right()) || (!facingRight && currInput.Left() ) )
@@ -323,7 +467,116 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+	case SLIDE:
+		{
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
+			else if( currInput.B && !prevInput.B )
+			{
+					action = DASH;
+					frame = 0;
+					break;
+			}
+			else if( currInput.X && !prevInput.X )
+			{
+				action = STANDD;
+				frame = 0;
+				break;
+			}
+			else if( !currInput.Left() && !currInput.Right() )
+			{
+				if( !currInput.Down() )
+				{
+					action = STAND;
+					frame = 0;
+					break;
+				}
+			}
+			else
+			{
+				if( currInput.Down() )
+				{
+					action = SPRINT;
+					frame = 0;
+					break;
+				}
+				else
+				{
+					action = RUN;
+					frame = 0;
+					break;
+				}
+			}
+		}
+	case SPRINT:
+		{
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
+
+			if(!( currInput.Left() || currInput.Right() ))
+			{
+				if( currInput.Down())
+				{
+					action = SLIDE;
+					frame = 0;
+				}
+				else
+				{
+					action = STAND;
+					frame = 0;
+				}
+				break;
+				
+			}
+			else
+			{
+				if( facingRight && currInput.Left() )
+				{
+					if( !currInput.Down() )
+					{
+						action = RUN;
+					}
+					groundSpeed = 0;
+					facingRight = false;
+					frame = 0;
+					break;
+				}
+				else if( !facingRight && currInput.Right() )
+				{
+					if( !currInput.Down() )
+					{
+						action = RUN;
+					}
+					groundSpeed = 0;
+					facingRight = true;
+					frame = 0;
+					break;
+				}
+				else if( !currInput.Down() )
+				{
+					action = RUN;
+					frame = 0;
+					break;
+				}
+
+			}
+			if( currInput.B && !prevInput.B )
+			{
+					action = DASH;
+					frame = 0;
+			}
+			break;
+		}
 	}
+	
 
 	//react to action
 	switch( action )
@@ -496,6 +749,46 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+	case DOUBLE:
+		{
+			
+			if( frame == 0 )
+			{
+				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
+				if( velocity.y > 0 )
+					velocity.y = 0;
+				velocity.y -= doubleJumpStrength;
+				hasDoubleJump = false;
+			}
+			else
+			{
+				
+				if( currInput.Left() )
+				{
+					//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
+					//{
+						velocity.x -= airAccel;
+					//}
+					
+				}
+				else if( currInput.Right() )
+				{
+					//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
+					//{
+						velocity.x += airAccel;
+					//}
+				}
+				//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
+			
+			}
+			break;
+		}
+	case SLIDE:
+		{
+
+			break;
+		}
+
 	}
 
 
@@ -569,8 +862,8 @@ bool Actor::CheckWall( bool right )
 			quant = length( test.edge->v1 - test.edge->v0 );
 		}
 
-		if( !zero && !one )
-			return false;
+		//if( !zero && !one )
+		//	return false;
 
 		//cout << "zero: " << zero << ", one: " << one << endl;
 		//cout << "haha: "  << quant << ", " << length( test.edge->v1 - test.edge->v0 ) << endl;
@@ -593,6 +886,13 @@ bool Actor::CheckWall( bool right )
 		if( approxEquals(en.x,1) || approxEquals(en.x,-1) )
 		{
 			//wallNormal = minContact.edge->Normal();
+			return true;
+		}
+
+		
+		if( en.y > 0 && abs( en.x ) > .8 )
+		{
+			//cout << "here" << endl;
 			return true;
 		}
 
@@ -812,6 +1112,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 					leftGround = true;
+
 					ground = NULL;
 				}
 			}
@@ -1271,8 +1572,19 @@ void Actor::UpdatePostPhysics()
 	{
 		if( collision )
 		{
-			action = LAND;
-			frame = 0;
+			if( currInput.Left() || currInput.Right() )
+			{
+				action = LAND2;
+				frame = 0;
+			}
+			else
+			{
+				action = LAND;
+				frame = 0;
+			}
+			
+
+			hasDoubleJump = true;
 
 			V2d gn = ground->Normal();
 		}
@@ -1424,6 +1736,45 @@ void Actor::UpdatePostPhysics()
 		}
 		break;
 		}
+	case SPRINT:
+		{	
+			
+		sprite->setTexture( *(tileset[SPRINT]->texture));
+		if( facingRight )
+		{
+			sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 4 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[SPRINT]->GetSubRect( frame / 4 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+			
+
+		if( ground != NULL )
+		{
+			double angle = 0;
+			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
+			if( offsetX < b.rw && offsetX > -b.rw )
+			{
+
+			}
+			else
+			{
+				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			}
+			//sprite->setOrigin( b.rw, 2 * b.rh );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			//V2d pp = ground->GetPoint( edgeQuantity );
+			//sprite->setPosition( pp.x, pp.y );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( angle / PI * 180 );
+			//sprite->setPosition( position.x, position.y );
+			//cout << "angle: " << angle / PI * 180  << endl;
+		}
+		break;
+		}
 	case JUMP:
 		{
 		sprite->setTexture( *(tileset[JUMP]->texture));
@@ -1491,11 +1842,32 @@ void Actor::UpdatePostPhysics()
 		sprite->setTexture( *(tileset[LAND]->texture));
 		if( facingRight )
 		{
-			sprite->setTextureRect( tileset[LAND]->GetSubRect( frame / 4 ) );
+			sprite->setTextureRect( tileset[LAND]->GetSubRect( 0 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tileset[LAND]->GetSubRect( frame / 4 );
+			sf::IntRect ir = tileset[LAND]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		sprite->setRotation( angle / PI * 180 );
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+
+		break;
+		}
+	case LAND2: 
+		{
+		sprite->setTexture( *(tileset[LAND2]->texture));
+		if( facingRight )
+		{
+			sprite->setTextureRect( tileset[LAND2]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[LAND2]->GetSubRect( 0 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -1541,6 +1913,26 @@ void Actor::UpdatePostPhysics()
 
 			break;
 		}
+	case SLIDE:
+		{
+		sprite->setTexture( *(tileset[SLIDE]->texture));
+		if( facingRight )
+		{
+			sprite->setTextureRect( tileset[SLIDE]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[SLIDE]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		sprite->setRotation( angle / PI * 180 );
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		break;
+		}
 	case STANDN:
 		{
 			sprite->setTexture( *(tileset[STANDN]->texture));
@@ -1554,6 +1946,27 @@ void Actor::UpdatePostPhysics()
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
+			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			sprite->setRotation( angle / PI * 180 );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case STANDD:
+		{
+			sprite->setTexture( *(tileset[STANDD]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STANDD]->GetSubRect( frame / 2 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			sprite->setRotation( angle / PI * 180 );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			break;
@@ -1603,6 +2016,23 @@ void Actor::UpdatePostPhysics()
 			else
 			{
 				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			break;
+		}
+	case DOUBLE:
+		{
+	
+			sprite->setTexture( *(tileset[DOUBLE]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[DOUBLE]->GetSubRect( frame / 1 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[DOUBLE]->GetSubRect( frame / 1 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
