@@ -15,6 +15,7 @@ Polygon::Polygon()
 	va = NULL;
 	lines = NULL;
 	selected = false;
+	
 }
 
 Polygon::~Polygon()
@@ -232,6 +233,8 @@ bool Polygon::IsClockwise()
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
+//	VertexArray *va = new VertexArray( sf::Lines, 
+//	progressDrawList.push( new 
 }
 
 EditSession::~EditSession()
@@ -388,6 +391,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		sf::Vertex(sf::Vector2<float>(max, -max), borderColor),
 		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
 	};
+
+	
 
 	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	
@@ -644,6 +649,43 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);
+		int progressSize = polygonInProgress->points.size();
+		if( progressSize > 0 )
+		{
+			Vector2i backPoint = polygonInProgress->points.back();
+			
+			Color validColor = Color::Green;
+			Color invalidColor = Color::Red;
+			Color colorSelection;
+			if( true )
+			{
+				colorSelection = validColor;
+			}
+			sf::Vertex activePreview[2] =
+			{
+				sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
+				sf::Vertex(sf::Vector2<float>(worldPos.x, worldPos.y), colorSelection)
+			};
+			w->draw( activePreview, 2, sf::Lines );
+
+			if( progressSize > 1 )
+			{
+				VertexArray v( sf::LinesStrip, progressSize );
+				int i = 0;
+				for( list<sf::Vector2i>::iterator it = polygonInProgress->points.begin(); 
+					it != polygonInProgress->points.end(); ++it )
+				{
+					v[i] = Vertex( Vector2f( (*it).x, (*it).y ) );
+					++i;
+				}
+				w->draw( v );
+				//Vertex *p[polygonInProgress->points.size()]
+			}
+			
+			
+		}
+
+
 		Draw();
 		w->draw( playerSprite );
 		w->display();

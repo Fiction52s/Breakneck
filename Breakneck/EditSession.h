@@ -43,6 +43,8 @@ struct EditSession
 	std::string mode;
 	std::string currentFile;
 	double zoomMultiple;
+	std::list<sf::VertexArray*> progressDrawList;
+	
 	
 	
 };
