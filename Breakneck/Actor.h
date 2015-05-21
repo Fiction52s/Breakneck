@@ -62,6 +62,12 @@ struct Actor
 	double groundOffsetX;
 	double offsetX;
 
+	double maxRunInit;
+	double maxGroundSpeed;
+	double runAccelInit;
+	double runGain;
+	double sprintAccel;
+
 	double groundSpeed;
 	double maxNormalRun;
 	double runAccel;

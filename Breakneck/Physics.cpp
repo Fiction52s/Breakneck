@@ -182,11 +182,11 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 
 
-		
+	//	cout << "res: " << res << endl;
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
 		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
-			//cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
+		//	cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 			Vector2<double> invVel = normalize(-vel);
 
 
@@ -492,7 +492,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else
 			{
-				//cout << "else case: " << intersectQuantity << ", " << length( e->v1 - e->v0 ) << endl;
+				cout << "else case: " << intersectQuantity << ", " << length( e->v1 - e->v0 ) << endl;
 			//cout << "else case" << endl;
 				currentContact->resolution = e->GetPoint( intersectQuantity ) - corner;
 			}

@@ -94,8 +94,10 @@ Actor::Actor( GameSession *gs )
 
 		dashSpeed = 20;
 
+		jumpStrength = 27.5;
+
 		hasDoubleJump = true;
-		doubleJumpStrength = 30;
+		doubleJumpStrength = 26.5;
 
 		ground = NULL;
 		groundSpeed = 0;
@@ -103,12 +105,17 @@ Actor::Actor( GameSession *gs )
 		runAccel = 1;
 		facingRight = true;
 		collision = false;
-		jumpStrength = 30;
+	
 		airAccel = 1;
 		maxAirXSpeed = 100;
 		maxAirXSpeedNormal = 10;
 		groundOffsetX = 0;
 
+		maxRunInit = 10;
+		maxGroundSpeed = 100;
+		runAccelInit = .5;
+		runAccel = .01;
+		sprintAccel = 2;
 
 		//CollisionBox b;
 		b.isCircle = false;
@@ -635,9 +642,17 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				groundSpeed -= runAccel;
-				if( groundSpeed < -maxNormalRun )
-					groundSpeed = -maxNormalRun;
+				if( groundSpeed > -maxRunInit )
+				{
+					groundSpeed -= runAccelInit;
+					if( groundSpeed < -maxRunInit )
+						groundSpeed = maxRunInit;
+				}
+				else
+				{
+					groundSpeed -= runAccel;
+				}
+				
 			}
 			facingRight = false;
 		}
@@ -647,9 +662,16 @@ void Actor::UpdatePrePhysics()
 				groundSpeed = 0;
 			else
 			{
-				groundSpeed += runAccel;
-				if( groundSpeed > maxNormalRun )
-					groundSpeed = maxNormalRun;
+				if( groundSpeed < maxRunInit )
+				{
+					groundSpeed += runAccelInit;
+					if( groundSpeed > maxRunInit )
+						groundSpeed = maxRunInit;
+				}
+				else
+				{
+					groundSpeed += runAccel;
+				}
 			}
 			facingRight = true;
 		}
@@ -832,16 +854,27 @@ void Actor::UpdatePrePhysics()
 	}
 
 
-	if( velocity.x > maxAirXSpeed )
-		velocity.x = maxAirXSpeed;
-	else if( velocity.x < -maxAirXSpeed )
-		velocity.x = -maxAirXSpeed;
+	
 
 	if( ground == NULL )
 	{
+		if( velocity.x > maxAirXSpeed )
+			velocity.x = maxAirXSpeed;
+		else if( velocity.x < -maxAirXSpeed )
+			velocity.x = -maxAirXSpeed;
+
 		velocity += V2d( 0, gravity );
 		if( velocity.y > maxFallSpeed )
 			velocity.y = maxFallSpeed;
+	}
+	else
+	{
+		if( groundSpeed > maxGroundSpeed )
+			groundSpeed = maxGroundSpeed;
+		else if( groundSpeed < -maxGroundSpeed )
+		{
+			groundSpeed = -maxGroundSpeed;
+		}
 	}
 //	cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
@@ -1211,6 +1244,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
+					
 						V2d eNorm = minContact.edge->Normal();
 						if( eNorm.y < 0 )
 						{
@@ -1232,6 +1266,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 									offsetX = b.rw;
 									continue;
 								}
+								
 
 							}
 							else
@@ -1315,6 +1350,22 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 							if( eNorm.y < 0 )
 							{
 								//bool 
+								cout << "min:" << minContact.position.x << ", " << minContact.position.y  << endl;
+								cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
+								cout << "res: " << minContact.resolution.y << endl;
+
+								CircleShape cs;
+								cs.setFillColor( Color::Cyan );
+								cs.setRadius( 20 );
+								cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+								cs.setPosition( minContact.resolution.x, minContact.resolution.y );
+
+								owner->window->draw( cs );
+								cs.setPosition( position.x, position.y + minContact.resolution.y + b.rh - 5);
+									cs.setRadius( 10 );
+								cs.setFillColor( Color::Magenta );
+								owner->window->draw( cs );
+
 								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh - 5 )
 								{
 									double test = position.x + minContact.resolution.x - minContact.position.x;
@@ -1325,6 +1376,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 									}
 									else
 									{	
+										cout << "c" << endl;
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 										V2d eNorm = minContact.edge->Normal();			
@@ -1339,6 +1391,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								}
 								else
 								{
+									cout << "xx" << endl;
 									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 									groundSpeed = 0;
 									edgeQuantity = q;
