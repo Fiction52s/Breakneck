@@ -24,6 +24,10 @@ struct Polygon
 	sf::VertexArray *va;
 	int vaSize;
 	bool selected;
+	int left;
+	int right;
+	int top;
+	int bottom;
 };
 
 struct EditSession
@@ -36,6 +40,7 @@ struct EditSession
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
+	
 	std::list<Polygon*> polygons;
 	sf::Vector2i playerPosition;
 	Polygon *polygonInProgress;
@@ -44,7 +49,7 @@ struct EditSession
 	std::string currentFile;
 	double zoomMultiple;
 	std::list<sf::VertexArray*> progressDrawList;
-	
+	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
 	
 	
 };

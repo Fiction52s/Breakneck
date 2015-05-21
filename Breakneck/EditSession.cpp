@@ -8,7 +8,7 @@
 using namespace std;
 using namespace sf;
 
-
+#define V2d sf::Vector2<double>
 
 Polygon::Polygon()
 {
@@ -84,8 +84,19 @@ void Polygon::Finalize()
 			++it;
 		}
 	}
-
-	
+	list<Vector2i>::iterator it = points.begin();
+	left = (*it).x;
+	right = (*it).x;
+	top = (*it).y;
+	bottom = (*it).y;
+	++it;
+	for( ; it != points.end(); ++it )
+	{
+		left = min( (*it).x, left );
+		right = max( (*it).x, right );
+		top = min( (*it).y, top );
+		bottom = max( (*it).y, bottom );
+	}
 	
 
 	//p2t::Sweep
@@ -426,7 +437,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength * zoomMultiple )
 					{
 						Vector2i worldi( worldPos.x, worldPos.y );
-						polygonInProgress->points.push_back( worldi  );
+						
+						if( polygonInProgress->points.size() > 1 )
+						{
+							if( PointValid( polygonInProgress->points.back(), worldi ) )
+							{
+								polygonInProgress->points.push_back( worldi  );
+							}
+							
+						}
+						else
+						{
+							polygonInProgress->points.push_back( worldi  );
+						}
+						
 
 					}
 				}
@@ -695,4 +719,58 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	
 }
 
+bool EditSession::PointValid( Vector2i prev, Vector2i point )
+{
+	//return true;
+	float eLeft = min( prev.x, point.x );
+	float eRight= max( prev.x, point.x );
+	float eTop = min( prev.y, point.y );
+	float eBottom = max( prev.y, point.y );
+	int i = 0;
+	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		//cout << "polygon " << i << " out of " << polygons.size() << " ... " << (*it)->points.size()  << endl;
+		++i;
+		Polygon *p = (*it);
+		
+		if( eLeft <= p->right && eRight >= p->left && eTop <= p->bottom && eBottom >= p->top )
+		{	
+		
+			//aabbCollision = true;
+		
+		}
+		else
+		{
+			continue;
+		}
+	//	if( point.x <= p->right && point.x >= p->left && point.y >= p->top && point.y <= p->bottom )
+	//	{
+			list<sf::Vector2i>::iterator it2 = p->points.begin();
+			Vector2i prevPoint = (*it2);
+			++it2;
+			for( ; it2 != p->points.end(); ++it2 )
+			{
+				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d((*it2).x, (*it2).y),
+					V2d( prev.x, prev.y ), V2d( point.x, point.y ) );
+				float tempLeft = min( prevPoint.x, (*it2).x );
+				float tempRight = max( prevPoint.x, (*it2).x );
+				float tempTop = min( prevPoint.y, (*it2).y );
+				float tempBottom = max( prevPoint.y, (*it2).y );
+				if( !li.parallel )
+				{
+					if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
+					{
+						if( li.position.x <= eRight && li.position.x >= eLeft && li.position.y >= eTop && li.position.y <= eBottom )
+						{
+							return false;
+						}
+
+					}
+				}
+				prevPoint = (*it2);
+				
+			}
+	}
+	return true;
+}
 
