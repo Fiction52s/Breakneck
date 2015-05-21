@@ -17,6 +17,7 @@ struct GameSession
 	Tileset * GetTileset( const std::string & s,
 		int tileWidth, int tileHeight );
 	Actor player;
+	sf::Shader polyShader;
 	Edge **edges;
 	sf::Vector2<double> *points;
 	int numPoints;

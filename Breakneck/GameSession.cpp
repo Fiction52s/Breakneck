@@ -16,6 +16,12 @@ using namespace sf;
 GameSession::GameSession(GameController &c, RenderWindow *rw)
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this )
 {
+	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "polygon shader not loaded" );
+	}
 }
 
 
@@ -57,6 +63,7 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 	t->texture->loadFromFile( s );
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;
+	t->sourceName = s;
 	tilesetList.push_back( t );
 
 	return t;
@@ -420,7 +427,26 @@ int GameSession::Run( string fileName )
 		if( bdrawdraw)
 		window->draw( bDraw );
 
-		window->draw( *(player.sprite) , &player.sh );
+	
+		player.sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
+		//player.sh.setParameter( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
+		player.sh.setParameter( "u_normals", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
+		
+		Vector2i vi = Mouse::getPosition();
+		
+		
+		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .075 );
+		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
+		player.sh.setParameter( "Resolution", Vector2f( 1920, 1080 ) );
+		player.sh.setParameter( "LightPos", blahblah  );
+		player.sh.setParameter( "LightColor", Color::White );
+		player.sh.setParameter( "AmbientColor", Color( .5, .5, .5, 1 ) );
+		player.sh.setParameter( "Falloff", Vector3f( .3, .3, .3 ) );
+
+
+
+
+		window->draw( *(player.sprite) );//, &player.sh );
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(64, 64) );
 		rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
@@ -428,9 +454,17 @@ int GameSession::Run( string fileName )
 		rs.setFillColor( Color::Blue );
 		//window->draw( circle );
 		//window->draw(line, numPoints * 2, sf::Lines);
+		//polyShader.setParameter( "resolution", view.getSize().x, view.getSize().y );
+		//polyShader.setParameter( "random", rand() % 100 );
+		polyShader.setParameter( "vel", player.velocity.x, player.velocity.y );
+		polyShader.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
+		//polyShader.CurrentTexture = GetTileset( "testrocks.png", 25, 25 )->texture;
+
 		for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 		{
-			window->draw( *(*it ) );
+		//	window->draw( *(*it) );
+			//window->draw
+			window->draw( *(*it ) );//, &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
 		//window->draw(border, 8, sf::Lines);
 

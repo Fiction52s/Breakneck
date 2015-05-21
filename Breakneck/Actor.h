@@ -31,7 +31,7 @@ struct Actor
 	};
 
 	Actor( GameSession *owner );
-
+	
 	void ActionEnded();
 
 	void UpdatePrePhysics();

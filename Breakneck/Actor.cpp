@@ -23,6 +23,8 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
+		
+
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
@@ -35,7 +37,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[DASH] = 80;
 		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
 
-		actionLength[DOUBLE] = 30;
+		actionLength[DOUBLE] = 28 + 10;
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 
 		actionLength[FAIR] = 10 * 2;
@@ -285,7 +287,22 @@ void Actor::UpdatePrePhysics()
 				else if( currInput.Down() )
 				{
 					action = SPRINT;
-					frame = 0;
+					frame = frame / 4;
+
+					if( frame < 3 )
+					{
+						frame = frame + 1;
+					}
+					else if ( frame == 8)
+					{
+						frame = 7;
+					}
+
+					else if ( frame == 9)
+					{
+						frame = 0;
+					}
+					frame = frame * 4;
 					break;
 				}
 
@@ -543,7 +560,30 @@ void Actor::UpdatePrePhysics()
 					if( !currInput.Down() )
 					{
 						action = RUN;
+						frame = frame / 4;
+						if( frame < 3)
+						{
+							frame = frame + 1;
+						}
+						else if ( frame == 3 || frame == 4)
+						{
+							frame = 7;
+						}
+						else if ( frame == 5 || frame == 6)
+						{
+							frame = 8;
+						}
+						else if ( frame == 7)
+						{
+							frame = 2;
+						}
+						frame = frame * 4;
 					}
+					else
+					{
+						frame = 0;
+					}
+
 					groundSpeed = 0;
 					facingRight = false;
 					frame = 0;
@@ -2025,14 +2065,19 @@ void Actor::UpdatePostPhysics()
 	case DOUBLE:
 		{
 	
+			int fr = frame;
+			if ( frame > 27)
+			{
+				fr = 27;
+			}
 			sprite->setTexture( *(tileset[DOUBLE]->texture));
 			if( facingRight )
 			{
-				sprite->setTextureRect( tileset[DOUBLE]->GetSubRect( frame / 1 ) );
+				sprite->setTextureRect( tileset[DOUBLE]->GetSubRect( fr / 1 ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[DOUBLE]->GetSubRect( frame / 1 );
+				sf::IntRect ir = tileset[DOUBLE]->GetSubRect( fr / 1 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
