@@ -300,7 +300,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				double pri = length( vel + currentContact->resolution );
 			
 				currentContact->collisionPriority = pri;
-				if( intersectQuantity < 0 )
+				if( intersectQuantity <= 0 )
 				{
 					currentContact->position = e->v0;
 				}
