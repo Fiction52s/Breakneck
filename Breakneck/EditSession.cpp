@@ -442,8 +442,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( PointValid( polygonInProgress->points.back(), worldi ) )
 							{
+								cout << "point valid" << endl;
 								polygonInProgress->points.push_back( worldi  );
 							}
+							else
+								cout << "INVALID" << endl;
 							
 						}
 						else
@@ -721,11 +724,53 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 bool EditSession::PointValid( Vector2i prev, Vector2i point )
 {
-	//return true;
 	float eLeft = min( prev.x, point.x );
 	float eRight= max( prev.x, point.x );
 	float eTop = min( prev.y, point.y );
 	float eBottom = max( prev.y, point.y );
+	{
+		list<Vector2i>::iterator it = polygonInProgress->points.begin();
+		//polygonInProgress->points.push_back( polygonInProgress->points.back() )
+		Vector2i pre = (*it);
+		++it;
+		for( ; it != polygonInProgress->points.end(); ++it )
+		{
+			if( (*it) == polygonInProgress->points.back() )
+				continue;
+			LineIntersection li = lineIntersection( V2d( prev.x, prev.y ), V2d( point.x, point.y ),
+						V2d( pre.x, pre.y ), V2d( (*it).x, (*it).y ) );
+			float tempLeft = min( pre.x, (*it).x ) - 0;
+			float tempRight = max( pre.x, (*it).x ) + 0;
+			float tempTop = min( pre.y, (*it).y ) - 0;
+			float tempBottom = max( pre.y, (*it).y ) + 0;
+			if( !li.parallel )
+			{
+				if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
+				{
+					if( li.position.x <= eRight && li.position.x >= eLeft && li.position.y >= eTop && li.position.y <= eBottom )
+					{
+						CircleShape cs;
+						cs.setRadius( 30  );
+						cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+						cs.setFillColor( Color::Magenta );
+						cs.setPosition( li.position.x, li.position.y );
+						w->draw( cs );
+
+						return false;
+					}
+
+				}
+			}
+			else
+			{
+				//cout << "parallel" << endl;
+				//return false;
+			}
+			pre = (*it);
+		}
+	}
+	//return true;
+
 	int i = 0;
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{

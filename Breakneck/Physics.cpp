@@ -205,7 +205,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			//cout << "testing: " << dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ))  << endl;
 			if( intersectQuantity < 0 || intersectQuantity > length( e->v1 - e->v0 ) )
 			{
-				cout << "this option" << endl;
+				cout << "this option: " << intersectQuantity << ", " << length( e->v1 - e->v0 ) << endl;
 				double leftDist = edgeLeft - right;
 				double rightDist = edgeRight - left;
 				double topDist = edgeTop - bottom;
@@ -267,10 +267,11 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//	return NULL;
 				}
 
-			/*	if( resolveDist == resolveTop ) cout << "T" << endl;
+				if( resolveDist == resolveTop ) cout << "T" << endl;
 				else if( resolveDist == resolveBottom ) cout << "B" << endl;
 				else if( resolveDist == resolveLeft ) cout << "L" << endl;
-				else if( resolveDist == resolveRight ) cout << "R" << endl;*/
+				else if( resolveDist == resolveRight ) cout << "R" << endl;
+			
 
 
 
@@ -278,7 +279,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 				currentContact->resolution = normalize(-vel) * resolveDist;
 				//cout << "resolution toooo: " << currentContact->resolution.x  << ", " << currentContact->resolution.y << endl;
-				//cout << "dist: " << resolveDist << endl;
+				cout << "dist: " << resolveDist << endl;
 
 				if( resolveDist == 10000 || length( currentContact->resolution) > length(vel) + 1 )
 				{
@@ -314,6 +315,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else if( approxEquals(intersectQuantity,0) )
 			{
+				cout << "aa" << endl;
 			//	cout << "new case: " << edgeNormal.x << ", " << edgeNormal.y << ".. vel: " << vel.x << ", " << vel.y << endl;
 				//if( approxEquals(intersectQuantity,0) )
 					currentContact->position = e->v0;
@@ -397,6 +399,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else if( approxEquals(intersectQuantity ,length( e->v1 - e->v0 )) )
 			{
+				cout << "bb" << endl;
 				currentContact->position = e->v1;
 				//cout << "nutso" << endl;
 
@@ -483,9 +486,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else
 			{
-
-			
-			currentContact->resolution = intersect - corner;
+				cout << "else case: " << intersectQuantity << ", " << length( e->v1 - e->v0 ) << endl;
+			//cout << "else case" << endl;
+				currentContact->resolution = e->GetPoint( intersectQuantity ) - corner;
 			}
 		//	cout << "intersect quantity: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
 		//	cout << "inter: " << intersect.x << ", " << intersect.y << endl;

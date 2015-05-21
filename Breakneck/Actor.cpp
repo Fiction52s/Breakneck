@@ -58,7 +58,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[SLIDE] = 1;
 		tileset[SLIDE] = owner->GetTileset( "slide.png", 64, 64 );
 
-		actionLength[SPRINT] = 8 * 4;
+		actionLength[SPRINT] = 8 * 3;
 		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
 
 		actionLength[STAND] = 20 * 8;
@@ -302,7 +302,7 @@ void Actor::UpdatePrePhysics()
 					{
 						frame = 0;
 					}
-					frame = frame * 4;
+					frame = frame * 3;
 					break;
 				}
 
@@ -560,7 +560,7 @@ void Actor::UpdatePrePhysics()
 					if( !currInput.Down() )
 					{
 						action = RUN;
-						frame = frame / 4;
+						frame = frame / 3;
 						if( frame < 3)
 						{
 							frame = frame + 1;
@@ -1782,11 +1782,11 @@ void Actor::UpdatePostPhysics()
 		sprite->setTexture( *(tileset[SPRINT]->texture));
 		if( facingRight )
 		{
-			sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 4 ) );
+			sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 3 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tileset[SPRINT]->GetSubRect( frame / 4 );
+			sf::IntRect ir = tileset[SPRINT]->GetSubRect( frame / 3 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
