@@ -739,6 +739,7 @@ void Actor::UpdatePrePhysics()
 					velocity.x += airSlow;
 					if( velocity.x > 0 ) velocity.x = 0;
 				}
+				cout << "slowing" << endl;
 			}
 			//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
 			
@@ -1198,7 +1199,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
 	position += vel;
 	
-	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
+	cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
 	bool col = false;
 	int collisionNumber = 0;
@@ -1773,18 +1774,23 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movementVec.y = 0;
 			}
 
-			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << collision << endl;
-			if( tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh  )
+			cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
+			if( tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh - 1  )
 			{
 				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = velocity.x;//length( velocity );
-			/*	if( velocity.x < 0 )
+
+				//groundSpeed = velocity.x;//dot( velocity, normalize( ground->v1 - ground->v0 ) ); //max( abs( velocity.x ), abs( dot( velocity, normalize( ground->v1 - ground->v0 ) ) ) );
+				
+				if( velocity.x < 0 )
 				{
-					groundSpeed = -groundSpeed;
-				}*/
+					//groundSpeed = -groundSpeed;
+				}
+
+				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
 
 				movement = 0;
 			
