@@ -221,17 +221,21 @@ bool Polygon::IsClockwise()
     long long int sum = 0;
 	for (int i = 0; i < points.size(); ++i)
     {
-        Vector2i first, second;
+        Vector2<long long int> first, second;
+		
         if (i == 0)
         {
-            first = pointArray[points.size() - 1];
+			first.x = pointArray[points.size() - 1].x;
+			first.y = pointArray[points.size() - 1].y;
         }
         else
         {
-            first = pointArray[i - 1];
+            first.x = pointArray[i - 1].x;
+			first.y = pointArray[i - 1].y;
 
         }
-        second = pointArray[i];
+        second.x = pointArray[i].x;
+		second.y = pointArray[i].y;
 
         sum += (second.x - first.x) * (second.y + first.y);
     }
