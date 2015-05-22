@@ -34,7 +34,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[DAIR] = 10 * 2;
 		tileset[DAIR] = owner->GetTileset( "dair.png", 128, 64 );
 
-		actionLength[DASH] = 80;
+		actionLength[DASH] = 45;
 		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
 
 		actionLength[DOUBLE] = 28 + 10;
@@ -92,7 +92,7 @@ Actor::Actor( GameSession *gs )
 		wallJumpStrength.y = 30;
 		clingSpeed = 3;
 
-		dashSpeed = 20;
+		dashSpeed = 17;
 
 		jumpStrength = 27.5;
 
@@ -106,16 +106,20 @@ Actor::Actor( GameSession *gs )
 		facingRight = true;
 		collision = false;
 	
-		airAccel = 1;
+		airAccel = 2;
 		maxAirXSpeed = 100;
-		maxAirXSpeedNormal = 10;
+		
+		airSlow = .3;
+
 		groundOffsetX = 0;
 
-		maxRunInit = 10;
+		maxRunInit = 8;
+		maxAirXControl = maxRunInit;
+
 		maxGroundSpeed = 100;
-		runAccelInit = .5;
+		runAccelInit = 1;
 		runAccel = .01;
-		sprintAccel = 2;
+		sprintAccel = .5;
 
 		//CollisionBox b;
 		b.isCircle = false;
@@ -634,6 +638,7 @@ void Actor::UpdatePrePhysics()
 		break;
 		}
 	case RUN:
+		{
 		if( currInput.Left() )
 		{
 			if( groundSpeed > 0 )
@@ -677,7 +682,9 @@ void Actor::UpdatePrePhysics()
 		}
 
 		break;
+		}
 	case JUMP:
+		{
 		if( frame == 0 )
 		{
 			if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
@@ -687,30 +694,57 @@ void Actor::UpdatePrePhysics()
 					velocity.y = 0;
 				velocity.y -= jumpStrength;
 				ground = NULL;
+				holdJump = true;
 			}
+
+			
 		}
 		else
 		{
-				
+			if( holdJump && velocity.y >= -8 )
+				holdJump = false;
+
+			if( holdJump && !currInput.A )
+			{
+				if( velocity.y < -8 )
+				{
+					velocity.y = -8;
+				}
+			}
+
+
 			if( currInput.Left() )
 			{
-				//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
-				//{
+				if( velocity.x > -maxAirXControl )
+				{
 					velocity.x -= airAccel;
-				//}
-					
+				}
 			}
 			else if( currInput.Right() )
 			{
-				//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
-				//{
+				if( velocity.x < maxAirXControl )
+				{
 					velocity.x += airAccel;
-				//}
+				}
+			}
+			else
+			{
+				if( velocity.x > 0 )
+				{
+					velocity.x -= airSlow;
+					if( velocity.x < 0 ) velocity.x = 0;
+				}
+				else if( velocity.x < 0 )
+				{
+					velocity.x += airSlow;
+					if( velocity.x > 0 ) velocity.x = 0;
+				}
 			}
 			//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
 			
 		}
 		break;
+		}
 	case WALLCLING:
 		{
 			
@@ -775,14 +809,61 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
+					
+			if( currInput.Left() )
+			{
+				if( velocity.x > -maxAirXControl )
+				{
+					velocity.x -= airAccel;
+				}
+			}
+			else if( currInput.Right() )
+			{
+				if( velocity.x < maxAirXControl )
+				{
+					velocity.x += airAccel;
+				}
+			}
+
+
 			break;
 		}
 	case DAIR:
 		{
+					
+			if( currInput.Left() )
+			{
+				if( velocity.x > -maxAirXControl )
+				{
+					velocity.x -= airAccel;
+				}
+			}
+			else if( currInput.Right() )
+			{
+				if( velocity.x < maxAirXControl )
+				{
+					velocity.x += airAccel;
+				}
+			}
 			break;
 		}
 	case UAIR:
 		{
+					
+			if( currInput.Left() )
+			{
+				if( velocity.x > -maxAirXControl )
+				{
+					velocity.x -= airAccel;
+				}
+			}
+			else if( currInput.Right() )
+			{
+				if( velocity.x < maxAirXControl )
+				{
+					velocity.x += airAccel;
+				}
+			}
 			break;
 		}
 	case DASH:
@@ -821,24 +902,56 @@ void Actor::UpdatePrePhysics()
 					velocity.y = 0;
 				velocity.y -= doubleJumpStrength;
 				hasDoubleJump = false;
+
+				if( currInput.Left() )
+				{
+					if( velocity.x >= 0 )
+					{
+						velocity.x = maxRunInit;
+					}
+				}
+				else if( currInput.Right() )
+				{
+					if( velocity.x <= 0 )
+					{
+						velocity.x = -maxRunInit;
+					}
+				}
+				else
+				{
+					velocity.x = 0;
+				}
 			}
 			else
 			{
 				
+						
 				if( currInput.Left() )
 				{
-					//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
-					//{
+					if( velocity.x > -maxAirXControl )
+					{
 						velocity.x -= airAccel;
-					//}
-					
+					}
 				}
 				else if( currInput.Right() )
 				{
-					//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
-					//{
+					if( velocity.x < maxAirXControl )
+					{
 						velocity.x += airAccel;
-					//}
+					}
+				}
+				else
+				{
+					if( velocity.x > 0 )
+					{
+						velocity.x -= airSlow;
+						if( velocity.x < 0 ) velocity.x = 0;
+					}
+					else if( velocity.x < 0 )
+					{
+						velocity.x += airSlow;
+						if( velocity.x > 0 ) velocity.x = 0;
+					}
 				}
 				//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
 			
@@ -847,6 +960,53 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
+
+			break;
+		}
+	case SPRINT:
+		{
+			if( currInput.Left() )
+			{
+				if( groundSpeed > 0 )
+				{
+					groundSpeed = 0;
+				}
+				else
+				{
+					if( groundSpeed > -maxRunInit )
+					{
+						groundSpeed -= runAccelInit * 2;
+						if( groundSpeed < -maxRunInit )
+							groundSpeed = maxRunInit;
+					}
+					else
+					{
+						groundSpeed -= sprintAccel * abs(ground->Normal().x);
+					}
+				
+				}
+				facingRight = false;
+			}
+			else if( currInput.Right() )
+			{
+				if (groundSpeed < 0 )
+					groundSpeed = 0;
+				else
+				{
+					V2d gn = ground->Normal();
+					if( groundSpeed < maxRunInit )
+					{
+						groundSpeed += runAccelInit * 2;
+						if( groundSpeed > maxRunInit )
+							groundSpeed = maxRunInit;
+					}
+					else
+					{
+						groundSpeed += sprintAccel * abs(ground->Normal().x);
+					}
+				}
+				facingRight = true;
+			}
 
 			break;
 		}
@@ -887,6 +1047,7 @@ void Actor::UpdatePrePhysics()
 
 bool Actor::CheckWall( bool right )
 {
+	return false;
 	double wallThresh = 2;
 	V2d vel;
 	if( right )
@@ -903,7 +1064,7 @@ bool Actor::CheckWall( bool right )
 	test.edge = NULL;
 	for( int i = 0; i < owner->numPoints; ++i )
 	{
-		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel );
+		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel, owner->window );
 		if( c != NULL )
 		{
 			if( (c->collisionPriority < test.collisionPriority ))//&& c->collisionPriority >= 0 )
@@ -1037,8 +1198,8 @@ bool Actor::CheckWall( bool right )
 bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
 	position += vel;
-
 	
+	cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
 	bool col = false;
 	int collisionNumber = 0;
@@ -1062,7 +1223,8 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	//	if( match )
 	//		continue;
 
-		Contact *c = owner->coll.collideEdge( position , b, edges[i], vel );
+		
+		Contact *c = owner->coll.collideEdge( position , b, edges[i], vel, owner->window );
 		if( c != NULL )
 		{
 			collisionNumber++;
@@ -1350,9 +1512,9 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 							if( eNorm.y < 0 )
 							{
 								//bool 
-								cout << "min:" << minContact.position.x << ", " << minContact.position.y  << endl;
-								cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
-								cout << "res: " << minContact.resolution.y << endl;
+								//cout << "min:" << minContact.position.x << ", " << minContact.position.y  << endl;
+								//cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
+								//cout << "res: " << minContact.resolution.y << endl;
 
 								CircleShape cs;
 								cs.setFillColor( Color::Cyan );
@@ -1400,7 +1562,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 							}
 							else
 							{
-								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								groundSpeed = 0;
 								edgeQuantity = q;

@@ -256,7 +256,7 @@ int GameSession::Run( string fileName )
 	bool skipped = false;
 	bool oneFrameMode = false;
 	bool quit = false;
-	bool t = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
+	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	bool s = t;
 	t = false;
 	
@@ -275,11 +275,20 @@ int GameSession::Run( string fileName )
 		window->clear();
 		while ( accumulator >= TIMESTEP  )
         {
-			
+		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			if( oneFrameMode )
+			{
+				ControllerState con;
+
 				while( true )
 				{
-					if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
+					//prevInput = currInput;
+					//player.prevInput = currInput;
+					controller.UpdateState();
+					con = controller.GetState();
+					//player.currInput = currInput;
+
+					if( !skipped && con.leftShoulder )//sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
 					{
 						skipped = true;
 						accumulator = 0;//TIMESTEP;
@@ -288,7 +297,7 @@ int GameSession::Run( string fileName )
 
 						break;
 					}
-					if( !sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
+					if( skipped && !con.leftShoulder )//!sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
 					{
 						skipped = false;
 						//break;
@@ -299,23 +308,28 @@ int GameSession::Run( string fileName )
 						//oneFrameMode = false;
 						break;
 					}
-					if( sf::Keyboard::isKeyPressed( sf::Keyboard::M ) )
+					//if( sf::Keyboard::isKeyPressed( sf::Keyboard::M ) )
+					if( con.rightShoulder )
 					{
 
 						oneFrameMode = false;
 						break;
 					}
-				}
+					
 
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
+				}
+			}
+
+		//if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
+		if( currInput.leftShoulder )
 				oneFrameMode = true;
-		if( !s && sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
+		if( !s && currInput.start )//sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
 		{
 			quit = true;
 			break;
 			//t = true;
 		}
-		else if( s && !sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
+		else if( s && !currInput.start )//!sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
 		{
 			s = false;
 

@@ -55,7 +55,8 @@ struct Collider
 		Contact *collideEdge( 
 		sf::Vector2<double> position, 
 		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel );
+		const sf::Vector2<double> &vel,
+		sf::RenderWindow *w);
 };
 
 #endif

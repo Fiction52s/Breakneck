@@ -61,6 +61,10 @@ struct Actor
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 	double groundOffsetX;
 	double offsetX;
+	bool holdJump;
+
+
+	double airSlow;
 
 	double maxRunInit;
 	double maxGroundSpeed;
@@ -77,7 +81,7 @@ struct Actor
 	double jumpStrength;
 	double airAccel;
 	double maxAirXSpeed;
-	double maxAirXSpeedNormal;
+	double maxAirXControl;
 
 	double dashSpeed;
 
