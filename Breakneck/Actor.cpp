@@ -651,7 +651,7 @@ void Actor::UpdatePrePhysics()
 				{
 					groundSpeed -= runAccelInit;
 					if( groundSpeed < -maxRunInit )
-						groundSpeed = maxRunInit;
+						groundSpeed = -maxRunInit;
 				}
 				else
 				{
@@ -718,14 +718,20 @@ void Actor::UpdatePrePhysics()
 				if( velocity.x > -maxAirXControl )
 				{
 					velocity.x -= airAccel;
+					if( velocity.x < -maxAirXControl )
+						velocity.x = -maxAirXControl;
 				}
+				
 			}
 			else if( currInput.Right() )
 			{
 				if( velocity.x < maxAirXControl )
 				{
 					velocity.x += airAccel;
+					if( velocity.x > maxAirXControl )
+						velocity.x = maxAirXControl;
 				}
+				
 			}
 			else
 			{
@@ -739,7 +745,6 @@ void Actor::UpdatePrePhysics()
 					velocity.x += airSlow;
 					if( velocity.x > 0 ) velocity.x = 0;
 				}
-				cout << "slowing" << endl;
 			}
 			//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
 			
@@ -811,39 +816,76 @@ void Actor::UpdatePrePhysics()
 	case FAIR:
 		{
 					
-			if( currInput.Left() )
+		if( currInput.Left() )
 			{
 				if( velocity.x > -maxAirXControl )
 				{
 					velocity.x -= airAccel;
+					if( velocity.x < -maxAirXControl )
+						velocity.x = -maxAirXControl;
 				}
+				
 			}
 			else if( currInput.Right() )
 			{
 				if( velocity.x < maxAirXControl )
 				{
 					velocity.x += airAccel;
+					if( velocity.x > maxAirXControl )
+						velocity.x = maxAirXControl;
+				}
+				
+			}
+			else
+			{
+				if( velocity.x > 0 )
+				{
+					velocity.x -= airSlow;
+					if( velocity.x < 0 ) velocity.x = 0;
+				}
+				else if( velocity.x < 0 )
+				{
+					velocity.x += airSlow;
+					if( velocity.x > 0 ) velocity.x = 0;
 				}
 			}
-
 
 			break;
 		}
 	case DAIR:
 		{
 					
-			if( currInput.Left() )
+	if( currInput.Left() )
 			{
 				if( velocity.x > -maxAirXControl )
 				{
 					velocity.x -= airAccel;
+					if( velocity.x < -maxAirXControl )
+						velocity.x = -maxAirXControl;
 				}
+				
 			}
 			else if( currInput.Right() )
 			{
 				if( velocity.x < maxAirXControl )
 				{
 					velocity.x += airAccel;
+					if( velocity.x > maxAirXControl )
+						velocity.x = maxAirXControl;
+				}
+				
+			}
+			else
+			{
+				if( velocity.x > 0 )
+				{
+					velocity.x -= airSlow;
+					if( velocity.x < 0 ) velocity.x = 0;
+				}
+				else if( velocity.x < 0 )
+				{
+					velocity.x += airSlow;
+					if( velocity.x > 0 ) velocity.x = 0;
 				}
 			}
 			break;
@@ -856,13 +898,32 @@ void Actor::UpdatePrePhysics()
 				if( velocity.x > -maxAirXControl )
 				{
 					velocity.x -= airAccel;
+					if( velocity.x < -maxAirXControl )
+						velocity.x = -maxAirXControl;
 				}
+				
 			}
 			else if( currInput.Right() )
 			{
 				if( velocity.x < maxAirXControl )
 				{
 					velocity.x += airAccel;
+					if( velocity.x > maxAirXControl )
+						velocity.x = maxAirXControl;
+				}
+				
+			}
+			else
+			{
+				if( velocity.x > 0 )
+				{
+					velocity.x -= airSlow;
+					if( velocity.x < 0 ) velocity.x = 0;
+				}
+				else if( velocity.x < 0 )
+				{
+					velocity.x += airSlow;
+					if( velocity.x > 0 ) velocity.x = 0;
 				}
 			}
 			break;
@@ -906,16 +967,16 @@ void Actor::UpdatePrePhysics()
 
 				if( currInput.Left() )
 				{
-					if( velocity.x >= 0 )
+					if( velocity.x > -maxRunInit )
 					{
-						velocity.x = maxRunInit;
+						velocity.x = -maxRunInit;
 					}
 				}
 				else if( currInput.Right() )
 				{
-					if( velocity.x <= 0 )
+					if( velocity.x < maxRunInit )
 					{
-						velocity.x = -maxRunInit;
+						velocity.x = maxRunInit;
 					}
 				}
 				else
@@ -932,14 +993,20 @@ void Actor::UpdatePrePhysics()
 					if( velocity.x > -maxAirXControl )
 					{
 						velocity.x -= airAccel;
+						if( velocity.x < -maxAirXControl )
+							velocity.x = -maxAirXControl;
 					}
+				
 				}
 				else if( currInput.Right() )
 				{
 					if( velocity.x < maxAirXControl )
 					{
 						velocity.x += airAccel;
+						if( velocity.x > maxAirXControl )
+							velocity.x = maxAirXControl;
 					}
+				
 				}
 				else
 				{
@@ -978,7 +1045,7 @@ void Actor::UpdatePrePhysics()
 					{
 						groundSpeed -= runAccelInit * 2;
 						if( groundSpeed < -maxRunInit )
-							groundSpeed = maxRunInit;
+							groundSpeed = -maxRunInit;
 					}
 					else
 					{
@@ -1199,7 +1266,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
 	position += vel;
 	
-	cout << "resolve: " << vel.x << ", " << vel.y << endl;
+	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
 	bool col = false;
 	int collisionNumber = 0;
@@ -1258,6 +1325,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 
 void Actor::UpdatePhysics( Edge **edges, int numPoints )
 {
+	cout << "ground: " << groundSpeed << endl;
 //	cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
 	leftGround = false;
 	double movement = 0;
@@ -1774,7 +1842,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movementVec.y = 0;
 			}
 
-			cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
+			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
 			if( tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh - 1  )
 			{
 				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
@@ -1782,6 +1850,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = velocity.x;//length( velocity );
+
 
 				//groundSpeed = velocity.x;//dot( velocity, normalize( ground->v1 - ground->v0 ) ); //max( abs( velocity.x ), abs( dot( velocity, normalize( ground->v1 - ground->v0 ) ) ) );
 				
@@ -1933,7 +2002,7 @@ void Actor::UpdatePostPhysics()
 		if( ground != NULL )
 		{
 			double angle = 0;
-			cout << "offsetx: " <<  offsetX << endl;
+			//cout << "offsetx: " <<  offsetX << endl;
 			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
 			
 			if( !approxEquals( abs(offsetX), b.rw ) )
@@ -1951,7 +2020,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setRotation( angle / PI * 180 );
 
 
-			cout << "angle: " << angle / PI * 180  << endl;
+			//cout << "angle: " << angle / PI * 180  << endl;
 		}
 
 		//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );

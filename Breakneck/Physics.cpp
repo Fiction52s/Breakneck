@@ -195,7 +195,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
 
-			V2d cvdiff = normalize(corner - (corner - vel));
+		/*	V2d cvdiff = normalize(corner - (corner - vel));
 			V2d ediff = normalize(e->v1 - e->v0);
 			double le = 200;
 			sf::Vertex activePreview[4] =
@@ -207,7 +207,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//sf::Vertex(sf::Vector2<float>((e->v0 + e->Normal() * 10.0).x, (e->v0 + e->Normal() * 10.0).y), Color::Red ),
 				//sf::Vertex(sf::Vector2<float>((e->v1 + e->Normal() * 10.0).x, (e->v1 + e->Normal() * 10.0).y), Color::Red )
 			};
-			w->draw( activePreview, 4, sf::Lines );
+			w->draw( activePreview, 4, sf::Lines );*/
 			//cout << "active preview: " << vel.x << ", " << vel.y << endl;
 
 			double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
@@ -220,13 +220,13 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			double intersectQuantity = e->GetQuantity( intersect );
 
-			CircleShape cs;
+/*			CircleShape cs;
 			cs.setFillColor( Color::Cyan );
 			cs.setRadius( 10 );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( intersect.x, intersect.y );
 
-			w->draw( cs );
+			w->draw( cs );*/
 
 			Vector2<double> collisionPosition = intersect;
 			//cout << "testing: " << dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ))  << endl;
@@ -529,7 +529,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else
 			{
-				cout << "else case: " << intersectQuantity << ", " << length( e->v1 - e->v0 ) << endl;
+			//	cout << "else case: " << intersectQuantity << ", " << length( e->v1 - e->v0 ) << endl;
 			//cout << "else case" << endl;
 				currentContact->resolution = e->GetPoint( intersectQuantity ) - corner;
 			}
@@ -549,7 +549,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 			else
 			{
-				cout << "what: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
+				//cout << "what: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 			}
 
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
