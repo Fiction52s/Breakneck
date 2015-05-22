@@ -82,7 +82,7 @@ struct Actor
 	double airAccel;
 	double maxAirXSpeed;
 	double maxAirXControl;
-
+	double frameCountTest;
 	double dashSpeed;
 
 	double doubleJumpStrength;
