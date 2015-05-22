@@ -1047,7 +1047,6 @@ void Actor::UpdatePrePhysics()
 
 bool Actor::CheckWall( bool right )
 {
-	return false;
 	double wallThresh = 2;
 	V2d vel;
 	if( right )
@@ -1199,7 +1198,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
 	position += vel;
 	
-	cout << "resolve: " << vel.x << ", " << vel.y << endl;
+	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
 	bool col = false;
 	int collisionNumber = 0;
