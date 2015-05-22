@@ -106,7 +106,7 @@ Actor::Actor( GameSession *gs )
 		facingRight = true;
 		collision = false;
 	
-		airAccel = 2;
+		airAccel = 1.5;
 		maxAirXSpeed = 100;
 		
 		airSlow = .3;
@@ -1933,8 +1933,10 @@ void Actor::UpdatePostPhysics()
 		if( ground != NULL )
 		{
 			double angle = 0;
+			cout << "offsetx: " <<  offsetX << endl;
 			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			if( offsetX < b.rw && offsetX > -b.rw )
+			
+			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
 
 			}
@@ -1949,7 +1951,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setRotation( angle / PI * 180 );
 
 
-			//cout << "angle: " << angle / PI * 180  << endl;
+			cout << "angle: " << angle / PI * 180  << endl;
 		}
 
 		//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -1976,8 +1978,10 @@ void Actor::UpdatePostPhysics()
 		if( ground != NULL )
 		{
 			double angle = 0;
+			
+			
 			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			if( offsetX < b.rw && offsetX > -b.rw )
+			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
 
 			}
@@ -2016,7 +2020,7 @@ void Actor::UpdatePostPhysics()
 		{
 			double angle = 0;
 			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			if( offsetX < b.rw && offsetX > -b.rw )
+			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
 
 			}
@@ -2186,7 +2190,16 @@ void Actor::UpdatePostPhysics()
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
-		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+
+		double angle = 0;
+		if( !approxEquals( abs(offsetX), b.rw ) )
+		{
+
+		}
+		else
+		{
+			angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		}
 		sprite->setRotation( angle / PI * 180 );
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -2331,9 +2344,18 @@ void Actor::UpdatePostPhysics()
 			{
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+
+			}
+			else
+			{
+				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
-			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			sprite->setRotation( angle / PI * 180 );
 			break;
 		}
