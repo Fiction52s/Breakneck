@@ -1115,6 +1115,7 @@ void Actor::UpdatePrePhysics()
 
 bool Actor::CheckWall( bool right )
 {
+	return false;
 	double wallThresh = 2;
 	V2d vel;
 	if( right )
