@@ -449,7 +449,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			bool emptyInter = true;
 			for(; bit != brushP.end(); ++bit )
 			{
-			//	cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
+				cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
 				Vector2i bCurr = (*bit);
 				LineIntersection li = SegmentIntersect( prev, curr, bPrev, bCurr );
 				
@@ -502,7 +502,14 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 
 					Vector2i bCurr = (*bit);
 
-						//assert( 0 && "I totally failed" );
+					if( (*bit) == bStart )
+					{
+						//++bit;
+						//./continue;
+					//	assert( 0 && "I totally failed" );
+					}
+
+					
 
 					list<Vector2i>::iterator cit = polyP.begin();
 					Vector2i cPrev = (*cit);
@@ -528,7 +535,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 								cminIntersection.y = li.position.y;
 								cout << "first inter: " << cminIntersection.x << ", " << cminIntersection.y << endl;
 								cmin = cit;
-								nextCurr = cCurr;
+								nextCurr = cPrev;
 								prev = cPrev;
 								cemptyInter = false;
 								
@@ -542,7 +549,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 								{
 									cminIntersection = lii;
 									cmin = cit;
-								//	nextCurr = cCurr;
+									nextCurr = cPrev;
 								//	prev = cPrev;
 									cout << "switching: " << length( li.position - V2d(cPrev.x, cPrev.y) )
 										<< ", " << length( V2d( blah.x, blah.y ) ) << endl;
@@ -562,12 +569,12 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 					if( !cemptyInter )
 					{
 						z.points.push_back( Vector2i( floor( cminIntersection.x + .5 ), floor( cminIntersection.y + .5 ) ) );
-					//	cout << "3nd break: " << z.points.back().x << ", " << z.points.back().y << endl;
+						cout << "3nd break: " << z.points.back().x << ", " << z.points.back().y << endl;
 						cit = cmin;
 						curr = nextCurr;//(*cit);
 						it = cmin;
-					//	cout << "nextCurr: " << nextCurr.x << ", " << nextCurr.y << endl;
-						//nextCurrModified = true;
+						cout << "nextCurr: " << nextCurr.x << ", " << nextCurr.y << endl;
+						nextCurrModified = true;
 						break;
 					}
 
@@ -623,13 +630,25 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			}
 			if( z.points.back() != curr )
 			{
-				cout << "pushing main: " << curr.x << ", " << curr.y << endl;
-				z.points.push_back( curr );
+				
 			}
 			
 			if( !nextCurrModified )
 			{
 				prev = curr;
+				++it;
+				cout << "pushing main: " << curr.x << ", " << curr.y << endl;
+				z.points.push_back( curr );
+			}
+			else
+			{
+				prev = curr;
+				cout << "pushing main: " << (*it).x << ", " << (*it).y << endl;
+				if( (*it) == startPoint )
+					break;
+				else
+					z.points.push_back( (*it) );
+
 				++it;
 			}
 			
