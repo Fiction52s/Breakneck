@@ -391,7 +391,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	bool panning = false;
 	Vector2<double> panAnchor;
 	bool backspace = true;
-	double minimumEdgeLength = 8;
+	minimumEdgeLength = 8;
 
 	Color borderColor = sf::Color::Green;
 	int max = 1000000;
@@ -432,13 +432,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
 					{
 						emptySpace = false;
+						
 						break;
 					}
 				}
 
 				if( emptySpace )
 				{
-					if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, polygonInProgress->points.back().y )  ) >= minimumEdgeLength * zoomMultiple )
+					if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
+						polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ))
 					{
 						Vector2i worldi( worldPos.x, worldPos.y );
 						
@@ -448,6 +450,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								cout << "point valid" << endl;
 								polygonInProgress->points.push_back( worldi  );
+								for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+									(*it)->SetSelected( false );					
+								}
 							}
 							else
 								cout << "INVALID" << endl;
@@ -456,6 +462,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						else
 						{
 							polygonInProgress->points.push_back( worldi  );
+							for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+							{
+								(*it)->SetSelected( false );					
+							}
 						}
 						
 
@@ -485,6 +495,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			mode = "neutral";
 		}
 
+		if( mode == "neutral" && Keyboard::isKeyPressed( Keyboard::Q ) )
+		{
+			mode = "editpoints";
+		}
+
 		sf::Event ev;
 		while( w->pollEvent( ev ) )
 		{
@@ -503,15 +518,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					zoomMultiple *= 2;
 				}
 
-				if( zoomMultiple < 1 )
+				if( zoomMultiple < .25 )
 				{
-					zoomMultiple = 1;
+					zoomMultiple = .25;
+					cout << "min zoom" << endl;
 				}
 				else if( zoomMultiple > 65536 )
 				{
 					zoomMultiple = 65536;
 				}
-			
+				else if( abs(zoomMultiple - 1.0) < .1 )
+				{
+					zoomMultiple = 1;
+				}
+				
 				Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
 				view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
 				w->setView( view );
@@ -634,6 +654,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		{
 			if( mode == "neutral" && polygonInProgress->points.size() > 2 )
 			{
+				//add final check for validity here
 				polygonInProgress->Finalize();
 				polygons.push_back( polygonInProgress );
 				polygonInProgress = new Polygon();
@@ -726,7 +747,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	
 }
 
-bool EditSession::PointValid( Vector2i prev, Vector2i point )
+bool EditSession::PointValid( Vector2i prev, Vector2i point)
 {
 	float eLeft = min( prev.x, point.x );
 	float eRight= max( prev.x, point.x );
@@ -749,6 +770,9 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point )
 			float tempBottom = max( pre.y, (*it).y ) + 0;
 			if( !li.parallel )
 			{
+				
+				double separation = length( V2d(point.x, point.y) - V2d((*it).x,(*it).y ) );
+				
 				if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
 				{
 					if( li.position.x <= eRight && li.position.x >= eLeft && li.position.y >= eTop && li.position.y <= eBottom )
@@ -763,6 +787,34 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point )
 						return false;
 					}
 
+				}
+
+				if( separation < minimumEdgeLength )
+				{
+					
+					return false;
+				}
+
+				Vector2i ai = point - pre;
+				Vector2i bi = (*it) - pre;
+				V2d a(ai.x, ai.y);
+				V2d b(bi.x, bi.y);
+				double res = abs(cross( a, normalize( b )));
+				double des = dot( a, normalize( b ));
+
+				Vector2i ci = (*it) - prev;
+				Vector2i di = point - prev;
+				V2d c( ci.x, ci.y);
+				V2d d( di.x, di.y );
+
+				double res2 = abs( cross( c, normalize( d ) ) );
+				double des2 = dot( c, normalize( d ) );
+
+				cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
+				if(( res  < minimumEdgeLength && ( des >= 0 && des <= length( b ) ) )
+					|| ( res2  < minimumEdgeLength && ( des2 >= 0 && des2 <= length( d ) ) ) )
+				{
+					return false;
 				}
 			}
 			else

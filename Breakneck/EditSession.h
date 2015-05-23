@@ -40,7 +40,7 @@ struct EditSession
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
-	
+	double minimumEdgeLength;
 	std::list<Polygon*> polygons;
 	sf::Vector2i playerPosition;
 	Polygon *polygonInProgress;
@@ -48,6 +48,7 @@ struct EditSession
 	std::string mode;
 	std::string currentFile;
 	double zoomMultiple;
+	//std::string polygonTool;
 	std::list<sf::VertexArray*> progressDrawList;
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
 	

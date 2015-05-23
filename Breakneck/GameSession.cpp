@@ -442,25 +442,37 @@ int GameSession::Run( string fileName )
 		window->draw( bDraw );
 
 	
-		player.sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
+		//player.sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
 		//player.sh.setParameter( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
-		player.sh.setParameter( "u_normals", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
+		
 		
 		Vector2i vi = Mouse::getPosition();
 		
 		
 		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .075 );
 		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
-		player.sh.setParameter( "Resolution", Vector2f( 1920, 1080 ) );
-		player.sh.setParameter( "LightPos", blahblah  );
-		player.sh.setParameter( "LightColor", Color::White );
-		player.sh.setParameter( "AmbientColor", Color( .5, .5, .5, 1 ) );
-		player.sh.setParameter( "Falloff", Vector3f( .3, .3, .3 ) );
+		if( player.action == player.RUN )
+		{
+			player.sh.setParameter( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			player.sh.setParameter( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );
+			player.sh.setParameter( "Resolution", Vector2f( 1920, 1080 ) );
+			player.sh.setParameter( "LightPos", blahblah  );
+			player.sh.setParameter( "LightColor", Color::White );
+			player.sh.setParameter( "AmbientColor", Color( .5, .5, .5, .1 ) );
+			player.sh.setParameter( "Falloff", Vector3f( .3, .3, .3 ) );
+			window->draw( *(player.sprite), &player.sh );
+		}
+		else
+		{
+			window->draw( *player.sprite );
+		}
+
+		
 
 
 
 
-		window->draw( *(player.sprite) );//, &player.sh );
+		
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(64, 64) );
 		rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );

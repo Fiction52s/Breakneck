@@ -796,7 +796,7 @@ void Actor::UpdatePrePhysics()
 					if( velocity.x > maxAirXControl )
 						velocity.x = maxAirXControl;
 				}
-				cout << "setting velocity.x to : "<< maxAirXControl << endl;
+				//cout << "setting velocity.x to : "<< maxAirXControl << endl;
 				
 			}
 			else
@@ -1409,10 +1409,10 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 
 void Actor::UpdatePhysics( Edge **edges, int numPoints )
 {
-	if( ground != NULL )
-	cout << "ground: " << groundSpeed << endl;
-	else
-	cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
+	//if( ground != NULL )
+	//cout << "ground: " << groundSpeed << endl;
+	//else
+	//cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
@@ -1670,7 +1670,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								//cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
 								//cout << "res: " << minContact.resolution.y << endl;
 
-								CircleShape cs;
+								/*CircleShape cs;
 								cs.setFillColor( Color::Cyan );
 								cs.setRadius( 20 );
 								cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
@@ -1680,7 +1680,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								cs.setPosition( position.x, position.y + minContact.resolution.y + b.rh - 5);
 									cs.setRadius( 10 );
 								cs.setFillColor( Color::Magenta );
-								owner->window->draw( cs );
+								owner->window->draw( cs );*/
 
 								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh - 5 )
 								{
@@ -1952,7 +1952,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				//	groundSpeed = -groundSpeed;
 				}
 
-				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
+				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
 
 				movement = 0;
 			

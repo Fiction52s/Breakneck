@@ -41,7 +41,7 @@ void main() {
     vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
 
     //calculate attenuation
-    float Attenuation = 1.0 / ( Falloff.x + (Falloff.y*D) + (Falloff.z*D*D) );
+    float Attenuation = 100;//1.0 / ( Falloff.x + (Falloff.y*D) + (Falloff.z*D*D) );
 	//Attenuation = 1;
     //the calculation which brings it all together
     vec3 Intensity = Ambient + Diffuse * Attenuation;
