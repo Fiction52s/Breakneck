@@ -15,11 +15,13 @@ struct Polygon
 	std::list<sf::Vector2i> points;
 	std::string material;
 	void Finalize();
+	void Reset();
 	void Draw( sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
+	bool IsTouching( Polygon *p );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	int vaSize;
@@ -34,6 +36,9 @@ struct EditSession
 {
 	EditSession( sf::RenderWindow *w);
 	~EditSession();
+	LineIntersection SegmentIntersect( sf::Vector2i a, 
+		sf::Vector2i b, sf::Vector2i c, 
+		sf::Vector2i d );
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
@@ -48,6 +53,7 @@ struct EditSession
 	std::string mode;
 	std::string currentFile;
 	double zoomMultiple;
+	void Add( Polygon *brush, Polygon *poly);
 	//std::string polygonTool;
 	std::list<sf::VertexArray*> progressDrawList;
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );

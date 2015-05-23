@@ -20,8 +20,10 @@ Polygon::Polygon()
 
 Polygon::~Polygon()
 {
-	delete [] lines;
-	delete va;
+	if( lines != NULL )
+		delete [] lines;
+	if( va != NULL )
+		delete va;
 }
 
 void Polygon::Finalize()
@@ -133,10 +135,24 @@ void Polygon::Finalize()
 
 void Polygon::Draw( RenderTarget *rt )
 {
-
+	
 //	rt->draw(lines, points.size()*2, sf::Lines );
-
+	if( va != NULL )
 	rt->draw( *va );
+
+	if( selected )
+	{
+		for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+		{
+			CircleShape cs;
+			cs.setRadius( 10 );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setFillColor( Color::Green );
+			cs.setPosition( (*it).x, (*it).y );
+			rt->draw( cs );
+		}
+		rt->draw( lines, points.size() * 2, sf::Lines );
+	}
 }
 
 void Polygon::SetSelected( bool select )
@@ -205,6 +221,17 @@ void Polygon::FixWinding()
     }
 }
 
+void Polygon::Reset()
+{
+	points.clear();
+	if( lines != NULL )
+		delete [] lines;
+	if( va != NULL )
+		delete va;
+	lines = NULL;
+	va = NULL;
+}
+
 bool Polygon::IsClockwise()
 {
 	assert( points.size() > 0 );
@@ -245,6 +272,20 @@ bool Polygon::IsClockwise()
     return sum < 0;
 }
 
+bool Polygon::IsTouching( Polygon *p )
+{
+	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
+	{	
+		/*(for( list<Vector2i>::iterator it = p->points.begin(); it != p->points.end(); ++it )
+		{
+
+		}*/
+		//aabbCollision = true;
+		return true;
+	}
+	return false;
+}
+
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
@@ -263,6 +304,11 @@ EditSession::~EditSession()
 
 void EditSession::Draw()
 {
+	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		(*it)->Draw( w );
+	}
+
 	int psize = polygonInProgress->points.size();
 	if( psize > 0 )
 	{
@@ -279,10 +325,7 @@ void EditSession::Draw()
 		}		
 	}
 
-	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-	{
-		(*it)->Draw( w );
-	}
+	
 }
 
 bool EditSession::OpenFile( string fileName )
@@ -355,6 +398,287 @@ void EditSession::WriteFile(string fileName)
 			of << (*it2).x << " " << (*it2).y << endl;
 		}
 	}
+}
+
+void EditSession::Add( Polygon *brush, Polygon *poly)
+{
+	cout << "made it here before crashing. brush size: " << brush->points.size() << ", poly size: " << poly->points.size() << endl;
+	list<Vector2i> & brushP = brush->points;
+	list<Vector2i> & polyP = poly->points;
+
+	Vector2i startPoint;
+	bool startPointFound = false;
+	list<Vector2i>::iterator it = polyP.begin();
+	for(; it != polyP.end(); ++it )
+	{
+		if( !brush->ContainsPoint( Vector2f( (*it).x, (*it).y) ) )
+		{
+			startPoint = (*it);
+			startPointFound = true;
+			break;
+		}
+	}
+
+	if( startPointFound )
+	{
+		Polygon z;
+		z.points.push_back( startPoint );
+		Vector2i prev = startPoint;
+		++it;
+		while( true )
+		{
+			cout << "main loop start: " << startPoint.x << ", " << startPoint.y << endl;
+			if( it == polyP.end() )
+			{
+				it = polyP.begin();
+			}
+
+			Vector2i curr = (*it);
+
+			if( curr == startPoint )
+			{
+				break;
+			}
+
+			Vector2i activeEdge( curr - prev );
+			list<Vector2i>::iterator bit = brushP.begin();
+			Vector2i bPrev = (*bit);
+			bit++;
+			list<Vector2i>::iterator min;
+			Vector2i minIntersection;
+			bool emptyInter = true;
+			for(; bit != brushP.end(); ++bit )
+			{
+				cout << "second loop attemp: " << bPrev.x << ", " << bPrev.y << " to " << (*bit).x << ", " << (*bit).y  << endl;
+				Vector2i bCurr = (*bit);
+				LineIntersection li = SegmentIntersect( prev, curr, bPrev, bCurr );
+				
+				if( !li.parallel ) //just means its invalid
+				{
+					if( emptyInter )
+					{
+						minIntersection.x = li.position.x;
+						minIntersection.y = li.position.y;
+						min = bit;
+						emptyInter = false;
+					}
+					else
+					{
+						Vector2i lii( li.position.x, li.position.y );
+						Vector2i blah( minIntersection - bPrev );
+						if( length( li.position - V2d(bPrev.x, bPrev.y) ) < length( V2d( blah.x, blah.y ) ) )
+						{
+							minIntersection = lii;
+							min = bit;
+						}
+					}
+				}
+				bPrev = bCurr;
+			}
+
+			if( !emptyInter )
+			{
+				z.points.push_back( Vector2i( floor( minIntersection.x + .5 ), floor( minIntersection.y + .5 ) ) );
+				cout << "2nd break: " << z.points.back().x << ", " << z.points.back().y << endl;
+				bit = min;
+			}
+
+			
+			if( bit != brushP.end() )
+			{
+				Vector2i bStart = (*bit);
+				cout << "pushing start of b: " << bStart.x << ", " << bStart.y << endl;
+				z.points.push_back( (*bit) );
+				bPrev = bStart;
+				++bit;
+				while( true )
+				{
+					cout << "third loop" << endl;
+					if( bit == brushP.end() )
+					{
+						bit = brushP.begin(); 
+					}
+
+					Vector2i bCurr = (*bit);
+
+						//assert( 0 && "I totally failed" );
+
+					list<Vector2i>::iterator cit = polyP.begin();
+					Vector2i cPrev = (*cit);
+					cit++;
+					list<Vector2i>::iterator cmin;
+					Vector2i cminIntersection;
+					bool cemptyInter = true;
+					bool exit = false;
+					polyP.push_back( polyP.front() );
+					for(; cit != polyP.end(); ++cit )
+					{
+						Vector2i cCurr = (*cit);
+						LineIntersection li = SegmentIntersect( bPrev, bCurr, cPrev, cCurr);
+				
+						if( !li.parallel ) //just means its invalid
+						{
+							cout << "cprev: " << cPrev.x << ", " << cPrev.y << endl;
+							if( cemptyInter )
+							{
+								cminIntersection.x = li.position.x;
+								cminIntersection.y = li.position.y;
+								cout << "first inter: " << cminIntersection.x << ", " << cminIntersection.y << endl;
+								cmin = cit;
+								cemptyInter = false;
+							}
+							else
+							{
+								cout << "attemping switch" << endl;
+								Vector2i lii( li.position.x, li.position.y );
+								Vector2i blah( cminIntersection - bPrev );
+								if( length( li.position - V2d(bPrev.x, bPrev.y) ) < length( V2d( blah.x, blah.y ) ) )
+								{
+									cminIntersection = lii;
+									cmin = cit;
+									cout << "switching: " << length( li.position - V2d(cPrev.x, cPrev.y) )
+										<< ", " << length( V2d( blah.x, blah.y ) ) << endl;
+									cout << "switchinter: " << cminIntersection.x << ", " << cminIntersection.y << endl;
+								}
+							}
+
+							if( (*cmin) == polyP.back() )
+							{
+								cmin = polyP.begin();
+							}
+						}
+						cPrev = cCurr;
+					}
+					polyP.pop_back();
+						
+					if( !cemptyInter )
+					{
+						z.points.push_back( Vector2i( floor( cminIntersection.x + .5 ), floor( cminIntersection.y + .5 ) ) );
+						cout << "3nd break: " << z.points.back().x << ", " << z.points.back().y << endl;
+						cit = cmin;
+						curr = (*cit);
+						break;
+					}
+
+
+
+						/*if( !li.parallel ) //just means its invalid
+						{
+							bool aaaa = false;
+							for( list<Vector2i>::iterator ii = polyP.begin(); ii != polyP.end(); ++ii )
+							{
+								if( (*ii ) == cPrev )
+								{
+									aaaa = true;
+									break;
+									//continue;
+								}
+								
+							}
+							if( aaaa )continue;
+							cout << "break 3" << endl;
+							z.points.push_back( Vector2i( floor( li.position.x), floor( li.position.y) ) );
+							exit = true;
+							curr = cCurr;
+							//it++;
+							//prev = curr;
+							break;
+						}
+						cPrev = cCurr;*/
+						
+					
+					
+					if( exit )
+						break;
+
+					if( bCurr == bStart )
+						break;
+					else
+					{
+						cout << "pushing b end: " << bCurr.x << ", " << bCurr.y << endl;
+						z.points.push_back( bCurr );
+					}
+
+					bPrev = bCurr;
+					++bit;
+				}
+
+			}
+
+			//assert( z.points.back() != curr );
+			if( curr == startPoint )
+			{
+				break;
+			}
+			if( z.points.back() != curr )
+			{
+				cout << "pushing main: " << curr.x << ", " << curr.y << endl;
+				z.points.push_back( curr );
+			}
+			prev = curr;
+			++it;
+
+			for( list<Vector2i>::iterator ai = polyP.begin(); ai != polyP.end(); ++ai )
+			{
+				for( list<Vector2i>::iterator bi = polyP.begin(); bi != polyP.end(); ++bi )
+				{
+					if( ai == bi )
+						continue;
+					else
+					{
+						assert( (*ai) != (*bi ) );
+					}
+				}	
+			}
+		}
+
+		poly->Reset();
+		for( list<Vector2i>::iterator zit = z.points.begin(); zit != z.points.end(); ++zit )
+		{
+			poly->points.push_back( (*zit) );
+		}
+		cout << "before killer finalize. poly size: " << poly->points.size() << endl;
+		poly->Finalize();
+	}
+
+
+	
+}
+
+LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+{
+	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
+				V2d( c.x, c.y ), V2d( d.x, d.y ) );
+	if( !li.parallel )
+	{
+		double e1Left = min( a.x, b.x );
+		double e1Right = max( a.x, b.x );
+		double e1Top = min( a.y, b.y );
+		double e1Bottom = max( a.y, b.y );
+
+		double e2Left = min( c.x, d.x );
+		double e2Right = max( c.x, d.x );
+		double e2Top = min( c.y, d.y );
+		double e2Bottom = max( c.y, d.y );
+		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
+		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
+		if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
+		{
+			//cout << "---!!!!!!" << endl;
+			if( li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
+			{
+				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
+				{
+					//cout << "seg intersect!!!!!!" << endl;
+					//assert( 0 );
+					return li;
+				}
+			}
+		}
+	}
+	//cout << "return false" << endl;
+	li.parallel = true;
+	return li;
 }
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
@@ -431,7 +755,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
 					{
-						emptySpace = false;
+						//emptySpace = false;
 						
 						break;
 					}
@@ -444,28 +768,38 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						Vector2i worldi( worldPos.x, worldPos.y );
 						
-						if( polygonInProgress->points.size() > 1 )
+						if( polygonInProgress->points.size() > 0 )
 						{
 							if( PointValid( polygonInProgress->points.back(), worldi ) )
 							{
-								cout << "point valid" << endl;
+								
+								//cout << "point valid" << endl;
 								polygonInProgress->points.push_back( worldi  );
 								for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 								{
-									(*it)->SetSelected( false );					
+									//(*it)->SetSelected( false );					
 								}
 							}
-							else
-								cout << "INVALID" << endl;
+							//else
+								//cout << "INVALID" << endl;
 							
 						}
 						else
 						{
-							polygonInProgress->points.push_back( worldi  );
+							bool okay = true;
 							for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 							{
-								(*it)->SetSelected( false );					
+								if( (*it)->ContainsPoint( Vector2f(worldi.x, worldi.y) ) )
+								{
+									okay = false;
+									break;
+								}
+
+							//	(*it)->SetSelected( false );					
 							}
+							if( okay)
+							polygonInProgress->points.push_back( worldi  );
+						
 						}
 						
 
@@ -473,7 +807,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				else
 				{
-					polygonInProgress->points.clear();
+					//polygonInProgress->points.clear();
 				}
 			}
 			else if( mode == "set player" )
@@ -497,7 +831,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		if( mode == "neutral" && Keyboard::isKeyPressed( Keyboard::Q ) )
 		{
-			mode = "editpoints";
+		//	mode = "editpoints";
 		}
 
 		sf::Event ev;
@@ -571,14 +905,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( mode == "neutral" )
 				{
 					bool emptySpace = true;
-					for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( polygonInProgress->points.size() == 0 )
 					{
-						if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+						for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							emptySpace = false;
-							(*it)->SetSelected( !((*it)->selected ) );
-
-							break;
+						
+								if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+								{
+									emptySpace = false;
+									(*it)->SetSelected( !((*it)->selected ) );
+									//if( (*it)->selected == true )
+									//polygonInProgress->points.clear();
+									break;
+								}
 						}
 					}
 
@@ -654,10 +993,40 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		{
 			if( mode == "neutral" && polygonInProgress->points.size() > 2 )
 			{
-				//add final check for validity here
+				list<Polygon*>::iterator it = polygons.begin();
+				bool added = false;
 				polygonInProgress->Finalize();
-				polygons.push_back( polygonInProgress );
-				polygonInProgress = new Polygon();
+				while( it != polygons.end() )
+				{
+					if( polygonInProgress->IsTouching( (*it) ) )
+					{
+						
+						cout << "before adding: " << (*it)->points.size() << endl;
+						Add( polygonInProgress, (*it) );
+						cout << "after adding: " << (*it)->points.size() << endl;
+						
+						added = true;
+						break;
+					}
+					else
+					{
+						//cout << "not" << endl;
+					}
+					++it;
+				}
+				//add final check for validity here
+				
+				if( !added )
+				{
+					polygonInProgress->Finalize();
+					polygons.push_back( polygonInProgress );
+					polygonInProgress = new Polygon();
+				}
+				else
+				{
+					polygonInProgress->Reset();
+					//polygonInProgress->points.clear();
+				}
 			}
 
 			if( polygonInProgress->points.size() <= 2 && polygonInProgress->points.size() > 0  )
@@ -694,7 +1063,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		if( mode == "set player" )
 		{
 			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
-			cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
+			//cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
 		}
 		else
 			playerSprite.setPosition( playerPosition.x, playerPosition.y );
@@ -749,6 +1118,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 bool EditSession::PointValid( Vector2i prev, Vector2i point)
 {
+	return true;
 	float eLeft = min( prev.x, point.x );
 	float eRight= max( prev.x, point.x );
 	float eTop = min( prev.y, point.y );

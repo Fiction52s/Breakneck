@@ -56,7 +56,7 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-	bool fullWindow = true ;
+	bool fullWindow = false ;
 
 	if( !fullWindow )
 	{
