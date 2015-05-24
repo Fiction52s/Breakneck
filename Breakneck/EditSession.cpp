@@ -447,9 +447,10 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			list<Vector2i>::iterator min;
 			Vector2i minIntersection;
 			bool emptyInter = true;
+			brushP.push_back( bPrev );
 			for(; bit != brushP.end(); ++bit )
 			{
-			//	cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
+				cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
 				Vector2i bCurr = (*bit);
 				LineIntersection li = SegmentIntersect( prev, curr, bPrev, bCurr );
 				
@@ -472,9 +473,16 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 							min = bit;
 						}
 					}
+
+					if( min == brushP.end() )
+					{
+						min = brushP.begin();
+					}
 				}
 				bPrev = bCurr;
 			}
+
+			brushP.pop_back();
 
 			if( !emptyInter )
 			{
