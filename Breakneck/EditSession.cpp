@@ -403,13 +403,12 @@ void EditSession::WriteFile(string fileName)
 void EditSession::Add( Polygon *brush, Polygon *poly)
 {
 	cout << "made it here before crashing. brush size: " << brush->points.size() << ", poly size: " << poly->points.size() << endl;
-	list<Vector2i> & brushP = brush->points;
-	list<Vector2i> & polyP = poly->points;
+	
 
 	Vector2i startPoint;
 	bool startPointFound = false;
-	list<Vector2i>::iterator it = polyP.begin();
-	for(; it != polyP.end(); ++it )
+	list<Vector2i>::iterator it = poly->points.begin();
+	for(; it != poly->points.end(); ++it )
 	{
 		if( !brush->ContainsPoint( Vector2f( (*it).x, (*it).y) ) )
 		{
@@ -418,6 +417,29 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			break;
 		}
 	}
+
+	list<Vector2i> *bp; 
+	list<Vector2i> *pp; 
+	if( startPointFound )
+	{
+		bp = &brush->points;
+		pp = &poly->points;
+		//list<Vector2i> & brushP = brush->points;b
+		//list<Vector2i> & polyP = poly->points;
+		//1. choose a point on poly (any point works equally well)
+		//Vector2i point = polyP.front();
+
+		//2. move counter clockwise until you collide with brush
+		//3. move on brush clockwise until you reach the starting point again, switching off
+		//   between 
+	}
+	else
+	{
+		bp = &poly->points;
+		pp = &brush->points;
+	}
+	list<Vector2i> & brushP = *bp;
+	list<Vector2i> & polyP = *pp;
 
 	if( startPointFound )
 	{
@@ -706,6 +728,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 	}
 	else
 	{
+
 		assert( 0 && "here we are" );
 	}
 
