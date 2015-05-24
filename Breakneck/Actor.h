@@ -2,6 +2,7 @@
 #include "Tileset.h"
 #include "Physics.h"
 #include "Input.h"
+#include <SFML/Audio.hpp>
 
 #ifndef __ACTOR_H__
 #define __ACTOR_H__
@@ -63,6 +64,8 @@ struct Actor
 	double offsetX;
 	bool holdJump;
 
+	sf::SoundBuffer testSound;
+	sf::Sound fairSound;
 
 	double airSlow;
 

@@ -23,7 +23,13 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
+		if( !testSound.loadFromFile( "fair.wav" ) )
+		{
+			assert( 0 && "failed to load test fair noise" );
+		}
+		fairSound.setBuffer( testSound );
 		
+
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -899,7 +905,10 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
-					
+				if( frame == 0 )
+				{
+					fairSound.play();
+				}
 		if( currInput.Left() )
 			{
 				if( velocity.x > -maxAirXControl )

@@ -400,6 +400,181 @@ void EditSession::WriteFile(string fileName)
 	}
 }
 
+void EditSession::Add2( Polygon *brush, Polygon *poly )
+{
+	Polygon z;
+	//1: choose start point
+
+	Vector2i startPoint;
+	bool startPointFound = false;
+
+	Polygon *currentPoly = NULL;
+	Polygon *otherPoly = NULL;
+	list<Vector2i>::iterator it = poly->points.begin();
+	for(; it != poly->points.end(); ++it )
+	{
+		if( !brush->ContainsPoint( Vector2f( (*it).x, (*it).y) ) )
+		{
+			startPoint = (*it);
+			startPointFound = true;
+			currentPoly = poly;
+			otherPoly = brush;
+			break;
+		}
+	}
+
+	if( !startPointFound )
+	{
+		it = brush->points.begin();
+		for(; it != brush->points.end(); ++it )
+		{
+			if( !poly->ContainsPoint( Vector2f( (*it).x, (*it).y) ) )
+			{
+				startPoint = (*it);
+				startPointFound = true;
+				currentPoly = brush;
+				otherPoly = poly;
+				break;
+			}
+		}
+	}
+
+	assert( startPointFound );
+	
+	Vector2i currPoint = startPoint;
+	++it;
+	if( it == currentPoly->points.end() )
+	{
+		it = currentPoly->points.begin();
+	}
+	Vector2i nextPoint = (*it);
+
+
+	z.points.push_back( startPoint );
+
+	//2. run a loobclockwise until you arrive back at the original state
+	bool firstTime = true;
+	while( firstTime || currPoint != startPoint )
+	{
+		cout << "stbart loop: " << currPoint.x << ", " << currPoint.y << endl;
+		firstTime = false;
+
+
+		
+		list<Vector2i>::iterator min;
+		Vector2i minIntersection;
+		bool emptyInter = true;
+		
+
+		list<Vector2i>::iterator bit = otherPoly->points.begin();
+		Vector2i bCurrPoint = (*bit);
+		++bit;
+		Vector2i bNextPoint;// = (*++bit);
+		Vector2i minPoint;
+		
+		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back(), bCurrPoint );
+		if( !li.parallel && length( li.position - V2d( currPoint.x, currPoint.y ) ) >= 1 )
+		{
+			minIntersection.x = li.position.x;
+			minIntersection.y = li.position.y;
+			minPoint = bCurrPoint;
+			min = --bit;
+			++bit;
+			emptyInter = false;
+		}
+
+		for(; bit != otherPoly->points.end(); ++bit )
+		{
+			bNextPoint = (*bit);
+			LineIntersection li = SegmentIntersect( currPoint, nextPoint, bCurrPoint, bNextPoint );
+			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+			if( !li.parallel && length( li.position - V2d( currPoint.x, currPoint.y ) ) >= 1 ) //just means its invalid
+			{
+				if( emptyInter )
+				{
+					emptyInter = false;
+
+					minIntersection.x = li.position.x;
+					minIntersection.y = li.position.y;
+					minPoint = bNextPoint;
+					min = bit;
+				}
+				else
+				{
+					Vector2i blah( minIntersection - currPoint );
+					if( length( li.position - V2d(currPoint.x, currPoint.y) ) < length( V2d( blah.x, blah.y ) ) )
+					{
+						minIntersection = lii;
+						minPoint = bNextPoint;
+						min = bit;
+					}
+				}
+
+					
+			}
+			bCurrPoint = bNextPoint;
+			
+		}
+
+		if( !emptyInter )
+		{
+			//cout << "switching polygon and adding point" << endl;
+			
+			//push back intersection
+			Polygon *temp = currentPoly;
+			currentPoly = otherPoly;
+			otherPoly = temp;
+			it = min;
+			
+
+			currPoint = minIntersection;
+
+			z.points.push_back( currPoint );
+
+			nextPoint = (*it);
+
+			if( nextPoint == startPoint )
+				break;
+			//cout << "fff: " << (*it).x << ", " << (*it).y << endl;
+			
+
+			if( otherPoly == poly )
+				cout << "switching to brush: " << currPoint.x << ", " << currPoint.y << endl;
+			else
+				cout << "switching to poly: " << currPoint.x << ", " << currPoint.y << endl;
+			cout << "nextpoint : " << nextPoint.x << ", " << nextPoint.y << endl;
+		}
+		else
+		{
+			
+			currPoint = (*it);
+
+			if( currPoint == startPoint )
+				break;
+
+			cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
+
+			z.points.push_back( currPoint );
+
+			++it;
+			if( it == currentPoly->points.end() )
+			{
+				it = currentPoly->points.begin();
+			}
+			nextPoint = (*it);
+		}
+	}
+
+	poly->Reset();
+	for( list<Vector2i>::iterator zit = z.points.begin(); zit != z.points.end(); ++zit )
+	{
+		poly->points.push_back( (*zit) );
+	}
+	cout << "before killer finalize. poly size: " << poly->points.size() << endl;
+	poly->Finalize();
+
+	
+}
 void EditSession::Add( Polygon *brush, Polygon *poly)
 {
 	cout << "made it here before crashing. brush size: " << brush->points.size() << ", poly size: " << poly->points.size() << endl;
@@ -694,7 +869,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			else
 			{
 				prev = (*it);
-				cout << "pushing main: 2 2" << (*it).x << ", " << (*it).y << endl;
+				cout << "pushing main: 2 2: " << (*it).x << ", " << (*it).y << endl;
 				if( (*it) == startPoint )
 					break;
 				else
@@ -1092,7 +1267,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						
 						cout << "before adding: " << (*it)->points.size() << endl;
-						Add( polygonInProgress, (*it) );
+						Add2( polygonInProgress, (*it) );
 						cout << "after adding: " << (*it)->points.size() << endl;
 						
 						added = true;

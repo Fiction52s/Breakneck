@@ -54,6 +54,7 @@ struct EditSession
 	std::string currentFile;
 	double zoomMultiple;
 	void Add( Polygon *brush, Polygon *poly);
+	void Add2( Polygon *brush, Polygon *poly);
 	//std::string polygonTool;
 	std::list<sf::VertexArray*> progressDrawList;
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
