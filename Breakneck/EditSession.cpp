@@ -449,7 +449,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			bool emptyInter = true;
 			for(; bit != brushP.end(); ++bit )
 			{
-				cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
+			//	cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
 				Vector2i bCurr = (*bit);
 				LineIntersection li = SegmentIntersect( prev, curr, bPrev, bCurr );
 				
@@ -491,6 +491,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 				z.points.push_back( (*bit) );
 				bPrev = bStart;
 				++bit;
+				
 				while( true )
 				{
 					cout << "third loop" << endl;
@@ -642,7 +643,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			}
 			else
 			{
-				prev = curr;
+				prev = (*it);
 				cout << "pushing main: " << (*it).x << ", " << (*it).y << endl;
 				if( (*it) == startPoint )
 					break;
@@ -675,7 +676,10 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 		cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 		poly->Finalize();
 	}
-
+	else
+	{
+		assert( 0 && "here we are" );
+	}
 
 	
 }
