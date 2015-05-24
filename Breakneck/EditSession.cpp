@@ -425,6 +425,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 		z.points.push_back( startPoint );
 		Vector2i prev = startPoint;
 		++it;
+		bool starting = true;
 		while( true )
 		{
 			cout << "main loop start: " << startPoint.x << ", " << startPoint.y << endl;
@@ -435,9 +436,15 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 
 			Vector2i curr = (*it);
 
+		//	if( starting )
+			{
+				//starting = false;
+			}
+			//else if( prev == startPoint )
 			if( curr == startPoint )
 			{
-				break;
+				starting = false;
+				//break;
 			}
 
 			Vector2i activeEdge( curr - prev );
@@ -447,7 +454,9 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			list<Vector2i>::iterator min;
 			Vector2i minIntersection;
 			bool emptyInter = true;
+
 			brushP.push_back( bPrev );
+
 			for(; bit != brushP.end(); ++bit )
 			{
 				cout << "second loop attemp: " << prev.x << ", " << prev.y << " to " << curr.x << curr.y << endl; // (*bit).x << ", " << (*bit).y  << endl;
@@ -474,22 +483,30 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 						}
 					}
 
-					if( min == brushP.end() )
-					{
-						min = brushP.begin();
-					}
+					
 				}
 				bPrev = bCurr;
+
+				
 			}
 
-			brushP.pop_back();
+
+			
+			
 
 			if( !emptyInter )
 			{
 				z.points.push_back( Vector2i( floor( minIntersection.x + .5 ), floor( minIntersection.y + .5 ) ) );
 				cout << "2nd break: " << z.points.back().x << ", " << z.points.back().y << endl;
+				list<Vector2i>::iterator temp = min;
+				if( (*min) == (*brushP.rbegin()) )
+				{
+					min = brushP.begin();
+				}
 				bit = min;
 			}
+
+			brushP.pop_back();
 
 			bool nextCurrModified = false;
 			if( bit != brushP.end() )
@@ -635,24 +652,27 @@ void EditSession::Add( Polygon *brush, Polygon *poly)
 			//assert( z.points.back() != curr );
 			if( curr == startPoint )
 			{
-				break;
+				//break;
 			}
 			if( z.points.back() != curr )
 			{
 				
 			}
+			if( !starting )
+				break;
+
 			
 			if( !nextCurrModified )
 			{
 				prev = curr;
 				++it;
-				cout << "pushing main: " << curr.x << ", " << curr.y << endl;
+				cout << "pushing main 1 1: " << curr.x << ", " << curr.y << endl;
 				z.points.push_back( curr );
 			}
 			else
 			{
 				prev = (*it);
-				cout << "pushing main: " << (*it).x << ", " << (*it).y << endl;
+				cout << "pushing main: 2 2" << (*it).x << ", " << (*it).y << endl;
 				if( (*it) == startPoint )
 					break;
 				else
