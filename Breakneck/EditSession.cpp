@@ -274,11 +274,11 @@ bool Polygon::IsClockwise()
 
 bool Polygon::IsTouching( Polygon *p )
 {
-	
 	assert( p != this );
 	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
 	{	
-		return true;
+		//return true;
+
 		//points.push_back( points.front() );
 		//p->points.push_back( p->points.front() );
 
@@ -293,11 +293,17 @@ bool Polygon::IsTouching( Polygon *p )
 		++pit;
 		Vector2i pnext;// = (*pit);
 
-		for( ; it != points.end(); ++it )
+		for( ; it != points.begin(); ++it )
 		{
+			if( it == points.end() )
+				it = points.begin();
+
 			next = (*it);
-			for( ; pit != p->points.end(); ++pit )		
+			for( ; pit != p->points.begin(); ++pit )		
 			{
+				if( it == p->points.end() )
+					it = p->points.begin();
+
 				pnext = (*pit);
 			
 				LineIntersection li = EditSession::SegmentIntersect( curr, next, pcurr, pnext );	
@@ -306,6 +312,7 @@ bool Polygon::IsTouching( Polygon *p )
 				{
 					//points.pop_back();
 					//p->points.pop_back();
+					cout << "touching!" << endl;
 					return true;
 				}
 
