@@ -54,6 +54,7 @@ struct Actor
 	ControllerState prevInput;
 	ControllerState currInput;
 	sf::Vector2<double> oldVelocity;
+	int framesInAir;
 	
 	Edge *ground;
 	int numActiveEdges;

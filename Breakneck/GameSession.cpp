@@ -22,6 +22,13 @@ GameSession::GameSession(GameController &c, RenderWindow *rw)
 		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "polygon shader not loaded" );
 	}
+
+	if( !goalTex.loadFromFile( "goal.png" ) )
+	{
+		assert( 0 && "goal couldnt load" );
+	}
+	goalSprite.setTexture( goalTex );
+	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 }
 
 
@@ -88,6 +95,7 @@ bool GameSession::OpenFile( string fileName )
 		int goalPositionx, goalPositiony;
 		is >> goalPositionx;
 		is >> goalPositiony;
+		goalSprite.setPosition( goalPositionx, goalPositiony );
 
 		int pointsLeft = numPoints;
 
@@ -393,16 +401,40 @@ int GameSession::Run( string fileName )
 			
 			player.UpdatePhysics( edges, numPoints );
 
+			//temporary for goal collision
+			double gLeft = goalSprite.getPosition().x - goalSprite.getLocalBounds().width / 2.0;
+			double gRight = goalSprite.getPosition().x + goalSprite.getLocalBounds().width / 2.0;
+			double gTop = goalSprite.getPosition().y - goalSprite.getLocalBounds().height / 2.0;
+			double gBottom = goalSprite.getPosition().y + goalSprite.getLocalBounds().height  / 2.0;
+
+			double pLeft = player.position.x - player.b.rw;
+			double pRight = player.position.x + player.b.rw;
+			double pTop = player.position.y - player.b.rh;
+			double pBottom = player.position.y + player.b.rh;
+
+			bool goalPlayerCollision = false;
+			if( gLeft <= pRight && gRight >= pLeft && gTop <= pBottom && gBottom >= pTop )
+			{
+				goalPlayerCollision = true;
+			}
+
+			
+			
+
 			player.UpdatePostPhysics();
 
 			//r.setPosition( player.position.x - r.getLocalBounds().width / 2, player.position.y - r.getLocalBounds().height / 2 );
 			//cout << "playerPos: " << player.position.x << ", " << player.position.y << endl;	
 		
 
+			if( goalPlayerCollision )
+			{
+				quit = true;
+				returnVal = 1;
+				break;
+			}
+
 			accumulator -= TIMESTEP;
-			while( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) )
-		{
-		}
 		}
 
 
@@ -454,6 +486,9 @@ int GameSession::Run( string fileName )
 		
 		
 		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .075 );
+
+		window->draw( goalSprite );
+
 		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
 		if( player.action == player.RUN )
 		{

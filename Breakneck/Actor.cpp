@@ -89,7 +89,7 @@ Actor::Actor( GameSession *gs )
 		action = JUMP;
 		frame = 1;
 
-
+		framesInAir = 0;
 
 		gravity = 2;
 		maxFallSpeed = 60;
@@ -1937,8 +1937,10 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movementVec.y = 0;
 			}
 
+			cout << framesInAir << endl;
 			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
-			if( !holdJump && tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh - 1  )
+			int maxJumpHeightFrame = 10;
+			if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh - 1  )
 			{
 				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
@@ -2001,6 +2003,7 @@ void Actor::UpdatePostPhysics()
 	//	cout << "no collision" << endl;
 	if( ground != NULL )
 	{
+		framesInAir = 0;
 		if( collision )
 		{
 			if( currInput.Left() || currInput.Right() )
@@ -2032,6 +2035,7 @@ void Actor::UpdatePostPhysics()
 	}
 	else
 	{
+		framesInAir++;
 		if( collision )
 		{
 			//cout << "wallcling" << endl;
@@ -2066,10 +2070,10 @@ void Actor::UpdatePostPhysics()
 		
 
 		if( action == WALLCLING && length( wallNormal ) == 0 )
-			{
-				action = JUMP;
-				frame = 1;
-			}
+		{
+			action = JUMP;
+			frame = 1;
+		}
 
 		if( leftGround )
 		{
