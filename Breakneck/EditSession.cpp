@@ -135,7 +135,6 @@ void Polygon::Finalize()
 
 void Polygon::Draw( RenderTarget *rt )
 {
-	
 //	rt->draw(lines, points.size()*2, sf::Lines );
 	if( va != NULL )
 	rt->draw( *va );
@@ -1090,39 +1089,40 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						Vector2i worldi( worldPos.x, worldPos.y );
 						
-						if( polygonInProgress->points.size() > 0 )
-						{
-							if( PointValid( polygonInProgress->points.back(), worldi ) )
-							{
-								
-								//cout << "point valid" << endl;
-								polygonInProgress->points.push_back( worldi  );
-								for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-								{
-									//(*it)->SetSelected( false );					
-								}
-							}
-							//else
-								//cout << "INVALID" << endl;
-							
-						}
-						else
-						{
-							bool okay = true;
-							for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-							{
-								if( (*it)->ContainsPoint( Vector2f(worldi.x, worldi.y) ) )
-								{
-									okay = false;
-									break;
-								}
+						polygonInProgress->points.push_back( worldi );
+						////if( polygonInProgress->points.size() > 0 )
+						////{
+						//	if( PointValid( polygonInProgress->points.back(), worldi ) )
+						//	{
+						//		
+						//		//cout << "point valid" << endl;
+						//		polygonInProgress->points.push_back( worldi  );
+						//		for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+						//		{
+						//			//(*it)->SetSelected( false );					
+						//		}
+						//	}
+						//	//else
+						//		//cout << "INVALID" << endl;
+						//	
+						//}
+						//else
+						//{
+						//	bool okay = true;
+						//	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+						//	{
+						//		if( (*it)->ContainsPoint( Vector2f(worldi.x, worldi.y) ) )
+						//		{
+						//			okay = false;
+						//			break;
+						//		}
 
-							//	(*it)->SetSelected( false );					
-							}
-							if( okay)
-							polygonInProgress->points.push_back( worldi  );
-						
-						}
+						//	//	(*it)->SetSelected( false );					
+						//	}
+						//	if( okay)
+						//	polygonInProgress->points.push_back( worldi  );
+						//
+						//}
 						
 
 					}
@@ -1159,8 +1159,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		//canCreatePoint = true;
 
+	
+
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);
+
+		Draw();
+
 		int progressSize = polygonInProgress->points.size();
 		if( progressSize > 0 )
 		{
@@ -1198,7 +1203,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		}
 
 
-		Draw();
+		
 		w->draw( playerSprite );
 		w->draw( goalSprite );
 		w->display();
