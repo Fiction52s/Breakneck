@@ -761,6 +761,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	
+	
+
+	Emode mode = CREATE_POLYGONS;
+	Emode stored = mode;
+	bool canCreatePoint = true;
+
 
 	while( !quit )
 	{
@@ -771,9 +777,299 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		 worldPos.x = tempWorldPos.x;
 		 worldPos.y = tempWorldPos.y;
 
-		if( Mouse::isButtonPressed( Mouse::Left ) )
+
+
+
+		
+
+
+		sf::Event ev;
+		
+		while( w->pollEvent( ev ) )
 		{
-			if( mode == "neutral" && !panning )
+			switch( ev.type )
+			{
+			case Event::MouseButtonPressed:
+				{
+					if( ev.mouseButton.button == Mouse::Left )
+					{
+						if( mode == PLACE_PLAYER )
+						{
+							playerPosition.x = (int)worldPos.x;
+							playerPosition.y = (int)worldPos.y;
+							mode = CREATE_POLYGONS;
+							canCreatePoint = false;
+						}
+						else if( mode == PLACE_GOAL )
+						{
+							goalPosition.x = (int)worldPos.x;
+							goalPosition.y = (int)worldPos.y;
+							mode = CREATE_POLYGONS;
+							canCreatePoint = false;
+						}
+					}
+					
+					if( ev.mouseButton.button == Mouse::Button::Middle )
+					{
+						panning = true;
+						panAnchor = worldPos;
+					}
+
+					break;
+				}
+			case Event::MouseButtonReleased:
+				{
+					if( !canCreatePoint )
+						canCreatePoint = true;
+
+					if( ev.mouseButton.button == Mouse::Button::Middle )
+					{
+						panning = false;
+					}
+					else if( ev.mouseButton.button == Mouse::Button::Left )
+					{
+						if( mode == SELECT_POLYGONS )
+						{
+							bool emptySpace = true;
+							if( polygonInProgress->points.size() == 0 )
+							{
+								for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+						
+										if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+										{
+											emptySpace = false;
+											(*it)->SetSelected( !((*it)->selected ) );
+											//if( (*it)->selected == true )
+											//polygonInProgress->points.clear();
+											break;
+										}
+								}
+							}
+
+							if( emptySpace )
+							{
+
+							}
+							else
+							{
+								polygonInProgress->points.clear();
+							}
+
+						}
+					}
+					else if( ev.mouseButton.button == Mouse::Button::Right )
+					{
+						for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+						{
+							(*it)->SetSelected( false );					
+						}
+					}
+					break;
+				}
+			case Event::MouseWheelMoved:
+				{
+					if( ev.mouseWheel.delta > 0 )
+					{
+						zoomMultiple /= 2;
+					}
+					else if( ev.mouseWheel.delta < 0 )
+					{
+						zoomMultiple *= 2;
+					}
+
+					if( zoomMultiple < .25 )
+					{
+						zoomMultiple = .25;
+						cout << "min zoom" << endl;
+					}
+					else if( zoomMultiple > 65536 )
+					{
+						zoomMultiple = 65536;
+					}
+					else if( abs(zoomMultiple - 1.0) < .1 )
+					{
+						zoomMultiple = 1;
+					}
+				
+					Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
+					view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
+					w->setView( view );
+					Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
+					Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
+					Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
+					view.setCenter( tempCenter.x, tempCenter.y );
+					w->setView( view );
+
+					break;
+				}
+			case Event::KeyPressed:
+				{
+					if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
+					{
+						Emode oldMode = mode;
+
+
+
+						if( ev.key.code == Keyboard::S && ev.key.control )
+						{
+							polygonInProgress->points.clear();
+							cout << "writing to file: " << currentFile << ".brknk" << endl;
+							WriteFile(currentFile);
+						}
+						if( ev.key.code == Keyboard::B )
+						{
+							mode = PLACE_PLAYER;
+
+						}
+						else if( ev.key.code == Keyboard::G )
+						{
+							mode = PLACE_GOAL;
+						}
+						else if( ev.key.code == Keyboard::Q )
+						{
+							mode = SELECT_POLYGONS;
+						}
+						else if( ev.key.code == Keyboard::C )
+						{
+							mode = CREATE_POLYGONS;
+						}
+						else if( ev.key.code == Keyboard::D )
+						{
+							if( mode == SELECT_POLYGONS )
+							{
+								list<Polygon*>::iterator it = polygons.begin();
+								while( it != polygons.end() )
+								{
+									if( (*it)->selected )
+									{
+										delete (*it);
+										polygons.erase( it++ );
+									}
+									else
+										++it;
+								}
+							}
+						}
+						else if( ev.key.code == Keyboard::Space )
+						{
+							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 2 )
+							{
+								list<Polygon*>::iterator it = polygons.begin();
+								bool added = false;
+								polygonInProgress->Finalize();
+								bool recursionDone = false;
+								Polygon *currentBrush = polygonInProgress;
+
+									while( it != polygons.end() )
+									{
+										Polygon *temp = (*it);
+										if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+										{
+											cout << "before addi: " << (*it)->points.size() << endl;
+						
+											Add( currentBrush, temp );
+
+											polygonInProgress->Reset();
+						
+											cout << "after adding: " << (*it)->points.size() << endl;
+											polygons.erase( it );
+
+											currentBrush = temp;
+
+											it = polygons.begin();
+
+											added = true;
+							
+											continue;
+										}
+										else
+										{
+											//cout << "not" << endl;
+										}
+										++it;
+									}
+				
+								//add final check for validity here
+				
+								if( !added )
+								{
+									polygonInProgress->Finalize();
+									polygons.push_back( polygonInProgress );
+									polygonInProgress = new Polygon();
+								}
+								else
+								{
+
+									polygons.push_back( currentBrush );
+									polygonInProgress->Reset();
+								}
+							}
+
+							if( polygonInProgress->points.size() <= 2 && polygonInProgress->points.size() > 0  )
+							{
+								cout << "cant finalize. cant make polygon" << endl;
+								polygonInProgress->points.clear();
+							}
+						}
+						else if( ev.key.code == Keyboard::T )
+						{
+							quit = true;
+						}
+						else if( ev.key.code == Keyboard::Escape )
+						{
+							if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+							{
+								quit = true;
+								returnVal = 1;
+							}
+						}
+						else if( ev.key.code == sf::Keyboard::BackSpace )
+						{
+							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 0 )
+							{
+								polygonInProgress->points.pop_back();
+							}
+						}
+						
+
+						if( oldMode == CREATE_POLYGONS && mode != CREATE_POLYGONS )
+						{
+							polygonInProgress->points.clear();
+						}
+						else if( oldMode == SELECT_POLYGONS && mode != SELECT_POLYGONS )
+						{
+							for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+							{
+								(*it)->SetSelected( false );					
+							}
+						}
+					}
+					break;
+				}
+			case Event::KeyReleased:
+				{
+					break;
+				}
+			case Event::LostFocus:
+				{
+					stored = mode;
+					mode = PAUSED;
+					break;
+				}
+			case Event::GainedFocus:
+				{
+					mode = stored;
+				}
+			}
+		}
+
+		if( quit )
+			break;
+
+		 if( canCreatePoint && Mouse::isButtonPressed( Mouse::Left ) )
+		{
+			if( mode == CREATE_POLYGONS && !panning )
 			{
 
 				bool emptySpace = true;
@@ -836,142 +1132,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					//polygonInProgress->points.clear();
 				}
 			}
-			else if( mode == "set player" )
-			{
-				playerPosition.x = (int)worldPos.x;
-				playerPosition.y = (int)worldPos.y;//Vector2i( worldPos.x, worldPos.y );
-				mode = "transition";
-			}
-			else if( mode == "set goal" )
-			{
-				goalPosition.x = (int)worldPos.x;
-				goalPosition.y = (int)worldPos.y;
-				mode = "transition";
-			}
-			
-		}
-
-		if( mode == "transition" && !Mouse::isButtonPressed( Mouse::Left ) )
-		{
-			mode = "neutral";
-		}
-
-		if( mode == "transition1" && !sf::Keyboard::isKeyPressed( sf::Keyboard::S)  )
-		{
-			mode = "neutral";
-		}
-
-		if( mode == "neutral" && Keyboard::isKeyPressed( Keyboard::Q ) )
-		{
-		//	mode = "editpoints";
-		}
-
-		sf::Event ev;
-		while( w->pollEvent( ev ) )
-		{
-		
-		if( ev.type == Event::MouseWheelMoved )
-		{
-			//if( prevDelta - ev.mouseWheel.delta != 0)
-			{
-				//view.zoom( ev.mouseWheel.delta / 5 );
-				if( ev.mouseWheel.delta > 0 )
-				{
-					zoomMultiple /= 2;
-				}
-				else if( ev.mouseWheel.delta < 0 )
-				{
-					zoomMultiple *= 2;
-				}
-
-				if( zoomMultiple < .25 )
-				{
-					zoomMultiple = .25;
-					cout << "min zoom" << endl;
-				}
-				else if( zoomMultiple > 65536 )
-				{
-					zoomMultiple = 65536;
-				}
-				else if( abs(zoomMultiple - 1.0) < .1 )
-				{
-					zoomMultiple = 1;
-				}
-				
-				Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-				view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-				w->setView( view );
-				Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
-				Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-				Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
-				view.setCenter( tempCenter.x, tempCenter.y );
-				w->setView( view );
-			}
-		
-		}
-		else if( ev.type == Event::MouseMoved )
-		{
-			
-			if( Mouse::isButtonPressed( Mouse::Middle ) )
-			{
-			}
-		}
-		else if( ev.type == Event::MouseButtonPressed )
-		{
-			if( ev.mouseButton.button == Mouse::Button::Middle )
-			{
-				panning = true;
-				panAnchor = worldPos;
-			}
-			
-		}
-		else if( ev.type == Event::MouseButtonReleased )
-		{
-			if( ev.mouseButton.button == Mouse::Button::Middle )
-			{
-				panning = false;
-			}
-			else if( ev.mouseButton.button == Mouse::Button::Left )
-			{
-				
-				if( mode == "neutral" )
-				{
-					bool emptySpace = true;
-					if( polygonInProgress->points.size() == 0 )
-					{
-						for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						{
-						
-								if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
-								{
-									emptySpace = false;
-									(*it)->SetSelected( !((*it)->selected ) );
-									//if( (*it)->selected == true )
-									//polygonInProgress->points.clear();
-									break;
-								}
-						}
-					}
-
-					if( emptySpace )
-					{
-
-					}
-					else
-					{
-						polygonInProgress->points.clear();
-					}
-
-				}
-			}
-			else if( ev.mouseButton.button == Mouse::Button::Right )
-			{
-				for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-				{
-					(*it)->SetSelected( false );					
-				}
-			}
-		}
 		}
 
 		if( panning )
@@ -979,144 +1139,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			Vector2<double> temp = panAnchor - worldPos;
 			view.move( Vector2f( temp.x, temp.y ) );
 		}
-
-		if( !s && sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
-		{
-			quit = true;
-			break;
-			//t = true;
-		}
-		else if( s && !sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
-		{
-			s = false;
-
-		}
-
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
-		{
-			quit = true;
-			returnVal = 1;
-			break;
-		}
-
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::B) )
-		{
-			if( mode == "neutral" )
-			{
-				mode = "set player";
-				polygonInProgress->points.clear();
-			}
-		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::G ) )
-		{
-			if( mode == "neutral" )
-			{
-				mode = "set goal";
-				polygonInProgress->points.clear();
-			}
-		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Q ) )
-		{
-			list<Polygon*>::iterator it = polygons.begin();
-			while( it != polygons.end() )
-			{
-				if( (*it)->selected )
-				{
-					delete (*it);
-					polygons.erase( it++ );
-				}
-				else
-					++it;
-			}
-		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Space ) )
-		{
-			if( mode == "neutral" && polygonInProgress->points.size() > 2 )
-			{
-				list<Polygon*>::iterator it = polygons.begin();
-				bool added = false;
-				polygonInProgress->Finalize();
-				bool recursionDone = false;
-				Polygon *currentBrush = polygonInProgress;
-
-					while( it != polygons.end() )
-					{
-						Polygon *temp = (*it);
-						if( temp != currentBrush && currentBrush->IsTouching( temp ) )
-						{
-							cout << "before addi: " << (*it)->points.size() << endl;
-						
-							Add( currentBrush, temp );
-
-							polygonInProgress->Reset();
-						
-							cout << "after adding: " << (*it)->points.size() << endl;
-							polygons.erase( it );
-
-							currentBrush = temp;
-
-							it = polygons.begin();
-
-							added = true;
-							
-							continue;
-						}
-						else
-						{
-							//cout << "not" << endl;
-						}
-						++it;
-					}
-				
-				//add final check for validity here
-				
-				if( !added )
-				{
-					polygonInProgress->Finalize();
-					polygons.push_back( polygonInProgress );
-					polygonInProgress = new Polygon();
-				}
-				else
-				{
-
-					polygons.push_back( currentBrush );
-					polygonInProgress->Reset();
-					//polygonInProgress->points.clear();
-				}
-			}
-
-			if( polygonInProgress->points.size() <= 2 && polygonInProgress->points.size() > 0  )
-			{
-				cout << "cant finalize. cant make polygon" << endl;
-				polygonInProgress->points.clear();
-			}
-		}
-		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::S ) )
-		{
-			if( mode == "neutral")
-			{
-				polygonInProgress->points.clear();
-				string fName;
-				mode = "transition1";
-				fName = currentFile;
-				cout << "writing to file: " << fName << ".brknk" << endl;
-				WriteFile(fName);
-			}
-		}
 		
 		
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::BackSpace ) )
-		{
-			if( mode == "neutral" && polygonInProgress->points.size() > 0 && backspace )
-			{
-				polygonInProgress->points.pop_back();
-				backspace = false;
-			}
-		}
-		else
-			backspace = true;
 
-		if( mode == "set player" )
+		if( mode == PLACE_PLAYER )
 		{
 			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
 			//cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
@@ -1124,12 +1150,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		else
 			playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
-		if( mode == "set goal" )
+		if( mode == PLACE_GOAL )
 		{
 			goalSprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
 		}
 		else
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );
+		
+		//canCreatePoint = true;
 
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);

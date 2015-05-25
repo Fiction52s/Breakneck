@@ -59,6 +59,17 @@ struct EditSession
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
+
+	enum Emode
+	{
+		CREATE_POLYGONS,
+		PLACE_PLAYER,
+		PLACE_GOAL,
+		SELECT_POLYGONS,
+		PAUSED
+
+	};
+
 	
 };
 
