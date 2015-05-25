@@ -51,6 +51,8 @@ LineIntersection::LineIntersection(const sf::Vector2<double> &pos, bool p )
 	parallel = p;
 }
 
+
+
 LineIntersection lineIntersection( sf::Vector2<double> a, Vector2<double> b, Vector2<double> c, Vector2<double> d )
 {
 	double ax = a.x;

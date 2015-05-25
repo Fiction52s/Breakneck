@@ -1961,7 +1961,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				//	groundSpeed = -groundSpeed;
 				}
 
-				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
+				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
 
 				movement = 0;
 			

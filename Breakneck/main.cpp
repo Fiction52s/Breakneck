@@ -54,6 +54,28 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 	}
 }
 
+void GameEditLoop( std::string filename)
+{
+	int result = 0;
+
+	Vector2f lastViewSize( 0, 0 );
+	Vector2f lastViewCenter( 0, 0 );
+	while( result == 0 )
+	{
+		EditSession es(window );
+		result = es.Run( filename, lastViewCenter, lastViewSize );
+		if( result > 0 )
+			break;
+		GameSession gs( controller, window );
+		result = gs.Run( filename );
+		lastViewCenter = gs.lastViewCenter;
+		lastViewSize = gs.lastViewSize;
+	}
+
+	
+
+}
+
 int main()
 {
 	bool fullWindow = true ;
@@ -70,10 +92,68 @@ int main()
 			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 	
+	sf::Texture t;
+	t.loadFromFile( "goal.png" );
+	
+	Sprite titleSprite;
+	titleSprite.setTexture( t );
+	titleSprite.setPosition( 0, 0 );
+	
+	View v;
+	v.setCenter( 0, 0 );
+	v.setSize( 1920/ 2, 1080 / 2 );
+	window->setView( v );
+
+	sf::Event ev;
+	bool quit = false;
+
+	window->setVerticalSyncEnabled( true );
+
+	while( !quit )
+	{
+		window->clear();
+	
+		while( window->pollEvent( ev ) )
+		{
+			switch( ev.type )
+			{
+			case Event::KeyPressed:
+				{
+					if( ev.key.code == Keyboard::Num1 )
+					{
+						GameEditLoop( "test1" );
+						window->setView( v );
+					}
+					else if( ev.key.code == Keyboard::Num2 )
+					{
+						GameEditLoop( "test2" );
+						window->setView( v );
+					}
+					else if( ev.key.code == Keyboard::Num3 )
+					{
+						GameEditLoop( "test3" );
+						window->setView( v );
+					}
+					else if( ev.key.code == Keyboard::Escape )
+					{
+						quit = true;
+					}
+
+					break;
+				}
+			}
+		}
+
+		window->setView( v );
+		window->draw( titleSprite );
+		window->display();
+	}
+
+
 	sf::Vector2i pos( 0, 0 );
 
 	//window->setPosition( pos );
-	window->setVerticalSyncEnabled( true );
+	
 	//window->setFramerateLimit( 60 );
 	
 	
@@ -82,21 +162,7 @@ int main()
 	
 	bool edit = false;
 
-	int result = 0;
-
-	Vector2f lastViewSize( 0, 0 );
-	Vector2f lastViewCenter( 0, 0 );
-	while( result == 0 )
-	{
-		EditSession es(window );
-		result = es.Run( "test1", lastViewCenter, lastViewSize );
-		if( result > 0 )
-			break;
-		GameSession gs( controller, window );
-		result = gs.Run( "test1" );
-		lastViewCenter = gs.lastViewCenter;
-		lastViewSize = gs.lastViewSize;
-	}
+	
 
 	window->close();
 	delete window;

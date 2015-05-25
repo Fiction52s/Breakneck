@@ -274,15 +274,50 @@ bool Polygon::IsClockwise()
 
 bool Polygon::IsTouching( Polygon *p )
 {
+	
+	assert( p != this );
 	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
 	{	
-		/*(for( list<Vector2i>::iterator it = p->points.begin(); it != p->points.end(); ++it )
-		{
-
-		}*/
-		//aabbCollision = true;
 		return true;
+		//points.push_back( points.front() );
+		//p->points.push_back( p->points.front() );
+
+		list<Vector2i>::iterator it = points.begin();
+		Vector2i curr = (*it);
+		++it;
+		Vector2i next;
+		
+
+		list<Vector2i>::iterator pit = p->points.begin();
+		Vector2i pcurr = (*pit);
+		++pit;
+		Vector2i pnext;// = (*pit);
+
+		for( ; it != points.end(); ++it )
+		{
+			next = (*it);
+			for( ; pit != p->points.end(); ++pit )		
+			{
+				pnext = (*pit);
+			
+				LineIntersection li = EditSession::SegmentIntersect( curr, next, pcurr, pnext );	
+
+				if( !li.parallel )
+				{
+					//points.pop_back();
+					//p->points.pop_back();
+					return true;
+				}
+
+				pcurr = (*pit);
+			}
+			curr = (*it);
+		}
 	}
+
+	//points.pop_back();
+	//p->points.pop_back();
+
 	return false;
 }
 
@@ -341,6 +376,9 @@ bool EditSession::OpenFile( string fileName )
 		is >> playerPosition.x;
 		is >> playerPosition.y;
 
+		is >> goalPosition.x;
+		is >> goalPosition.y;
+
 		while( numPoints > 0 )
 		{
 			Polygon *poly = new Polygon;
@@ -389,6 +427,7 @@ void EditSession::WriteFile(string fileName)
 
 	of << pointCount << endl;
 	of << playerPosition.x << " " << playerPosition.y << endl;
+	of << goalPosition.x << " " << goalPosition.y << endl;
 
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -450,15 +489,28 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 	Vector2i nextPoint = (*it);
 
 
-	z.points.push_back( startPoint );
+	//z.points.push_back( startPoint );
 
 	//2. run a loobclockwise until you arrive back at the original state
 	bool firstTime = true;
 	while( firstTime || currPoint != startPoint )
 	{
-		cout << "stbart loop: " << currPoint.x << ", " << currPoint.y << endl;
-		firstTime = false;
+		cout << "start loop: " << currPoint.x << ", " << currPoint.y << endl;
 
+		CircleShape cs;
+		cs.setRadius( 30  );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setFillColor( Color::Magenta );
+		cs.setPosition( currPoint.x, currPoint.y );
+		w->clear();
+		this->Draw();
+		w->draw( cs );
+
+		cs.setPosition( nextPoint.x, nextPoint.y );
+		cs.setFillColor( Color::Yellow );
+		w->draw( cs );
+
+		w->display();
 
 		
 		list<Vector2i>::iterator min;
@@ -473,7 +525,7 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 		Vector2i minPoint;
 		
 		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back(), bCurrPoint );
-		if( !li.parallel && length( li.position - V2d( currPoint.x, currPoint.y ) ) >= 1 )
+		if( !li.parallel && (abs( li.position.x - currPoint.x ) >= 1 || abs( li.position.y - currPoint.y ) >= 1 ))
 		{
 			minIntersection.x = li.position.x;
 			minIntersection.y = li.position.y;
@@ -481,6 +533,7 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 			min = --bit;
 			++bit;
 			emptyInter = false;
+			cout << "using this" << endl;
 		}
 
 		for(; bit != otherPoly->points.end(); ++bit )
@@ -488,7 +541,7 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 			bNextPoint = (*bit);
 			LineIntersection li = SegmentIntersect( currPoint, nextPoint, bCurrPoint, bNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-			if( !li.parallel && length( li.position - V2d( currPoint.x, currPoint.y ) ) >= 1 ) //just means its invalid
+			if( !li.parallel && length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
 			{
 				if( emptyInter )
 				{
@@ -502,6 +555,7 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 				else
 				{
 					Vector2i blah( minIntersection - currPoint );
+					cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
 					if( length( li.position - V2d(currPoint.x, currPoint.y) ) < length( V2d( blah.x, blah.y ) ) )
 					{
 						minIntersection = lii;
@@ -518,6 +572,11 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 
 		if( !emptyInter )
 		{
+			if( currPoint == startPoint && !firstTime )
+			{
+				cout << "secondary break" << endl;
+				break;
+			}
 			//cout << "switching polygon and adding point" << endl;
 			
 			//push back intersection
@@ -531,10 +590,19 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 
 			z.points.push_back( currPoint );
 
+			
 			nextPoint = (*it);
 
-			if( nextPoint == startPoint )
+			
+		/*	if( nextPoint == startPoint )
+			{
+				if( nextPoint == startPoint && currentPoly == brush )
+				{
+					assert( 0 && "TT" );
+				}
+				cout << "break1. next point is: " << nextPoint.x << ", " << nextPoint.y << endl;
 				break;
+			}*/
 			//cout << "fff: " << (*it).x << ", " << (*it).y << endl;
 			
 
@@ -546,15 +614,16 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 		}
 		else
 		{
-			
+
 			currPoint = (*it);
 
-			if( currPoint == startPoint )
-				break;
+			z.points.push_back( currPoint );
 
 			cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
-			z.points.push_back( currPoint );
+			if( currPoint == startPoint && !firstTime )
+				break;
+			
 
 			++it;
 			if( it == currentPoly->points.end() )
@@ -562,7 +631,9 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 				it = currentPoly->points.begin();
 			}
 			nextPoint = (*it);
+			cout << "nextpoing from adding: " << nextPoint.x << ", " << nextPoint.y << endl;
 		}
+		firstTime = false;
 	}
 
 	poly->Reset();
@@ -572,8 +643,6 @@ void EditSession::Add2( Polygon *brush, Polygon *poly )
 	}
 	cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 	poly->Finalize();
-
-	
 }
 void EditSession::Add( Polygon *brush, Polygon *poly)
 {
@@ -959,6 +1028,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Texture playerTex;
 	playerTex.loadFromFile( "stand.png" );
 	sf::Sprite playerSprite( playerTex );
+
+	Texture goalTex;
+	goalTex.loadFromFile( "goal.png" );
+	Sprite goalSprite( goalTex );
+
+	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
+
 	playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
 	playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
 
@@ -1079,6 +1155,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				playerPosition.x = (int)worldPos.x;
 				playerPosition.y = (int)worldPos.y;//Vector2i( worldPos.x, worldPos.y );
+				mode = "transition";
+			}
+			else if( mode == "set goal" )
+			{
+				goalPosition.x = (int)worldPos.x;
+				goalPosition.y = (int)worldPos.y;
 				mode = "transition";
 			}
 			
@@ -1240,6 +1322,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				polygonInProgress->points.clear();
 			}
 		}
+		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::G ) )
+		{
+			if( mode == "neutral" )
+			{
+				mode = "set goal";
+				polygonInProgress->points.clear();
+			}
+		}
 		else if( sf::Keyboard::isKeyPressed( sf::Keyboard::Q ) )
 		{
 			list<Polygon*>::iterator it = polygons.begin();
@@ -1307,7 +1397,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				polygonInProgress->points.clear();
 				string fName;
 				mode = "transition1";
-				fName = "test1";
+				fName = currentFile;
 				cout << "writing to file: " << fName << ".brknk" << endl;
 				WriteFile(fName);
 			}
@@ -1332,6 +1422,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		}
 		else
 			playerSprite.setPosition( playerPosition.x, playerPosition.y );
+
+		if( mode == "set goal" )
+		{
+			goalSprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
+		}
+		else
+			goalSprite.setPosition( goalPosition.x, goalPosition.y );
 
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);
@@ -1374,6 +1471,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		Draw();
 		w->draw( playerSprite );
+		w->draw( goalSprite );
 		w->display();
 	}
 	

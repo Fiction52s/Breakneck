@@ -85,6 +85,10 @@ bool GameSession::OpenFile( string fileName )
 		is >> player.position.x;
 		is >> player.position.y;
 
+		int goalPositionx, goalPositiony;
+		is >> goalPositionx;
+		is >> goalPositiony;
+
 		int pointsLeft = numPoints;
 
 		int pointCounter = 0;

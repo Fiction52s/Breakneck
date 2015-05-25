@@ -36,9 +36,7 @@ struct EditSession
 {
 	EditSession( sf::RenderWindow *w);
 	~EditSession();
-	LineIntersection SegmentIntersect( sf::Vector2i a, 
-		sf::Vector2i b, sf::Vector2i c, 
-		sf::Vector2i d );
+	
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
@@ -48,6 +46,7 @@ struct EditSession
 	double minimumEdgeLength;
 	std::list<Polygon*> polygons;
 	sf::Vector2i playerPosition;
+	sf::Vector2i goalPosition;
 	Polygon *polygonInProgress;
 	sf::RenderWindow *w;
 	std::string mode;
@@ -58,7 +57,9 @@ struct EditSession
 	//std::string polygonTool;
 	std::list<sf::VertexArray*> progressDrawList;
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
-	
+	static LineIntersection SegmentIntersect( sf::Vector2i a, 
+		sf::Vector2i b, sf::Vector2i c, 
+		sf::Vector2i d );
 	
 };
 
