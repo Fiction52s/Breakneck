@@ -76,6 +76,26 @@ void GameEditLoop( std::string filename)
 
 }
 
+void GameEditLoop2( std::string filename)
+{
+	int result = 0;
+
+	Vector2f lastViewSize( 0, 0 );
+	Vector2f lastViewCenter( 0, 0 );
+	while( result == 0 )
+	{
+		GameSession gs( controller, window );
+		result = gs.Run( filename );
+		lastViewCenter = gs.lastViewCenter;
+		lastViewSize = gs.lastViewSize;
+		if( result > 0 )
+			break;
+
+		EditSession es(window );
+		result = es.Run( filename, lastViewCenter, lastViewSize );
+	}
+}
+
 int main()
 {
 	bool fullWindow = true ;
@@ -121,17 +141,17 @@ int main()
 				{
 					if( ev.key.code == Keyboard::Num1 )
 					{
-						GameEditLoop( "test1" );
+						GameEditLoop2( "test1" );
 						window->setView( v );
 					}
 					else if( ev.key.code == Keyboard::Num2 )
 					{
-						GameEditLoop( "test2" );
+						GameEditLoop2( "test2" );
 						window->setView( v );
 					}
 					else if( ev.key.code == Keyboard::Num3 )
 					{
-						GameEditLoop( "test3" );
+						GameEditLoop2( "test3" );
 						window->setView( v );
 					}
 					else if( ev.key.code == Keyboard::Escape )

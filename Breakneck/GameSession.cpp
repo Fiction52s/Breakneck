@@ -271,7 +271,7 @@ int GameSession::Run( string fileName )
 	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	bool s = t;
 	t = false;
-	
+	bool goalPlayerCollision = false;
 	int returnVal = 0;
 	while( !quit )
 	{
@@ -355,6 +355,13 @@ int GameSession::Run( string fileName )
 			break;
 		}
 
+		if( goalPlayerCollision )
+			{
+				quit = true;
+				returnVal = 1;
+				break;
+			}
+
 
 
 			prevInput = currInput;
@@ -412,27 +419,18 @@ int GameSession::Run( string fileName )
 			double pTop = player.position.y - player.b.rh;
 			double pBottom = player.position.y + player.b.rh;
 
-			bool goalPlayerCollision = false;
+			
 			if( gLeft <= pRight && gRight >= pLeft && gTop <= pBottom && gBottom >= pTop )
 			{
 				goalPlayerCollision = true;
 			}
 
-			
-			
 
 			player.UpdatePostPhysics();
 
-			//r.setPosition( player.position.x - r.getLocalBounds().width / 2, player.position.y - r.getLocalBounds().height / 2 );
-			//cout << "playerPos: " << player.position.x << ", " << player.position.y << endl;	
 		
 
-			if( goalPlayerCollision )
-			{
-				quit = true;
-				returnVal = 1;
-				break;
-			}
+			
 
 			accumulator -= TIMESTEP;
 		}
