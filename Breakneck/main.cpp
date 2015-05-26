@@ -71,9 +71,6 @@ void GameEditLoop( std::string filename)
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
 	}
-
-	
-
 }
 
 void GameEditLoop2( std::string filename)

@@ -41,7 +41,8 @@ double dot( sf::Vector2<double> a, sf::Vector2<double> b )
 
 bool approxEquals( double a, double b )
 {
-	return abs( a - b ) < .00001;
+	//before was .00001. testing for rounding errors
+	return abs( a - b ) < .001;
 }
 
 

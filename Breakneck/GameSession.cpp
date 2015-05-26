@@ -288,7 +288,7 @@ int GameSession::Run( string fileName )
 		while ( accumulator >= TIMESTEP  )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
-			if( oneFrameMode )
+			if( false )//oneFrameMode )
 			{
 				ControllerState con;
 
@@ -366,6 +366,72 @@ int GameSession::Run( string fileName )
 
 			prevInput = currInput;
 			player.prevInput = currInput;
+
+			if( !controller.UpdateState() )
+			{
+				bool up = Keyboard::isKeyPressed( Keyboard::Up ) || Keyboard::isKeyPressed( Keyboard::W );
+				bool down = Keyboard::isKeyPressed( Keyboard::Down ) || Keyboard::isKeyPressed( Keyboard::S );
+				bool left = Keyboard::isKeyPressed( Keyboard::Left ) || Keyboard::isKeyPressed( Keyboard::A );
+				bool right = Keyboard::isKeyPressed( Keyboard::Right ) || Keyboard::isKeyPressed( Keyboard::D );
+
+				bool altUp = Keyboard::isKeyPressed( Keyboard::U );
+				bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
+				bool altRight = Keyboard::isKeyPressed( Keyboard::K );
+				bool altDown = Keyboard::isKeyPressed( Keyboard::J );
+
+				ControllerState keyboardInput;    
+				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X ) || Keyboard::isKeyPressed( Keyboard::Period );
+				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::C ) || Keyboard::isKeyPressed( Keyboard::Comma );
+				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::V ) || Keyboard::isKeyPressed( Keyboard::M );
+				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space ) || Keyboard::isKeyPressed( Keyboard::Slash );
+				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::Dash );
+				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::Equal );
+				
+
+				if( altRight )
+					currInput .altPad += 1 << 3;
+				if( altLeft )
+					currInput .altPad += 1 << 2;
+				if( altUp )
+					currInput .altPad += 1;
+				if( altDown )
+					currInput .altPad += 1 << 1;
+				
+				if( up && down )
+				{
+					if( prevInput.Up() )
+						keyboardInput.pad += 1;
+					else if( prevInput.Down() )
+						keyboardInput.pad += ( 1 && down ) << 1;
+				}
+				else
+				{
+					keyboardInput.pad += 1 && up;
+					keyboardInput.pad += ( 1 && down ) << 1;
+				}
+
+				if( left && right )
+				{
+					if( prevInput.Left() )
+					{
+						keyboardInput.pad += ( 1 && left ) << 2;
+					}
+					else if( prevInput.Right() )
+					{
+						keyboardInput.pad += ( 1 && right ) << 3;
+					}
+				}
+				else
+				{
+					keyboardInput.pad += ( 1 && left ) << 2;
+					keyboardInput.pad += ( 1 && right ) << 3;
+				}
+
+				currInput = keyboardInput;
+			}
+			
+			else
+			{
 			controller.UpdateState();
 			currInput = controller.GetState();
 			
@@ -401,6 +467,7 @@ int GameSession::Run( string fileName )
 					if( y < -threshold )
 						currInput.altPad += 1 << 1;
 				}
+			}
 			player.currInput = currInput;
 			player.UpdatePrePhysics();
 
@@ -488,7 +555,8 @@ int GameSession::Run( string fileName )
 		window->draw( goalSprite );
 
 		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
-		if( player.action == player.RUN )
+		if( false )
+		//if( player.action == player.RUN )
 		{
 			player.sh.setParameter( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			player.sh.setParameter( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );

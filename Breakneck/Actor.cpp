@@ -23,13 +23,13 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
-		if( !testSound.loadFromFile( "fair.wav" ) )
+		/*if( !testSound.loadFromFile( "fair.wav" ) )
 		{
 			assert( 0 && "failed to load test fair noise" );
 		}
-		fairSound.setBuffer( testSound );
+		fairSound.setBuffer( testSound );*/
 		
-
+		slopeLaunchMinSpeed = 15;
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -127,6 +127,8 @@ Actor::Actor( GameSession *gs )
 		runAccel = .01;
 		sprintAccel = 1;
 
+		holdDashAccel = .05;
+
 		//CollisionBox b;
 		b.isCircle = false;
 		b.offsetAngle = 0;
@@ -205,7 +207,9 @@ void Actor::ActionEnded()
 void Actor::UpdatePrePhysics()
 {
 	ActionEnded();
-
+	V2d gNorm;
+	if( ground != NULL )
+		gNorm = ground->Normal();
 	//choose action
 	switch( action )
 	{
@@ -287,8 +291,15 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
+
 				if( facingRight && currInput.Left() )
 				{
+					
+					if( ( currInput.Down() && gNorm.x < 0 ) || ( currInput.Up() && gNorm.x > 0 ) )
+					{
+						action = SPRINT;
+					}
+					
 					groundSpeed = 0;
 					facingRight = false;
 					frame = 0;
@@ -296,13 +307,20 @@ void Actor::UpdatePrePhysics()
 				}
 				else if( !facingRight && currInput.Right() )
 				{
+					if( ( currInput.Down() && gNorm.x > 0 ) || ( currInput.Up() && gNorm.x < 0 ) )
+					{
+						action = SPRINT;
+					}
+
 					groundSpeed = 0;
 					facingRight = true;
 					frame = 0;
 					break;
 				}
-				else if( currInput.Down() )
+				else if( (currInput.Down() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
+					|| (currInput.Up() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) )
 				{
+					
 					action = SPRINT;
 					frame = frame / 4;
 
@@ -632,31 +650,14 @@ void Actor::UpdatePrePhysics()
 			{
 				if( facingRight && currInput.Left() )
 				{
-					if( !currInput.Down() )
+					
+					if( ( currInput.Down() && gNorm.x < 0 ) || ( currInput.Up() && gNorm.x > 0 ) )
 					{
-						action = RUN;
-						frame = frame / 3;
-						if( frame < 3)
-						{
-							frame = frame + 1;
-						}
-						else if ( frame == 3 || frame == 4)
-						{
-							frame = 7;
-						}
-						else if ( frame == 5 || frame == 6)
-						{
-							frame = 8;
-						}
-						else if ( frame == 7)
-						{
-							frame = 2;
-						}
-						frame = frame * 4;
+						frame = 0;
 					}
 					else
 					{
-						frame = 0;
+						action = RUN;
 					}
 
 					groundSpeed = 0;
@@ -666,19 +667,43 @@ void Actor::UpdatePrePhysics()
 				}
 				else if( !facingRight && currInput.Right() )
 				{
-					if( !currInput.Down() )
+					if( ( currInput.Down() && gNorm.x > 0 ) || ( currInput.Up() && gNorm.x < 0 ) )
+					{
+						frame = 0;	
+					}
+					else
 					{
 						action = RUN;
+						
 					}
+
 					groundSpeed = 0;
 					facingRight = true;
 					frame = 0;
 					break;
 				}
-				else if( !currInput.Down() )
+				else if( !( (currInput.Down() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
+					|| (currInput.Up() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) ) )
 				{
 					action = RUN;
-					frame = 0;
+					frame = frame / 3;
+					if( frame < 3)
+					{
+						frame = frame + 1;
+					}
+					else if ( frame == 3 || frame == 4)
+					{
+						frame = 7;
+					}
+					else if ( frame == 5 || frame == 6)
+					{
+						frame = 8;
+					}
+					else if ( frame == 7)
+					{
+						frame = 2;
+					}
+					frame = frame * 4;
 					break;
 				}
 
@@ -723,6 +748,12 @@ void Actor::UpdatePrePhysics()
 				}
 				
 			}
+			
+			if( currInput.B )
+			{
+				groundSpeed -= holdDashAccel;
+			}
+
 			facingRight = false;
 		}
 		else if( currInput.Right() )
@@ -742,6 +773,12 @@ void Actor::UpdatePrePhysics()
 					groundSpeed += runAccel;
 				}
 			}
+
+			if( currInput.B )
+			{
+				groundSpeed -= holdDashAccel;
+			}
+
 			facingRight = true;
 		}
 
@@ -907,7 +944,7 @@ void Actor::UpdatePrePhysics()
 		{
 				if( frame == 0 )
 				{
-					fairSound.play();
+					//fairSound.play();
 				}
 		if( currInput.Left() )
 			{
@@ -1045,6 +1082,41 @@ void Actor::UpdatePrePhysics()
 				if( groundSpeed < dashSpeed )
 					groundSpeed = dashSpeed;
 			}
+
+			if( currInput.Down() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
+			{
+				if( facingRight )
+				{
+					groundSpeed += sprintAccel * abs( gNorm.x );
+				}
+				else 
+				{
+					groundSpeed -= sprintAccel * abs( gNorm.x );
+				}
+			}
+			else if( currInput.Up() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
+			{
+				if( facingRight )
+				{
+					groundSpeed += sprintAccel/2;
+				}
+				else 
+				{
+					groundSpeed -= sprintAccel/2;
+				}
+			}
+			else
+			{
+				if( facingRight )
+				{
+					groundSpeed += holdDashAccel;
+				}
+				else
+				{
+					groundSpeed -= holdDashAccel;
+				}
+			
+			}
 			break;
 		}
 	case DOUBLE:
@@ -1142,7 +1214,16 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						groundSpeed -= sprintAccel;//sprintAccel * abs(ground->Normal().x);
+						if( gNorm.x > 0 )
+						{
+							//up a slope
+							groundSpeed -= sprintAccel / 2; 
+						}
+						else
+						{
+							groundSpeed -= sprintAccel * abs( gNorm.x );
+							//down a slope
+						}
 					}
 				
 				}
@@ -1163,7 +1244,16 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						groundSpeed += sprintAccel; //* abs(ground->Normal().x);
+						if( gNorm.x < 0 )
+						{
+							//up a slope
+							groundSpeed += sprintAccel / 2; 
+						}
+						else
+						{
+							groundSpeed += sprintAccel * abs( gNorm.x );
+							//down a slope
+						}
 					}
 				}
 				facingRight = true;
@@ -1486,7 +1576,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			bool transferLeft =  q == 0 && movement < 0
 				&& ((gNormal.x == 0 && e0->Normal().x == 0 )
 				|| ( offsetX == -b.rw && (e0->Normal().x <= 0 || e0->Normal().y > 0) ) 
-				|| (offsetX == b.rw && e0->Normal().x >= 0 ));//tb&& e0->Normal().y != 0 ));
+				|| (offsetX == b.rw && e0->Normal().x >= 0 && e0->Normal().y != 0 ));
 			bool transferRight = q == groundLength && movement > 0 
 				&& ((gNormal.x == 0 && e1->Normal().x == 0 )
 				|| ( offsetX == b.rw && ( e1->Normal().x >= 0 || e1->Normal().y > 0 ))
@@ -1500,7 +1590,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			{
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
-				if( next->Normal().y < 0 )
+				if( next->Normal().y < 0 && !(currInput.Up() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < 0 ) )
 				{
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
@@ -1517,7 +1607,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			else if( transferRight )
 			{
 				Edge *next = ground->edge1;
-				if( next->Normal().y < 0 )
+				if( next->Normal().y < 0 && !(currInput.Up() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
 				{
 					ground = next;
 					q = 0;
@@ -1748,6 +1838,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				{
 					edgeQuantity = q;
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+				//	assert( false && "secret!" );
 					break;
 					//offsetX = -offsetX;
 			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
@@ -2120,6 +2211,9 @@ void Actor::UpdatePostPhysics()
 				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			}
 
+
+
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite->setPosition( pp.x, pp.y );
@@ -2165,11 +2259,12 @@ void Actor::UpdatePostPhysics()
 				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			}
 			//sprite->setOrigin( b.rw, 2 * b.rh );
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-			//V2d pp = ground->GetPoint( edgeQuantity );
-			//sprite->setPosition( pp.x, pp.y );
-			sprite->setPosition( position.x, position.y );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
+			//sprite->setPosition( position.x, position.y );
+			
 			//sprite->setPosition( position.x, position.y );
 			//cout << "angle: " << angle / PI * 180  << endl;
 		}
@@ -2204,13 +2299,10 @@ void Actor::UpdatePostPhysics()
 				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			}
 			//sprite->setOrigin( b.rw, 2 * b.rh );
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-			//V2d pp = ground->GetPoint( edgeQuantity );
-			//sprite->setPosition( pp.x, pp.y );
-			sprite->setPosition( position.x, position.y );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-			//sprite->setPosition( position.x, position.y );
-			//cout << "angle: " << angle / PI * 180  << endl;
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
 		}
 		break;
 		}
@@ -2290,10 +2382,10 @@ void Actor::UpdatePostPhysics()
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
-		sprite->setRotation( angle / PI * 180 );
-
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
 
 		break;
 		}
@@ -2311,10 +2403,10 @@ void Actor::UpdatePostPhysics()
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
-
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
+		V2d pp = ground->GetPoint( edgeQuantity );
+		sprite->setPosition( pp.x, pp.y );
 
 		break;
 		}
@@ -2333,6 +2425,7 @@ void Actor::UpdatePostPhysics()
 		}
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 		sprite->setPosition( position.x, position.y );
+		sprite->setRotation( 0 );
 		break;
 		}
 	case WALLJUMP:
@@ -2349,7 +2442,7 @@ void Actor::UpdatePostPhysics()
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
-
+			sprite->setRotation( 0 );
 			break;
 		}
 	case SLIDE:
@@ -2375,10 +2468,10 @@ void Actor::UpdatePostPhysics()
 		{
 			angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 		}
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
-
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
+		V2d pp = ground->GetPoint( edgeQuantity );
+		sprite->setPosition( pp.x, pp.y );
 		break;
 		}
 	case STANDN:
@@ -2395,9 +2488,10 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 	case STANDD:
@@ -2414,9 +2508,10 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 	case FAIR:
@@ -2434,6 +2529,7 @@ void Actor::UpdatePostPhysics()
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
 			break;
 		}
 	case DAIR:
@@ -2451,6 +2547,7 @@ void Actor::UpdatePostPhysics()
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
 			break;
 		}
 	case UAIR:
@@ -2468,6 +2565,7 @@ void Actor::UpdatePostPhysics()
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
 			break;
 		}
 	case DOUBLE:
@@ -2490,6 +2588,7 @@ void Actor::UpdatePostPhysics()
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
 			break;
 		}
 	case DASH:
@@ -2529,9 +2628,10 @@ void Actor::UpdatePostPhysics()
 			{
 				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 	}

@@ -55,6 +55,7 @@ struct Actor
 	ControllerState currInput;
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
+	double holdDashAccel;
 	
 	Edge *ground;
 	int numActiveEdges;
@@ -68,8 +69,11 @@ struct Actor
 	sf::SoundBuffer testSound;
 	sf::Sound fairSound;
 
+
+
 	double airSlow;
 
+	double slopeLaunchMinSpeed;
 	double maxRunInit;
 	double maxGroundSpeed;
 	double runAccelInit;
