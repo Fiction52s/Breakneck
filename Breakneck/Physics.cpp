@@ -75,17 +75,17 @@ Collider::~Collider()
 Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel, RenderWindow *w )
 {
 	Vector2<double> oldPosition = position - vel;
-	double left = position.x + b.offset.x - b.rw;
-	double right = position.x + b.offset.x + b.rw;
-	double top = position.y + b.offset.y - b.rh;
-	double bottom = position.y + b.offset.y + b.rh;
+	double left = position.x - b.rw;
+	double right = position.x + b.rw;
+	double top = position.y - b.rh;
+	double bottom = position.y + b.rh;
 
 	
 
-	double oldLeft = oldPosition.x + b.offset.x - b.rw;
-	double oldRight = oldPosition.x + b.offset.x + b.rw;
-	double oldTop = oldPosition.y + b.offset.y - b.rh;
-	double oldBottom = oldPosition.y + b.offset.y + b.rh;
+	double oldLeft = oldPosition.x - b.rw;
+	double oldRight = oldPosition.x + b.rw;
+	double oldTop = oldPosition.y - b.rh;
+	double oldBottom = oldPosition.y + b.rh;
 
 
 	double edgeLeft = min( e->v0.x, e->v1.x );

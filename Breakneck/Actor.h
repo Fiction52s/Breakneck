@@ -43,6 +43,7 @@ struct Actor
 		int numPoints );
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
+	bool CheckStandUp();
 	GameSession *owner;
 	bool leftGround;
 	Contact minContact;
@@ -71,6 +72,11 @@ struct Actor
 
 	int wallJumpFrameCounter;
 	int wallJumpMovementLimit;
+
+	double dashHeight;
+	double normalHeight;
+	double doubleJumpHeight;
+	double sprintHeight;
 
 	double airSlow;
 

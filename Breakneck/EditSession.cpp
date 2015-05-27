@@ -739,7 +739,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Vector2<double> worldPos = Vector2<double>( tempWorldPos.x, tempWorldPos.y );
 	bool panning = false;
 	Vector2<double> panAnchor;
-	bool backspace = true;
 	minimumEdgeLength = 8;
 
 	Color borderColor = sf::Color::Green;
@@ -1023,7 +1022,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								returnVal = 1;
 							}
 						}
-						else if( ev.key.code == sf::Keyboard::BackSpace )
+						else if( ev.key.code == sf::Keyboard::V )
 						{
 							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 0 )
 							{

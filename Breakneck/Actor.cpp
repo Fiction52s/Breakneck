@@ -131,13 +131,20 @@ Actor::Actor( GameSession *gs )
 
 		holdDashAccel = .05;
 
+		dashHeight = 10;
+		normalHeight = 23;
+		doubleJumpHeight = 10;
+		sprintHeight = 16;
+
 		//CollisionBox b;
 		b.isCircle = false;
 		b.offsetAngle = 0;
 		b.offset.x = 0;
 		b.offset.y = 0;
 		b.rw = 10;
-		b.rh = 32;
+		b.rh = normalHeight;
+
+		
 		b.type = b.Physics;
 	}
 
@@ -213,6 +220,10 @@ void Actor::UpdatePrePhysics()
 	if( ground != NULL )
 		gNorm = ground->Normal();
 	//choose action
+
+
+
+
 	switch( action )
 	{
 	case STAND:
@@ -412,6 +423,7 @@ void Actor::UpdatePrePhysics()
 		}
 		case DOUBLE:
 		{
+			
 			if( CheckWall( false ) )
 			{
 				if( currInput.Right() && !prevInput.Right() )
@@ -720,7 +732,8 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 	
-
+	b.rh = normalHeight;
+	b.offset.y = 0;
 	//react to action
 	switch( action )
 	{
@@ -1073,6 +1086,8 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			b.rh = dashHeight;
+			b.offset.y = (normalHeight - dashHeight);
 			if( currInput.Left() && facingRight )
 			{
 				facingRight = false;
@@ -1134,7 +1149,8 @@ void Actor::UpdatePrePhysics()
 		}
 	case DOUBLE:
 		{
-			
+			b.rh = doubleJumpHeight;
+			b.offset.y = -5;
 			if( frame == 0 )
 			{
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
@@ -1211,6 +1227,8 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINT:
 		{
+			b.rh = sprintHeight;
+			b.offset.y = (normalHeight - sprintHeight);
 			if( currInput.Left() )
 			{
 				if( groundSpeed > 0 )
@@ -1300,7 +1318,7 @@ void Actor::UpdatePrePhysics()
 			groundSpeed = -maxGroundSpeed;
 		}
 	}
-//	cout << "position: " << position.x << ", " << position.y << endl;
+	cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 	collision = false;
 	
@@ -1458,6 +1476,21 @@ bool Actor::CheckWall( bool right )
 
 }
 
+bool Actor::CheckStandUp()
+{
+	if( b.rh >= normalHeight )
+	{
+		cout << "WEIRD" << endl;
+		return true;
+	}
+	else
+	{
+
+	}
+	
+}
+
+
 bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
 	position += vel;
@@ -1487,7 +1520,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	//		continue;
 
 		
-		Contact *c = owner->coll.collideEdge( position , b, edges[i], vel, owner->window );
+		Contact *c = owner->coll.collideEdge( position + b.offset , b, edges[i], vel, owner->window );
 		if( c != NULL )
 		{
 			collisionNumber++;
@@ -1587,16 +1620,16 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			V2d e1n = e1->Normal();
 
 			bool transferLeft =  q == 0 && movement < 0
-				&& ((gNormal.x == 0 && e0->Normal().x == 0 )
-				|| ( offsetX == -b.rw && (e0->Normal().x <= 0 || e0->Normal().y > 0) ) 
-				|| (offsetX == b.rw && e0->Normal().x >= 0 && e0->Normal().y != 0 ));
+				&& ((gNormal.x == 0 && e0n.x == 0 )
+				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
+				|| (offsetX == b.rw && e0n.x >= 0 && e0n.y != 0 ));
 			bool transferRight = q == groundLength && movement > 0 
-				&& ((gNormal.x == 0 && e1->Normal().x == 0 )
-				|| ( offsetX == b.rw && ( e1->Normal().x >= 0 || e1->Normal().y > 0 ))
-				|| (offsetX == -b.rw && e1->Normal().x <= 0 && e1->Normal().y != 0 ) );
-			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0->Normal().x < 0) || (q == groundLength && gNormal.x < 0) );
+				&& ((gNormal.x == 0 && e1n.x == 0 )
+				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
+				|| (offsetX == -b.rw && e1n.x <= 0 && e1n.y != 0 ) );
+			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
 				
-			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1->Normal().x > 0 ) || (q == 0 && gNormal.x > 0) );
+			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
 			bool changeOffset = offsetLeft || offsetRight;
 				
 			if( transferLeft )
@@ -1633,7 +1666,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 						
 					leftGround = true;
 					ground = NULL;
-					cout << "leaving ground RIGHT!!!!!!!!" << endl;
+					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}
 
 			}
@@ -1753,7 +1786,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 						if( down)
 						{
 							V2d eNorm = minContact.edge->Normal();
-							if( minContact.position.y > position.y + b.rh - 5 && eNorm.y >= 0 )
+							if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && eNorm.y >= 0 )
 							{
 								if( minContact.position == minContact.edge->v0 ) 
 								{
@@ -1794,9 +1827,9 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 								cs.setFillColor( Color::Magenta );
 								owner->window->draw( cs );*/
 
-								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh - 5 )
+								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5 )
 								{
-									double test = position.x + minContact.resolution.x - minContact.position.x;
+									double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
 									
 									if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
 									{
@@ -2044,9 +2077,9 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			cout << framesInAir << endl;
 			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
 			int maxJumpHeightFrame = 10;
-			if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh - 1  )
+			if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
-				groundOffsetX = (position.x - minContact.position.x) / 2; //halfway?
+				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
@@ -2071,7 +2104,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 				movement = 0;
 			
-				offsetX = position.x - minContact.position.x;
+				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 				//cout << "groundinggg" << endl;
 			}
 			else if( tempCollision )
@@ -2131,10 +2164,13 @@ void Actor::UpdatePostPhysics()
 			
 		V2d gn = ground->Normal();
 
-		position.x += offsetX;
+		position.x += offsetX + b.offset.x * 2;
 
 		if( gn.y < 0 )
-			position.y -= b.rh;		
+		{
+			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			cout << "offset: " << b.offset.y << endl;
+		}
 	}
 	else
 	{

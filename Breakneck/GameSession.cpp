@@ -217,7 +217,7 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = false;
+	bool bdrawdraw = true;
 
 	OpenFile( fileName );
 	
@@ -288,7 +288,7 @@ int GameSession::Run( string fileName )
 		while ( accumulator >= TIMESTEP  )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
-			if( false )//oneFrameMode )
+			if( oneFrameMode )
 			{
 				ControllerState con;
 
@@ -537,10 +537,17 @@ int GameSession::Run( string fileName )
 		
 		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-		bDraw.setPosition( player.position.x, player.position.y );
+		bDraw.setPosition( player.position.x + player.b.offset.x , player.position.y + player.b.offset.y );
 	//	bDraw.setRotation( player.sprite->getRotation() );
 		if( bdrawdraw)
 		window->draw( bDraw );
+
+	/*	CircleShape cs;
+		cs.setFillColor( Color::Cyan );
+		cs.setRadius( 10 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( player.position.x, player.position.y );
+		window->draw( cs );*/
 
 	
 		//player.sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
