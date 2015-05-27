@@ -268,7 +268,7 @@ int GameSession::Run( string fileName )
 	bool skipped = false;
 	bool oneFrameMode = false;
 	bool quit = false;
-	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::T );
+	bool t = currInput.start; //+ sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	bool s = t;
 	t = false;
 	bool goalPlayerCollision = false;

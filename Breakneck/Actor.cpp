@@ -90,6 +90,8 @@ Actor::Actor( GameSession *gs )
 		frame = 1;
 
 		framesInAir = 0;
+		wallJumpFrameCounter = 0;
+		wallJumpMovementLimit = 10; //10 frames
 
 		gravity = 2;
 		maxFallSpeed = 60;
@@ -486,6 +488,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
+			
 			if( hasDoubleJump && currInput.A && !prevInput.A )
 			{
 				action = DOUBLE;
@@ -892,6 +895,8 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
+				wallJumpFrameCounter = 0;
+			
 				if( facingRight )
 				{
 					velocity.x = wallJumpStrength.x;
@@ -942,41 +947,45 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
-				if( frame == 0 )
-				{
-					//fairSound.play();
-				}
-		if( currInput.Left() )
+			
+			if( frame == 0 )
 			{
-				if( velocity.x > -maxAirXControl )
-				{
-					velocity.x -= airAccel;
-					if( velocity.x < -maxAirXControl )
-						velocity.x = -maxAirXControl;
-				}
-				
+				//fairSound.play();
 			}
-			else if( currInput.Right() )
+			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{
-				if( velocity.x < maxAirXControl )
+				if( currInput.Left() )
 				{
-					velocity.x += airAccel;
-					if( velocity.x > maxAirXControl )
-						velocity.x = maxAirXControl;
-				}
+					if( velocity.x > -maxAirXControl )
+					{
+						velocity.x -= airAccel;
+						if( velocity.x < -maxAirXControl )
+							velocity.x = -maxAirXControl;
+					}
 				
-			}
-			else
-			{
-				if( velocity.x > 0 )
-				{
-					velocity.x -= airSlow;
-					if( velocity.x < 0 ) velocity.x = 0;
 				}
-				else if( velocity.x < 0 )
+				else if( currInput.Right() )
 				{
-					velocity.x += airSlow;
-					if( velocity.x > 0 ) velocity.x = 0;
+					if( velocity.x < maxAirXControl )
+					{
+						velocity.x += airAccel;
+						if( velocity.x > maxAirXControl )
+							velocity.x = maxAirXControl;
+					}
+				
+				}
+				else
+				{
+					if( velocity.x > 0 )
+					{
+						velocity.x -= airSlow;
+						if( velocity.x < 0 ) velocity.x = 0;
+					}
+					else if( velocity.x < 0 )
+					{
+						velocity.x += airSlow;
+						if( velocity.x > 0 ) velocity.x = 0;
+					}
 				}
 			}
 
@@ -984,76 +993,80 @@ void Actor::UpdatePrePhysics()
 		}
 	case DAIR:
 		{
-					
-	if( currInput.Left() )
-			{
-				if( velocity.x > -maxAirXControl )
+			if( wallJumpFrameCounter >= wallJumpMovementLimit )
+			{		
+				if( currInput.Left() )
 				{
-					velocity.x -= airAccel;
-					if( velocity.x < -maxAirXControl )
-						velocity.x = -maxAirXControl;
-				}
+					if( velocity.x > -maxAirXControl )
+					{
+						velocity.x -= airAccel;
+						if( velocity.x < -maxAirXControl )
+							velocity.x = -maxAirXControl;
+					}
 				
-			}
-			else if( currInput.Right() )
-			{
-				if( velocity.x < maxAirXControl )
-				{
-					velocity.x += airAccel;
-					if( velocity.x > maxAirXControl )
-						velocity.x = maxAirXControl;
 				}
+				else if( currInput.Right() )
+				{
+					if( velocity.x < maxAirXControl )
+					{
+						velocity.x += airAccel;
+						if( velocity.x > maxAirXControl )
+							velocity.x = maxAirXControl;
+					}
 				
-			}
-			else
-			{
-				if( velocity.x > 0 )
-				{
-					velocity.x -= airSlow;
-					if( velocity.x < 0 ) velocity.x = 0;
 				}
-				else if( velocity.x < 0 )
+				else
 				{
-					velocity.x += airSlow;
-					if( velocity.x > 0 ) velocity.x = 0;
+					if( velocity.x > 0 )
+					{
+						velocity.x -= airSlow;
+						if( velocity.x < 0 ) velocity.x = 0;
+					}
+					else if( velocity.x < 0 )
+					{
+						velocity.x += airSlow;
+						if( velocity.x > 0 ) velocity.x = 0;
+					}
 				}
 			}
 			break;
 		}
 	case UAIR:
 		{
-					
-			if( currInput.Left() )
-			{
-				if( velocity.x > -maxAirXControl )
+			if( wallJumpFrameCounter >= wallJumpMovementLimit )
+			{	
+				if( currInput.Left() )
 				{
-					velocity.x -= airAccel;
-					if( velocity.x < -maxAirXControl )
-						velocity.x = -maxAirXControl;
-				}
+					if( velocity.x > -maxAirXControl )
+					{
+						velocity.x -= airAccel;
+						if( velocity.x < -maxAirXControl )
+							velocity.x = -maxAirXControl;
+					}
 				
-			}
-			else if( currInput.Right() )
-			{
-				if( velocity.x < maxAirXControl )
-				{
-					velocity.x += airAccel;
-					if( velocity.x > maxAirXControl )
-						velocity.x = maxAirXControl;
 				}
+				else if( currInput.Right() )
+				{
+					if( velocity.x < maxAirXControl )
+					{
+						velocity.x += airAccel;
+						if( velocity.x > maxAirXControl )
+							velocity.x = maxAirXControl;
+					}
 				
-			}
-			else
-			{
-				if( velocity.x > 0 )
-				{
-					velocity.x -= airSlow;
-					if( velocity.x < 0 ) velocity.x = 0;
 				}
-				else if( velocity.x < 0 )
+				else
 				{
-					velocity.x += airSlow;
-					if( velocity.x > 0 ) velocity.x = 0;
+					if( velocity.x > 0 )
+					{
+						velocity.x -= airSlow;
+						if( velocity.x < 0 ) velocity.x = 0;
+					}
+					else if( velocity.x < 0 )
+					{
+						velocity.x += airSlow;
+						if( velocity.x > 0 ) velocity.x = 0;
+					}
 				}
 			}
 			break;
@@ -1590,7 +1603,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			{
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
-				if( next->Normal().y < 0 && !(currInput.Up() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < 0 ) )
+				if( next->Normal().y < 0 && !(currInput.Up() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 				{
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
@@ -2121,11 +2134,12 @@ void Actor::UpdatePostPhysics()
 		position.x += offsetX;
 
 		if( gn.y < 0 )
-			position.y -= b.rh;
-
+			position.y -= b.rh;		
 	}
 	else
 	{
+		if( wallJumpFrameCounter < wallJumpMovementLimit )
+			wallJumpFrameCounter++;
 		framesInAir++;
 		if( collision )
 		{

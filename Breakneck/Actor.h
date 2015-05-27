@@ -69,7 +69,8 @@ struct Actor
 	sf::SoundBuffer testSound;
 	sf::Sound fairSound;
 
-
+	int wallJumpFrameCounter;
+	int wallJumpMovementLimit;
 
 	double airSlow;
 
