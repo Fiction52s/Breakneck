@@ -285,13 +285,19 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			bool t = (currInput.Up() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) ));
-			if(!( currInput.Left() || currInput.Right() ) && !t )
+			bool t = (!currInput.Up() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
+			if(!( currInput.Left() || currInput.Right() ) && t )
 			{
 				if( currInput.Down())
 				{
 					action = SLIDE;
 					frame = 0;
+				}
+				else if( currInput.Up() )
+				{
+					//stay running
+
+					break;
 				}
 				else
 				{
