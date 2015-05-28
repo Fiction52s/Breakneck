@@ -11,8 +11,11 @@ ControllerState::ControllerState()
 	:leftStickMagnitude( 0 ), leftStickRadians( 0 ), rightStickMagnitude( 0 ), 
 	rightStickRadians( 0 ), leftTrigger( 0 ), rightTrigger( 0 ), start( false ), 
 	back( false ), leftShoulder( false ), rightShoulder( false ), A( false ), B( false ), 
-	X( false ), Y( false ), pad( 0 ), altPad( 0 )
-{}
+	X( false ), Y( false ), pad( 0 ), leftStickPad( 0 ), rightStickPad( 0 )
+{
+
+	
+}
 
 void ControllerState::Set( const ControllerState &state )
 {
@@ -31,48 +34,71 @@ void ControllerState::Set( const ControllerState &state )
 	X = state.X;
 	Y = state.Y;
 	pad = state.pad;
-	altPad = state.altPad;
+	leftStickPad = state.leftStickPad;
+	rightStickPad = state.rightStickPad;
+//	altPad = state.altPad;
 }
 
-bool ControllerState::Up()
+bool ControllerState::PUp()
 {
 	return pad & 1;
 }
 
-bool ControllerState::Down()
+bool ControllerState::PDown()
 {
 	return pad & 2;
 }
 
-bool ControllerState::Left()
+bool ControllerState::PLeft()
 {
 	return pad & 4;
 }
 
-bool ControllerState::Right()
+bool ControllerState::PRight()
 {
 	return pad & 8;
 }
 
-bool ControllerState::AltUp()
+bool ControllerState::LUp()
 {
-	return altPad & 1;
+	return leftStickPad & 1;
 }
 
-bool ControllerState::AltDown()
+bool ControllerState::LDown()
 {
-	return altPad & 2;
+	return leftStickPad & 2;
 }
 
-bool ControllerState::AltLeft()
+bool ControllerState::LLeft()
 {
-	return altPad & 4;
+	return leftStickPad & 4;
 }
 
-bool ControllerState::AltRight()
+bool ControllerState::LRight()
 {
-	return altPad & 8;
+	return leftStickPad & 8;
 }
+
+bool ControllerState::RUp()
+{
+	return rightStickPad & 1;
+}
+
+bool ControllerState::RDown()
+{
+	return rightStickPad & 2;
+}
+
+bool ControllerState::RLeft()
+{
+	return rightStickPad & 4;
+}
+
+bool ControllerState::RRight()
+{
+	return rightStickPad & 8;
+}
+
 
 bool GameController::UpdateState()
 {
@@ -153,13 +179,52 @@ bool GameController::UpdateState()
 		m_state.Y = (b & 0x8000) > 0;
 
 		m_state.pad = ( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 ); 
+
+		m_state.leftStickPad = 0;
+		m_state.rightStickPad = 0;
+		if( m_state.leftStickMagnitude > stickThresh )
+		{
+			//cout << "left stick radians: " << currInput.leftStickRadians << endl;
+			float x = cos( m_state.leftStickRadians );
+			float y = sin( m_state.leftStickRadians );
+
+			if( x > stickThresh )
+				m_state.leftStickPad += 1 << 3;
+			if( x < -stickThresh )
+				m_state.leftStickPad += 1 << 2;
+			if( y > stickThresh )
+				m_state.leftStickPad += 1;
+			if( y < -stickThresh )
+				m_state.leftStickPad += 1 << 1;
+		}
+
+		if( m_state.rightStickMagnitude > stickThresh )
+		{
+			//cout << "left stick radians: " << m_state.leftStickRadians << endl;
+			float x = cos( m_state.rightStickRadians );
+			float y = sin( m_state.rightStickRadians );
+
+			if( x > stickThresh )
+				m_state.rightStickPad += 1 << 3;
+			if( x < -stickThresh )
+				m_state.rightStickPad += 1 << 2;
+			if( y > stickThresh )
+				m_state.rightStickPad += 1;
+			if( y < -stickThresh )
+				m_state.rightStickPad += 1 << 1;
+		}
 	}
+
+
+	
+
 	return ( result == ERROR_SUCCESS );
 }
 
 GameController::GameController( DWORD index )
 	:m_index( index )
 {
+	stickThresh = .4;
 }
 
 ControllerState & GameController::GetState()

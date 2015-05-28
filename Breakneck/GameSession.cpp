@@ -15,7 +15,7 @@
 using namespace std;
 using namespace sf;
 
-GameSession::GameSession(GameController &c, RenderWindow *rw)
+GameSession::GameSession( GameController &c, RenderWindow *rw)
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this )
 {
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
@@ -393,20 +393,20 @@ int GameSession::Run( string fileName )
 				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::Equal );
 				
 
-				if( altRight )
+				/*if( altRight )
 					currInput .altPad += 1 << 3;
 				if( altLeft )
 					currInput .altPad += 1 << 2;
 				if( altUp )
 					currInput .altPad += 1;
 				if( altDown )
-					currInput .altPad += 1 << 1;
+					currInput .altPad += 1 << 1;*/
 				
 				if( up && down )
 				{
-					if( prevInput.Up() )
+					if( prevInput.LUp() )
 						keyboardInput.pad += 1;
-					else if( prevInput.Down() )
+					else if( prevInput.LDown() )
 						keyboardInput.pad += ( 1 && down ) << 1;
 				}
 				else
@@ -417,11 +417,11 @@ int GameSession::Run( string fileName )
 
 				if( left && right )
 				{
-					if( prevInput.Left() )
+					if( prevInput.LLeft() )
 					{
 						keyboardInput.pad += ( 1 && left ) << 2;
 					}
-					else if( prevInput.Right() )
+					else if( prevInput.LRight() )
 					{
 						keyboardInput.pad += ( 1 && right ) << 3;
 					}
@@ -439,39 +439,7 @@ int GameSession::Run( string fileName )
 			{
 			controller.UpdateState();
 			currInput = controller.GetState();
-			
-
-			if( currInput.leftStickMagnitude > .4 )
-				{
-					//cout << "left stick radians: " << currInput.leftStickRadians << endl;
-					float x = cos( currInput.leftStickRadians );
-					float y = sin( currInput.leftStickRadians );
-					float threshold = .4;
-					if( x > threshold )
-						currInput.pad += 1 << 3;
-					if( x < -threshold )
-						currInput.pad += 1 << 2;
-					if( y > threshold )
-						currInput.pad += 1;
-					if( y < -threshold )
-						currInput.pad += 1 << 1;
-				}
-
-				if( currInput.rightStickMagnitude > .4 )
-				{
-					//cout << "left stick radians: " << currInput.leftStickRadians << endl;
-					float x = cos( currInput.rightStickRadians );
-					float y = sin( currInput.rightStickRadians );
-					float threshold = .4;
-					if( x > threshold )
-						currInput.altPad += 1 << 3;
-					if( x < -threshold )
-						currInput.altPad += 1 << 2;
-					if( y > threshold )
-						currInput.altPad += 1;
-					if( y < -threshold )
-						currInput.altPad += 1 << 1;
-				}
+			cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 			player.currInput = currInput;
 			player.UpdatePrePhysics();
@@ -538,7 +506,7 @@ int GameSession::Run( string fileName )
 		
 		cam.Update( &player );
 
-		view.setSize( Vector2f( 960 * cam.zoomFactor, 540 * cam.zoomFactor) );
+		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
 		lastViewSize = view.getSize();
 
 		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );

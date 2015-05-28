@@ -244,9 +244,9 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				break;
 			}
-			else if( currInput.Left() || currInput.Right() )
+			else if( currInput.LLeft() || currInput.LRight() )
 			{
-				if( currInput.Down() )
+				if( currInput.LDown() )
 				{
 					action = SPRINT;
 					frame = 0;
@@ -261,7 +261,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.X && !prevInput.X )
 			{
-				if( currInput.Down() )
+				if( currInput.LDown() )
 				{
 					action = STANDD;
 					frame = 0;
@@ -277,7 +277,7 @@ void Actor::UpdatePrePhysics()
 				action = DASH;
 				frame = 0;
 			}
-			else if( currInput.Down() )
+			else if( currInput.LDown() )
 			{
 				action = SLIDE;
 				frame = 0;
@@ -305,15 +305,15 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			bool t = (!currInput.Up() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
-			if(!( currInput.Left() || currInput.Right() ) )//&& t )
+			bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
+			if(!( currInput.LLeft() || currInput.LRight() ) )//&& t )
 			{
-				if( currInput.Down())
+				if( currInput.LDown())
 				{
 					action = SLIDE;
 					frame = 0;
 				}
-				else if( currInput.Up() )
+				else if( currInput.LUp() )
 				{
 					//stay running
 
@@ -330,10 +330,10 @@ void Actor::UpdatePrePhysics()
 			else
 			{
 
-				if( facingRight && currInput.Left() )
+				if( facingRight && currInput.LLeft() )
 				{
 					
-					if( ( currInput.Down() && gNorm.x < 0 ) || ( currInput.Up() && gNorm.x > 0 ) )
+					if( ( currInput.LDown() && gNorm.x < 0 ) || ( currInput.LUp() && gNorm.x > 0 ) )
 					{
 						action = SPRINT;
 					}
@@ -343,9 +343,9 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 					break;
 				}
-				else if( !facingRight && currInput.Right() )
+				else if( !facingRight && currInput.LRight() )
 				{
-					if( ( currInput.Down() && gNorm.x > 0 ) || ( currInput.Up() && gNorm.x < 0 ) )
+					if( ( currInput.LDown() && gNorm.x > 0 ) || ( currInput.LUp() && gNorm.x < 0 ) )
 					{
 						action = SPRINT;
 					}
@@ -355,8 +355,8 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 					break;
 				}
-				else if( (currInput.Down() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
-					|| (currInput.Up() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) )
+				else if( (currInput.LDown() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
+					|| (currInput.LUp() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) )
 				{
 					
 					action = SPRINT;
@@ -400,7 +400,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( false ) )
 			{
-				if( currInput.Right() && !prevInput.Right() )
+				if( currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -412,7 +412,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{				
-				if( currInput.Left() && !prevInput.Left() )
+				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -424,15 +424,15 @@ void Actor::UpdatePrePhysics()
 	
 			if( currInput.X && !prevInput.X )
 			{
-				if( !currInput.Left() && !currInput.Right() )
+				if( !currInput.LLeft() && !currInput.LRight() )
 				{
-					if( currInput.Up() )
+					if( currInput.LUp() )
 					{
 						action = UAIR;
 						frame = 0;
 						break;
 					}
-					else if( currInput.Down() )
+					else if( currInput.LDown() )
 					{
 						action = DAIR;
 						frame = 0;
@@ -451,7 +451,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( false ) )
 			{
-				if( currInput.Right() && !prevInput.Right() )
+				if( currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -463,7 +463,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{				
-				if( currInput.Left() && !prevInput.Left() )
+				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -474,15 +474,15 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.X && !prevInput.X )
 			{
-				if( !currInput.Left() && !currInput.Right() )
+				if( !currInput.LLeft() && !currInput.LRight() )
 				{
-					if( currInput.Up() )
+					if( currInput.LUp() )
 					{
 						action = UAIR;
 						frame = 0;
 						break;
 					}
-					else if( currInput.Down() )
+					else if( currInput.LDown() )
 					{
 						action = DAIR;
 						frame = 0;
@@ -499,9 +499,14 @@ void Actor::UpdatePrePhysics()
 	case LAND:
 	case LAND2:
 			{
-		if( currInput.Left() || currInput.Right() )
+		if( currInput.LLeft() || currInput.LRight() )
 		{
 			action = RUN;
+			frame = 0;
+		}
+		else if( currInput.LDown() )
+		{
+			action = SLIDE;
 			frame = 0;
 		}
 		else
@@ -514,7 +519,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLCLING:
 		{
-			if( (facingRight && currInput.Right()) || (!facingRight && currInput.Left() ) )
+			if( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) )
 			{
 
 				action = WALLJUMP;
@@ -535,7 +540,7 @@ void Actor::UpdatePrePhysics()
 
 			if( CheckWall( false ) )
 			{
-				if( currInput.Right() && !prevInput.Right() )
+				if( currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -547,7 +552,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{				
-				if( currInput.Left() && !prevInput.Left() )
+				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -560,15 +565,15 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.X && !prevInput.X )
 				{
-					if( !currInput.Left() && !currInput.Right() )
+					if( !currInput.LLeft() && !currInput.LRight() )
 					{
-						if( currInput.Up() )
+						if( currInput.LUp() )
 						{
 							action = UAIR;
 							frame = 0;
 							break;
 						}
-						else if( currInput.Down() )
+						else if( currInput.LDown() )
 						{
 							action = DAIR;
 							frame = 0;
@@ -604,7 +609,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( !currInput.B )
 			{
-				if( currInput.Left() || currInput.Right() )
+				if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = RUN;
 					frame = 0;
@@ -637,9 +642,9 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				break;
 			}
-			else if( !currInput.Left() && !currInput.Right() )
+			else if( !currInput.LLeft() && !currInput.LRight() )
 			{
-				if( !currInput.Down() )
+				if( !currInput.LDown() )
 				{
 					action = STAND;
 					frame = 0;
@@ -648,7 +653,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( currInput.Down() )
+				if( currInput.LDown() )
 				{
 					action = SPRINT;
 					frame = 0;
@@ -671,14 +676,14 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if(!( currInput.Left() || currInput.Right() ))
+			if(!( currInput.LLeft() || currInput.LRight() ))
 			{
-				if( currInput.Down())
+				if( currInput.LDown())
 				{
 					action = SLIDE;
 					frame = 0;
 				}
-				else if( currInput.Up() && ( (gNorm.x < 0 && facingRight) || (gNorm.x > 0 && !facingRight) ) )
+				else if( currInput.LUp() && ( (gNorm.x < 0 && facingRight) || (gNorm.x > 0 && !facingRight) ) )
 				{
 					break;
 				}
@@ -692,10 +697,10 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( facingRight && currInput.Left() )
+				if( facingRight && currInput.LLeft() )
 				{
 					
-					if( ( currInput.Down() && gNorm.x < 0 ) || ( currInput.Up() && gNorm.x > 0 ) )
+					if( ( currInput.LDown() && gNorm.x < 0 ) || ( currInput.LUp() && gNorm.x > 0 ) )
 					{
 						frame = 0;
 					}
@@ -709,9 +714,9 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 					break;
 				}
-				else if( !facingRight && currInput.Right() )
+				else if( !facingRight && currInput.LRight() )
 				{
-					if( ( currInput.Down() && gNorm.x > 0 ) || ( currInput.Up() && gNorm.x < 0 ) )
+					if( ( currInput.LDown() && gNorm.x > 0 ) || ( currInput.LUp() && gNorm.x < 0 ) )
 					{
 						frame = 0;	
 					}
@@ -726,8 +731,8 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 					break;
 				}
-				else if( !( (currInput.Down() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
-					|| (currInput.Up() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) ) )
+				else if( !( (currInput.LDown() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
+					|| (currInput.LUp() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) ) )
 				{
 					action = RUN;
 					frame = frame / 3;
@@ -773,7 +778,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
-		if( currInput.Left() )
+		if( currInput.LLeft() )
 		{
 			if( groundSpeed > 0 )
 			{
@@ -801,7 +806,7 @@ void Actor::UpdatePrePhysics()
 
 			facingRight = false;
 		}
-		else if( currInput.Right() )
+		else if( currInput.LRight() )
 		{
 			if (groundSpeed < 0 )
 				groundSpeed = 0;
@@ -866,7 +871,7 @@ void Actor::UpdatePrePhysics()
 			}
 
 
-			if( currInput.Left() )
+			if( currInput.LLeft() )
 			{
 				if( velocity.x > -maxAirXControl )
 				{
@@ -876,7 +881,7 @@ void Actor::UpdatePrePhysics()
 				}
 				
 			}
-			else if( currInput.Right() )
+			else if( currInput.LRight() )
 			{
 				if( velocity.x < maxAirXControl )
 				{
@@ -913,7 +918,7 @@ void Actor::UpdatePrePhysics()
 				//cout << "running wallcling" << endl;
 				velocity.y = clingSpeed;
 			}
-			if( currInput.Left() )
+			if( currInput.LLeft() )
 			{
 				//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
 				//{
@@ -921,7 +926,7 @@ void Actor::UpdatePrePhysics()
 				//}
 					
 			}
-			else if( currInput.Right() )
+			else if( currInput.LRight() )
 			{
 				//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
 				//{
@@ -952,7 +957,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( frame > 10 )
 			{
-			if( currInput.Left() )
+			if( currInput.LLeft() )
 			{
 				if( velocity.x > -maxAirXControl )
 				{
@@ -962,7 +967,7 @@ void Actor::UpdatePrePhysics()
 				}
 				
 			}
-			else if( currInput.Right() )
+			else if( currInput.LRight() )
 			{
 				if( velocity.x < maxAirXControl )
 				{
@@ -997,7 +1002,7 @@ void Actor::UpdatePrePhysics()
 			}
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{
-				if( currInput.Left() )
+				if( currInput.LLeft() )
 				{
 					if( velocity.x > -maxAirXControl )
 					{
@@ -1007,7 +1012,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else if( currInput.Right() )
+				else if( currInput.LRight() )
 				{
 					if( velocity.x < maxAirXControl )
 					{
@@ -1038,7 +1043,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{		
-				if( currInput.Left() )
+				if( currInput.LLeft() )
 				{
 					if( velocity.x > -maxAirXControl )
 					{
@@ -1048,7 +1053,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else if( currInput.Right() )
+				else if( currInput.LRight() )
 				{
 					if( velocity.x < maxAirXControl )
 					{
@@ -1078,7 +1083,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{	
-				if( currInput.Left() )
+				if( currInput.LLeft() )
 				{
 					if( velocity.x > -maxAirXControl )
 					{
@@ -1088,7 +1093,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else if( currInput.Right() )
+				else if( currInput.LRight() )
 				{
 					if( velocity.x < maxAirXControl )
 					{
@@ -1118,13 +1123,13 @@ void Actor::UpdatePrePhysics()
 		{
 			b.rh = dashHeight;
 			b.offset.y = (normalHeight - dashHeight);
-			if( currInput.Left() && facingRight )
+			if( currInput.LLeft() && facingRight )
 			{
 				facingRight = false;
 				groundSpeed = -dashSpeed;
 				frame = 0;
 			}
-			else if( currInput.Right() && !facingRight )
+			else if( currInput.LRight() && !facingRight )
 			{
 				facingRight = true;
 				groundSpeed = dashSpeed;
@@ -1141,7 +1146,7 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = dashSpeed;
 			}
 
-			if( currInput.Down() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
+			if( currInput.LDown() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
 				if( facingRight )
 				{
@@ -1152,7 +1157,7 @@ void Actor::UpdatePrePhysics()
 					groundSpeed -= sprintAccel * abs( gNorm.x );
 				}
 			}
-			else if( currInput.Up() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
+			else if( currInput.LUp() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
 				if( facingRight )
 				{
@@ -1189,14 +1194,14 @@ void Actor::UpdatePrePhysics()
 				velocity.y = -doubleJumpStrength;
 				hasDoubleJump = false;
 
-				if( currInput.Left() )
+				if( currInput.LLeft() )
 				{
 					if( velocity.x > -maxRunInit )
 					{
 						velocity.x = -maxRunInit;
 					}
 				}
-				else if( currInput.Right() )
+				else if( currInput.LRight() )
 				{
 					if( velocity.x < maxRunInit )
 					{
@@ -1212,7 +1217,7 @@ void Actor::UpdatePrePhysics()
 			{
 				
 						
-				if( currInput.Left() )
+				if( currInput.LLeft() )
 				{
 					if( velocity.x > -maxAirXControl )
 					{
@@ -1222,7 +1227,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else if( currInput.Right() )
+				else if( currInput.LRight() )
 				{
 					if( velocity.x < maxAirXControl )
 					{
@@ -1252,14 +1257,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
-
+			//groundSpeed = 
 			break;
 		}
 	case SPRINT:
 		{
 			b.rh = sprintHeight;
 			b.offset.y = (normalHeight - sprintHeight);
-			if( currInput.Left() )
+			if( currInput.LLeft() )
 			{
 				if( groundSpeed > 0 )
 				{
@@ -1290,7 +1295,7 @@ void Actor::UpdatePrePhysics()
 				}
 				facingRight = false;
 			}
-			else if( currInput.Right() )
+			else if( currInput.LRight() )
 			{
 				if (groundSpeed < 0 )
 					groundSpeed = 0;
@@ -1702,7 +1707,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			{
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
-				if( next->Normal().y < 0 && !(currInput.Up() && !currInput.Left() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+				if( next->Normal().y < 0 && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 				{
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
@@ -1719,7 +1724,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			else if( transferRight )
 			{
 				Edge *next = ground->edge1;
-				if( next->Normal().y < 0 && !(currInput.Up() && !currInput.Right() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
+				if( next->Normal().y < 0 && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
 				{
 					ground = next;
 					q = 0;
@@ -2149,7 +2154,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
-				groundSpeed = velocity.x;//length( velocity );
+				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 
 				if( velocity.x < 0 )
 				{
@@ -2215,7 +2220,7 @@ void Actor::UpdatePostPhysics()
 		framesInAir = 0;
 		if( collision )
 		{
-			if( currInput.Left() || currInput.Right() )
+			if( currInput.LLeft() || currInput.LRight() )
 			{
 				action = LAND2;
 				frame = 0;
@@ -2241,7 +2246,7 @@ void Actor::UpdatePostPhysics()
 		if( gn.y < 0 )
 		{
 			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-			cout << "offset: " << b.offset.y << endl;
+			//cout << "offset: " << b.offset.y << endl;
 		}
 	}
 	else
@@ -2259,7 +2264,7 @@ void Actor::UpdatePostPhysics()
 				if( wallNormal.x > 0)
 				{
 					//cout << "facing right: " << endl;
-					if( currInput.Left() )
+					if( currInput.LLeft() )
 					{
 						facingRight = true;
 						action = WALLCLING;
@@ -2268,7 +2273,7 @@ void Actor::UpdatePostPhysics()
 				}
 				else
 				{
-					if( currInput.Right() )
+					if( currInput.LRight() )
 					{
 					//	cout << "facing left: " << endl;
 						facingRight = false;

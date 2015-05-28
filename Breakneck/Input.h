@@ -33,16 +33,24 @@ struct ControllerState
 	bool X;
 	bool Y;
 	unsigned char pad;
-	unsigned char altPad;
-	bool Up();
-	bool Down();
-	bool Left();
-	bool Right();//0x1 = up, 0x2 = down, 0x4 = left, 
+	unsigned char leftStickPad;
+	unsigned char rightStickPad;
+	bool LUp();
+	bool LDown();
+	bool LLeft();
+	bool LRight();
+
+	bool RUp();
+	bool RDown();
+	bool RLeft();
+	bool RRight();
+
+	bool PUp();
+	bool PDown();
+	bool PLeft();
+	bool PRight();
+	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right
-	bool AltUp();
-	bool AltDown();
-	bool AltLeft();
-	bool AltRight();
 };
 
 
@@ -70,6 +78,7 @@ public:
 	ControllerState & GetState();
 private:
 	DWORD m_index;
+	float stickThresh;
 	ControllerState m_state;
 	const static DWORD LEFT_STICK_DEADZONE;
 	const static DWORD RIGHT_STICK_DEADZONE;
