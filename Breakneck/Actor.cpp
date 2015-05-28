@@ -678,7 +678,7 @@ void Actor::UpdatePrePhysics()
 					action = SLIDE;
 					frame = 0;
 				}
-				else if( currInput.Up() && gNorm.x < 0 && facingRight || gNorm.x > 0 && !facingRight )
+				else if( currInput.Up() && ( (gNorm.x < 0 && facingRight) || (gNorm.x > 0 && !facingRight) ) )
 				{
 					break;
 				}
