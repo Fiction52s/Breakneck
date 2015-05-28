@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "EditSession.h"
 #include "VectorMath.h"
-#include "Input.h"
+#include "MacInput.h"
 #include "poly2tri/poly2tri.h"
 #include "Physics.h"
 #include "Actor.h"
@@ -24,7 +24,7 @@ using namespace sf;
 RenderWindow *window;
 
 #define V2d sf::Vector2<double>
-GameController controller(0);
+MacGameController controller(0);
 
 
 

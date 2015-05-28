@@ -7,7 +7,7 @@
 
 struct GameSession
 {
-	GameSession(GameController &c, sf::RenderWindow *rw);
+	GameSession(MacGameController &c, sf::RenderWindow *rw);
 	~GameSession();
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
@@ -22,9 +22,9 @@ struct GameSession
 	sf::Vector2<double> *points;
 	int numPoints;
 	sf::VertexArray *va;
-	ControllerState prevInput;
-	ControllerState currInput;
-	GameController &controller;
+	MacControllerState prevInput;
+	MacControllerState currInput;
+	MacGameController &controller;
 	Collider coll;
 	std::list<sf::VertexArray*> polygons;
 	sf::Vector2f lastViewSize;
