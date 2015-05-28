@@ -1358,7 +1358,7 @@ void Actor::UpdatePrePhysics()
 			groundSpeed = -maxGroundSpeed;
 		}
 	}
-	cout << "position: " << position.x << ", " << position.y << endl;
+	//cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 	collision = false;
 	

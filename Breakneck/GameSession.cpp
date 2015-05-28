@@ -31,6 +31,9 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	}
 	goalSprite.setTexture( goalTex );
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
+
+	testTree = new LeafNode( Vector2i( 0, 0), 300, 300 );
+	testTree->parent = NULL;
 }
 
 
@@ -105,6 +108,8 @@ bool GameSession::OpenFile( string fileName )
 
 		edges = new Edge*[numPoints];
 
+	
+
 		while( pointCounter < numPoints )
 		{
 			string matStr;
@@ -127,6 +132,11 @@ bool GameSession::OpenFile( string fileName )
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				Edge *ee = new Edge();
+
+
+				testTree = Insert(testTree, ee );
+
+
 				edges[currentEdgeIndex + i] = ee;
 				ee->v0 = points[i+currentEdgeIndex];
 				if( i < polyPoints - 1 )
@@ -439,7 +449,7 @@ int GameSession::Run( string fileName )
 			{
 			controller.UpdateState();
 			currInput = controller.GetState();
-			cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
+	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 			player.currInput = currInput;
 			player.UpdatePrePhysics();
@@ -585,6 +595,8 @@ int GameSession::Run( string fileName )
 			window->draw( *(*it ) );//, &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
 		//window->draw(border, 8, sf::Lines);
+
+		DebugDrawQuadTree( window, testTree );
 
 		window->display();
 

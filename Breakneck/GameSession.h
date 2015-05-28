@@ -31,6 +31,7 @@ struct GameSession
 	sf::Vector2f lastViewCenter;
 	sf::Sprite goalSprite;
 	sf::Texture goalTex;
+	QNode *testTree;
 };
 
 #endif

@@ -570,10 +570,242 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			return currentContact;
 
-		}
-
-		
+		}	
 	}
 
 	return NULL;
+}
+
+ParentNode::ParentNode( const sf::Vector2i &poss, int rww, int rhh )
+{
+	pos = poss;
+	rw = rww;
+	rh = rhh;
+	leaf = false;
+	children[0] = new LeafNode( sf::Vector2i(pos.x - rw / 2, pos.y - rh / 2 ), rw / 2, rh / 2 );
+	children[1] = new LeafNode( sf::Vector2i(pos.x + rw / 2, pos.y - rh / 2 ), rw / 2, rh / 2 );
+	children[2] = new LeafNode( sf::Vector2i(pos.x - rw / 2, pos.y + rh / 2 ), rw / 2, rh / 2 );
+	children[3] = new LeafNode( sf::Vector2i(pos.x + rw / 2, pos.y + rh / 2 ), rw / 2, rh / 2 );
+
+	
+}
+
+
+LeafNode::LeafNode( const sf::Vector2i &poss, int rww, int rhh )
+	:objCount(0)
+{
+	pos = poss;
+	rw = rww;
+	rh = rhh;
+
+	leaf = true;
+	for( int i = 0; i < 4; ++i )
+	{
+		edges[i] = NULL;
+	}
+}
+
+sf::IntRect GetEdgeBox( Edge *e )
+{
+	int left = min( e->v0.x, e->v1.x );
+	int right = max( e->v0.x, e->v1.x );
+	int top = min( e->v0.y, e->v1.y );
+	int bottom = max( e->v0.y, e->v1.y );
+	return sf::IntRect( left, top, right - left, bottom - top );	
+}
+
+bool IsEdgeTouchingBox( Edge *e, const sf::IntRect & ir )
+{
+	sf::IntRect er = GetEdgeBox( e );
+
+	V2d as[4];
+	V2d bs[4];
+	as[0] = V2d( ir.left, ir.top );
+	bs[0] = V2d( ir.left + ir.width, ir.top );
+
+	as[1] =  V2d( ir.left, ir.top + ir.height );
+	bs[1] = V2d( ir.left + ir.width, ir.top + ir.height );
+
+	as[2] = V2d( ir.left, ir.top );
+	bs[2] = V2d( ir.left, ir.top + ir.height);
+
+	as[3] = V2d( ir.left + ir.width, ir.top );
+	bs[3] = V2d( ir.left + ir.width, ir.top + ir.height );
+
+	double erLeft = er.left;
+	double erRight = er.left + er.width;
+	double erTop = er.top;
+	double erBottom = er.top + er.height;
+
+	
+	
+	for( int i = 0; i < 4; ++i )
+	{
+		LineIntersection li = lineIntersection( as[i], bs[i], e->v0, e->v1 );
+
+		if( !li.parallel )
+		{
+			
+				V2d a = as[i];
+				V2d b = bs[i];
+				double e1Left = min( a.x, b.x );
+				double e1Right = max( a.x, b.x );
+				double e1Top = min( a.y, b.y );
+				double e1Bottom = max( a.y, b.y );
+
+				
+			//cout << "compares: " << e1Left << ", " << erRight << " .. " << e1Right << ", " << erLeft << endl;
+			//cout << "compares y: " << e1Top << " <= " << erBottom << " && " << e1Bottom << " >= " << erTop << endl;
+			if( e1Left <= erRight && e1Right >= erLeft && e1Top <= erBottom && e1Bottom >= erTop )
+			{
+				cout << "---!!!!!!" << endl;
+				if( li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
+				{
+					if( li.position.x <= erRight && li.position.x >= erLeft && li.position.y >= erTop && li.position.y <= erBottom)
+					{
+						//cout << "seg intersect!!!!!!" << endl;
+					//	assert( 0 );
+						return true;
+					}
+				}
+			}
+		}
+	}
+	//cout << "return false" << endl;
+	return false;
+}
+
+QNode *Insert( QNode *node, Edge* e )
+{
+	if( node->leaf )
+	{
+		LeafNode *n = (LeafNode*)node;
+		if( n->objCount == 4 ) //full
+		{
+			cout << "splitting" << endl;	
+			ParentNode *p = new ParentNode( n->pos, n->rw, n->rh );
+			p->parent = n->parent;
+			
+
+		/*	for( int i = 0; i < 4; ++i )
+			{
+				//LeafNode *inner = (LeafNode*)p->children[i];
+				Edge * tempEdge = n->edges[i];
+				sf::IntRect nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
+				sf::IntRect ne( node->pos.x + node->rw, node->pos.y - node->rh, node->rw, node->rh );
+				sf::IntRect sw( node->pos.x - node->rw, node->pos.y + node->rh, node->rw, node->rh );
+				sf::IntRect se( node->pos.x + node->rw, node->pos.y + node->rh, node->rw, node->rh );
+
+				if( IsEdgeTouchingBox( tempEdge, nw ) )
+					p->children[0] = Insert( p->children[0], tempEdge );
+				if( IsEdgeTouchingBox( tempEdge, ne ) )
+					p->children[1] = Insert( p->children[1], tempEdge );
+				if( IsEdgeTouchingBox( tempEdge, sw ) )
+					p->children[2] = Insert( p->children[2], tempEdge );
+				if( IsEdgeTouchingBox( tempEdge, se ) )
+					p->children[3] = Insert( p->children[3], tempEdge );
+			}*/
+
+			for( int i = 0; i < 4; ++i )
+				Insert( p, n->edges[i] );
+
+	
+
+
+
+			delete node;
+
+			 
+
+			return Insert( p, e );
+		}
+		else
+		{
+			cout << "inserting into leaf . " << n->objCount << endl;
+			n->edges[n->objCount] = e;
+			++n->objCount;
+			return node;
+		}
+	}
+	else
+	{
+		cout << "inserting into parent" << endl;
+		ParentNode *n = (ParentNode*)node;
+		sf::IntRect nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
+		sf::IntRect ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
+		sf::IntRect sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
+		sf::IntRect se( node->pos.x, node->pos.y, node->rw, node->rh );
+
+		if( IsEdgeTouchingBox( e, nw ) )
+			n->children[0] = Insert( n->children[0], e );
+		if( IsEdgeTouchingBox( e, ne ) )
+			n->children[1] = Insert( n->children[1], e );
+		if( IsEdgeTouchingBox( e, sw ) )
+			n->children[2] = Insert( n->children[2], e );
+		if( IsEdgeTouchingBox( e, se ) )
+			n->children[3] = Insert( n->children[3], e );
+	}
+
+
+	return node;
+}
+
+void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
+{
+	if( node->leaf )
+	{
+		LeafNode *n = (LeafNode*)node;
+
+		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
+		int trans = 100;
+		if( n->objCount == 0 )
+			rs.setFillColor( Color( 255, 255, 0, trans ) );
+		else if( n->objCount == 1 )
+			rs.setFillColor( Color( 255, 0, 0, trans) );
+		else if( n->objCount == 2 )
+			rs.setFillColor( Color( 0, 255, 0, trans ) );
+		else if( n->objCount == 3 )
+			rs.setFillColor( Color( 0, 0, 255, trans ) );
+		
+		//rs.setFillColor( Color::Green );
+		rs.setOutlineColor( Color::Blue );
+	//	rs.setOutlineThickness( 3 );
+		//rs.setFillColor( Color::Transparent );
+		rs.setPosition( node->pos.x, node->pos.y );
+		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+
+		w->draw( rs );
+
+		CircleShape cs;
+		cs.setFillColor( Color::Cyan );
+		cs.setRadius( 10 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( node->pos.x, node->pos.y );
+		w->draw( cs );
+	}
+	else
+	{
+		ParentNode *n = (ParentNode*)node;
+		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
+		rs.setOutlineColor( Color::Red );
+		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setPosition( node->pos.x, node->pos.y );
+		rs.setFillColor( Color::Transparent );
+		rs.setOutlineThickness( 10 );
+		w->draw( rs );
+
+		CircleShape cs;
+		cs.setFillColor( Color::Cyan );
+		cs.setRadius( 10 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( node->pos.x, node->pos.y );
+
+		w->draw( cs );
+
+		for( int i = 0; i < 4; ++i )
+			DebugDrawQuadTree( w, n->children[i] );
+	}
+	
+
+	
 }

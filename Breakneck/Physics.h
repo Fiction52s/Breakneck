@@ -59,4 +59,41 @@ struct Collider
 		sf::RenderWindow *w);
 };
 
+struct ParentNode;
+
+struct QNode
+{
+	QNode():parent(NULL){}
+	sf::Vector2i pos;
+	int rw;
+	int rh;
+	
+	ParentNode *parent;
+	bool leaf;
+};
+
+
+
+struct ParentNode : QNode
+{
+	ParentNode( const sf::Vector2i &pos, int rw, int rh );
+	QNode *children[4];
+	// 0    |     1
+	//--------------
+	// 2    |     3
+	
+};
+
+struct LeafNode : QNode
+{
+	int objCount;
+	LeafNode( const sf::Vector2i &pos, int rw, int rh );
+	Edge *edges[4];
+};
+
+QNode *Insert( QNode *node, Edge* e );
+
+void DebugDrawQuadTree( sf::RenderWindow *rw, QNode *node );
+
+
 #endif
