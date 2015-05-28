@@ -70,6 +70,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EditSession.cpp" />
     <ClCompile Include="GameSession.cpp" />
     <ClCompile Include="Input.cpp" />
@@ -87,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="EditSession.h" />
     <ClInclude Include="GameSession.h" />
     <ClInclude Include="Input.h" />

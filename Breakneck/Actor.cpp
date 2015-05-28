@@ -285,9 +285,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-
-
-			if(!( currInput.Left() || currInput.Right() ))
+			bool t = (currInput.Up() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) ));
+			if(!( currInput.Left() || currInput.Right() ) && !t )
 			{
 				if( currInput.Down())
 				{
@@ -652,6 +651,10 @@ void Actor::UpdatePrePhysics()
 				{
 					action = SLIDE;
 					frame = 0;
+				}
+				else if( currInput.Up() && gNorm.x < 0 && facingRight || gNorm.x > 0 && !facingRight )
+				{
+					break;
 				}
 				else
 				{
@@ -1636,7 +1639,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			{
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
-				if( next->Normal().y < 0 && !(currInput.Up() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+				if( next->Normal().y < 0 && !(currInput.Up() && !currInput.Left() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 				{
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
@@ -1653,7 +1656,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			else if( transferRight )
 			{
 				Edge *next = ground->edge1;
-				if( next->Normal().y < 0 && !(currInput.Up() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
+				if( next->Normal().y < 0 && !(currInput.Up() && !currInput.Right() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
 				{
 					ground = next;
 					q = 0;
@@ -2164,7 +2167,7 @@ void Actor::UpdatePostPhysics()
 			
 		V2d gn = ground->Normal();
 
-		position.x += offsetX + b.offset.x * 2;
+		position.x += offsetX + b.offset.x;
 
 		if( gn.y < 0 )
 		{

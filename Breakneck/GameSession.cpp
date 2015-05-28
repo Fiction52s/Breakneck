@@ -7,8 +7,10 @@
 #include "Actor.h"
 #include "poly2tri/poly2tri.h"
 #include "VectorMath.h"
+#include "Camera.h"
 
 #define TIMESTEP 1.0 / 60.0
+#define V2d sf::Vector2<double>
 
 using namespace std;
 using namespace sf;
@@ -217,10 +219,13 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = true;
+	bool bdrawdraw = false;
 
 	OpenFile( fileName );
 	
+	Camera cam;
+	cam.pos.x = player.position.x;
+	cam.pos.y = player.position.y;
 	
 	sf::Vertex *line = new sf::Vertex[numPoints*2];
 	for( int i = 0; i < numPoints; ++i )
@@ -527,10 +532,17 @@ int GameSession::Run( string fileName )
 				}
 			}
 		}
-		view.setSize( Vector2f( 960 * zoomMultiple, 540 * zoomMultiple ) );
-		lastViewSize = view.getSize();
+		Vector2f camOffset;
 		
-		view.setCenter( player.position.x, player.position.y );
+		
+		
+		cam.Update( &player );
+
+		view.setSize( Vector2f( 960 * cam.zoomFactor, 540 * cam.zoomFactor) );
+		lastViewSize = view.getSize();
+
+		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );
+		view.setCenter( cam.pos.x, cam.pos.y );
 		lastViewCenter = view.getCenter();
 		window->setView( view );
 
