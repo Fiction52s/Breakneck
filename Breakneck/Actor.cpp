@@ -286,7 +286,7 @@ void Actor::UpdatePrePhysics()
 			}
 
 			bool t = (!currInput.Up() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
-			if(!( currInput.Left() || currInput.Right() ) && t )
+			if(!( currInput.Left() || currInput.Right() ) )//&& t )
 			{
 				if( currInput.Down())
 				{
@@ -2193,7 +2193,7 @@ void Actor::UpdatePostPhysics()
 			//if( false )
 			{
 				
-				if( wallNormal.y > 0)
+				if( wallNormal.x > 0)
 				{
 					cout << "facing right: " << endl;
 					if( currInput.Left() )
@@ -2275,7 +2275,10 @@ void Actor::UpdatePostPhysics()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 			sprite->setRotation( angle / PI * 180 );
 
 
@@ -2321,7 +2324,10 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 			//sprite->setPosition( position.x, position.y );
 			
 			//sprite->setPosition( position.x, position.y );
@@ -2690,7 +2696,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			sprite->setPosition( pp.x + offsetX, pp.y );
 			break;
 		}
 	}

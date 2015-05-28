@@ -117,7 +117,7 @@ void Camera::Update( Actor *player )
 		offset.y = maxOffset.y;
 
 
-	pos.x = player->position.x;
+	pos.x = player->position.x;// - player->offsetX;
 	pos.y = player->position.y;
 
 	cout << "zoom: " << zoomFactor << endl;
