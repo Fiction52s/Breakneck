@@ -2456,19 +2456,19 @@ void Actor::UpdatePostPhysics()
 		{
 			ir = tileset[JUMP]->GetSubRect( 1 );
 		}
-		else if( velocity.y < 12 )
+		else if( velocity.y < 7 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 2 );
 		}
-		else if( velocity.y < 14 )
+		else if( velocity.y < 9 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 3 );
 		}
-		else if( velocity.y < 18 )
+		else if( velocity.y < 12 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 4 );
 		}
-		else if( velocity.y < 34)
+		else if( velocity.y < 35)
 		{
 			ir = tileset[JUMP]->GetSubRect( 5 );
 		}

@@ -19,12 +19,44 @@ Camera::Camera()
 	zoomInRate = .1;
 	offsetRate = 60;
 	maxZoom = 20;
+
+	zoomLevel1 = 0;
+	zoomLevel2 = .5;
+	zoomLevel3 = 1.75;
+
+	minZoom = 1;
 	maxOffset.x = 100 * 10;
 	maxOffset.y = 100 * 10;
 }
 
 void Camera::Update( Actor *player )
 {
+	ControllerState & con = player->currInput;
+	ControllerState & prevcon = player->prevInput;
+
+	if( con.PUp() && !prevcon.PUp() )
+	{
+		if( zoomLevel == zoomLevel1 )
+		{
+			zoomLevel = zoomLevel3;
+		}
+		else if( zoomLevel == zoomLevel2 )
+			zoomLevel = zoomLevel1;
+		else if( zoomLevel = zoomLevel3 )
+			zoomLevel = zoomLevel2;
+	}
+	else if( con.PDown() && !prevcon.PDown() )
+	{
+		if( zoomLevel == zoomLevel1 )
+		{
+			zoomLevel = zoomLevel2;
+		}
+		else if( zoomLevel == zoomLevel2 )
+			zoomLevel = zoomLevel3;
+		else if( zoomLevel = zoomLevel3 )
+			zoomLevel = zoomLevel1;
+	}
+
 	float temp;
 	V2d f;
 	if( player->ground != NULL )
@@ -120,7 +152,12 @@ void Camera::Update( Actor *player )
 	pos.x = player->position.x;// - player->offsetX;
 	pos.y = player->position.y;
 
-	cout << "zoom: " << zoomFactor << endl;
+	//cout << "zoom: " << zoomFactor << endl;
 	//pos.x += offset.x;
 	//pos.y += offset.y;
+}
+
+float Camera::GetZoom()
+{
+	return zoomLevel + zoomFactor;
 }
