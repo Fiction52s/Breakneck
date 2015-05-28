@@ -775,12 +775,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		 worldPos.x = tempWorldPos.x;
 		 worldPos.y = tempWorldPos.y;
 
-
-
-
-		
-
-
 		sf::Event ev;
 		
 		while( w->pollEvent( ev ) )
@@ -1064,16 +1058,86 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		if( quit )
 			break;
+		testPoint.x = worldPos.x;
+		testPoint.y = worldPos.y;
+
+		if( polygonInProgress->points.size() > 0 && Keyboard::isKeyPressed( Keyboard::LShift ) ) 
+		{
+
+			Vector2i last = polygonInProgress->points.back();
+			Vector2f diff = testPoint - Vector2f(last.x, last.y);
+
+			double len;
+			double angle = atan2( -diff.y, diff.x );
+			if( angle < 0 )
+				angle += 2 * PI;
+			Vector2f dir;
+			
+			//cout << "angle : " << angle << endl;
+			if( angle + PI / 8 >= 2 * PI || angle < PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), V2d( 1, 0 ) );
+				dir = Vector2f( 1, 0 );
+			}
+			else if( angle < 3 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), normalize( V2d( 1, -1 ) ) );
+				V2d tt = normalize( V2d( 1, -1 ) );
+				dir = Vector2f( tt.x, tt.y );
+			}
+			else if( angle < 5 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), V2d( 0, -1 ) );
+				dir = Vector2f( 0, -1 );
+			}
+			else if( angle < 7 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, -1 )) );
+				V2d tt = normalize( V2d( -1, -1 ) );
+				dir = Vector2f( tt.x, tt.y );
+			}
+			else if( angle < 9 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), V2d( -1, 0 ) );
+				dir = Vector2f( -1, 0 );
+			}
+			else if( angle < 11 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, 1 )) );
+				V2d tt = normalize( V2d( -1, 1 ) );
+				dir = Vector2f( tt.x, tt.y );
+			}
+			else if( angle < 13 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), V2d( 0, 1 ) );
+				dir = Vector2f( 0, 1 );
+			}
+			else //( angle < 15 * PI / 8 )
+			{
+				len = dot( V2d( diff.x, diff.y ), normalize(V2d( 1, 1 )) );
+				V2d tt = normalize( V2d( 1, 1 ) );
+				dir = Vector2f( tt.x, tt.y );
+			}
+
+			testPoint = Vector2f(last.x, last.y) + dir * (float)len;
+			//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		}
+
 
 		 if( canCreatePoint && Mouse::isButtonPressed( Mouse::Left ) )
 		{
 			if( mode == CREATE_POLYGONS && !panning )
 			{
+				//testPoint.x = worldPos.x;
+				//testPoint.y = worldPos.y;
+
+
+				
 
 				bool emptySpace = true;
 				for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 				{
-					if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+					if((*it)->ContainsPoint( testPoint ) )
 					{
 						//emptySpace = false;
 						
@@ -1086,7 +1150,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
 						polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ))
 					{
-						Vector2i worldi( worldPos.x, worldPos.y );
+						Vector2i worldi( testPoint.x, testPoint.y );
 						
 						polygonInProgress->points.push_back( worldi );
 						////if( polygonInProgress->points.size() > 0 )
@@ -1141,6 +1205,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		
 
+
 		if( mode == PLACE_PLAYER )
 		{
 			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
@@ -1180,7 +1245,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			sf::Vertex activePreview[2] =
 			{
 				sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
-				sf::Vertex(sf::Vector2<float>(worldPos.x, worldPos.y), colorSelection)
+				sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
 			};
 			w->draw( activePreview, 2, sf::Lines );
 

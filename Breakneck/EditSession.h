@@ -60,6 +60,7 @@ struct EditSession
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
+	sf::Vector2f testPoint;
 
 	enum Emode
 	{
