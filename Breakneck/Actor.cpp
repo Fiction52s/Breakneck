@@ -84,6 +84,9 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[WALLJUMP] = 9 * 2;
 		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
+
+		actionLength[GRINDBALL] = 1;
+		tileset[GRINDBALL] = owner->GetTileset( "grindball.png", 32, 32 );
 		}
 
 		action = JUMP;
@@ -120,6 +123,10 @@ Actor::Actor( GameSession *gs )
 		airSlow = .3;
 
 		groundOffsetX = 0;
+
+		grindEdge = NULL;
+		grindQuantity = 0;
+		grindSpeed = 0;
 
 		maxRunInit = 8;
 		maxAirXControl = maxRunInit;
@@ -209,6 +216,9 @@ void Actor::ActionEnded()
 		case SPRINT:
 			frame = 0;
 			break;
+		case GRINDBALL:
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -277,7 +287,17 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
-			
+			if( currInput.Y && !prevInput.Y )
+			{
+				action = GRINDBALL;
+				grindEdge = ground;
+				frame = 0;
+				grindSpeed = groundSpeed;
+				grindQuantity = edgeQuantity;
+				break;
+			}
+
+
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -927,6 +947,7 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity.x = -wallJumpStrength.x;
 				}
+
 				velocity.y = -wallJumpStrength.y;
 			}
 			else if( frame > 10 )
@@ -1165,7 +1186,7 @@ void Actor::UpdatePrePhysics()
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 				if( velocity.y > 0 )
 					velocity.y = 0;
-				velocity.y -= doubleJumpStrength;
+				velocity.y = -doubleJumpStrength;
 				hasDoubleJump = false;
 
 				if( currInput.Left() )
@@ -1301,7 +1322,12 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
-
+	case GRINDBALL:
+		{
+			
+			//grindSpeed =  ;
+			break;
+		}
 	}
 
 
@@ -1578,6 +1604,37 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 	else
 	{
 		movementVec = velocity;
+	}
+
+	if( grindEdge != NULL )
+	{
+		Edge *e0 = grindEdge->edge0;
+		Edge *e1 = grindEdge->edge1;
+		V2d e0n = e0->Normal();
+		V2d e1n = e1->Normal();
+		
+		double q = grindQuantity;
+		while( !approxEquals(movement, 0 ) )
+		{
+			double gLen = length( grindEdge->v1 - grindEdge->v0 );
+			if( movement > 0 )
+			{
+				double extra = q + movement - gLen;
+				if( extra > 0 )
+				{
+					movement -= gLen - q;
+					grindEdge = e1;
+					q = 0;
+				}
+				else
+				{
+					q += movement;
+					movement = 0;
+				}
+			}
+		}
+		grindQuantity = q;
+		return;
 	}
 		
 	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
@@ -2147,7 +2204,13 @@ void Actor::UpdatePostPhysics()
 	//	cout << "collision" << endl;
 	//else
 	//	cout << "no collision" << endl;
-	if( ground != NULL )
+	if( grindEdge != NULL )
+	{
+		framesInAir = 0;
+		V2d grindPoint = grindEdge->GetPoint( grindQuantity );
+		position = grindPoint;
+	}
+	else if( ground != NULL )
 	{
 		framesInAir = 0;
 		if( collision )
@@ -2195,7 +2258,7 @@ void Actor::UpdatePostPhysics()
 				
 				if( wallNormal.x > 0)
 				{
-					cout << "facing right: " << endl;
+					//cout << "facing right: " << endl;
 					if( currInput.Left() )
 					{
 						facingRight = true;
@@ -2207,7 +2270,7 @@ void Actor::UpdatePostPhysics()
 				{
 					if( currInput.Right() )
 					{
-						cout << "facing left: " << endl;
+					//	cout << "facing left: " << endl;
 						facingRight = false;
 						action = WALLCLING;
 						frame = 0;
@@ -2367,7 +2430,10 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 		}
 		break;
 		}
@@ -2450,7 +2516,10 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 
 		break;
 		}
@@ -2471,8 +2540,10 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
 		V2d pp = ground->GetPoint( edgeQuantity );
-		sprite->setPosition( pp.x, pp.y );
-
+		if( angle == 0 )
+			sprite->setPosition( pp.x + offsetX, pp.y );
+		else
+			sprite->setPosition( pp.x, pp.y );
 		break;
 		}
 	case WALLCLING:
@@ -2536,7 +2607,10 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
 		V2d pp = ground->GetPoint( edgeQuantity );
-		sprite->setPosition( pp.x, pp.y );
+		if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 		break;
 		}
 	case STANDN:
@@ -2556,7 +2630,10 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 	case STANDD:
@@ -2576,7 +2653,10 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 	case FAIR:
@@ -2696,9 +2776,49 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite->setPosition( pp.x + offsetX, pp.y );
+			if( angle == 0 )
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 			break;
 		}
+	case GRINDBALL:
+		{
+			assert( grindEdge != NULL );
+			sprite->setTexture( *(tileset[GRINDBALL]->texture));
+
+			sf::IntRect ir;
+			
+			ir = tileset[GRINDBALL]->GetSubRect( 0 );
+			
+
+
+			if( facingRight )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			double angle = 0;
+
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+
+			}
+			else
+			{
+				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			sprite->setRotation( angle / PI * 180 );
+			V2d pp = grindEdge->GetPoint( grindQuantity );
+			sprite->setPosition( pp.x, pp.y );
+			break;
+		}
+		
 	}
 
 		

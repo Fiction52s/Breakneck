@@ -28,6 +28,7 @@ struct Actor
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
+		GRINDBALL,
 		Count
 	};
 
@@ -45,6 +46,7 @@ struct Actor
 	bool CheckWall( bool right );
 	bool CheckStandUp();
 	GameSession *owner;
+
 	bool leftGround;
 	Contact minContact;
 	sf::Shader sh;
@@ -59,6 +61,12 @@ struct Actor
 	double holdDashAccel;
 	
 	Edge *ground;
+	
+	Edge *grindEdge;
+	double grindQuantity;
+	double grindSpeed;
+
+
 	int numActiveEdges;
 	Edge ** activeEdges;
 	double edgeQuantity;
