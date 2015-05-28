@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
 #include "Physics.h"
-#include "Input.h"
+#include "MacInput.h"
 #include <SFML/Audio.hpp>
 
 #ifndef __ACTOR_H__
@@ -54,8 +54,8 @@ struct Actor
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
 	CollisionBox b;
-	ControllerState prevInput;
-	ControllerState currInput;
+	MacControllerState prevInput;
+	MacControllerState currInput;
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
 	double holdDashAccel;

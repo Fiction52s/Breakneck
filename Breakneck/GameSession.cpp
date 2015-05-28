@@ -15,7 +15,7 @@
 using namespace std;
 using namespace sf;
 
-GameSession::GameSession(GameController &c, RenderWindow *rw)
+GameSession::GameSession(MacGameController &c, RenderWindow *rw)
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this )
 {
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
@@ -295,7 +295,7 @@ int GameSession::Run( string fileName )
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			if( oneFrameMode )
 			{
-				ControllerState con;
+				MacControllerState con;
 
 				while( true )
 				{
@@ -384,7 +384,7 @@ int GameSession::Run( string fileName )
 				bool altRight = Keyboard::isKeyPressed( Keyboard::K );
 				bool altDown = Keyboard::isKeyPressed( Keyboard::J );
 
-				ControllerState keyboardInput;    
+				MacControllerState keyboardInput;    
 				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X ) || Keyboard::isKeyPressed( Keyboard::Period );
 				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::C ) || Keyboard::isKeyPressed( Keyboard::Comma );
 				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::V ) || Keyboard::isKeyPressed( Keyboard::M );
