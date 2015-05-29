@@ -32,7 +32,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	goalSprite.setTexture( goalTex );
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
-	testTree = new LeafNode( V2d( 0, 0), 100000, 100000);
+	testTree = new LeafNode( V2d( 0, 0), 1000000, 1000000);
 	testTree->parent = NULL;
 	testTree->debug = rw;
 }
@@ -81,6 +81,11 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 
 	return t;
 	//make sure to set up tileset here
+}
+
+void GameSession::Test( Edge *e )
+{
+	cout << "testing" << endl;
 }
 
 bool GameSession::OpenFile( string fileName )
@@ -151,6 +156,7 @@ bool GameSession::OpenFile( string fileName )
 					testTree->debug->display();
 				}
 			}
+
 
 			for( int i = 0; i < polyPoints; ++i )
 			{
@@ -236,7 +242,7 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = false;
+	bool bdrawdraw = true;
 
 	OpenFile( fileName );
 	
@@ -462,7 +468,11 @@ int GameSession::Run( string fileName )
 			player.UpdatePrePhysics();
 
 			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-			
+			Rect<double> qrect( player.position.x + player.b.offset.x - player.b.rw, 
+				player.position.y + player.b.offset.y -player.b.rh, player.b.rw, player.b.rh );
+			Query( &player, testTree, qrect );
+
+
 			player.UpdatePhysics( edges, numPoints );
 
 			//temporary for goal collision

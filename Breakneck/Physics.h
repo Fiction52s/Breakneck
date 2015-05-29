@@ -92,8 +92,16 @@ struct LeafNode : QNode
 };
 
 QNode *Insert( QNode *node, Edge* e );
+//void Query( QNode *node, void (*f)( Edge *e ) );
 
 void DebugDrawQuadTree( sf::RenderWindow *rw, QNode *node );
+
+struct QuadTreeCollider
+{
+	virtual void HandleEdge( Edge *e ) = 0;
+};
+
+void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
 
 
 #endif

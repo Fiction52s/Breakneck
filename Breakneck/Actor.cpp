@@ -225,6 +225,9 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	possibleEdgeCount = 0;
+
+
 	ActionEnded();
 	V2d gNorm;
 	if( ground != NULL )
@@ -892,7 +895,7 @@ void Actor::UpdatePrePhysics()
 				//cout << "setting velocity.x to : "<< maxAirXControl << endl;
 				
 			}
-			else
+			else if( !currInput.LUp() && !currInput.LDown() )
 			{
 				if( velocity.x > 0 )
 				{
@@ -977,7 +980,7 @@ void Actor::UpdatePrePhysics()
 				}
 				
 			}
-			else
+			else if( !currInput.LUp() && !currInput.LDown() )
 			{
 				if( velocity.x > 0 )
 				{
@@ -1022,7 +1025,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else
+				else if( !currInput.LUp() && !currInput.LDown() )
 				{
 					if( velocity.x > 0 )
 					{
@@ -1063,7 +1066,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else
+				else if( !currInput.LUp() && !currInput.LDown() )
 				{
 					if( velocity.x > 0 )
 					{
@@ -1103,7 +1106,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else
+				else if( !currInput.LUp() && !currInput.LDown() )
 				{
 					if( velocity.x > 0 )
 					{
@@ -1237,7 +1240,7 @@ void Actor::UpdatePrePhysics()
 					}
 				
 				}
-				else
+				else if( !currInput.LUp() && !currInput.LDown() )
 				{
 					if( velocity.x > 0 )
 					{
@@ -1594,6 +1597,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 
 void Actor::UpdatePhysics( Edge **edges, int numPoints )
 {
+	
 	//if( ground != NULL )
 	//cout << "ground: " << groundSpeed << endl;
 	//else
@@ -2204,7 +2208,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 void Actor::UpdatePostPhysics()
 {
-	
+	cout << "possible edge count: " << possibleEdgeCount << ", before: " << owner->numPoints << endl;
 	//if( collision )
 	//	cout << "collision" << endl;
 	//else
@@ -2830,4 +2834,9 @@ void Actor::UpdatePostPhysics()
 
 	++frame;
 	//cout << "end frame: " << position.x << ", " << position.y << endl;
+}
+
+void Actor::HandleEdge( Edge *e )
+{
+	++possibleEdgeCount;
 }

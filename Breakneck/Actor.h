@@ -8,7 +8,7 @@
 #define __ACTOR_H__
 
 struct GameSession;
-struct Actor
+struct Actor : QuadTreeCollider
 {
 	enum Action
 	{
@@ -35,6 +35,10 @@ struct Actor
 	Actor( GameSession *owner );
 	
 	void ActionEnded();
+
+	void HandleEdge( Edge *e );
+	int possibleEdgeCount;
+
 
 	void UpdatePrePhysics();
 	

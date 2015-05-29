@@ -679,6 +679,14 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 	return false;
 }
 
+bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 )
+{
+	return r0.left <= r1.left + r1.width 
+		&& r0.left + r0.width >= r1.left 
+		&& r0.top <= r1.top + r1.height
+		&& r0.top + r0.height >= r1.top;
+}
+
 QNode *Insert( QNode *node, Edge* e )
 {
 	if( node->leaf )
@@ -715,9 +723,6 @@ QNode *Insert( QNode *node, Edge* e )
 			//	cout << "test: " << n->edges[i]->Normal().x << ", " << n->edges[i]->Normal().y << endl;
 				Insert( p, n->edges[i] );
 			}
-
-	
-
 
 
 			delete node;
@@ -774,7 +779,7 @@ QNode *Insert( QNode *node, Edge* e )
 
 void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 {
-	cout << "pos: " << node->pos.x << ", " << node->pos.y << " , rw: " << node->rw << ", rh: " << node->rh << endl;
+	//cout << "pos: " << node->pos.x << ", " << node->pos.y << " , rw: " << node->rw << ", rh: " << node->rh << endl;
 	if( node->leaf )
 	{
 		LeafNode *n = (LeafNode*)node;
@@ -838,5 +843,33 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 	}
 	
 
+	
+}
+
+void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r )
+{
+	sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+
+	if( node->leaf )
+	{
+		LeafNode *n = (LeafNode*)node;
+
+		if( IsBoxTouchingBox( r, nodeBox ) )
+		{
+			for( int i = 0; i < n->objCount; ++i )
+			{
+				qtc->HandleEdge( n->edges[i] );
+			}
+		}
+	}
+	else
+	{
+		ParentNode *n = (ParentNode*)node;
+
+		for( int i = 0; i < 4; ++i )
+		{
+			Query( qtc, n->children[i], r );
+		}
+	}
 	
 }

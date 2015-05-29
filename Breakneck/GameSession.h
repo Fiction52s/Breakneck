@@ -16,6 +16,7 @@ struct GameSession
 	std::list<Tileset*> tilesetList;
 	Tileset * GetTileset( const std::string & s,
 		int tileWidth, int tileHeight );
+	void Test( Edge *e );
 	Actor player;
 	sf::Shader polyShader;
 	Edge **edges;
