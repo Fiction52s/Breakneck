@@ -64,9 +64,9 @@ struct ParentNode;
 struct QNode
 {
 	QNode():parent(NULL),debug(NULL){}
-	sf::Vector2i pos;
-	int rw;
-	int rh;
+	sf::Vector2<double> pos;
+	double rw;
+	double rh;
 	sf::RenderWindow *debug;
 	ParentNode *parent;
 	bool leaf;
@@ -76,7 +76,7 @@ struct QNode
 
 struct ParentNode : QNode
 {
-	ParentNode( const sf::Vector2i &pos, int rw, int rh );
+	ParentNode( const sf::Vector2<double> &pos, double rw, double rh );
 	QNode *children[4];
 	// 0    |     1
 	//--------------
@@ -87,7 +87,7 @@ struct ParentNode : QNode
 struct LeafNode : QNode
 {
 	int objCount;
-	LeafNode( const sf::Vector2i &pos, int rw, int rh );
+	LeafNode( const sf::Vector2<double> &pos, double rw, double rh );
 	Edge *edges[4];
 };
 
