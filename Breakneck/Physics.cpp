@@ -637,6 +637,10 @@ bool IsEdgeTouchingBox( Edge *e, const sf::IntRect & ir )
 	double erTop = er.top;
 	double erBottom = er.top + er.height;
 
+	if( erLeft >= ir.left && erRight <= ir.left + ir.width && erTop >= ir.top && erBottom <= ir.top + ir.height )
+		return true;
+	//else
+	//	return false;
 	
 	
 	for( int i = 0; i < 4; ++i )
@@ -685,7 +689,7 @@ QNode *Insert( QNode *node, Edge* e )
 			cout << "splitting" << endl;	
 			ParentNode *p = new ParentNode( n->pos, n->rw, n->rh );
 			p->parent = n->parent;
-			
+			p->debug = n->debug;
 
 		/*	for( int i = 0; i < 4; ++i )
 			{
@@ -707,7 +711,10 @@ QNode *Insert( QNode *node, Edge* e )
 			}*/
 
 			for( int i = 0; i < 4; ++i )
+			{
+				cout << "test: " << n->edges[i]->Normal().x << ", " << n->edges[i]->Normal().y << endl;
 				Insert( p, n->edges[i] );
+			}
 
 	
 
@@ -722,8 +729,9 @@ QNode *Insert( QNode *node, Edge* e )
 		else
 		{
 			cout << "inserting into leaf . " << n->objCount << endl;
+			cout << "norm: " << e->Normal().x << ", " << e->Normal().y << endl;
 			n->edges[n->objCount] = e;
-			++n->objCount;
+			++(n->objCount);
 			return node;
 		}
 	}
@@ -737,14 +745,28 @@ QNode *Insert( QNode *node, Edge* e )
 		sf::IntRect se( node->pos.x, node->pos.y, node->rw, node->rh );
 
 		if( IsEdgeTouchingBox( e, nw ) )
+		{
+			cout << "calling northwest insert" << endl;
 			n->children[0] = Insert( n->children[0], e );
+		}
 		if( IsEdgeTouchingBox( e, ne ) )
+		{
+			cout << "calling northeast insert" << endl;
 			n->children[1] = Insert( n->children[1], e );
+		}
 		if( IsEdgeTouchingBox( e, sw ) )
+		{
+			cout << "calling southwest insert" << endl;
 			n->children[2] = Insert( n->children[2], e );
+		}
 		if( IsEdgeTouchingBox( e, se ) )
+		{
+			cout << "calling southeast insert" << endl;
 			n->children[3] = Insert( n->children[3], e );
+		}
 	}
+
+	
 
 
 	return node;
@@ -759,13 +781,17 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		int trans = 100;
 		if( n->objCount == 0 )
-			rs.setFillColor( Color( 255, 255, 0, trans ) );
+			rs.setFillColor( Color( 100, 100, 100, trans ) ); //
 		else if( n->objCount == 1 )
-			rs.setFillColor( Color( 255, 0, 0, trans) );
+			rs.setFillColor( Color( 255, 0, 0, trans) ); // red == 1
 		else if( n->objCount == 2 )
-			rs.setFillColor( Color( 0, 255, 0, trans ) );
+			rs.setFillColor( Color( 0, 255, 0, trans ) ); // green == 2
 		else if( n->objCount == 3 )
-			rs.setFillColor( Color( 0, 0, 255, trans ) );
+			rs.setFillColor( Color( 0, 0, 255, trans ) ); //blue == 3
+		else
+		{
+			rs.setFillColor( Color( 0, 100, 255, trans ) ); //blah == 4
+		}
 		
 		//rs.setFillColor( Color::Green );
 		rs.setOutlineColor( Color::Blue );
@@ -781,7 +807,7 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 		cs.setRadius( 10 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( node->pos.x, node->pos.y );
-		w->draw( cs );
+	//	w->draw( cs );
 	}
 	else
 	{
@@ -791,7 +817,7 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
 		rs.setPosition( node->pos.x, node->pos.y );
 		rs.setFillColor( Color::Transparent );
-		rs.setOutlineThickness( 10 );
+		//rs.setOutlineThickness( 10 );
 		w->draw( rs );
 
 		CircleShape cs;
@@ -800,7 +826,7 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( node->pos.x, node->pos.y );
 
-		w->draw( cs );
+	//w->draw( cs );
 
 		for( int i = 0; i < 4; ++i )
 			DebugDrawQuadTree( w, n->children[i] );

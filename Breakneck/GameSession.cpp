@@ -32,8 +32,9 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	goalSprite.setTexture( goalTex );
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
-	testTree = new LeafNode( Vector2i( 0, 0), 300, 300 );
+	testTree = new LeafNode( Vector2i( 0, 0), 100000, 100000 );
 	testTree->parent = NULL;
+	testTree->debug = rw;
 }
 
 
@@ -132,17 +133,22 @@ bool GameSession::OpenFile( string fileName )
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				Edge *ee = new Edge();
-
-
-				testTree = Insert(testTree, ee );
-
-
-				edges[currentEdgeIndex + i] = ee;
+					
+  				edges[currentEdgeIndex + i] = ee;
 				ee->v0 = points[i+currentEdgeIndex];
 				if( i < polyPoints - 1 )
 					ee->v1 = points[i+1 + currentEdgeIndex];
 				else
 					ee->v1 = points[currentEdgeIndex];
+
+				cout << "here we go----- " << ee->Normal().x << ", " << ee->Normal().y << endl;
+				testTree = Insert(testTree, ee );
+
+				if( testTree->debug != NULL )
+				{
+					DebugDrawQuadTree( testTree->debug, testTree );
+					testTree->debug->display();
+				}
 			}
 
 			for( int i = 0; i < polyPoints; ++i )

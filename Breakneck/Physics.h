@@ -63,11 +63,11 @@ struct ParentNode;
 
 struct QNode
 {
-	QNode():parent(NULL){}
+	QNode():parent(NULL),debug(NULL){}
 	sf::Vector2i pos;
 	int rw;
 	int rh;
-	
+	sf::RenderWindow *debug;
 	ParentNode *parent;
 	bool leaf;
 };
