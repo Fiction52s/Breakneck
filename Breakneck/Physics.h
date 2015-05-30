@@ -103,5 +103,7 @@ struct QuadTreeCollider
 
 void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
 
-
+//struct QuadTree
+//{
+//};
 #endif

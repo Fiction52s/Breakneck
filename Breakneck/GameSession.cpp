@@ -242,7 +242,7 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = true;
+	bool bdrawdraw = false;
 
 	OpenFile( fileName );
 	
@@ -613,7 +613,7 @@ int GameSession::Run( string fileName )
 		}
 		//window->draw(border, 8, sf::Lines);
 
-		DebugDrawQuadTree( window, testTree );
+		//DebugDrawQuadTree( window, testTree );
 
 		window->display();
 

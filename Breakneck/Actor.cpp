@@ -225,7 +225,7 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
-	possibleEdgeCount = 0;
+	
 
 
 	ActionEnded();
@@ -1536,62 +1536,32 @@ bool Actor::CheckStandUp()
 
 bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
+	possibleEdgeCount = 0;
 	position += vel;
 	
+	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	minContact.collisionPriority = 1000000;
+
+/*	sf::RectangleShape rs;
+	rs.setSize( Vector2f(r.width, r.height ));
+	rs.setFillColor( Color::Yellow );
+	rs.setPosition( r.left, r.top );
+
+	owner->window->draw( rs );*/
+	col = false;
+	tempVel = vel;
+
+	Query( this, owner->testTree, r );
 	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
-	bool col = false;
-	int collisionNumber = 0;
+	//cout << "possible edge count: " << possibleEdgeCount << ", before: " << owner->numPoints << endl;
+	//int collisionNumber = 0;
 			
-	minContact.collisionPriority = 1000000;
-	for( int i = 0; i < numPoints; ++i )
-	{
-		/*bool match = false;
-		for( int j = 0; j < numActiveEdges; ++j )
-		{
-			if( edges[i] == activeEdges[j] )
-			{
-				match = true;
-				break;
-			}
-		}*/
-
-		if( ground == edges[i] )
-			continue;
-
-	//	if( match )
-	//		continue;
-
+	
+	//for( int i = 0; i < numPoints; ++i )
+	//{
 		
-		Contact *c = owner->coll.collideEdge( position + b.offset , b, edges[i], vel, owner->window );
-		if( c != NULL )
-		{
-			collisionNumber++;
-			if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
-			{	
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if( length(c->resolution) > length(minContact.resolution) )
-					{
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = edges[i];
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						col = true;
-					}
-				}
-				else
-				{
-
-					minContact.collisionPriority = c->collisionPriority;
-					minContact.edge = edges[i];
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					col = true;
-				}
-			}
-		}
-	}
+	//}
 	return col;
 }
 
@@ -1634,6 +1604,21 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					movement -= gLen - q;
 					grindEdge = e1;
 					q = 0;
+				}
+				else
+				{
+					q += movement;
+					movement = 0;
+				}
+			}
+			else if( movement < 0 )
+			{
+				double extra = q + movement;
+				if( extra < 0 )
+				{
+					movement -= movement - extra;
+					grindEdge = e0;
+					q = length( e0->v1 - e0->v0 );
 				}
 				else
 				{
@@ -1912,7 +1897,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 									}
 									else
 									{	
-										cout << "c" << endl;
+									//	cout << "c" << endl;
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 										V2d eNorm = minContact.edge->Normal();			
@@ -2149,7 +2134,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movementVec.y = 0;
 			}
 
-			cout << framesInAir << endl;
+			//cout << framesInAir << endl;
 			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
 			int maxJumpHeightFrame = 10;
 			if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
@@ -2208,7 +2193,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 void Actor::UpdatePostPhysics()
 {
-	cout << "possible edge count: " << possibleEdgeCount << ", before: " << owner->numPoints << endl;
+	
 	//if( collision )
 	//	cout << "collision" << endl;
 	//else
@@ -2838,5 +2823,36 @@ void Actor::UpdatePostPhysics()
 
 void Actor::HandleEdge( Edge *e )
 {
+	if( ground == e )
+			return;
+		
+	Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
+	if( c != NULL )
+	{
+	//	collisionNumber++;
+		if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
+		{	
+			if( c->collisionPriority == minContact.collisionPriority )
+			{
+				if( length(c->resolution) > length(minContact.resolution) )
+				{
+					minContact.collisionPriority = c->collisionPriority;
+					minContact.edge = e;
+					minContact.resolution = c->resolution;
+					minContact.position = c->position;
+					col = true;
+				}
+			}
+			else
+			{
+
+				minContact.collisionPriority = c->collisionPriority;
+				minContact.edge = e;
+				minContact.resolution = c->resolution;
+				minContact.position = c->position;
+				col = true;
+			}
+		}
+	}
 	++possibleEdgeCount;
 }

@@ -126,6 +126,9 @@ struct Actor : QuadTreeCollider
 	sf::Vector2<double> position;
 	sf::Vector2<double> velocity;
 	CollisionBox *physBox;
+
+	bool col;
+	sf::Vector2<double> tempVel;
 };
 
 
