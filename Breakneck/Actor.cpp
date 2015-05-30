@@ -87,6 +87,10 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[GRINDBALL] = 1;
 		tileset[GRINDBALL] = owner->GetTileset( "grindball.png", 32, 32 );
+
+		actionLength[STEEPSLIDE] = 1;
+		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 64 );
+
 		}
 
 		action = JUMP;
@@ -95,6 +99,8 @@ Actor::Actor( GameSession *gs )
 		framesInAir = 0;
 		wallJumpFrameCounter = 0;
 		wallJumpMovementLimit = 10; //10 frames
+
+		steepThresh = .4; // go between 0 and 1
 
 		gravity = 2;
 		maxFallSpeed = 60;
@@ -308,6 +314,13 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			if( gNorm.y > -steepThresh )
+			{
+				action = STEEPSLIDE;
+				frame = 0;
+				break;
+			}
+
 			bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
 			if(!( currInput.LLeft() || currInput.LRight() ) )//&& t )
 			{
@@ -501,24 +514,33 @@ void Actor::UpdatePrePhysics()
 		}
 	case LAND:
 	case LAND2:
+		{
+			if( gNorm.y > -steepThresh )
 			{
-		if( currInput.LLeft() || currInput.LRight() )
-		{
-			action = RUN;
-			frame = 0;
-		}
-		else if( currInput.LDown() )
-		{
-			action = SLIDE;
-			frame = 0;
-		}
-		else
-		{
-			action = STAND;
-			frame = 0;
-		}
+				action = STEEPSLIDE;
+				frame = 0;
+			}
+			else
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					action = RUN;
+					frame = 0;
+				}
+				else if( currInput.LDown() )
+				{
+					action = SLIDE;
+					frame = 0;
+				}
+				else
+				{
+					action = STAND;
+					frame = 0;
+				}
+			}
+		
 
-		break;
+			break;
 		}
 	case WALLCLING:
 		{
@@ -767,6 +789,87 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+
+	case GRINDBALL:
+		{
+			if( !currInput.Y && grindEdge->Normal().y < 0 )
+			{
+				ground = grindEdge;
+				edgeQuantity = grindQuantity;
+				grindEdge = NULL;
+				action = LAND;
+				frame = 0;
+				
+
+
+				position.x += offsetX + b.offset.x;
+
+				if( gNorm.y < 0 )
+				{
+					position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					//cout << "offset: " << b.offset.y << endl;
+				}
+
+				
+				if( grindSpeed > 0 )
+				{
+					facingRight = true;
+				}
+				else
+				{
+					facingRight = false;
+				}
+			}
+			break;
+		}
+	case STEEPSLIDE:
+		{
+			if( gNorm.y <= -steepThresh )
+			{
+				action = LAND2;
+				frame = 0;
+				//not steep
+				/*if( currInput.LLeft() || currInput.RRight() )
+				{
+					if( currInput.LLeft() && currInput.LDown() && gNorm.x < 0 )
+					{
+						action = SPRINT;
+						frame = 0;
+					}
+					else if( currInput.LLeft() && currInput.LUp() && gNorm.x > 0 )
+					{
+						action = SPRINT;
+						frame = 0;
+					}
+					else if( currInput.LRight() && currInput.LDown() && gNorm.x > 0 )
+					{
+						action = SPRINT;
+						frame = 0;
+					}
+					else if( currInput.LRight() && currInput.LUp() && gNorm.x < 0 )
+					{
+						action = SPRINT;
+						frame = 0;
+					}
+					else
+					{
+						action = RUN;
+						frame = 0;
+					}
+				}
+				else
+				{
+					if( currInput.LDown() )
+					{
+						action = SLIDE;
+						frame = 0;
+					}
+					else
+				}*/
+			}
+			break;
+		}
+		
 	}
 	
 	b.rh = normalHeight;
@@ -1336,6 +1439,11 @@ void Actor::UpdatePrePhysics()
 			//grindSpeed =  ;
 			break;
 		}
+	case STEEPSLIDE:
+		{
+
+			break;
+		}
 	}
 
 
@@ -1837,7 +1945,14 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					q += m;
 				}
 				
-				if(m != 0 )//!approxEquals( m, 0 ) )
+
+				if( m == 0 )
+				{
+					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+					break;
+				}
+
+			//	if(m != 0 )//!approxEquals( m, 0 ) )
 				{	
 					bool down = true;
 					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
@@ -1940,7 +2055,9 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					}
 						
 				}
-				else
+
+				
+			/*	else
 				{
 					edgeQuantity = q;
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
@@ -1949,7 +2066,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 					//offsetX = -offsetX;
 			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
 					//break;
-				}
+				}*/
 					
 			}
 			if( movement == extra )
@@ -2810,6 +2927,39 @@ void Actor::UpdatePostPhysics()
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = grindEdge->GetPoint( grindQuantity );
 			sprite->setPosition( pp.x, pp.y );
+			break;
+		}
+	case STEEPSLIDE:
+		{
+			sprite->setTexture( *(tileset[STEEPSLIDE]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[STEEPSLIDE]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STEEPSLIDE]->GetSubRect( 0 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+
+			}
+			else
+			{
+				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
+			//if( angle == 0 )
+			//	sprite->setPosition( pp.x + offsetX, pp.y );
+			//else
+			//	sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 		

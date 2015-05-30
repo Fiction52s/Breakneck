@@ -28,6 +28,7 @@ struct Actor : QuadTreeCollider
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
+		STEEPSLIDE,
 		GRINDBALL,
 		Count
 	};
@@ -70,6 +71,8 @@ struct Actor : QuadTreeCollider
 	double grindQuantity;
 	double grindSpeed;
 
+	double steepThresh;
+	bool reversed;
 
 	int numActiveEdges;
 	Edge ** activeEdges;
