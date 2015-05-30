@@ -35,6 +35,8 @@ Actor::Actor( GameSession *gs )
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
 		
+		
+
 		//tileset setup
 		{
 		actionLength[DAIR] = 10 * 2;
@@ -95,6 +97,8 @@ Actor::Actor( GameSession *gs )
 
 		action = JUMP;
 		frame = 1;
+
+		reversed = false;
 
 		framesInAir = 0;
 		wallJumpFrameCounter = 0;
@@ -240,7 +244,7 @@ void Actor::UpdatePrePhysics()
 		gNorm = ground->Normal();
 	//choose action
 
-
+	
 
 
 	switch( action )
@@ -314,11 +318,23 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( gNorm.y > -steepThresh )
+			if( reversed )
 			{
-				action = STEEPSLIDE;
-				frame = 0;
-				break;
+				if( -gNorm.y > -steepThresh )
+				{
+					action = STEEPSLIDE;
+					frame = 0;
+					break;
+				}
+			}
+			else
+			{
+				if( gNorm.y > -steepThresh )
+				{
+					action = STEEPSLIDE;
+					frame = 0;
+					break;
+				}
 			}
 
 			bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
@@ -515,27 +531,57 @@ void Actor::UpdatePrePhysics()
 	case LAND:
 	case LAND2:
 		{
-			if( gNorm.y > -steepThresh )
+			if( reversed )
 			{
-				action = STEEPSLIDE;
-				frame = 0;
-			}
-			else
-			{
-				if( currInput.LLeft() || currInput.LRight() )
+				if( -gNorm.y > -steepThresh )
 				{
-					action = RUN;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = SLIDE;
+					action = STEEPSLIDE;
 					frame = 0;
 				}
 				else
 				{
-					action = STAND;
+					if( currInput.LLeft() || currInput.LRight() )
+					{
+						action = RUN;
+						frame = 0;
+					}
+					else if( currInput.LUp() )
+					{
+						action = SLIDE;
+						frame = 0;
+					}
+					else
+					{
+						action = STAND;
+						frame = 0;
+					}
+				}
+			}
+			else
+			{
+			
+				if( gNorm.y > -steepThresh )
+				{
+					action = STEEPSLIDE;
 					frame = 0;
+				}
+				else
+				{
+					if( currInput.LLeft() || currInput.LRight() )
+					{
+						action = RUN;
+						frame = 0;
+					}
+					else if( currInput.LDown() )
+					{
+						action = SLIDE;
+						frame = 0;
+					}
+					else
+					{
+						action = STAND;
+						frame = 0;
+					}
 				}
 			}
 		
@@ -824,11 +870,21 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDE:
 		{
-			if( gNorm.y <= -steepThresh )
+			if( reversed )
 			{
-				action = LAND2;
-				frame = 0;
-				//not steep
+				if( -gNorm.y <= -steepThresh )
+				{
+					action = LAND2;
+					frame = 0;
+				}
+			}
+			else
+			{
+				if( gNorm.y <= -steepThresh )
+				{
+					action = LAND2;
+					frame = 0;
+					//not steep
 				/*if( currInput.LLeft() || currInput.RRight() )
 				{
 					if( currInput.LLeft() && currInput.LDown() && gNorm.x < 0 )
@@ -866,10 +922,13 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 				}*/
+				}
 			}
+			
 			break;
 		}
 		
+
 	}
 	
 	b.rh = normalHeight;
@@ -1229,6 +1288,8 @@ void Actor::UpdatePrePhysics()
 		{
 			b.rh = dashHeight;
 			b.offset.y = (normalHeight - dashHeight);
+			if( reversed )
+				b.offset.y = -b.offset.y;
 			if( currInput.LLeft() && facingRight )
 			{
 				facingRight = false;
@@ -1369,7 +1430,14 @@ void Actor::UpdatePrePhysics()
 	case SPRINT:
 		{
 			b.rh = sprintHeight;
+			
+			
+
 			b.offset.y = (normalHeight - sprintHeight);
+
+			if( reversed )
+				b.offset.y = -b.offset.y;
+
 			if( currInput.LLeft() )
 			{
 				if( groundSpeed > 0 )
@@ -1673,13 +1741,428 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	return col;
 }
 
+void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
+{
+
+
+	leftGround = false;
+	double movement = 0;
+	double maxMovement = min( b.rw, b.rh );
+	V2d movementVec;
+	V2d lastExtra( 100000, 100000 );
+	wallNormal.x = 0;
+	wallNormal.y = 0;
+	if( ground != NULL )
+	{
+		movement = groundSpeed;
+	}
+	else
+	{
+		movementVec = velocity;
+	}
+
+	movement = -movement;
+
+	if( grindEdge != NULL )
+	{
+		Edge *e0 = grindEdge->edge0;
+		Edge *e1 = grindEdge->edge1;
+		V2d e0n = e0->Normal();
+		V2d e1n = e1->Normal();
+		
+		double q = grindQuantity;
+		while( !approxEquals(movement, 0 ) )
+		{
+			double gLen = length( grindEdge->v1 - grindEdge->v0 );
+			if( movement > 0 )
+			{
+				double extra = q + movement - gLen;
+				if( extra > 0 )
+				{
+					movement -= gLen - q;
+					grindEdge = e1;
+					q = 0;
+				}
+				else
+				{
+					q += movement;
+					movement = 0;
+				}
+			}
+			else if( movement < 0 )
+			{
+				double extra = q + movement;
+				if( extra < 0 )
+				{
+					movement -= movement - extra;
+					grindEdge = e0;
+					q = length( e0->v1 - e0->v0 );
+				}
+				else
+				{
+					q += movement;
+					movement = 0;
+				}
+			}
+		}
+		grindQuantity = q;
+		return;
+	}
+		
+	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
+	{
+		if( ground != NULL )
+		{
+			double steal = 0;
+			if( movement > 0 )
+			{
+				if( movement > maxMovement )
+				{
+					steal = movement - maxMovement;
+					movement = maxMovement;
+				}
+			}
+			else 
+			{
+				if( movement < -maxMovement )
+				{
+					steal = movement + maxMovement;
+					movement = -maxMovement;
+				}
+			}
+
+
+			double extra = 0;
+			bool leaveGround = false;
+			double q = edgeQuantity;
+
+			V2d gNormal = ground->Normal();
+			Edge *e0 = ground->edge0;
+			Edge *e1 = ground->edge1;
+			V2d e0n = e0->Normal();
+			V2d e1n = e1->Normal();
+
+			gNormal = -gNormal;
+			e0n = -e0n;
+			e1n = -e1n;
+			offsetX = -offsetX;
+
+			double m = movement;
+			double groundLength = length( ground->v1 - ground->v0 ); 
+
+			if( approxEquals( q, 0 ) )
+				q = 0;
+			else if( approxEquals( q, groundLength ) )
+				q = groundLength;
+
+			if( approxEquals( offsetX, b.rw ) )
+				offsetX = b.rw;
+			else if( approxEquals( offsetX, -b.rw ) )
+				offsetX = -b.rw;
+
+			
+
+			bool transferLeft =  q == 0 && movement < 0
+				&& ((gNormal.x == 0 && e0n.x == 0 )
+				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
+				|| (offsetX == b.rw && e0n.x >= 0 && e0n.y != 0 ));
+			bool transferRight = q == groundLength && movement > 0 
+				&& ((gNormal.x == 0 && e1n.x == 0 )
+				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
+				|| (offsetX == -b.rw && e1n.x <= 0 && e1n.y != 0 ) );
+			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
+				
+			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
+			bool changeOffset = offsetLeft || offsetRight;
+				
+			if( transferLeft )
+			{
+				//cout << "transfer left "<< endl;
+				Edge *next = ground->edge0;
+				V2d nextNorm = e0n;
+				if( nextNorm.y < 0 && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+				{
+					ground = next;
+					q = length( ground->v1 - ground->v0 );	
+				}
+				else
+				{
+					reversed = false;
+					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+					leftGround = true;
+
+					ground = NULL;
+				}
+			}
+			else if( transferRight )
+			{
+				Edge *next = ground->edge1;
+				V2d nextNorm = e1n;
+				if( nextNorm.y < 0 && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+				{
+					ground = next;
+					q = 0;
+				}
+				else
+				{
+					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+						
+					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						
+					leftGround = true;
+					reversed = false;
+					ground = NULL;
+					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
+				}
+
+			}
+			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
+			{
+				//cout << "slide: " << q << ", " << offsetX << endl;
+				if( movement > 0 )
+					extra = (offsetX + movement) - b.rw;
+				else 
+				{
+					extra = (offsetX + movement) + b.rw;
+				}
+				double m = movement;
+				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+				{
+					m -= extra;
+					movement = extra;
+
+					if( movement > 0 )
+					{
+						offsetX = b.rw;
+					}
+					else
+					{
+						offsetX = -b.rw;
+					}
+				}
+				else
+				{
+					movement = 0;
+					offsetX += m;
+				}
+
+				if(!approxEquals( m, 0 ) )
+				{
+					bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					{
+					
+						V2d eNorm = minContact.edge->Normal();
+						if( eNorm.y < 0 )
+						{
+							if( minContact.position.y >= position.y + b.rh - 5 )
+							{
+								if( m > 0 && eNorm.x < 0 )
+								{
+									ground = minContact.edge;
+									q = ground->GetQuantity( minContact.position );
+									edgeQuantity = q;
+									offsetX = -b.rw;
+									continue;
+								}
+								else if( m < 0 && eNorm.x > 0 )
+								{
+									ground = minContact.edge;
+									q = ground->GetQuantity( minContact.position );
+									edgeQuantity = q;
+									offsetX = b.rw;
+									continue;
+								}
+								
+
+							}
+							else
+							{
+								offsetX += minContact.resolution.x;
+								groundSpeed = 0;
+								break;
+							}
+						}
+						else
+						{
+								offsetX += minContact.resolution.x;
+								groundSpeed = 0;
+								break;
+						}
+					}
+				}
+			}
+			else
+			{
+				if( movement > 0 )
+				{	
+					extra = (q + movement) - groundLength;
+				}
+				else 
+				{
+					extra = (q + movement);
+				}
+					
+				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+				{
+					if( movement > 0 )
+					{
+						q = groundLength;
+					}
+					else
+					{
+						q = 0;
+					}
+					movement = extra;
+					m -= extra;
+						
+				}
+				else
+				{
+					movement = 0;
+					q += m;
+				}
+				
+
+				if( m == 0 )
+				{
+					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+					break;
+				}
+
+			//	if(m != 0 )//!approxEquals( m, 0 ) )
+				{	
+					
+					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					{
+						V2d eNorm = minContact.edge->Normal();
+						eNorm = -eNorm;
+						if( minContact.position.y < position.y + b.offset.y - b.rh + 5 && eNorm.y >= 0 )
+						{
+							if( minContact.position == minContact.edge->v0 ) 
+							{
+								if( minContact.edge->edge0->Normal().y >= 0 )
+								{
+									minContact.edge = minContact.edge->edge0;
+									eNorm = minContact.edge->Normal();
+									eNorm = -eNorm;
+								}
+							}
+							else if( minContact.position == minContact.edge->v1 )
+							{
+								if( minContact.edge->edge1->Normal().y >= 0 )
+								{
+									minContact.edge = minContact.edge->edge1;
+									eNorm = minContact.edge->Normal();
+									eNorm = -eNorm;
+								}
+							}
+						}
+
+
+						//cout << "enorm: " << eNorm.x << ", " << eNorm.y << endl;
+						if( eNorm.y < 0 )
+						{
+							//bool 
+							//cout << "min:" << minContact.position.x << ", " << minContact.position.y  << endl;
+							//cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
+							//cout << "res: " << minContact.resolution.y << endl;
+
+							/*CircleShape cs;
+							cs.setFillColor( Color::Cyan );
+							cs.setRadius( 20 );
+							cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+							cs.setPosition( minContact.resolution.x, minContact.resolution.y );
+
+							owner->window->draw( cs );
+							cs.setPosition( position.x, position.y + minContact.resolution.y + b.rh - 5);
+								cs.setRadius( 10 );
+							cs.setFillColor( Color::Magenta );
+							owner->window->draw( cs );*/
+
+							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 )
+							{
+								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
+									
+								if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
+								{
+									cout << "BROKEN OFFSET: " << test << endl;
+								}
+								else
+								{	
+								//	cout << "c" << endl;
+									ground = minContact.edge;
+									q = ground->GetQuantity( minContact.position );
+									V2d eNorm = minContact.edge->Normal();			
+									offsetX = position.x + minContact.resolution.x - minContact.position.x;
+									offsetX = -offsetX;
+								}
+
+								/*if( offsetX < -b.rw || offsetX > b.rw )
+								{
+									cout << "BROKEN OFFSET: " << offsetX << endl;
+									assert( false && "T_T" );
+								}*/
+							}
+							else
+							{
+								cout << "xx" << endl;
+								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+								groundSpeed = 0;
+								edgeQuantity = q;
+								break;
+							}
+						}
+						else
+						{
+							cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+							groundSpeed = 0;
+							edgeQuantity = q;
+							break;
+						}						
+					}
+						
+				}
+
+				
+			/*	else
+				{
+					edgeQuantity = q;
+					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+				//	assert( false && "secret!" );
+					break;
+					//offsetX = -offsetX;
+			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
+					//break;
+				}*/
+					
+			}
+
+			offsetX = -offsetX;
+
+			if( movement == extra )
+				movement += steal;
+			else
+				movement = steal;
+
+			edgeQuantity = q;
+		}
+	}
+}
+
 void Actor::UpdatePhysics( Edge **edges, int numPoints )
 {
-	
-	//if( ground != NULL )
-	//cout << "ground: " << groundSpeed << endl;
-	//else
-	//cout << "vel1: " << velocity.x << ", " << velocity.y << endl;
+	if( reversed )
+	{
+		UpdateReversePhysics( edges, numPoints );
+		return;
+	}
+
+
+
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
@@ -2284,6 +2767,37 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 				//cout << "groundinggg" << endl;
 			}
+			else if( tempCollision && currInput.B && minContact.edge->Normal().y > 0 && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			{
+				reversed = true;
+
+				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
+				ground = minContact.edge;
+				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
+				double groundLength = length( ground->v1 - ground->v0 );
+				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+
+				if( velocity.x < 0 )
+				{
+					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+				}
+				else if( velocity.x > 0 )
+				{
+					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+				}
+				//groundSpeed  = max( abs( velocity.x ), ( - ) );
+				
+				if( velocity.x < 0 )
+				{
+				//	groundSpeed = -groundSpeed;
+				}
+
+				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
+
+				movement = 0;
+			
+				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+			}
 			else if( tempCollision )
 			{
 					velocity = newVel;
@@ -2315,6 +2829,8 @@ void Actor::UpdatePostPhysics()
 	//	cout << "collision" << endl;
 	//else
 	//	cout << "no collision" << endl;
+
+	V2d gn;
 	if( grindEdge != NULL )
 	{
 		framesInAir = 0;
@@ -2324,6 +2840,7 @@ void Actor::UpdatePostPhysics()
 	else if( ground != NULL )
 	{
 		framesInAir = 0;
+		gn = ground->Normal();
 		if( collision )
 		{
 			if( currInput.LLeft() || currInput.LRight() )
@@ -2340,19 +2857,28 @@ void Actor::UpdatePostPhysics()
 
 			hasDoubleJump = true;
 
-			V2d gn = ground->Normal();
+			
 		}
 		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 		position = groundPoint;
-			
-		V2d gn = ground->Normal();
-
+		
 		position.x += offsetX + b.offset.x;
 
-		if( gn.y < 0 )
+		if( reversed )
 		{
-			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-			//cout << "offset: " << b.offset.y << endl;
+			if( gn.y > 0 )
+			{
+				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+				//cout << "offset: " << b.offset.y << endl;
+			}
+		}
+		else
+		{
+			if( gn.y < 0 )
+			{
+				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+				//cout << "offset: " << b.offset.y << endl;
+			}
 		}
 	}
 	else
@@ -2407,6 +2933,7 @@ void Actor::UpdatePostPhysics()
 	}
 
 	//display action
+
 	switch( action )
 	{
 	case STAND:
@@ -2415,7 +2942,7 @@ void Actor::UpdatePostPhysics()
 		sprite->setTexture( *(tileset[STAND]->texture));
 			
 		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
-		if( facingRight )
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
 			sprite->setTextureRect( tileset[STAND]->GetSubRect( frame / 8 ) );
 		}
@@ -2441,11 +2968,8 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				angle = atan2( gn.x, -gn.y );
 			}
-
-
-
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -2468,7 +2992,7 @@ void Actor::UpdatePostPhysics()
 		{	
 			
 		sprite->setTexture( *(tileset[RUN]->texture));
-		if( facingRight )
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
 			sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
 		}
@@ -2492,8 +3016,9 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				angle = atan2( gn.x, -gn.y );
 			}
+
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
@@ -2513,7 +3038,7 @@ void Actor::UpdatePostPhysics()
 		{	
 			
 		sprite->setTexture( *(tileset[SPRINT]->texture));
-		if( facingRight )
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
 			sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 3 ) );
 		}
@@ -2535,8 +3060,9 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				angle = atan2( gn.x, -gn.y );
 			}
+
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
@@ -2613,7 +3139,7 @@ void Actor::UpdatePostPhysics()
 	case LAND: 
 		{
 		sprite->setTexture( *(tileset[LAND]->texture));
-		if( facingRight )
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
 			sprite->setTextureRect( tileset[LAND]->GetSubRect( 0 ) );
 		}
@@ -2623,7 +3149,20 @@ void Actor::UpdatePostPhysics()
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
-		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+
+
+		double angle = 0;
+		if( !approxEquals( abs(offsetX), b.rw ) )
+		{
+
+		}
+		else
+		{
+			angle = atan2( gn.x, -gn.y );
+		}
+
+		
+
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -2637,7 +3176,7 @@ void Actor::UpdatePostPhysics()
 	case LAND2: 
 		{
 		sprite->setTexture( *(tileset[LAND2]->texture));
-		if( facingRight )
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
 			sprite->setTextureRect( tileset[LAND2]->GetSubRect( 0 ) );
 		}
@@ -2647,7 +3186,17 @@ void Actor::UpdatePostPhysics()
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
-		double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		
+		double angle = 0;
+		if( !approxEquals( abs(offsetX), b.rw ) )
+		{
+
+		}
+		else
+		{
+			angle = atan2( gn.x, -gn.y );
+		}
+
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
 		V2d pp = ground->GetPoint( edgeQuantity );
@@ -2695,7 +3244,7 @@ void Actor::UpdatePostPhysics()
 	case SLIDE:
 		{
 		sprite->setTexture( *(tileset[SLIDE]->texture));
-		if( facingRight )
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
 			sprite->setTextureRect( tileset[SLIDE]->GetSubRect( 0 ) );
 		}
@@ -2713,8 +3262,9 @@ void Actor::UpdatePostPhysics()
 		}
 		else
 		{
-			angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			angle = atan2( gn.x, -gn.y );
 		}
+
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
 		V2d pp = ground->GetPoint( edgeQuantity );
@@ -2727,7 +3277,7 @@ void Actor::UpdatePostPhysics()
 	case STANDN:
 		{
 			sprite->setTexture( *(tileset[STANDN]->texture));
-			if( facingRight )
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 2 ) );
 			}
@@ -2737,7 +3287,17 @@ void Actor::UpdatePostPhysics()
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
-			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -2750,7 +3310,7 @@ void Actor::UpdatePostPhysics()
 	case STANDD:
 		{
 			sprite->setTexture( *(tileset[STANDD]->texture));
-			if( facingRight )
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
 			}
@@ -2760,7 +3320,17 @@ void Actor::UpdatePostPhysics()
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
-			double angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -2866,7 +3436,7 @@ void Actor::UpdatePostPhysics()
 			
 
 
-			if( facingRight )
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( ir );
 			}
@@ -2882,8 +3452,9 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				angle = atan2( gn.x, -gn.y );
 			}
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -2932,7 +3503,7 @@ void Actor::UpdatePostPhysics()
 	case STEEPSLIDE:
 		{
 			sprite->setTexture( *(tileset[STEEPSLIDE]->texture));
-			if( facingRight )
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STEEPSLIDE]->GetSubRect( 0 ) );
 			}
@@ -2950,8 +3521,9 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				angle = atan2( gn.x, -gn.y );
 			}
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -2964,8 +3536,6 @@ void Actor::UpdatePostPhysics()
 		}
 		
 	}
-
-		
 
 	++frame;
 	//cout << "end frame: " << position.x << ", " << position.y << endl;

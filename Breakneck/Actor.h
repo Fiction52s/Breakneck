@@ -50,6 +50,7 @@ struct Actor : QuadTreeCollider
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool CheckStandUp();
+	void UpdateReversePhysics( Edge **edges, int numPoints );
 	GameSession *owner;
 
 	bool leftGround;
