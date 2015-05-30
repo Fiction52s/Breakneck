@@ -1011,11 +1011,20 @@ void Actor::UpdatePrePhysics()
 			//	if( (groundSpeed > 0 && ground->Normal().x > 0) || (groundSpeed < 0 && ground->Normal().x < 0 ) )
 					velocity.x = groundSpeed;// * normalize(ground->v1 - ground->v0 );
 
-				if( velocity.y > 0 )
-					velocity.y = 0;
-				velocity.y -= jumpStrength;
-				ground = NULL;
-				holdJump = true;
+				if( reversed )
+				{
+					ground = NULL;
+					reversed = false;
+				}
+				else
+				{
+					if( velocity.y > 0 )
+						velocity.y = 0;
+					velocity.y -= jumpStrength;
+					ground = NULL;
+					holdJump = true;
+				}
+				
 			}
 
 			
@@ -2061,27 +2070,8 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 							}
 						}
 
-
-						//cout << "enorm: " << eNorm.x << ", " << eNorm.y << endl;
 						if( eNorm.y < 0 )
 						{
-							//bool 
-							//cout << "min:" << minContact.position.x << ", " << minContact.position.y  << endl;
-							//cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
-							//cout << "res: " << minContact.resolution.y << endl;
-
-							/*CircleShape cs;
-							cs.setFillColor( Color::Cyan );
-							cs.setRadius( 20 );
-							cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-							cs.setPosition( minContact.resolution.x, minContact.resolution.y );
-
-							owner->window->draw( cs );
-							cs.setPosition( position.x, position.y + minContact.resolution.y + b.rh - 5);
-								cs.setRadius( 10 );
-							cs.setFillColor( Color::Magenta );
-							owner->window->draw( cs );*/
-
 							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 )
 							{
 								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
@@ -2099,12 +2089,6 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 									offsetX = position.x + minContact.resolution.x - minContact.position.x;
 									offsetX = -offsetX;
 								}
-
-								/*if( offsetX < -b.rw || offsetX > b.rw )
-								{
-									cout << "BROKEN OFFSET: " << offsetX << endl;
-									assert( false && "T_T" );
-								}*/
 							}
 							else
 							{
@@ -2964,7 +2948,8 @@ void Actor::UpdatePostPhysics()
 			
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
 			}
 			else
 			{
@@ -3012,7 +2997,8 @@ void Actor::UpdatePostPhysics()
 			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
 			}
 			else
 			{
@@ -3056,7 +3042,8 @@ void Actor::UpdatePostPhysics()
 			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
 			}
 			else
 			{
@@ -3154,7 +3141,8 @@ void Actor::UpdatePostPhysics()
 		double angle = 0;
 		if( !approxEquals( abs(offsetX), b.rw ) )
 		{
-
+			if( reversed )
+					angle = PI;
 		}
 		else
 		{
@@ -3190,7 +3178,8 @@ void Actor::UpdatePostPhysics()
 		double angle = 0;
 		if( !approxEquals( abs(offsetX), b.rw ) )
 		{
-
+			if( reversed )
+					angle = PI;
 		}
 		else
 		{
@@ -3258,7 +3247,8 @@ void Actor::UpdatePostPhysics()
 		double angle = 0;
 		if( !approxEquals( abs(offsetX), b.rw ) )
 		{
-
+			if( reversed )
+					angle = PI;
 		}
 		else
 		{
@@ -3291,7 +3281,8 @@ void Actor::UpdatePostPhysics()
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
 			}
 			else
 			{
@@ -3324,7 +3315,8 @@ void Actor::UpdatePostPhysics()
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
 			}
 			else
 			{
@@ -3448,7 +3440,8 @@ void Actor::UpdatePostPhysics()
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
 			}
 			else
 			{
@@ -3517,7 +3510,9 @@ void Actor::UpdatePostPhysics()
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
-
+				if( reversed )
+					angle = PI;
+				//this should never happen
 			}
 			else
 			{
