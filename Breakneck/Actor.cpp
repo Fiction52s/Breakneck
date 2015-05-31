@@ -235,7 +235,17 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
-	
+	if( reversed )
+	{
+		bool up = currInput.LUp();
+		bool down = currInput.LDown();
+
+		if( up ) currInput.leftStickPad -= 1;
+		if( down ) currInput.leftStickPad -= 2;
+
+		if( up ) currInput.leftStickPad += 2;
+		if( down ) currInput.leftStickPad += 1;
+	}
 
 
 	ActionEnded();
@@ -681,15 +691,15 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
 			if( canStandUp )
 			{
-				if( currInput.A && !prevInput.A )
-				{
-					action = JUMP;
-					frame = 0;
-					break;
-				}
-				else if( !currInput.B )
+				if( !currInput.B )
 				{
 					if( currInput.LLeft() || currInput.LRight() )
 					{
@@ -1039,6 +1049,7 @@ void Actor::UpdatePrePhysics()
 				{
 					ground = NULL;
 					reversed = false;
+
 				}
 				else
 				{
@@ -1385,7 +1396,7 @@ void Actor::UpdatePrePhysics()
 	case DOUBLE:
 		{
 			b.rh = doubleJumpHeight;
-			b.offset.y = -5;
+		//	b.offset.y = -5;
 			if( frame == 0 )
 			{
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
@@ -1745,6 +1756,8 @@ bool Actor::CheckStandUp()
 	//	Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight * 2, 2 * b.rw, 2 * normalHeight * 2 );
 
 	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+
+		
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(r.width, r.height ));
@@ -1798,8 +1811,6 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 
 void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 {
-
-
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
@@ -2128,7 +2139,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 								}
 								else
 								{	
-								//	cout << "c" << endl;
+								//	cout << "c" << endl;   
 									ground = minContact.edge;
 									q = ground->GetQuantity( minContact.position );
 									V2d eNorm = minContact.edge->Normal();			
@@ -2150,6 +2161,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 							cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 							groundSpeed = 0;
+							offsetX = -offsetX;
 							edgeQuantity = q;
 							break;
 						}						
@@ -2800,7 +2812,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			else if( tempCollision && currInput.B && minContact.edge->Normal().y > 0 && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
 				reversed = true;
-
+				b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
@@ -3004,7 +3016,7 @@ void Actor::UpdatePostPhysics()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3055,7 +3067,8 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3100,7 +3113,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3200,7 +3213,7 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3235,7 +3248,7 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
 		V2d pp = ground->GetPoint( edgeQuantity );
-		if( angle == 0 )
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 			sprite->setPosition( pp.x + offsetX, pp.y );
 		else
 			sprite->setPosition( pp.x, pp.y );
@@ -3304,7 +3317,7 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
 		V2d pp = ground->GetPoint( edgeQuantity );
-		if( angle == 0 )
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3338,7 +3351,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3372,7 +3385,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3497,7 +3510,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
-			if( angle == 0 )
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
@@ -3580,6 +3593,7 @@ void Actor::UpdatePostPhysics()
 		
 	}
 
+	//cout << "offsetX: " << offsetX << endl;
 	++frame;
 	//cout << "end frame: " << position.x << ", " << position.y << endl;
 }
