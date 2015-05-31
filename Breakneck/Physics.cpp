@@ -662,12 +662,14 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 			//cout << "compares y: " << e1Top << " <= " << erBottom << " && " << e1Bottom << " >= " << erTop << endl;
 			if( e1Left <= erRight && e1Right >= erLeft && e1Top <= erBottom && e1Bottom >= erTop )
 			{
-				//cout << "---!!!!!!" << endl;
-				if( li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
+			//	cout << "---!!!!!!" << endl;
+				if( (li.position.x < e1Right || approxEquals(li.position.x, e1Right) ) && ( li.position.x > e1Left || approxEquals(li.position.x, e1Left ) ) && ( li.position.y > e1Top || approxEquals( li.position.y, e1Top ) )&& ( li.position.y < e1Bottom || approxEquals( li.position.y, e1Bottom ) ) )
 				{
-					if( li.position.x <= erRight && li.position.x >= erLeft && li.position.y >= erTop && li.position.y <= erBottom)
+				//	cout << "pos: " << li.position.x << ", " << li.position.y << endl;
+				//	cout << "erlrud: " << erLeft << ", " << erRight << ", " << erTop << ", " << erBottom << endl;
+					if( ( li.position.x < erRight || approxEquals( li.position.x, erRight )) && ( li.position.x > erLeft || approxEquals( li.position.x, erLeft ) ) && ( li.position.y > erTop || approxEquals( li.position.y, erTop ) ) && ( li.position.y < erBottom || approxEquals( li.position.y, erBottom ) ) )
 					{
-						//cout << "seg intersect!!!!!!" << endl;
+				//		cout << "seg intersect!!!!!!" << endl;
 					//	assert( 0 );
 						return true;
 					}

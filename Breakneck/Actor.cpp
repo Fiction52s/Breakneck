@@ -35,7 +35,7 @@ Actor::Actor( GameSession *gs )
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
 		
-		
+		queryMode = "";
 
 		//tileset setup
 		{
@@ -245,7 +245,16 @@ void Actor::UpdatePrePhysics()
 	//choose action
 
 	
-
+	bool canStandUp = true;
+	if( b.rh < normalHeight )
+	{
+		canStandUp = CheckStandUp();
+		if( canStandUp )
+		{
+			b.rh = normalHeight;
+			b.offset.y = 0;
+		}
+	}
 
 	switch( action )
 	{
@@ -672,24 +681,31 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
-			if( currInput.A && !prevInput.A )
+			if( canStandUp )
 			{
-				action = JUMP;
-				frame = 0;
-				break;
+				if( currInput.A && !prevInput.A )
+				{
+					action = JUMP;
+					frame = 0;
+					break;
+				}
+				else if( !currInput.B )
+				{
+					if( currInput.LLeft() || currInput.LRight() )
+					{
+						action = RUN;
+						frame = 0;
+					}
+					else
+					{
+						action = STAND;
+						frame = 0;
+					}
+				}
 			}
-			else if( !currInput.B )
+			else
 			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					action = RUN;
-					frame = 0;
-				}
-				else
-				{
-					action = STAND;
-					frame = 0;
-				}
+				frame = 10;
 			}
 			break;
 		}
@@ -740,6 +756,9 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINT:
 		{
+			
+			if( canStandUp )
+			{
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -828,6 +847,8 @@ void Actor::UpdatePrePhysics()
 				}
 
 			}
+			}
+			
 			if( currInput.B && !prevInput.B )
 			{
 					action = DASH;
@@ -931,8 +952,11 @@ void Actor::UpdatePrePhysics()
 
 	}
 	
-	b.rh = normalHeight;
-	b.offset.y = 0;
+	//cout << "standing up? : " << CheckStandUp() << endl;
+	
+
+
+	
 	//react to action
 	switch( action )
 	{
@@ -1552,6 +1576,8 @@ void Actor::UpdatePrePhysics()
 	
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
+
+	
 	
 }
 
@@ -1715,7 +1741,24 @@ bool Actor::CheckStandUp()
 	}
 	else
 	{
+		//Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - normalHeight, 2 * b.rw, 2 * normalHeight );
+	//	Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight * 2, 2 * b.rw, 2 * normalHeight * 2 );
 
+	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		sf::RectangleShape rs;
+		rs.setSize( Vector2f(r.width, r.height ));
+		rs.setFillColor( Color::Yellow );
+		rs.setPosition( r.left, r.top );
+
+		owner->window->draw( rs );
+
+		queryMode = "check";
+		checkValid = true;
+		Query( this, owner->testTree, r );
+		cout << "col number: " << possibleEdgeCount << endl;
+		possibleEdgeCount = 0;
+		return checkValid;
 	}
 	
 }
@@ -1738,6 +1781,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	col = false;
 	tempVel = vel;
 
+	queryMode = "resolve";
 	Query( this, owner->testTree, r );
 	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
@@ -3542,19 +3586,34 @@ void Actor::UpdatePostPhysics()
 
 void Actor::HandleEdge( Edge *e )
 {
+	assert( queryMode != "" );
+
 	if( ground == e )
 			return;
 		
-	Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
-	if( c != NULL )
+
+	if( queryMode == "resolve" )
 	{
-	//	collisionNumber++;
-		if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
-		{	
-			if( c->collisionPriority == minContact.collisionPriority )
-			{
-				if( length(c->resolution) > length(minContact.resolution) )
+		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
+		if( c != NULL )
+		{
+		//	collisionNumber++;
+			if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
+			{	
+				if( c->collisionPriority == minContact.collisionPriority )
 				{
+					if( length(c->resolution) > length(minContact.resolution) )
+					{
+						minContact.collisionPriority = c->collisionPriority;
+						minContact.edge = e;
+						minContact.resolution = c->resolution;
+						minContact.position = c->position;
+						col = true;
+					}
+				}
+				else
+				{
+
 					minContact.collisionPriority = c->collisionPriority;
 					minContact.edge = e;
 					minContact.resolution = c->resolution;
@@ -3562,15 +3621,18 @@ void Actor::HandleEdge( Edge *e )
 					col = true;
 				}
 			}
-			else
-			{
+		}
+	}
+	else if( queryMode == "check" )
+	{
+		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
+		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		if( IsEdgeTouchingBox( e, r ) )
+		{
+			checkValid = false;
 
-				minContact.collisionPriority = c->collisionPriority;
-				minContact.edge = e;
-				minContact.resolution = c->resolution;
-				minContact.position = c->position;
-				col = true;
-			}
 		}
 	}
 	++possibleEdgeCount;

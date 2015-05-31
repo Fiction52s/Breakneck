@@ -103,6 +103,10 @@ struct QuadTreeCollider
 
 void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
 
+bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir );
+
+
+
 //struct QuadTree
 //{
 //};

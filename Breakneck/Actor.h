@@ -133,7 +133,8 @@ struct Actor : QuadTreeCollider
 
 	bool col;
 	sf::Vector2<double> tempVel;
-	std::string colMode;
+	std::string queryMode;
+	bool checkValid;
 };
 
 
