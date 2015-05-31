@@ -2101,7 +2101,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				{	
 					
 					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
-					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
 						V2d eNorm = minContact.edge->Normal();
 						eNorm = -eNorm;
@@ -2153,6 +2153,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								groundSpeed = 0;
 								edgeQuantity = q;
+								offsetX = -offsetX;
 								break;
 							}
 						}
