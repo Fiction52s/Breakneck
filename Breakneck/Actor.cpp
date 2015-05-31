@@ -91,7 +91,7 @@ Actor::Actor( GameSession *gs )
 		tileset[GRINDBALL] = owner->GetTileset( "grindball.png", 32, 32 );
 
 		actionLength[STEEPSLIDE] = 1;
-		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 64 );
+		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
 
 		}
 
@@ -1571,6 +1571,8 @@ bool Actor::CheckWall( bool right )
 	Contact test;
 	test.collisionPriority = 10000;
 	test.edge = NULL;
+
+
 	for( int i = 0; i < owner->numPoints; ++i )
 	{
 		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel, owner->window );
@@ -3499,12 +3501,14 @@ void Actor::UpdatePostPhysics()
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STEEPSLIDE]->GetSubRect( 0 ) );
+			//	sprite->setOrigin( sprite->getLocalBounds().width - 10, sprite->getLocalBounds().height);
 			}
 			else
 			{
 				sf::IntRect ir = tileset[STEEPSLIDE]->GetSubRect( 0 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			//	sprite->setOrigin( 10, sprite->getLocalBounds().height);
 			}
 
 			double angle = 0;
@@ -3519,7 +3523,7 @@ void Actor::UpdatePostPhysics()
 				angle = atan2( gn.x, -gn.y );
 			}
 
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
 			sprite->setRotation( angle / PI * 180 );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite->setPosition( pp.x, pp.y );

@@ -468,9 +468,12 @@ int GameSession::Run( string fileName )
 			player.UpdatePrePhysics();
 
 			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-			Rect<double> qrect( player.position.x + player.b.offset.x - player.b.rw, 
-				player.position.y + player.b.offset.y -player.b.rh, player.b.rw, player.b.rh );
-			Query( &player, testTree, qrect );
+
+			//colMode = 
+
+			//Rect<double> qrect( player.position.x + player.b.offset.x - player.b.rw, 
+			//	player.position.y + player.b.offset.y -player.b.rh, player.b.rw, player.b.rh );
+			//Query( &player, testTree, qrect );
 
 
 			player.UpdatePhysics( edges, numPoints );
