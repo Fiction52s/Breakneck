@@ -113,12 +113,14 @@ struct Actor : QuadTreeCollider
 	double airAccel;
 	double maxAirXSpeed;
 	double maxAirXControl;
-	double frameCountTest;
 	double dashSpeed;
 
 	double doubleJumpStrength;
 	bool hasDoubleJump;
 
+	int slowMultiple;
+	int slowCounter;
+	int timeSlowStrength;
 
 	sf::Vector2<double> wallJumpStrength;
 	double clingSpeed;

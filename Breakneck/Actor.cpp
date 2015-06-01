@@ -98,6 +98,10 @@ Actor::Actor( GameSession *gs )
 		action = JUMP;
 		frame = 1;
 
+		timeSlowStrength = 5;
+		slowMultiple = 1;
+		slowCounter = 1;
+
 		reversed = false;
 
 		framesInAir = 0;
@@ -987,20 +991,20 @@ void Actor::UpdatePrePhysics()
 			{
 				if( groundSpeed > -maxRunInit )
 				{
-					groundSpeed -= runAccelInit;
+					groundSpeed -= runAccelInit / slowMultiple;
 					if( groundSpeed < -maxRunInit )
 						groundSpeed = -maxRunInit;
 				}
 				else
 				{
-					groundSpeed -= runAccel;
+					groundSpeed -= runAccel / slowMultiple;
 				}
 				
 			}
 			
 			if( currInput.B )
 			{
-				groundSpeed -= holdDashAccel;
+				groundSpeed -= holdDashAccel / slowMultiple;
 			}
 
 			facingRight = false;
@@ -1013,19 +1017,19 @@ void Actor::UpdatePrePhysics()
 			{
 				if( groundSpeed < maxRunInit )
 				{
-					groundSpeed += runAccelInit;
+					groundSpeed += runAccelInit / slowMultiple;
 					if( groundSpeed > maxRunInit )
 						groundSpeed = maxRunInit;
 				}
 				else
 				{
-					groundSpeed += runAccel;
+					groundSpeed += runAccel / slowMultiple;
 				}
 			}
 
 			if( currInput.B )
 			{
-				groundSpeed -= holdDashAccel;
+				groundSpeed -= holdDashAccel / slowMultiple;
 			}
 
 			facingRight = true;
@@ -1492,7 +1496,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > -maxRunInit )
 					{
-						groundSpeed -= runAccelInit * 2;
+						groundSpeed -= runAccelInit * 2 / slowMultiple;
 						if( groundSpeed < -maxRunInit )
 							groundSpeed = -maxRunInit;
 					}
@@ -1501,11 +1505,11 @@ void Actor::UpdatePrePhysics()
 						if( gNorm.x > 0 )
 						{
 							//up a slope
-							groundSpeed -= sprintAccel / 2; 
+							groundSpeed -= sprintAccel / 2 / slowMultiple; 
 						}
 						else
 						{
-							groundSpeed -= sprintAccel * abs( gNorm.x );
+							groundSpeed -= sprintAccel * abs( gNorm.x ) / slowMultiple;
 							//down a slope
 						}
 					}
@@ -1522,7 +1526,7 @@ void Actor::UpdatePrePhysics()
 					V2d gn = ground->Normal();
 					if( groundSpeed < maxRunInit )
 					{
-						groundSpeed += runAccelInit * 2;
+						groundSpeed += runAccelInit * 2 / slowMultiple;
 						if( groundSpeed > maxRunInit )
 							groundSpeed = maxRunInit;
 					}
@@ -1531,11 +1535,11 @@ void Actor::UpdatePrePhysics()
 						if( gNorm.x < 0 )
 						{
 							//up a slope
-							groundSpeed += sprintAccel / 2; 
+							groundSpeed += sprintAccel / 2 / slowMultiple;
 						}
 						else
 						{
-							groundSpeed += sprintAccel * abs( gNorm.x );
+							groundSpeed += sprintAccel * abs( gNorm.x ) / slowMultiple;
 							//down a slope
 						}
 					}
@@ -1559,7 +1563,18 @@ void Actor::UpdatePrePhysics()
 	}
 
 
-	
+	if( currInput.leftTrigger > 200 )
+	{
+		if( prevInput.leftTrigger <= 200 )
+			slowCounter = 1;
+
+		slowMultiple = timeSlowStrength;
+	}
+	else
+	{
+		slowCounter = 1;
+		slowMultiple = 1;
+	}
 
 	if( ground == NULL )
 	{
@@ -1568,7 +1583,7 @@ void Actor::UpdatePrePhysics()
 		else if( velocity.x < -maxAirXSpeed )
 			velocity.x = -maxAirXSpeed;
 
-		velocity += V2d( 0, gravity );
+		velocity += V2d( 0, gravity / slowMultiple );
 		if( velocity.y > maxFallSpeed )
 			velocity.y = maxFallSpeed;
 	}
@@ -1588,8 +1603,11 @@ void Actor::UpdatePrePhysics()
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
 
-	
-	
+	cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
+
+	groundSpeed /= slowMultiple;
+	velocity /= (double)slowMultiple;
+	grindSpeed /= slowMultiple;
 }
 
 bool Actor::CheckWall( bool right )
@@ -1766,10 +1784,10 @@ bool Actor::CheckStandUp()
 
 		owner->window->draw( rs );
 
-		queryMode = "check";
+		//queryMode = "check";
 		checkValid = true;
 		Query( this, owner->testTree, r );
-		cout << "col number: " << possibleEdgeCount << endl;
+	//	cout << "col number: " << possibleEdgeCount << endl;
 		possibleEdgeCount = 0;
 		return checkValid;
 	}
@@ -2867,7 +2885,14 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 void Actor::UpdatePostPhysics()
 {
-	
+	//if( slowMultiple > 1 )
+	//{
+		velocity *= (double)slowMultiple;
+		groundSpeed *= slowMultiple;
+		grindSpeed *= slowMultiple;
+
+		cout << "post vel: " << velocity.x << ", " << velocity.y << endl;
+	//}
 	//if( collision )
 	//	cout << "collision" << endl;
 	//else
@@ -2926,9 +2951,12 @@ void Actor::UpdatePostPhysics()
 	}
 	else
 	{
-		if( wallJumpFrameCounter < wallJumpMovementLimit )
-			wallJumpFrameCounter++;
-		framesInAir++;
+		if( slowCounter == slowMultiple )
+		{
+			if( wallJumpFrameCounter < wallJumpMovementLimit )
+				wallJumpFrameCounter++;
+			framesInAir++;
+		}
 		if( collision )
 		{
 			//cout << "wallcling" << endl;
@@ -3595,7 +3623,13 @@ void Actor::UpdatePostPhysics()
 	}
 
 	//cout << "offsetX: " << offsetX << endl;
-	++frame;
+	if( slowCounter == slowMultiple )
+	{
+		++frame;
+		slowCounter = 1;
+	}
+	else
+		slowCounter++;
 	//cout << "end frame: " << position.x << ", " << position.y << endl;
 }
 
