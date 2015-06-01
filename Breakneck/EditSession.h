@@ -61,6 +61,7 @@ struct EditSession
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
 	sf::Vector2f testPoint;
+	double minAngle;
 
 	enum Emode
 	{

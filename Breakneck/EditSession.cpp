@@ -342,6 +342,7 @@ bool Polygon::IsTouching( Polygon *p )
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
+	minAngle = .99;
 //	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
 }
@@ -945,8 +946,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 						else if( ev.key.code == Keyboard::Space )
 						{
+
 							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 2 )
 							{
+								//test final line
+
+								if( !PointValid( polygonInProgress->points.back(), polygonInProgress->points.front() ) )
+									break;
+
 								list<Polygon*>::iterator it = polygons.begin();
 								bool added = false;
 								polygonInProgress->Finalize();
@@ -1152,12 +1159,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						Vector2i worldi( testPoint.x, testPoint.y );
 						
-						polygonInProgress->points.push_back( worldi );
-						////if( polygonInProgress->points.size() > 0 )
-						////{
-						//	if( PointValid( polygonInProgress->points.back(), worldi ) )
-						//	{
-						//		
+						
+						if( polygonInProgress->points.size() > 0 )
+						{
+							if( PointValid( polygonInProgress->points.back(), worldi ) )
+							{
+								polygonInProgress->points.push_back( worldi );
+							}
+						}
+						else
+							polygonInProgress->points.push_back( worldi );
 						//		//cout << "point valid" << endl;
 						//		polygonInProgress->points.push_back( worldi  );
 						//		for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -1279,20 +1290,71 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 bool EditSession::PointValid( Vector2i prev, Vector2i point)
 {
-	return true;
+	//return true;
 	float eLeft = min( prev.x, point.x );
 	float eRight= max( prev.x, point.x );
 	float eTop = min( prev.y, point.y );
 	float eBottom = max( prev.y, point.y );
+
 	{
 		list<Vector2i>::iterator it = polygonInProgress->points.begin();
 		//polygonInProgress->points.push_back( polygonInProgress->points.back() )
 		Vector2i pre = (*it);
 		++it;
-		for( ; it != polygonInProgress->points.end(); ++it )
+		
+		//minimum angle
+		{
+			if( polygonInProgress->points.size() >= 2 )
+			{
+				list<Vector2i>::reverse_iterator rit = polygonInProgress->points.rbegin();
+				rit++;
+				double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->points.back().x, polygonInProgress->points.back().y ) )
+					, normalize( V2d((*rit).x, (*rit).y ) - V2d( polygonInProgress->points.back().x, polygonInProgress->points.back().y ) ) );
+				if( ff > minAngle )
+				{
+					//cout << "ff: " << ff << endl;
+					return false;
+				}
+			}
+		}
+
+		//return true;
+
+		//make sure I'm not too close to the very first point and that my line isn't too close to the first point either
+		if( point.x != polygonInProgress->points.front().x || point.y != polygonInProgress->points.front().y )
+		{
+			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
+			if( separation < minimumEdgeLength )
+			{
+				return false;
+			}
+
+			if( polygonInProgress->points.size() > 2  )
+			{
+				if( abs( cross( V2d( point.x, point.y ) - V2d( prev.x, prev.y), 
+					normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) ) ) < minimumEdgeLength
+					&& dot( V2d( point.x, point.y ) - V2d( prev.x, prev.y ), normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y )) ) 
+					>= length( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) )
+				{
+					return false;
+				}
+			}
+		}
+
+		//check for distance to point in the polygon and edge distances
+
+		if( point.x == polygonInProgress->points.front().x && point.y == polygonInProgress->points.front().y )
+		{
+			pre = (*it);
+			++it;
+		}
+
+		{
+ 		for( ; it != polygonInProgress->points.end(); ++it )
 		{
 			if( (*it) == polygonInProgress->points.back() )
 				continue;
+
 			LineIntersection li = lineIntersection( V2d( prev.x, prev.y ), V2d( point.x, point.y ),
 						V2d( pre.x, pre.y ), V2d( (*it).x, (*it).y ) );
 			float tempLeft = min( pre.x, (*it).x ) - 0;
@@ -1315,6 +1377,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 						cs.setPosition( li.position.x, li.position.y );
 						w->draw( cs );
 
+						
 						return false;
 					}
 
@@ -1341,7 +1404,13 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				double res2 = abs( cross( c, normalize( d ) ) );
 				double des2 = dot( c, normalize( d ) );
 
-				cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
+				//cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
+
+				if( point.x == polygonInProgress->points.front().x && point.y == polygonInProgress->points.front().y )
+				{
+				}
+				else
+
 				if(( res  < minimumEdgeLength && ( des >= 0 && des <= length( b ) ) )
 					|| ( res2  < minimumEdgeLength && ( des2 >= 0 && des2 <= length( d ) ) ) )
 				{
@@ -1355,8 +1424,9 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			}
 			pre = (*it);
 		}
+		}
 	}
-	//return true;
+	return true;
 
 	int i = 0;
 	for( list<Polygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )

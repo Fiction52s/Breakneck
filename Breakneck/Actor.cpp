@@ -973,6 +973,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
+
 			break;
 		}
 	}
@@ -1798,7 +1799,7 @@ bool Actor::CheckStandUp()
 		rs.setFillColor( Color::Yellow );
 		rs.setPosition( r.left, r.top );
 
-		owner->window->draw( rs );
+		//owner->window->draw( rs );
 
 		//queryMode = "check";
 		checkValid = true;
