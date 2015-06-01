@@ -30,6 +30,7 @@ struct Actor : QuadTreeCollider
 		WALLJUMP,
 		STEEPSLIDE,
 		GRINDBALL,
+		AIRDASH,
 		Count
 	};
 
@@ -68,6 +69,8 @@ struct Actor : QuadTreeCollider
 	
 	Edge *ground;
 	
+	double airDashSpeed;
+
 	Edge *grindEdge;
 	double grindQuantity;
 	double grindSpeed;

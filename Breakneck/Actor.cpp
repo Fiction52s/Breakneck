@@ -93,6 +93,9 @@ Actor::Actor( GameSession *gs )
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
 
+		actionLength[AIRDASH] = 60;
+		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
+
 		}
 
 		action = JUMP;
@@ -134,6 +137,8 @@ Actor::Actor( GameSession *gs )
 		airAccel = 1.5;
 		maxAirXSpeed = 100;
 		
+		airDashSpeed = 10;
+
 		airSlow = .3;
 
 		groundOffsetX = 0;
@@ -232,6 +237,10 @@ void Actor::ActionEnded()
 			break;
 		case GRINDBALL:
 			frame = 0;
+			break;
+		case AIRDASH:
+			action = JUMP;
+			frame = 1;
 			break;
 		}
 	}
@@ -962,8 +971,10 @@ void Actor::UpdatePrePhysics()
 			
 			break;
 		}
-		
-
+	case AIRDASH:
+		{
+			break;
+		}
 	}
 	
 	//cout << "standing up? : " << CheckStandUp() << endl;
@@ -1556,6 +1567,11 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case STEEPSLIDE:
+		{
+
+			break;
+		}
+	case AIRDASH:
 		{
 
 			break;
