@@ -335,9 +335,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				
 				assert( resolveDist != 10000 );
 				
-				double pri = length( vel + currentContact->resolution );
+				//dot( vel + currentContact->resolution, normalize( vel ) );
 			
-				currentContact->collisionPriority = pri;
 				if( intersectQuantity <= 0 )
 				{
 					currentContact->position = e->v0;
@@ -346,6 +345,13 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				{
 					currentContact->position = e->v1;
 				}
+
+				double pri = dot( currentContact->position - ( corner - vel ), normalize( vel ) );
+				
+				cout << "pri 222: " << pri << endl;
+				currentContact->collisionPriority = pri;
+
+
 				currentContact->edge = e;
 				return currentContact;
 				//cout << "here!!!: " << currentContact->resolution.x << ", "
@@ -534,11 +540,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			//cout << "else case" << endl;
 				currentContact->resolution = e->GetPoint( intersectQuantity ) - corner;
 			}
-		//	cout << "intersect quantity: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
-		//	cout << "inter: " << intersect.x << ", " << intersect.y << endl;
-		//	cout << "corner: " << corner.x << ", " << corner.y << endl;
-		//	cout << "v0: " << e->v0.x << ", " << e->v0.y << endl;
-			
+		
 
 			if( length( currentContact->resolution ) > length( vel ) + 1 )
 			{
@@ -554,7 +556,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
-
+			cout << "pri 111: " << pri << endl;
 			if( pri < -1 )
 			{
 			cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;

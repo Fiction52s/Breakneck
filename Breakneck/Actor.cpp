@@ -1620,7 +1620,7 @@ void Actor::UpdatePrePhysics()
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
 
-	cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
+	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 
 	groundSpeed /= slowMultiple;
 	velocity /= (double)slowMultiple;
@@ -1629,6 +1629,7 @@ void Actor::UpdatePrePhysics()
 
 bool Actor::CheckWall( bool right )
 {
+	return false;
 	double wallThresh = 5;
 	V2d vel;
 	if( right )
@@ -1828,9 +1829,14 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	owner->window->draw( rs );*/
 	col = false;
 	tempVel = vel;
+	minContact.edge = NULL;
+	//minContact.resolution( 0, 0 );
 
 	queryMode = "resolve";
 	Query( this, owner->testTree, r );
+
+	if( minContact.edge != NULL )
+		cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
 	//cout << "possible edge count: " << possibleEdgeCount << ", before: " << owner->numPoints << endl;
@@ -2843,6 +2849,17 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+				//V2d gn = ground->Normal();
+				
+				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
+				{
+					//cout << "offsetx: " << offsetX << endl;
+				//	offsetX = b.rw;
+				}
+				if( ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals( offsetX, -b.rw ) ) 
+				{
+				//	offsetX = -b.rw;
+				}
 				//cout << "groundinggg" << endl;
 			}
 			else if( tempCollision && currInput.B && minContact.edge->Normal().y > 0 && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
@@ -2908,7 +2925,7 @@ void Actor::UpdatePostPhysics()
 		groundSpeed *= slowMultiple;
 		grindSpeed *= slowMultiple;
 
-		cout << "post vel: " << velocity.x << ", " << velocity.y << endl;
+	//	cout << "post vel: " << velocity.x << ", " << velocity.y << endl;
 	//}
 	//if( collision )
 	//	cout << "collision" << endl;
@@ -3663,8 +3680,10 @@ void Actor::HandleEdge( Edge *e )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
 		if( c != NULL )
 		{
+			cout << possibleEdgeCount << endl;
 		//	collisionNumber++;
-			if( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -1 )
+			if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
+				|| minContact.collisionPriority < -1 )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
@@ -3679,12 +3698,16 @@ void Actor::HandleEdge( Edge *e )
 				}
 				else
 				{
-
+					if( minContact.edge != NULL )
+					cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
+						<< e->Normal().x << ", " << e->Normal().y << endl;
 					minContact.collisionPriority = c->collisionPriority;
+					cout << "pri: " << c->collisionPriority << endl;
 					minContact.edge = e;
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
 					col = true;
+					
 				}
 			}
 		}
