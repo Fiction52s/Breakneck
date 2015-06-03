@@ -93,8 +93,11 @@ Actor::Actor( GameSession *gs )
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
 
-		actionLength[AIRDASH] = 60;
+		actionLength[AIRDASH] = 30;
 		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
+
+		actionLength[STEEPCLIMB] = 8 * 4;
+		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb.png", 128, 64 );
 
 		}
 
@@ -242,6 +245,9 @@ void Actor::ActionEnded()
 			action = JUMP;
 			frame = 1;
 			break;
+		case STEEPCLIMB:
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -283,6 +289,52 @@ void Actor::UpdatePrePhysics()
 	{
 	case STAND:
 		{
+			if( reversed )
+			{
+				if( -gNorm.y > -steepThresh )
+				{
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed < 0 )
+							facingRight = true;
+						else 
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+				}
+			}
+			else
+			{
+				if( gNorm.y > -steepThresh )
+				{
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed < 0 )
+							facingRight = true;
+						else 
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+				}
+			}
+
+
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -354,18 +406,36 @@ void Actor::UpdatePrePhysics()
 			{
 				if( -gNorm.y > -steepThresh )
 				{
-					action = STEEPSLIDE;
-					frame = 0;
-					break;
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
 				}
 			}
 			else
 			{
 				if( gNorm.y > -steepThresh )
 				{
-					action = STEEPSLIDE;
-					frame = 0;
-					break;
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
 				}
 			}
 
@@ -454,6 +524,13 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
+			if( !prevInput.B && currInput.B )
+			{
+				action = AIRDASH;
+				frame = 0;
+				break;
+			}
+
 			if( hasDoubleJump && currInput.A && !prevInput.A )
 			{
 				action = DOUBLE;
@@ -512,7 +589,13 @@ void Actor::UpdatePrePhysics()
 		}
 		case DOUBLE:
 		{
-			
+			if( !prevInput.B && currInput.B )
+			{
+				action = AIRDASH;
+				frame = 0;
+				break;
+			}
+
 			if( CheckWall( false ) )
 			{
 				if( currInput.LRight() && !prevInput.LRight() )
@@ -567,8 +650,30 @@ void Actor::UpdatePrePhysics()
 			{
 				if( -gNorm.y > -steepThresh )
 				{
-					action = STEEPSLIDE;
-					frame = 0;
+				
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+							
+						action = STEEPCLIMB;
+
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+					
 				}
 				else
 				{
@@ -594,8 +699,28 @@ void Actor::UpdatePrePhysics()
 			
 				if( gNorm.y > -steepThresh )
 				{
-					action = STEEPSLIDE;
-					frame = 0;
+					
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+					
 				}
 				else
 				{
@@ -704,6 +829,43 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			if( reversed )
+			{
+				if( -gNorm.y > -steepThresh )
+				{
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+				}
+			}
+			else
+			{
+				if( gNorm.y > -steepThresh )
+				{
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+				}
+			}
+
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -779,7 +941,42 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINT:
 		{
-			
+			if( reversed )
+			{
+				if( -gNorm.y > -steepThresh )
+				{
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+				}
+			}
+			else
+			{
+				if( gNorm.y > -steepThresh )
+				{
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+				}
+			}
 			if( canStandUp )
 			{
 			if( currInput.A && !prevInput.A )
@@ -890,7 +1087,7 @@ void Actor::UpdatePrePhysics()
 				action = LAND;
 				frame = 0;
 				
-
+			
 
 				position.x += offsetX + b.offset.x;
 
@@ -910,10 +1107,44 @@ void Actor::UpdatePrePhysics()
 					facingRight = false;
 				}
 			}
+			else if( !currInput.Y  )
+			{
+				
+				V2d op = position;
+				position.y += normalHeight;
+				if( grindEdge->Normal().x > 0 )
+				{
+					position.x += b.rw;
+				}
+				else if( grindEdge->Normal().x < 0 )
+				{
+					position.x -= b.rw;
+				}
+				if( !CheckStandUp() )
+				{
+					position = op;
+				}
+				else
+				{
+					action = JUMP;
+					frame = 0;
+					ground = NULL;
+					grindEdge = NULL;
+				}
+				
+			}
 			break;
 		}
 	case STEEPSLIDE:
 		{
+
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}
+
 			if( reversed )
 			{
 				if( -gNorm.y <= -steepThresh )
@@ -973,7 +1204,55 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
+			if( !currInput.B)
+			{
+				action = JUMP;
+				frame = 1;
+			}
+			break;
+		}
+	case STEEPCLIMB:
+		{
 
+			/*if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				break;
+			}*/
+
+			if( reversed )
+			{
+				if( -gNorm.y <= -steepThresh )
+				{
+					action = LAND2;
+					frame = 0;
+				}
+			}
+			else
+			{
+				if( gNorm.y <= -steepThresh )
+				{
+					action = LAND2;
+					frame = 0;
+					//not steep
+				}
+
+				if( gNorm.x > 0 && groundSpeed >= 0 )
+				{
+					action = STEEPSLIDE;
+					frame = 0;
+					facingRight = true;
+				}
+				else if( gNorm.x < 0 && groundSpeed <= 0 )
+				{
+					action = STEEPSLIDE;
+					frame = 0;
+					facingRight = false;	
+				}
+			}
+
+			
 			break;
 		}
 	}
@@ -1569,12 +1848,109 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDE:
 		{
-
+			//if( groundSpeed > 0 )
+			if( facingRight )
+			{
+				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+			//else if( groundSpeed < 0 )
+			//else if( !facingRight )
+			else
+			{
+				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
 			break;
 		}
 	case AIRDASH:
 		{
+			if( frame == 0 )
+			{
+				startAirDashVel = V2d( velocity.x, 0 );//velocity;//
+			}
+			velocity = startAirDashVel;
+			double airDashSpeed = 17;
+			//velocity = V2d( 0, 0 ) velocity.x, -gravity / slowMultiple );
 
+			if( currInput.LUp() )
+			{
+				if( startAirDashVel.y > 0 )
+				{
+					startAirDashVel.y = 0;
+					velocity.y = 0;
+					velocity.y = -airDashSpeed;
+				}
+				else
+				{
+					velocity.y = -airDashSpeed;
+				}
+				
+			}
+			else if( currInput.LDown() )
+			{
+				if( startAirDashVel.y < 0 )
+				{
+					startAirDashVel.y = 0;
+					velocity.y = 0;
+					velocity.y = airDashSpeed;
+				}
+				else
+				{
+					velocity.y = airDashSpeed;
+				}
+				
+			}
+
+
+			if( currInput.LLeft() )
+			{
+				if( startAirDashVel.x > 0 )
+				{
+					startAirDashVel.x = 0;
+					velocity.x = 0;
+					velocity.x = -airDashSpeed;
+				}
+				else
+				{
+					velocity.x = startAirDashVel.x - airDashSpeed;
+				}
+				facingRight = false;
+				//velocity.y -= gravity / slowMultiple;
+			}
+			else if( currInput.LRight() )
+			{
+				if( startAirDashVel.x < 0 )
+				{
+					startAirDashVel.x = 0;
+					velocity.x = 0;
+					velocity.x = airDashSpeed * slowMultiple;
+				}
+				else
+				{
+					velocity.x = startAirDashVel.x + airDashSpeed;
+				}
+				facingRight = true;
+				//velocity.y -= gravity / slowMultiple;
+			}
+			
+			
+			velocity.y -= gravity / slowMultiple;
+
+
+			//velocity = V2d( 10, 0 );
+			break;
+		}
+	case STEEPCLIMB:
+		{
+			//if( groundSpeed > 0 )
+			if( facingRight )
+			{
+				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+			//else if( groundSpeed < 0 )
+			else
+			{
+				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
 			break;
 		}
 	}
@@ -1780,10 +2156,11 @@ bool Actor::CheckWall( bool right )
 
 bool Actor::CheckStandUp()
 {
-	if( b.rh >= normalHeight )
+	if( b.rh > normalHeight )
 	{
 		cout << "WEIRD" << endl;
-		return true;
+		return false;
+	//	return true;
 	}
 	else
 	{
@@ -1801,7 +2178,7 @@ bool Actor::CheckStandUp()
 
 		//owner->window->draw( rs );
 
-		//queryMode = "check";
+		queryMode = "check";
 		checkValid = true;
 		Query( this, owner->testTree, r );
 	//	cout << "col number: " << possibleEdgeCount << endl;
@@ -2827,12 +3204,13 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+				V2d gNorm = ground->Normal();
 
-				if( velocity.x < 0 )
+				if( velocity.x < 0 && gNorm.y <= -steepThresh )
 				{
 					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
 				}
-				else if( velocity.x > 0 )
+				else if( velocity.x > 0 && gNorm.y <= -steepThresh )
 				{
 					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
 				}
@@ -3655,6 +4033,57 @@ void Actor::UpdatePostPhysics()
 		}
 	case AIRDASH:
 		{
+			sprite->setTexture( *(tileset[AIRDASH]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case STEEPCLIMB:
+		{
+			sprite->setTexture( *(tileset[STEEPCLIMB]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STEEPCLIMB]->GetSubRect( frame / 4 ) );
+			//	sprite->setOrigin( sprite->getLocalBounds().width - 10, sprite->getLocalBounds().height);
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STEEPCLIMB]->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			//	sprite->setOrigin( 10, sprite->getLocalBounds().height);
+			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+					angle = PI;
+				//this should never happen
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
+			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite->setPosition( pp.x, pp.y );
+			//if( angle == 0 )
+			//	sprite->setPosition( pp.x + offsetX, pp.y );
+			//else
+			//	sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 		

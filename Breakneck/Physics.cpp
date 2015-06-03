@@ -348,7 +348,11 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 				double pri = dot( currentContact->position - ( corner - vel ), normalize( vel ) );
 				
-				cout << "pri 222: " << pri << endl;
+				if( approxEquals( pri, 0 ) )
+					pri = 0;
+
+
+				//cout << "pri 222: " << pri << endl;
 				currentContact->collisionPriority = pri;
 
 
@@ -556,7 +560,11 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			}
 
 			double pri = dot( intersect - ( corner - vel ), normalize( vel ) );
-			cout << "pri 111: " << pri << endl;
+
+			if( approxEquals( pri, 0 ) )
+					pri = 0;
+
+			//cout << "pri 111: " << pri << endl;
 			if( pri < -1 )
 			{
 			cout << "BUSTED--------------- " << edgeNormal.x << ", " << edgeNormal.y  << ", " << pri  << endl;

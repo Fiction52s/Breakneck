@@ -927,23 +927,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							mode = CREATE_POLYGONS;
 						}
-						else if( ev.key.code == Keyboard::D )
-						{
-							if( mode == SELECT_POLYGONS )
-							{
-								list<Polygon*>::iterator it = polygons.begin();
-								while( it != polygons.end() )
-								{
-									if( (*it)->selected )
-									{
-										delete (*it);
-										polygons.erase( it++ );
-									}
-									else
-										++it;
-								}
-							}
-						}
 						else if( ev.key.code == Keyboard::Space )
 						{
 
@@ -1028,6 +1011,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 0 )
 							{
 								polygonInProgress->points.pop_back();
+							}
+							else if( mode == SELECT_POLYGONS )
+							{
+								list<Polygon*>::iterator it = polygons.begin();
+								while( it != polygons.end() )
+								{
+									if( (*it)->selected )
+									{
+										delete (*it);
+										polygons.erase( it++ );
+									}
+									else
+										++it;
+								}
 							}
 						}
 						

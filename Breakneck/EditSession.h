@@ -63,6 +63,7 @@ struct EditSession
 	sf::Vector2f testPoint;
 	double minAngle;
 
+
 	enum Emode
 	{
 		CREATE_POLYGONS,

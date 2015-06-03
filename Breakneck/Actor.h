@@ -31,6 +31,7 @@ struct Actor : QuadTreeCollider
 		STEEPSLIDE,
 		GRINDBALL,
 		AIRDASH,
+		STEEPCLIMB,
 		Count
 	};
 
@@ -67,6 +68,8 @@ struct Actor : QuadTreeCollider
 	int framesInAir;
 	double holdDashAccel;
 	
+	sf::Vector2<double> startAirDashVel;
+
 	Edge *ground;
 	
 	double airDashSpeed;
