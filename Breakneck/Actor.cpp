@@ -1629,7 +1629,6 @@ void Actor::UpdatePrePhysics()
 
 bool Actor::CheckWall( bool right )
 {
-	return false;
 	double wallThresh = 5;
 	V2d vel;
 	if( right )
@@ -2853,12 +2852,13 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				
 				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
 				{
-					//cout << "offsetx: " << offsetX << endl;
-				//	offsetX = b.rw;
+					cout << "super sercret fix offsetx1: " << offsetX << endl;
+					offsetX = b.rw;
 				}
 				if( ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals( offsetX, -b.rw ) ) 
 				{
-				//	offsetX = -b.rw;
+					cout << "super sercret fix offsetx2: " << offsetX << endl;
+					offsetX = -b.rw;
 				}
 				//cout << "groundinggg" << endl;
 			}
@@ -3651,6 +3651,10 @@ void Actor::UpdatePostPhysics()
 			//	sprite->setPosition( pp.x + offsetX, pp.y );
 			//else
 			//	sprite->setPosition( pp.x, pp.y );
+			break;
+		}
+	case AIRDASH:
+		{
 			break;
 		}
 		
