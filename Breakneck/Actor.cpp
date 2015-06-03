@@ -93,7 +93,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
 
-		actionLength[AIRDASH] = 30;
+		actionLength[AIRDASH] = 20;
 		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
@@ -651,7 +651,7 @@ void Actor::UpdatePrePhysics()
 				if( -gNorm.y > -steepThresh )
 				{
 				
-					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
 					{
 						if( groundSpeed > 0 )
 							facingRight = true;
@@ -1208,6 +1208,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = JUMP;
 				frame = 1;
+				velocity = V2d( 0, 0 );
 			}
 			break;
 		}
@@ -1227,6 +1228,19 @@ void Actor::UpdatePrePhysics()
 				{
 					action = LAND2;
 					frame = 0;
+				}
+
+				if( gNorm.x > 0 && groundSpeed >= 0 )
+				{
+					action = STEEPSLIDE;
+					frame = 0;
+					facingRight = true;
+				}
+				else if( gNorm.x < 0 && groundSpeed <= 0 )
+				{
+					action = STEEPSLIDE;
+					frame = 0;
+					facingRight = false;	
 				}
 			}
 			else
@@ -1849,12 +1863,11 @@ void Actor::UpdatePrePhysics()
 	case STEEPSLIDE:
 		{
 			//if( groundSpeed > 0 )
-			if( facingRight )
+
+			if( reversed )
 			{
 				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
-			//else if( groundSpeed < 0 )
-			//else if( !facingRight )
 			else
 			{
 				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
@@ -1867,7 +1880,7 @@ void Actor::UpdatePrePhysics()
 			{
 				startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 			}
-			velocity = startAirDashVel;
+			velocity = V2d( 0, 0 );//startAirDashVel;
 			double airDashSpeed = 17;
 			//velocity = V2d( 0, 0 ) velocity.x, -gravity / slowMultiple );
 
@@ -1911,7 +1924,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					velocity.x = startAirDashVel.x - airDashSpeed;
+					velocity.x = min( startAirDashVel.x, -airDashSpeed );
 				}
 				facingRight = false;
 				//velocity.y -= gravity / slowMultiple;
@@ -1922,17 +1935,20 @@ void Actor::UpdatePrePhysics()
 				{
 					startAirDashVel.x = 0;
 					velocity.x = 0;
-					velocity.x = airDashSpeed * slowMultiple;
+					velocity.x = airDashSpeed;
 				}
 				else
 				{
-					velocity.x = startAirDashVel.x + airDashSpeed;
+					velocity.x = max( startAirDashVel.x, airDashSpeed );
 				}
 				facingRight = true;
 				//velocity.y -= gravity / slowMultiple;
 			}
 			
-			
+			if( velocity.x == 0 && velocity.y == 0 )
+			{
+				startAirDashVel = V2d( 0, 0 );
+			}
 			velocity.y -= gravity / slowMultiple;
 
 
@@ -1942,15 +1958,15 @@ void Actor::UpdatePrePhysics()
 	case STEEPCLIMB:
 		{
 			//if( groundSpeed > 0 )
-			if( facingRight )
+			if( reversed )
 			{
 				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
-			//else if( groundSpeed < 0 )
 			else
 			{
 				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
+			
 			break;
 		}
 	}
@@ -3248,21 +3264,34 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
-				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-
-				if( velocity.x < 0 )
+				groundSpeed = 0;
+				//groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+				V2d gno = ground->Normal();
+				//cout << "gno: " << gno.x << ", " << gno.y << endl;
+				if( -gno.y > -steepThresh )
 				{
-					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );
+					if( velocity.x < 0 )
+					{
+					//	groundSpeed = -min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					}
+					else if( velocity.x > 0 )
+					{
+					//	groundSpeed = -max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					}
+					//groundSpeed = 0;
 				}
-				else if( velocity.x > 0 )
+				else
 				{
-					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-				}
-				//groundSpeed  = max( abs( velocity.x ), ( - ) );
-				
-				if( velocity.x < 0 )
-				{
-				//	groundSpeed = -groundSpeed;
+					groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );
+					if( velocity.x < 0 )
+					{
+						groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					}
+					else if( velocity.x > 0 )
+					{
+						groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					}
 				}
 
 				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
