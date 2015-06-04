@@ -404,7 +404,7 @@ void Actor::UpdatePrePhysics()
 
 			if( reversed )
 			{
-				if( -gNorm.y > -steepThresh )
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -422,7 +422,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( gNorm.y > -steepThresh )
+				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -648,7 +648,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( reversed )
 			{
-				if( -gNorm.y > -steepThresh )
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 				
 					if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
@@ -697,7 +697,7 @@ void Actor::UpdatePrePhysics()
 			else
 			{
 			
-				if( gNorm.y > -steepThresh )
+				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
@@ -896,6 +896,17 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
+			if( currInput.Y && !prevInput.Y )
+			{
+				action = GRINDBALL;
+				grindEdge = ground;
+				frame = 0;
+				grindSpeed = groundSpeed;
+				grindQuantity = edgeQuantity;
+				break;
+			}
+
+
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -941,9 +952,20 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINT:
 		{
+
+			if( currInput.Y && !prevInput.Y )
+			{
+				action = GRINDBALL;
+				grindEdge = ground;
+				frame = 0;
+				grindSpeed = groundSpeed;
+				grindQuantity = edgeQuantity;
+				break;
+			}
+
 			if( reversed )
 			{
-				if( -gNorm.y > -steepThresh )
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -961,7 +983,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( gNorm.y > -steepThresh )
+				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -1147,7 +1169,7 @@ void Actor::UpdatePrePhysics()
 
 			if( reversed )
 			{
-				if( -gNorm.y <= -steepThresh )
+				if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
 					action = LAND2;
 					frame = 0;
@@ -1155,7 +1177,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( gNorm.y <= -steepThresh )
+				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
 					action = LAND2;
 					frame = 0;
@@ -1222,9 +1244,17 @@ void Actor::UpdatePrePhysics()
 				break;
 			}*/
 
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMP;
+				frame = 0;
+				//ground = NULL;
+				break;
+			}
+
 			if( reversed )
 			{
-				if( -gNorm.y <= -steepThresh )
+				if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
 					action = LAND2;
 					frame = 0;
@@ -1245,7 +1275,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( gNorm.y <= -steepThresh )
+				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
 					action = LAND2;
 					frame = 0;
@@ -3246,13 +3276,13 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				
 				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
 				{
-					cout << "super sercret fix offsetx1: " << offsetX << endl;
-					offsetX = b.rw;
+					//cout << "super secret fix offsetx1: " << offsetX << endl;
+					//offsetX = b.rw;
 				}
 				if( ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals( offsetX, -b.rw ) ) 
 				{
-					cout << "super sercret fix offsetx2: " << offsetX << endl;
-					offsetX = -b.rw;
+					//cout << "super secret fix offsetx2: " << offsetX << endl;
+					//offsetX = -b.rw;
 				}
 				//cout << "groundinggg" << endl;
 			}
@@ -3299,6 +3329,17 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+
+				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
+				{
+				//	cout << "super secret fix offsetx122: " << offsetX << endl;
+				//	offsetX = b.rw;
+				}
+				if( ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals( offsetX, -b.rw ) ) 
+				{
+				//	cout << "super secret fix offsetx222: " << offsetX << endl;
+				//	offsetX = -b.rw;
+				}
 			}
 			else if( tempCollision )
 			{
@@ -3389,6 +3430,30 @@ void Actor::UpdatePostPhysics()
 				//cout << "offset: " << b.offset.y << endl;
 			}
 		}
+
+
+		if( reversed )
+		{
+			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (-gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
+			{
+				action = LAND2;
+				frame = 0;
+			}
+		}
+		else
+		{
+			
+			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
+			{
+				action = LAND2;
+				frame = 0;
+			}
+			else
+			{
+
+			}
+		}
+		
 	}
 	else
 	{
