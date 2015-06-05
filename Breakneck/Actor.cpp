@@ -1364,7 +1364,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.B )
 			{
-				groundSpeed -= holdDashAccel / slowMultiple;
+				groundSpeed += holdDashAccel / slowMultiple;
 			}
 
 			facingRight = true;
@@ -4136,13 +4136,49 @@ void Actor::UpdatePostPhysics()
 	case AIRDASH:
 		{
 			sprite->setTexture( *(tileset[AIRDASH]->texture));
-			if( facingRight )
+
+			int f = 0;
+			if( currInput.LUp() )
 			{
-				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( 0 ) );
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 2;
+				}
+				else
+				{
+					f = 1;
+				}
+			}
+			else if( currInput.LDown() )
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 4;
+				}
+				else
+				{
+					f = 5;
+				}
 			}
 			else
 			{
-				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( 0 );
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 3;
+				}
+				else
+				{
+					f = 0;
+				}
+			}
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( f ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( f );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
