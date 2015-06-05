@@ -291,7 +291,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( reversed )
 			{
-				if( -gNorm.y > -steepThresh )
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -313,7 +313,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( gNorm.y > -steepThresh )
+				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -2237,6 +2237,8 @@ bool Actor::CheckStandUp()
 
 bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 {
+	//if( reversed )
+	//	vel.x = -vel.x;
 	possibleEdgeCount = 0;
 	position += vel;
 	
@@ -2250,7 +2252,11 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 
 	owner->window->draw( rs );*/
 	col = false;
-	tempVel = vel;
+
+	//if( reversed )
+	//	tempVel = -vel;
+	//else
+		tempVel = vel;
 	minContact.edge = NULL;
 	//minContact.resolution( 0, 0 );
 
