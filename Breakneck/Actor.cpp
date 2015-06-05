@@ -2484,14 +2484,14 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 
 				if(!approxEquals( m, 0 ) )
 				{
-					bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
+					bool hit = ResolvePhysics( edges, numPoints, V2d( -m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
 						V2d eNorm = minContact.edge->Normal();
-						if( eNorm.y < 0 )
+						if( eNorm.y > 0 )
 						{
-							if( minContact.position.y >= position.y + b.rh - 5 )
+							if( minContact.position.y <= position.y - b.rh + 5 )
 							{
 								if( m > 0 && eNorm.x < 0 )
 								{
@@ -2514,15 +2514,17 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 							}
 							else
 							{
-								offsetX += minContact.resolution.x;
+								offsetX -= minContact.resolution.x;
 								groundSpeed = 0;
+								offsetX = -offsetX;
 								break;
 							}
 						}
 						else
 						{
-								offsetX += minContact.resolution.x;
+								offsetX -= minContact.resolution.x;
 								groundSpeed = 0;
+								offsetX = -offsetX;
 								break;
 						}
 					}
@@ -4210,6 +4212,8 @@ void Actor::HandleEdge( Edge *e )
 
 	if( queryMode == "resolve" )
 	{
+		if( e == ground )
+			return;
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
 		if( c != NULL )
 		{
