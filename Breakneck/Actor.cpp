@@ -93,7 +93,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
 
-		actionLength[AIRDASH] = 20;
+		actionLength[AIRDASH] = 25;
 		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
@@ -140,7 +140,7 @@ Actor::Actor( GameSession *gs )
 		airAccel = 1.5;
 		maxAirXSpeed = 100;
 		
-		airDashSpeed = 10;
+		airDashSpeed = 14;
 
 		airSlow = .3;
 
@@ -1232,6 +1232,27 @@ void Actor::UpdatePrePhysics()
 				frame = 1;
 				velocity = V2d( 0, 0 );
 			}
+			if( currInput.X && !prevInput.X )
+			{
+				if( !currInput.LLeft() && !currInput.LRight() )
+				{
+					if( currInput.LUp() )
+					{
+						action = UAIR;
+						frame = 0;
+						break;
+					}
+					else if( currInput.LDown() )
+					{
+						action = DAIR;
+						frame = 0;
+						break;
+					}
+				}
+
+				action = FAIR;
+				frame = 0;
+			}
 			break;
 		}
 	case STEEPCLIMB:
@@ -1911,7 +1932,6 @@ void Actor::UpdatePrePhysics()
 				startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 			}
 			velocity = V2d( 0, 0 );//startAirDashVel;
-			double airDashSpeed = 17;
 			//velocity = V2d( 0, 0 ) velocity.x, -gravity / slowMultiple );
 
 			if( currInput.LUp() )
@@ -2454,7 +2474,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				//cout << "slide: " << q << ", " << offsetX << endl;
+				cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -2792,6 +2812,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
 				|| (offsetX == -b.rw && e1n.x <= 0 && e1n.y != 0 ) );
+			cout << "transferRight: " << transferRight << ": offset: " << offsetX << endl;
 			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
@@ -2837,7 +2858,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				//cout << "slide: " << q << ", " << offsetX << endl;
+				cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -3275,11 +3296,12 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				//	groundSpeed = -groundSpeed;
 				}
 
-				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
+				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
 
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+				cout << "offset now!: " << offsetX << endl;
 				//V2d gn = ground->Normal();
 				
 				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
@@ -4253,10 +4275,10 @@ void Actor::HandleEdge( Edge *e )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
 		if( c != NULL )
 		{
-			cout << possibleEdgeCount << endl;
+			cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
 		//	collisionNumber++;
 			if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
-				|| minContact.collisionPriority < -1 )
+				|| minContact.collisionPriority < -.1 )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
