@@ -67,7 +67,7 @@ struct Actor : QuadTreeCollider
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
 	double holdDashAccel;
-	
+	double wallThresh;
 	sf::Vector2<double> startAirDashVel;
 
 	Edge *ground;
