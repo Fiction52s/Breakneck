@@ -2421,11 +2421,11 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 			bool transferLeft =  q == 0 && movement < 0
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
-				|| (offsetX == b.rw && e0n.x >= 0 && e0n.y != 0 ));
+				|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ));
 			bool transferRight = q == groundLength && movement > 0 
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
-				|| (offsetX == -b.rw && e1n.x <= 0 && e1n.y != 0 ) );
+				|| (offsetX == -b.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ) );
 			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
@@ -2436,7 +2436,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				V2d nextNorm = e0n;
-				if( nextNorm.y < 0 && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 				{
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
@@ -2455,7 +2455,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 			{
 				Edge *next = ground->edge1;
 				V2d nextNorm = e1n;
-				if( nextNorm.y < 0 && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 				{
 					ground = next;
 					q = 0;
