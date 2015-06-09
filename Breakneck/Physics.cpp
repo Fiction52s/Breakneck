@@ -302,7 +302,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				if( approxEquals( resolveDist, 0 ) )
 				{
 					cout << "returning nNULLL heree" << endl;
-					return NULL;
+					//return NULL;
 				}
 
 				/*if( resolveDist == resolveTop ) cout << "T" << endl;

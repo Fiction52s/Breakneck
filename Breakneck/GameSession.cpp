@@ -242,7 +242,7 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = true;
+	bool bdrawdraw = false;
 
 	OpenFile( fileName );
 	
@@ -428,31 +428,31 @@ int GameSession::Run( string fileName )
 				if( up && down )
 				{
 					if( prevInput.LUp() )
-						keyboardInput.pad += 1;
+						keyboardInput.leftStickPad += 1;
 					else if( prevInput.LDown() )
-						keyboardInput.pad += ( 1 && down ) << 1;
+						keyboardInput.leftStickPad += ( 1 && down ) << 1;
 				}
 				else
 				{
-					keyboardInput.pad += 1 && up;
-					keyboardInput.pad += ( 1 && down ) << 1;
+					keyboardInput.leftStickPad += 1 && up;
+					keyboardInput.leftStickPad += ( 1 && down ) << 1;
 				}
 
 				if( left && right )
 				{
 					if( prevInput.LLeft() )
 					{
-						keyboardInput.pad += ( 1 && left ) << 2;
+						keyboardInput.leftStickPad += ( 1 && left ) << 2;
 					}
 					else if( prevInput.LRight() )
 					{
-						keyboardInput.pad += ( 1 && right ) << 3;
+						keyboardInput.leftStickPad += ( 1 && right ) << 3;
 					}
 				}
 				else
 				{
-					keyboardInput.pad += ( 1 && left ) << 2;
-					keyboardInput.pad += ( 1 && right ) << 3;
+					keyboardInput.leftStickPad += ( 1 && left ) << 2;
+					keyboardInput.leftStickPad += ( 1 && right ) << 3;
 				}
 
 				currInput = keyboardInput;

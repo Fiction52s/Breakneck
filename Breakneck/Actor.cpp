@@ -93,7 +93,7 @@ Actor::Actor( GameSession *gs )
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
 
-		actionLength[AIRDASH] = 25;
+		actionLength[AIRDASH] = 27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
@@ -1230,6 +1230,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = JUMP;
 				frame = 1;
+				
 				velocity = V2d( 0, 0 );
 			}
 			if( currInput.X && !prevInput.X )
@@ -2585,6 +2586,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				if( m == 0 )
 				{
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+
 					break;
 				}
 
