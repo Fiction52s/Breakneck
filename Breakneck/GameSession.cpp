@@ -242,7 +242,7 @@ int GameSession::Run( string fileName )
 	bDraw.setFillColor( Color::Red );
 	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = true;
+	bool bdrawdraw = false;
 
 	OpenFile( fileName );
 	
@@ -587,7 +587,8 @@ int GameSession::Run( string fileName )
 		}
 		else
 		{
-			window->draw( *player.sprite );
+			if( player.action != player.GRINDBALL )
+				window->draw( *player.sprite );
 		}
 
 		
@@ -618,6 +619,19 @@ int GameSession::Run( string fileName )
 		//window->draw(border, 8, sf::Lines);
 
 		//DebugDrawQuadTree( window, testTree );
+
+		if( player.action == player.GRINDBALL )
+		{
+			window->draw( *player.sprite );
+			window->draw( player.gsdodeca );
+			window->draw( player.gstriblue );
+			window->draw( player.gstricym );
+			window->draw( player.gstrigreen );
+			window->draw( player.gstrioran );
+			window->draw( player.gstripurp );
+			window->draw( player.gstrirgb );
+		}
+
 
 		window->display();
 

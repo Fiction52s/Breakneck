@@ -100,6 +100,25 @@ Actor::Actor( GameSession *gs )
 		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb.png", 128, 64 );
 
 		}
+		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
+		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	
+		tsgstricym = owner->GetTileset( "tricym.png", 128, 128 ); 	
+		tsgstrigreen = owner->GetTileset( "trigreen.png", 64, 64 ); 	
+		tsgstrioran = owner->GetTileset( "trioran.png", 128, 128 ); 	
+		tsgstripurp = owner->GetTileset( "tripurp.png", 128, 128 ); 	
+		tsgstrirgb = owner->GetTileset( "trirgb.png", 128, 128 ); 	
+
+		gsdodeca.setTexture( *tsgsdodeca->texture);
+		gstriblue.setTexture( *tsgstriblue->texture);
+		gstricym.setTexture( *tsgstricym->texture);
+		gstrigreen.setTexture( *tsgstrigreen->texture);
+		gstrioran.setTexture( *tsgstrioran->texture);
+		gstripurp.setTexture( *tsgstripurp->texture);
+		gstrirgb.setTexture( *tsgstrirgb->texture);
+
+			
+
+		
 
 		action = JUMP;
 		frame = 1;
@@ -850,6 +869,18 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+
+			if( currInput.Y && !prevInput.Y )
+			{
+				action = GRINDBALL;
+				grindEdge = ground;
+				frame = 0;
+				grindSpeed = groundSpeed;
+				grindQuantity = edgeQuantity;
+				//reversed = false;
+				break;
+			}
+
 			if( reversed )
 			{
 				if( -gNorm.y > -steepThresh )
@@ -4216,7 +4247,15 @@ void Actor::UpdatePostPhysics()
 			
 			ir = tileset[GRINDBALL]->GetSubRect( 0 );
 			
+			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( 0 ) );
+			gstriblue.setTextureRect( tsgstriblue->GetSubRect( 0 ) );
+			gstricym.setTextureRect( tsgstricym->GetSubRect( 0 ) );
+			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( 0 ) );
+			gstrioran.setTextureRect( tsgstrioran->GetSubRect( 0 ) );
+			gstripurp.setTextureRect( tsgstripurp->GetSubRect( 0 ) );
+			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( 0 ) );
 
+			
 
 			if( facingRight )
 			{
@@ -4238,9 +4277,29 @@ void Actor::UpdatePostPhysics()
 				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-			sprite->setRotation( angle / PI * 180 );
+		//	sprite->setRotation( angle / PI * 180 );
+			sprite->setRotation( 0 );
 			V2d pp = grindEdge->GetPoint( grindQuantity );
 			sprite->setPosition( pp.x, pp.y );
+
+
+			gsdodeca.setOrigin( gsdodeca.getLocalBounds().width / 2, gsdodeca.getLocalBounds().height / 2);
+			gstriblue.setOrigin( gstriblue.getLocalBounds().width / 2, gstriblue.getLocalBounds().height / 2);
+			gstricym.setOrigin( gstricym.getLocalBounds().width / 2, gstricym.getLocalBounds().height / 2);
+			gstrigreen.setOrigin( gstrigreen.getLocalBounds().width / 2, gstrigreen.getLocalBounds().height / 2);
+			gstrioran.setOrigin( gstrioran.getLocalBounds().width / 2, gstrioran.getLocalBounds().height / 2);
+			gstripurp.setOrigin( gstripurp.getLocalBounds().width / 2, gstripurp.getLocalBounds().height / 2);
+			gstrirgb.setOrigin( gstrirgb.getLocalBounds().width / 2, gstrirgb.getLocalBounds().height / 2);
+
+
+			gsdodeca.setPosition( pp.x, pp.y );
+			gstriblue.setPosition( pp.x, pp.y );
+			gstricym.setPosition( pp.x, pp.y );
+			gstrigreen.setPosition( pp.x, pp.y );
+			gstrioran.setPosition( pp.x, pp.y );
+			gstripurp.setPosition( pp.x, pp.y );
+			gstrirgb.setPosition( pp.x, pp.y );
+
 			break;
 		}
 	case STEEPSLIDE:

@@ -63,6 +63,33 @@ struct Actor : QuadTreeCollider
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
+	
+	sf::Sprite gsdodeca;
+	sf::Sprite gstriblue;
+	sf::Sprite gstricym;
+	sf::Sprite gstrigreen;
+	sf::Sprite gstrioran;
+	sf::Sprite gstripurp;
+	sf::Sprite gstrirgb;
+
+	int gsdodecaLength;
+	int gstriblueLength;
+	int gstricymLength;
+	int gstrigreenLength;
+	int gstrioranLength;
+	int gstripurpLength;
+	int gstrirgbLength;
+
+	Tileset * tsgsdodeca;
+	Tileset * tsgstriblue;
+	Tileset * tsgstricym;
+	Tileset * tsgstrigreen;
+	Tileset * tsgstrioran;
+	Tileset * tsgstripurp;
+	Tileset * tsgstrirgb;
+	
+
+
 	CollisionBox b;
 	ControllerState prevInput;
 	ControllerState currInput;

@@ -188,7 +188,7 @@ void Camera::Update( Actor *player )
 	//pos.y += floor( offset.y + .5f );
 	
 	pos.x += offset.x * 2;
-	if( offset.y < 0 )
+	//if( offset.y < 0 )
 		offset.y = 0;
 	pos.y += offset.y;
 //	cout << "offset: " << offset.x << ", " << offset.y << endl;
