@@ -1125,82 +1125,85 @@ void Actor::UpdatePrePhysics()
 			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 			if( !currInput.Y )//&& grindEdge->Normal().y < 0 )
 			{
-
+				V2d op = position;
 
 				V2d grindNorm = grindEdge->Normal();
 
+
+				
+
 				if( grindEdge->Normal().y < 0 )
 				{
-					ground = grindEdge;
-					edgeQuantity = grindQuantity;
-					action = LAND;
-					frame = 0;
-
+					
+					double extra = 0;
 					if( grindNorm.x > 0 )
 					{
 						offsetX = b.rw;
+						extra = .1;
 					}
 					else if( grindNorm.x < 0 )
 					{
 						offsetX = -b.rw;
+						extra = -.1;
 					}
 					else
 					{
 						offsetX = 0;
 					}
 				
-					position.x += offsetX;
+					position.x += offsetX + extra;
 
-					groundSpeed = grindSpeed;
+					position.y -= normalHeight + .1;
 
+					if( !CheckStandUp() )
+					{
+						position = op;
+					}
+					else
+					{
+						
+						ground = grindEdge;
+						edgeQuantity = grindQuantity;
+						action = LAND;
+						frame = 0;
+						groundSpeed = grindSpeed;
+						grindEdge = NULL;
+					}
 
 				}
 				else
 				{
-					action = JUMP;
-					frame = 0;
-					ground = NULL;
+					
 
 
 					if( grindNorm.x > 0 )
 					{
-						position.x += b.rw;
+						position.x += b.rw + .1;
 					}
 					else if( grindNorm.x < 0 )
 					{
-						position.x += -b.rw;
+						position.x += -b.rw - .1;
 					}
 
-					velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-				}
-				
-				
-				grindEdge = NULL;
-				
-				
-			
-				
+					if( grindNorm.y > 0 )
+						position.y += normalHeight + .1;
 
-				if( grindNorm.y < 0 )
-				{
-					position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-					//cout << "offset: " << b.offset.y << endl;
+					if( !CheckStandUp() )
+					{
+						position = op;
+					}
+					else
+					{
+						action = JUMP;
+						frame = 0;
+						ground = NULL;
+						grindEdge = NULL;
+					}
+					//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 				}
-				else if( grindNorm.y > 0 )
-				{
-					position.y += normalHeight;
-				}
-
-
 				
-				if( grindSpeed > 0 )
-				{
-					facingRight = true;
-				}
-				else
-				{
-					facingRight = false;
-				}
+				
+				
 			}
 			
 			break;
@@ -4436,7 +4439,8 @@ void Actor::HandleEdge( Edge *e )
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
-		if( e->Normal().y <= 0 )
+		if ( action != GRINDBALL )
+		if( ( e->Normal().y <= 0 && !reversed ) || ( e->Normal().y <= 0 && reversed ) )
 			return;
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if( IsEdgeTouchingBox( e, r ) )
