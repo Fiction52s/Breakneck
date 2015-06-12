@@ -188,7 +188,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
 		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
-		//	cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
+			cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 			Vector2<double> invVel = normalize(-vel);
 
 
@@ -255,15 +255,19 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 						resolveLeft = ( edgeRight - left ) / abs( vel.x );//dot( V2d(edgeRight - left, 0), normalize( -vel ) );// / abs(normalize(vel).x);
 						if( resolveLeft  > 1.1  )
 						resolveLeft  = 10000;
+
+							cout << "temp resolveleft: " << resolveLeft << endl;
 				}
 				else if( right >= edgeLeft && vel.x > 0 )
 				{
 				//	if( vel.x == 0 )
 				//		resolveRight = 0;
 					resolveRight = (right - edgeLeft) / abs(vel.x );
-				//	cout << "temp resolveright: " << resolveRight << endl;
+					
 					if( resolveRight > 1.1 )
 						resolveRight = 10000;
+
+					cout << "temp resolveright: " << resolveRight << endl;
 					//dot( V2d((right - edgeLeft),0), normalize( -vel ) );//
 				}
 				else
@@ -280,6 +284,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 						resolveTop = (edgeBottom - top) / abs(vel.y) ;//abs(normalize(vel).y );//dot( V2d( 0, (edgeBottom - top)), normalize( -vel ) );// / abs(normalize(vel).y);// / abs(a.velocity.x);
 						if( resolveTop > 1.1 )
 							resolveTop = 10000;
+						cout << "temp resolvetop: " << resolveTop << endl;
 				}
 				else if( bottom >= edgeTop && vel.y > 0 )
 				{
@@ -287,8 +292,11 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//		resolveBottom  = 0;
 				//	elsekkkkkkkkkkmkkkkkkkkkkkkkkkkkkkk
 						resolveBottom = (bottom- edgeTop) / abs(vel.y) ;// abs(normalize(vel).y);// / abs(a.velocity.x);
+						cout << "bottom preadjust =: " << resolveBottom << endl;
 						if( resolveBottom > 1.1 )
 							resolveBottom = 10000;
+
+						cout << "temp resolvebottom: " << resolveBottom << endl;
 					//dot( V2d( 0, (bottom - edgeTop)), normalize( -vel ) );//
 				}
 				else

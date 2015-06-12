@@ -95,6 +95,7 @@ void GameEditLoop2( std::string filename)
 
 int main()
 {
+	cout << "starting program" << endl;
 	bool fullWindow = true ;
 
 	if( !fullWindow )
@@ -109,6 +110,7 @@ int main()
 			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 	
+	cout << "opened window" << endl;
 	sf::Texture t;
 	t.loadFromFile( "goal.png" );
 	
@@ -126,28 +128,33 @@ int main()
 
 	window->setVerticalSyncEnabled( true );
 
+	cout << "beginning input loop" << endl;
 	while( !quit )
 	{
 		window->clear();
 	
 		while( window->pollEvent( ev ) )
 		{
+			cout << "some input" << endl;
 			switch( ev.type )
 			{
 			case Event::KeyPressed:
 				{
 					if( ev.key.code == Keyboard::Num1 )
 					{
+						cout << "starting level 1" << endl;
 						GameEditLoop2( "test1" );
 						window->setView( v );
 					}
 					else if( ev.key.code == Keyboard::Num2 )
 					{
+						cout << "starting level 2" << endl;
 						GameEditLoop2( "test2" );
 						window->setView( v );
 					}
 					else if( ev.key.code == Keyboard::Num3 )
 					{
+						cout << "starting level 3" << endl;
 						GameEditLoop2( "test3" );
 						window->setView( v );
 					}

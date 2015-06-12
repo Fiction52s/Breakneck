@@ -55,6 +55,8 @@ struct Actor : QuadTreeCollider
 	void UpdateReversePhysics( Edge **edges, int numPoints );
 	GameSession *owner;
 
+	
+	double steepClimbSpeedThresh;
 	bool leftGround;
 	Contact minContact;
 	sf::Shader sh;
@@ -72,6 +74,9 @@ struct Actor : QuadTreeCollider
 
 	Edge *ground;
 	
+	bool hasAirDash;
+	bool hasGravReverse;
+
 	double airDashSpeed;
 
 	Edge *grindEdge;

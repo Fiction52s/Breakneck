@@ -36,7 +36,7 @@ Actor::Actor( GameSession *gs )
 		velocity = Vector2<double>( 0, 0 );
 		
 		queryMode = "";
-		wallThresh = .995;
+		wallThresh = .999;
 		//tileset setup
 		{
 		actionLength[DAIR] = 10 * 2;
@@ -103,7 +103,7 @@ Actor::Actor( GameSession *gs )
 
 		action = JUMP;
 		frame = 1;
-
+		
 		timeSlowStrength = 5;
 		slowMultiple = 1;
 		slowCounter = 1;
@@ -116,7 +116,7 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		gravity = 2;
+		gravity = 1.8;
 		maxFallSpeed = 60;
 
 		wallJumpStrength.x = 10;
@@ -124,6 +124,7 @@ Actor::Actor( GameSession *gs )
 		clingSpeed = 3;
 
 		dashSpeed = 17;
+		steepClimbSpeedThresh = 15;
 
 		jumpStrength = 27.5;
 
@@ -164,6 +165,9 @@ Actor::Actor( GameSession *gs )
 		normalHeight = 23;
 		doubleJumpHeight = 10;
 		sprintHeight = 16;
+
+		hasAirDash = true;
+		hasGravReverse = true;
 
 		//CollisionBox b;
 		b.isCircle = false;
@@ -341,6 +345,11 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				break;
 			}
+			else if( currInput.B && !prevInput.B )
+			{
+				action = DASH;
+				frame = 0;
+			}
 			else if( currInput.LLeft() || currInput.LRight() )
 			{
 				if( currInput.LDown() )
@@ -368,11 +377,6 @@ void Actor::UpdatePrePhysics()
 					action = STANDN;
 					frame = 0;
 				}
-			}
-			else if( currInput.B && !prevInput.B )
-			{
-				action = DASH;
-				frame = 0;
 			}
 			else if( currInput.LDown() )
 			{
@@ -524,7 +528,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
-			if( !prevInput.B && currInput.B )
+			if( hasAirDash && !prevInput.B && currInput.B )
 			{
 				action = AIRDASH;
 				frame = 0;
@@ -589,7 +593,7 @@ void Actor::UpdatePrePhysics()
 		}
 		case DOUBLE:
 		{
-			if( !prevInput.B && currInput.B )
+			if( hasAirDash && !prevInput.B && currInput.B )
 			{
 				action = AIRDASH;
 				frame = 0;
@@ -724,7 +728,17 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					if( currInput.LLeft() || currInput.LRight() )
+					if( currInput.B )
+					{
+						action = DASH;
+						frame = 0;
+
+						if( currInput.LLeft() )
+							facingRight = false;
+						else if( currInput.LRight() )
+							facingRight = true;
+					}
+					else if( currInput.LLeft() || currInput.LRight() )
 					{
 						action = RUN;
 						frame = 0;
@@ -758,7 +772,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
-			
+			if( hasAirDash && !prevInput.B && currInput.B )
+			{
+				action = AIRDASH;
+				frame = 0;
+				break;
+			}
+
+
 			if( hasDoubleJump && currInput.A && !prevInput.A )
 			{
 				action = DOUBLE;
@@ -1101,23 +1122,75 @@ void Actor::UpdatePrePhysics()
 
 	case GRINDBALL:
 		{
-			if( !currInput.Y && grindEdge->Normal().y < 0 )
+			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+			if( !currInput.Y )//&& grindEdge->Normal().y < 0 )
 			{
-				ground = grindEdge;
-				edgeQuantity = grindQuantity;
+
+
+				V2d grindNorm = grindEdge->Normal();
+
+				if( grindEdge->Normal().y < 0 )
+				{
+					ground = grindEdge;
+					edgeQuantity = grindQuantity;
+					action = LAND;
+					frame = 0;
+
+					if( grindNorm.x > 0 )
+					{
+						offsetX = b.rw;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						offsetX = -b.rw;
+					}
+					else
+					{
+						offsetX = 0;
+					}
+				
+					position.x += offsetX;
+
+					groundSpeed = grindSpeed;
+
+
+				}
+				else
+				{
+					action = JUMP;
+					frame = 0;
+					ground = NULL;
+
+
+					if( grindNorm.x > 0 )
+					{
+						position.x += b.rw;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						position.x += -b.rw;
+					}
+
+					velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+				}
+				
+				
 				grindEdge = NULL;
-				action = LAND;
-				frame = 0;
+				
 				
 			
+				
 
-				position.x += offsetX + b.offset.x;
-
-				if( gNorm.y < 0 )
+				if( grindNorm.y < 0 )
 				{
 					position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
 					//cout << "offset: " << b.offset.y << endl;
 				}
+				else if( grindNorm.y > 0 )
+				{
+					position.y += normalHeight;
+				}
+
 
 				
 				if( grindSpeed > 0 )
@@ -1129,32 +1202,7 @@ void Actor::UpdatePrePhysics()
 					facingRight = false;
 				}
 			}
-			else if( !currInput.Y  )
-			{
-				
-				V2d op = position;
-				position.y += normalHeight;
-				if( grindEdge->Normal().x > 0 )
-				{
-					position.x += b.rw;
-				}
-				else if( grindEdge->Normal().x < 0 )
-				{
-					position.x -= b.rw;
-				}
-				if( !CheckStandUp() )
-				{
-					position = op;
-				}
-				else
-				{
-					action = JUMP;
-					frame = 0;
-					ground = NULL;
-					grindEdge = NULL;
-				}
-				
-			}
+			
 			break;
 		}
 	case STEEPSLIDE:
@@ -1270,6 +1318,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = JUMP;
 				frame = 0;
+				groundSpeed *= .5;
 				//ground = NULL;
 				break;
 			}
@@ -1404,7 +1453,7 @@ void Actor::UpdatePrePhysics()
 
 				//velocity.x = groundSpeed;//(groundSpeed * normalize(ground->v1 - ground->v0 )).x;
 			//	if( (groundSpeed > 0 && ground->Normal().x > 0) || (groundSpeed < 0 && ground->Normal().x < 0 ) )
-					velocity.x = groundSpeed;// * normalize(ground->v1 - ground->v0 );
+				//	velocity.x = groundSpeed;// * normalize(ground->v1 - ground->v0 );
 
 				if( reversed )
 				{
@@ -1862,7 +1911,11 @@ void Actor::UpdatePrePhysics()
 						if( gNorm.x > 0 )
 						{
 							//up a slope
-							groundSpeed -= sprintAccel / 2 / slowMultiple; 
+							double upMax = .3;
+							double factor = abs( gNorm.x );
+							if( factor > upMax  )
+								factor = upMax;
+							groundSpeed -= sprintAccel * factor / slowMultiple; 
 						}
 						else
 						{
@@ -1915,14 +1968,14 @@ void Actor::UpdatePrePhysics()
 	case STEEPSLIDE:
 		{
 			//if( groundSpeed > 0 )
-
+			double fac = gravity * 2.0 / 3;
 			if( reversed )
 			{
-				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			else
 			{
-				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			break;
 		}
@@ -1930,6 +1983,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
+				hasAirDash = false;
 				startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 			}
 			velocity = V2d( 0, 0 );//startAirDashVel;
@@ -2237,7 +2291,7 @@ bool Actor::CheckStandUp()
 	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 
 		
-		Rect<double> r( position.x + b.offset.x - b.rw + 1, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw - 2, 2 * normalHeight);
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(r.width, r.height ));
 		rs.setFillColor( Color::Yellow );
@@ -2418,11 +2472,11 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 
 			
 
-			bool transferLeft =  q == 0 && movement < 0
+			bool transferLeft =  q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh )
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
 				|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ));
-			bool transferRight = q == groundLength && movement > 0 
+			bool transferRight = q == groundLength && movement > 0 //&& (groundSpeed > steepClimbSpeedThresh || e1n.y <= -steepThresh )
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
 				|| (offsetX == -b.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ) );
@@ -2438,6 +2492,9 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				V2d nextNorm = e0n;
 				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 				{
+
+
+
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
 				}
@@ -2475,7 +2532,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				cout << "slide: " << q << ", " << offsetX << endl;
+				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -2587,6 +2644,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				{
 					cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					groundSpeed = 0;
+					offsetX = -offsetX;
 					break;
 				}
 
@@ -2805,15 +2863,15 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			V2d e0n = e0->Normal();
 			V2d e1n = e1->Normal();
 
-			bool transferLeft =  q == 0 && movement < 0 
+			bool transferLeft =  q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh || e0n.x <= 0 )
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0)  ) 
 				|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ) );
-			bool transferRight = q == groundLength && movement > 0
+			bool transferRight = q == groundLength && movement > 0 //(groundSpeed < -steepClimbSpeedThresh || e1n.y <= -steepThresh || e1n.x >= 0 )
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
 				|| (offsetX == -b.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ));
-			cout << "transferRight: " << transferRight << ": offset: " << offsetX << endl;
+		//	cout << "transferRight: " << transferRight << ": offset: " << offsetX << endl;
 			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
@@ -2821,12 +2879,24 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				
 			if( transferLeft )
 			{
-				//cout << "transfer left "<< endl;
+			//	cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 				{
-					ground = next;
-					q = length( ground->v1 - ground->v0 );	
+					if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+					{
+					//	cout << "success?: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
+					//		", scst: " << steepClimbSpeedThresh  << endl;
+						groundSpeed = 0;
+						break;
+					}
+					else
+					{
+					//	cout << "e0ny: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
+					//		", scst: " << steepClimbSpeedThresh  << endl;
+						ground = next;
+						q = length( ground->v1 - ground->v0 );	
+					}
 				}
 				else
 				{
@@ -3032,7 +3102,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 									}
 									else
 									{	
-									//	cout << "c" << endl;
+										cout << "c" << endl;
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 										V2d eNorm = minContact.edge->Normal();			
@@ -3276,20 +3346,30 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			int maxJumpHeightFrame = 10;
 			if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
+
+
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				V2d gNorm = ground->Normal();
+				
+
+				//if( gNorm.y <= -steepThresh )
+				{
+					hasGravReverse = true;
+					hasAirDash = true;
+					hasDoubleJump = true;
+				}
 
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
 				{
-					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7);
 				}
 				else if( velocity.x > 0 && gNorm.y <= -steepThresh )
 				{
-					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7 );
 				}
 				//groundSpeed  = max( abs( velocity.x ), ( - ) );
 				
@@ -3318,8 +3398,9 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( tempCollision && currInput.B && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
+				hasGravReverse = false;
 				reversed = true;
 				b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
@@ -3413,6 +3494,8 @@ void Actor::UpdatePostPhysics()
 	//	cout << "no collision" << endl;
 
 	V2d gn;
+
+	//cout << "frame: " << frame << endl;
 	if( grindEdge != NULL )
 	{
 		framesInAir = 0;
@@ -3437,8 +3520,9 @@ void Actor::UpdatePostPhysics()
 			}
 			
 
-			hasDoubleJump = true;
-
+//			hasDoubleJump = true;
+//			hasAirDash = true;
+			//hasGravReverse = true;
 			
 			//cout << "wallcling" << endl;
 			if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
@@ -4316,8 +4400,9 @@ void Actor::HandleEdge( Edge *e )
 		{
 			cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
 		//	collisionNumber++;
-			if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
-				|| minContact.collisionPriority < -.1 )
+			//if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
+			//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
@@ -4351,7 +4436,9 @@ void Actor::HandleEdge( Edge *e )
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
-		Rect<double> r( position.x + b.offset.x - b.rw + 1, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw - 2, 2 * normalHeight);
+		if( e->Normal().y <= 0 )
+			return;
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if( IsEdgeTouchingBox( e, r ) )
 		{
 			checkValid = false;
