@@ -72,13 +72,8 @@ struct Actor : QuadTreeCollider
 	sf::Sprite gstripurp;
 	sf::Sprite gstrirgb;
 
-	int gsdodecaLength;
-	int gstriblueLength;
-	int gstricymLength;
-	int gstrigreenLength;
-	int gstrioranLength;
-	int gstripurpLength;
-	int gstrirgbLength;
+	int grindActionLength;
+	double grindActionCurrent;
 
 	Tileset * tsgsdodeca;
 	Tileset * tsgstriblue;

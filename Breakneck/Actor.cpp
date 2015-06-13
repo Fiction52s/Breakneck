@@ -116,9 +116,8 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
-			
 
-		
+		grindActionLength = 32;
 
 		action = JUMP;
 		frame = 1;
@@ -129,13 +128,15 @@ Actor::Actor( GameSession *gs )
 
 		reversed = false;
 
+		grindActionCurrent = 0;
+
 		framesInAir = 0;
 		wallJumpFrameCounter = 0;
 		wallJumpMovementLimit = 10; //10 frames
 
 		steepThresh = .4; // go between 0 and 1
 
-		gravity = 1.8;
+		gravity = 1.9;
 		maxFallSpeed = 60;
 
 		wallJumpStrength.x = 10;
@@ -414,6 +415,12 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
+				
+
+				if( reversed )
+				{
+					grindSpeed = -grindSpeed;
+				}
 				break;
 			}
 
@@ -1153,13 +1160,16 @@ void Actor::UpdatePrePhysics()
 
 	case GRINDBALL:
 		{
-			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+		
 			if( !currInput.Y )//&& grindEdge->Normal().y < 0 )
 			{
 				V2d op = position;
 
 				V2d grindNorm = grindEdge->Normal();
-
+				if( reversed )
+				{
+					grindNorm.y = -grindNorm.y;
+				}
 
 				
 
@@ -1199,6 +1209,7 @@ void Actor::UpdatePrePhysics()
 						frame = 0;
 						groundSpeed = grindSpeed;
 						grindEdge = NULL;
+						reversed = false;
 					}
 
 				}
@@ -1225,10 +1236,12 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 						action = JUMP;
 						frame = 0;
 						ground = NULL;
 						grindEdge = NULL;
+						reversed = false;
 					}
 					//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 				}
@@ -1995,7 +2008,15 @@ void Actor::UpdatePrePhysics()
 		}
 	case GRINDBALL:
 		{
-			
+			if( reversed )
+			{
+				//facingRight = !facingRight;
+				//reversed = false;
+				
+			}
+			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+			cout << "grindspeedin update: " << grindSpeed << endl;
+			//else
 			//grindSpeed =  ;
 			break;
 		}
@@ -2805,6 +2826,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 	if( grindEdge != NULL )
 	{
+		//cout << "grindSpeed: " << grindSpeed << endl;
 		Edge *e0 = grindEdge->edge0;
 		Edge *e1 = grindEdge->edge1;
 		V2d e0n = e0->Normal();
@@ -4247,13 +4269,28 @@ void Actor::UpdatePostPhysics()
 			
 			ir = tileset[GRINDBALL]->GetSubRect( 0 );
 			
-			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( 0 ) );
-			gstriblue.setTextureRect( tsgstriblue->GetSubRect( 0 ) );
-			gstricym.setTextureRect( tsgstricym->GetSubRect( 0 ) );
-			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( 0 ) );
-			gstrioran.setTextureRect( tsgstrioran->GetSubRect( 0 ) );
-			gstripurp.setTextureRect( tsgstripurp->GetSubRect( 0 ) );
-			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( 0 ) );
+			grindActionCurrent += grindSpeed / 20;
+			while( grindActionCurrent >= grindActionLength )
+			{
+				grindActionCurrent -= grindActionLength;
+			}
+			while( grindActionCurrent < 0 )
+			{
+				grindActionCurrent += grindActionLength;
+			}
+
+			int grindActionInt = grindActionCurrent;
+
+
+
+
+			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( grindActionInt  ) );
+			gstriblue.setTextureRect( tsgstriblue->GetSubRect( grindActionInt ) );
+			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt ) );
+			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( grindActionInt ) );
+			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ) );
+			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
+			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt ) );
 
 			
 
