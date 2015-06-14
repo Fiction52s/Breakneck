@@ -885,6 +885,11 @@ void Actor::UpdatePrePhysics()
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
 				//reversed = false;
+
+				if( reversed )
+				{
+					grindSpeed = -grindSpeed;
+				}
 				break;
 			}
 
@@ -962,6 +967,11 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
+
+				if( reversed )
+				{
+					grindSpeed = -grindSpeed;
+				}
 				break;
 			}
 
@@ -1019,6 +1029,11 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
+
+				if( reversed )
+				{
+					grindSpeed = -grindSpeed;
+				}
 				break;
 			}
 
@@ -1166,14 +1181,10 @@ void Actor::UpdatePrePhysics()
 				V2d op = position;
 
 				V2d grindNorm = grindEdge->Normal();
-				if( reversed )
-				{
-					grindNorm.y = -grindNorm.y;
-				}
 
 				
 
-				if( grindEdge->Normal().y < 0 )
+				if( grindNorm.y < 0 )
 				{
 					
 					double extra = 0;
@@ -1202,7 +1213,9 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						
+						hasAirDash = true;
+						hasGravReverse = true;
+						hasDoubleJump = true;
 						ground = grindEdge;
 						edgeQuantity = grindQuantity;
 						action = LAND;
@@ -1216,39 +1229,80 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					
+					
+						if( grindNorm.x > 0 )
+						{
+							position.x += b.rw + .1;
+						}
+						else if( grindNorm.x < 0 )
+						{
+							position.x += -b.rw - .1;
+						}
+
+						if( grindNorm.y > 0 )
+							position.y += normalHeight + .1;
+
+						if( !CheckStandUp() )
+						{
+							position = op;
+						}
+						else
+						{
+							//abs( e0n.x ) < wallThresh )
+							if( abs( grindNorm.x ) >= wallThresh || !hasGravReverse )
+							{
+								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+								action = JUMP;
+								frame = 0;
+								ground = NULL;
+								grindEdge = NULL;
+								reversed = false;
+							}
+							else
+							{
+							//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+								if( grindNorm.x > 0 )
+								{
+									offsetX = b.rw;
+								}
+								else if( grindNorm.x < 0 )
+								{
+									offsetX = -b.rw;
+								}
+								else
+								{
+									offsetX = 0;
+								}
+
+								hasAirDash = true;
+								hasGravReverse = true;
+								hasDoubleJump = true;
 
 
-					if( grindNorm.x > 0 )
-					{
-						position.x += b.rw + .1;
-					}
-					else if( grindNorm.x < 0 )
-					{
-						position.x += -b.rw - .1;
+								ground = grindEdge;
+								groundSpeed = -grindSpeed;
+								edgeQuantity = grindQuantity;
+								grindEdge = NULL;
+								reversed = true;
+								hasGravReverse = false;
+
+								if( groundSpeed > 0 )
+									facingRight = false;
+								else if( groundSpeed < 0 )
+								{
+									facingRight = true;
+								}
+
+								action = LAND2;
+								frame = 0;
+							}
+						}
 					}
 
-					if( grindNorm.y > 0 )
-						position.y += normalHeight + .1;
 
-					if( !CheckStandUp() )
-					{
-						position = op;
-					}
-					else
-					{
-						velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-						action = JUMP;
-						frame = 0;
-						ground = NULL;
-						grindEdge = NULL;
-						reversed = false;
-					}
+					
 					//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 				}
-				
-				
-				
-			}
 			
 			break;
 		}
@@ -1496,7 +1550,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
 			{
-				velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
+				
 
 				//velocity.x = groundSpeed;//(groundSpeed * normalize(ground->v1 - ground->v0 )).x;
 			//	if( (groundSpeed > 0 && ground->Normal().x > 0) || (groundSpeed < 0 && ground->Normal().x < 0 ) )
@@ -1504,12 +1558,15 @@ void Actor::UpdatePrePhysics()
 
 				if( reversed )
 				{
+					velocity = -groundSpeed * normalize(ground->v1 - ground->v0 );
 					ground = NULL;
 					reversed = false;
+					
 
 				}
 				else
 				{
+					velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 					if( velocity.y > 0 )
 						velocity.y = 0;
 					velocity.y -= jumpStrength;
@@ -2547,11 +2604,20 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				V2d nextNorm = e0n;
 				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 				{
+					if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+					{
+						groundSpeed = 0;
+						offsetX = -offsetX;
+						break;
+					}
+					else
+					{
+						ground = next;
+						q = length( ground->v1 - ground->v0 );	
+					}
 
 
-
-					ground = next;
-					q = length( ground->v1 - ground->v0 );	
+					
 				}
 				else
 				{
@@ -2569,6 +2635,13 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 				V2d nextNorm = e1n;
 				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 				{
+
+					if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+					{
+						groundSpeed = 0;
+						offsetX = -offsetX;
+						break;
+					}
 					ground = next;
 					q = 0;
 				}
@@ -2624,7 +2697,9 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 						V2d eNorm = minContact.edge->Normal();
 						if( eNorm.y > 0 )
 						{
-							if( minContact.position.y <= position.y - b.rh + 5 )
+							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
+							if( minContact.position.y <= position.y - b.rh + 5 && !speedTransfer )
 							{
 								if( m > 0 && eNorm.x < 0 )
 								{
@@ -2732,10 +2807,12 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 								}
 							}
 						}
-
+						
 						if( eNorm.y < 0 )
 						{
-							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 )
+							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
+							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
 							{
 								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
 									
@@ -2968,8 +3045,18 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 				Edge *next = ground->edge1;
 				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
 				{
-					ground = next;
-					q = 0;
+
+					if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+					{
+						groundSpeed = 0;
+						break;
+					}
+					else
+					{
+						ground = next;
+						q = 0;
+					}
+					
 				}
 				else
 				{
@@ -2985,7 +3072,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				cout << "slide: " << q << ", " << offsetX << endl;
+			//	cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -3022,7 +3109,10 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 						V2d eNorm = minContact.edge->Normal();
 						if( eNorm.y < 0 )
 						{
-							if( minContact.position.y >= position.y + b.rh - 5 )
+
+							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
+							if( minContact.position.y >= position.y + b.rh - 5 && !speedTransfer)
 							{
 								if( m > 0 && eNorm.x < 0 )
 								{
@@ -3147,8 +3237,9 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 									cs.setRadius( 10 );
 								cs.setFillColor( Color::Magenta );
 								owner->window->draw( cs );*/
-
-								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5 )
+								bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
+								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5  && !speedTransfer)
 								{
 									double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
 									
@@ -3457,7 +3548,10 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			else if( hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
 				hasGravReverse = false;
+				hasAirDash = true;
+				hasDoubleJump = true;
 				reversed = true;
+
 				b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
@@ -4284,11 +4378,11 @@ void Actor::UpdatePostPhysics()
 
 
 
-			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( grindActionInt  ) );
-			gstriblue.setTextureRect( tsgstriblue->GetSubRect( grindActionInt ) );
+			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( grindActionInt * 5 % grindActionLength   ) );
+			gstriblue.setTextureRect( tsgstriblue->GetSubRect( grindActionInt * 5 % grindActionLength ) );
 			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt ) );
-			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( grindActionInt ) );
-			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ) );
+			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( grindActionInt * 5 % grindActionLength ) );
+			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ));
 			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
 			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt ) );
 

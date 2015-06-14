@@ -189,7 +189,7 @@ void Camera::Update( Actor *player )
 	
 	pos.x += offset.x * 2;
 	//if( offset.y < 0 )
-		offset.y = 0;
+		//offset.y = 0;
 	pos.y += offset.y;
 //	cout << "offset: " << offset.x << ", " << offset.y << endl;
 //	zoomFactor = 1;
