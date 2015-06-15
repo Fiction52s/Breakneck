@@ -64,6 +64,10 @@ struct EditSession
 	double minAngle;
 
 
+	sf::Text polygonTimeoutText;
+	int polygonTimeoutTextTimer;
+	int polygonTimeoutTextLength;
+
 	enum Emode
 	{
 		CREATE_POLYGONS,

@@ -4630,8 +4630,8 @@ void Actor::HandleEdge( Edge *e )
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if ( action != GRINDBALL )
-		if( ( e->Normal().y <= 0 && !reversed ) || ( e->Normal().y <= 0 && reversed ) )
-			return;
+			if( ( e->Normal().y <= 0 && !reversed ) || ( e->Normal().y >= 0 && reversed ) )
+				return;
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if( IsEdgeTouchingBox( e, r ) )
 		{

@@ -460,6 +460,7 @@ void EditSession::WriteFile(string fileName)
 
 void EditSession::Add( Polygon *brush, Polygon *poly )
 {
+
 	Polygon z;
 	//1: choose start point
 
@@ -511,12 +512,23 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 	//z.points.push_back( startPoint );
 
 	//2. run a loobclockwise until you arrive back at the original state
+
+	sf::Clock alphaClock; //Remove later!!!!
+
+
 	bool firstTime = true;
 	while( firstTime || currPoint != startPoint )
 	{
-		cout << "start loop: " << currPoint.x << ", " << currPoint.y << endl;
+	//	sf::Time time = alphaClock.getElapsedTime();
+	//	if( time.asSeconds() > 15 )
+	//	{
+	//		polygonTimeoutTextTimer = 0;
+	//		cout << "successful error" << endl;
+	//		return;
+	//	}
+		//cout << "start loop: " << currPoint.x << ", " << currPoint.y << endl;
 
-		CircleShape cs;
+		/*CircleShape cs;
 		cs.setRadius( 30  );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setFillColor( Color::Magenta );
@@ -529,7 +541,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 		cs.setFillColor( Color::Yellow );
 		w->draw( cs );
 
-		w->display();
+		w->display();*/
 
 		
 		list<Vector2i>::iterator min;
@@ -552,7 +564,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 			min = --bit;
 			++bit;
 			emptyInter = false;
-			cout << "using this" << endl;
+			//cout << "using this" << endl;
 		}
 
 		for(; bit != otherPoly->points.end(); ++bit )
@@ -574,7 +586,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 				else
 				{
 					Vector2i blah( minIntersection - currPoint );
-					cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
+					//cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
 					if( length( li.position - V2d(currPoint.x, currPoint.y) ) < length( V2d( blah.x, blah.y ) ) )
 					{
 						minIntersection = lii;
@@ -591,9 +603,10 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 
 		if( !emptyInter )
 		{
+
 			if( currPoint == startPoint && !firstTime )
 			{
-				cout << "secondary break" << endl;
+			//	cout << "secondary break" << endl;
 				break;
 			}
 			//cout << "switching polygon and adding point" << endl;
@@ -625,11 +638,11 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 			//cout << "fff: " << (*it).x << ", " << (*it).y << endl;
 			
 
-			if( otherPoly == poly )
-				cout << "switching to brush: " << currPoint.x << ", " << currPoint.y << endl;
-			else
-				cout << "switching to poly: " << currPoint.x << ", " << currPoint.y << endl;
-			cout << "nextpoint : " << nextPoint.x << ", " << nextPoint.y << endl;
+			//if( otherPoly == poly )
+			//	cout << "switching to brush: " << currPoint.x << ", " << currPoint.y << endl;
+			//else
+			//	cout << "switching to poly: " << currPoint.x << ", " << currPoint.y << endl;
+			//cout << "nextpoint : " << nextPoint.x << ", " << nextPoint.y << endl;
 		}
 		else
 		{
@@ -638,7 +651,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 
 			z.points.push_back( currPoint );
 
-			cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
+		//	cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
 			if( currPoint == startPoint && !firstTime )
 				break;
@@ -650,7 +663,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 				it = currentPoly->points.begin();
 			}
 			nextPoint = (*it);
-			cout << "nextpoing from adding: " << nextPoint.x << ", " << nextPoint.y << endl;
+	//		cout << "nextpoing from adding: " << nextPoint.x << ", " << nextPoint.y << endl;
 		}
 		firstTime = false;
 	}
@@ -660,7 +673,7 @@ void EditSession::Add( Polygon *brush, Polygon *poly )
 	{
 		poly->points.push_back( (*zit) );
 	}
-	cout << "before killer finalize. poly size: " << poly->points.size() << endl;
+	//cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 	poly->Finalize();
 }
 

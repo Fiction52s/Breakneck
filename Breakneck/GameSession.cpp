@@ -296,7 +296,14 @@ int GameSession::Run( string fileName )
 	bool skipped = false;
 	bool oneFrameMode = false;
 	bool quit = false;
-	bool t = currInput.start; //+ sf::Keyboard::isKeyPressed( sf::Keyboard::T );
+
+	controller.UpdateState();
+	currInput = controller.GetState();
+	//ControllerState con = controller.GetState();
+
+	
+
+	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
 	bool goalPlayerCollision = false;
@@ -313,12 +320,18 @@ int GameSession::Run( string fileName )
 		accumulator += frameTime;
 
 		window->clear();
+
+
 		while ( accumulator >= TIMESTEP  )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			if( oneFrameMode )
 			{
+				//controller.UpdateState();
+				
+
 				ControllerState con;
+				//con = controller.GetState();
 
 				while( true )
 				{
@@ -360,20 +373,29 @@ int GameSession::Run( string fileName )
 				}
 			}
 
-		//if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
-		if( currInput.leftShoulder )
-				oneFrameMode = true;
-		if( !s && currInput.start )//sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
-		{
-			quit = true;
-			break;
-			//t = true;
-		}
-		else if( s && !currInput.start )//!sf::Keyboard::isKeyPressed( sf::Keyboard::T ) )
-		{
-			s = false;
+			//if( currInput.leftShoulder )
+			//	oneFrameMode = true;
 
-		}
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) || currInput.start )
+			{
+				quit = true;
+				break;
+			}
+		//	if( !s && currInput.start )//sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )
+	//	{
+			
+		//	cout << "exit" << endl;
+		//	quit = true;
+		//	returnVal = 1;
+		//	break;
+			
+			//t = true;
+		//}
+		//	else if( s && !currInput.start )//!sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )
+		//{
+		//	s = false;
+
+//		}
 
 
 		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
