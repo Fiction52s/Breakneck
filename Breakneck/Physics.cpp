@@ -606,7 +606,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	return NULL;
 }
 
-ParentNode::ParentNode( const sf::Vector2<double> &poss, double rww, double rhh )
+ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
 {
 	pos = poss;
 	rw = rww;
@@ -621,7 +621,7 @@ ParentNode::ParentNode( const sf::Vector2<double> &poss, double rww, double rhh 
 }
 
 
-LeafNode::LeafNode( const sf::Vector2<double> &poss, double rww, double rhh )
+LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
 	:objCount(0)
 {
 	pos = poss;
@@ -717,6 +717,11 @@ bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 
 		&& r0.left + r0.width >= r1.left 
 		&& r0.top <= r1.top + r1.height
 		&& r0.top + r0.height >= r1.top;
+}
+
+bool IsCircleTouchingCircle( V2d pos0, double rad0, V2d pos1, double rad1 )
+{
+	return length( pos1 - pos0 ) <= rad0 + rad1;
 }
 
 QNode *Insert( QNode *node, Edge* e )

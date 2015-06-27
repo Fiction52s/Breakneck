@@ -408,7 +408,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
-			if( currInput.Y && !prevInput.Y )
+			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -877,7 +877,7 @@ void Actor::UpdatePrePhysics()
 	case DASH:
 		{
 
-			if( currInput.Y && !prevInput.Y )
+			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -960,7 +960,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
-			if( currInput.Y && !prevInput.Y )
+			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -1022,7 +1022,7 @@ void Actor::UpdatePrePhysics()
 	case SPRINT:
 		{
 
-			if( currInput.Y && !prevInput.Y )
+			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;

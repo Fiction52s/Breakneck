@@ -102,6 +102,8 @@ bool GameSession::OpenFile( string fileName )
 
 		is >> player.position.x;
 		is >> player.position.y;
+		originalPos.x = player.position.x;
+		originalPos.y = player.position.y;
 
 		int goalPositionx, goalPositiony;
 		is >> goalPositionx;
@@ -226,6 +228,10 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileName )
 {
+	
+	sf::Texture alphaTex;
+	alphaTex.loadFromFile( "alphatext.png" );
+	Sprite alphaTextSprite(alphaTex);
 	
 	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
@@ -376,6 +382,25 @@ int GameSession::Run( string fileName )
 			//if( currInput.leftShoulder )
 			//	oneFrameMode = true;
 
+
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
+			{
+				player.position = originalPos;
+				player.action = player.JUMP;
+				player.frame = 1;
+				player.velocity.x = 0;
+				player.velocity.y = 0;
+				player.reversed = false;
+				player.b.offset.y = 0;
+				player.b.rh = player.normalHeight;
+				player.facingRight = true;
+				player.offsetX = 0;
+				player.prevInput = ControllerState();
+				player.currInput = ControllerState();
+				player.ground = NULL;
+				player.grindEdge = NULL;
+			}
+
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) || currInput.start )
 			{
 				quit = true;
@@ -424,18 +449,20 @@ int GameSession::Run( string fileName )
 				bool left = Keyboard::isKeyPressed( Keyboard::Left ) || Keyboard::isKeyPressed( Keyboard::A );
 				bool right = Keyboard::isKeyPressed( Keyboard::Right ) || Keyboard::isKeyPressed( Keyboard::D );
 
-				bool altUp = Keyboard::isKeyPressed( Keyboard::U );
-				bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
-				bool altRight = Keyboard::isKeyPressed( Keyboard::K );
-				bool altDown = Keyboard::isKeyPressed( Keyboard::J );
+			//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
+			//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
+			//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
+			//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
 
 				ControllerState keyboardInput;    
 				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X ) || Keyboard::isKeyPressed( Keyboard::Period );
 				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::C ) || Keyboard::isKeyPressed( Keyboard::Comma );
 				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::V ) || Keyboard::isKeyPressed( Keyboard::M );
 				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space ) || Keyboard::isKeyPressed( Keyboard::Slash );
-				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::Dash );
-				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::Equal );
+				keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
+			
+				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
+				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
 				
 
 				/*if( altRight )
@@ -654,6 +681,17 @@ int GameSession::Run( string fileName )
 			window->draw( player.gstrirgb );
 		}
 
+		if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
+		{
+			//alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
+//			alphaTextSprite.setScale( .5, .5 );
+			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
+			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
+			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
+
+
+			window->draw( alphaTextSprite );
+		}
 
 		window->display();
 

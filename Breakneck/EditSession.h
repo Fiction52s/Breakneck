@@ -9,10 +9,10 @@
 #define __EDIT_SESSION__
 
 
-struct Polygon
+struct TerrainPolygon
 {
-	Polygon();
-	~Polygon();
+	TerrainPolygon();
+	~TerrainPolygon();
 	std::list<sf::Vector2i> points;
 	std::string material;
 	void Finalize();
@@ -22,7 +22,7 @@ struct Polygon
 	bool IsClockwise();
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
-	bool IsTouching( Polygon *p );
+	bool IsTouching( TerrainPolygon *p );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	int vaSize;
@@ -45,15 +45,15 @@ struct EditSession
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
 	double minimumEdgeLength;
-	std::list<Polygon*> polygons;
+	std::list<TerrainPolygon*> polygons;
 	sf::Vector2i playerPosition;
 	sf::Vector2i goalPosition;
-	Polygon *polygonInProgress;
+	TerrainPolygon *polygonInProgress;
 	sf::RenderWindow *w;
 	std::string mode;
 	std::string currentFile;
 	double zoomMultiple;
-	void Add( Polygon *brush, Polygon *poly);	
+	void Add( TerrainPolygon *brush, TerrainPolygon *poly);	
 	//std::string polygonTool;
 	std::list<sf::VertexArray*> progressDrawList;
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
@@ -63,10 +63,12 @@ struct EditSession
 	sf::Vector2f testPoint;
 	double minAngle;
 
-
+ 
 	sf::Text polygonTimeoutText;
 	int polygonTimeoutTextTimer;
 	int polygonTimeoutTextLength;
+
+	
 
 	enum Emode
 	{
@@ -74,8 +76,8 @@ struct EditSession
 		PLACE_PLAYER,
 		PLACE_GOAL,
 		SELECT_POLYGONS,
-		PAUSED
-
+		PAUSED,
+		CREATE_ENEMY
 	};
 
 	

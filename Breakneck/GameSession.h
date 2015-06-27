@@ -2,6 +2,7 @@
 #include "Tileset.h"
 #include <list>
 #include "Actor.h"
+
 #ifndef _GAMESESSION_H__
 #define _GAMESESSION_H__
 
@@ -33,6 +34,8 @@ struct GameSession
 	sf::Sprite goalSprite;
 	sf::Texture goalTex;
 	QNode *testTree;
+
+	sf::Vector2<double> originalPos;
 };
 
 #endif

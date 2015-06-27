@@ -96,8 +96,10 @@ void GameEditLoop2( std::string filename)
 int main()
 {
 	cout << "starting program" << endl;
-	bool fullWindow = true ;
+	bool fullWindow = false ;
 
+	if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
+		fullWindow = false;
 	if( !fullWindow )
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
@@ -107,38 +109,51 @@ int main()
 	else
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+			sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
-	
+
+
 	cout << "opened window" << endl;
 	sf::Texture t;
-	t.loadFromFile( "goal.png" );
+	t.loadFromFile( "title.png" );
 	
 	Sprite titleSprite;
 	titleSprite.setTexture( t );
+	titleSprite.setOrigin( titleSprite.getLocalBounds().width / 2, titleSprite.getLocalBounds().height / 2 );
 	titleSprite.setPosition( 0, 0 );
+	titleSprite.setScale( 2, 2 );
 	
 	View v;
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );
 
+	sf::Text menu;
+	menu.setString( "Press 1, 2, or 3 to select a level");
+	menu.setCharacterSize( 20 );
+	menu.setColor( Color::Red );
+	sf::Font arial;
+	arial.loadFromFile( "arial.ttf" );
+	menu.setFont( arial );
+	menu.setOrigin( menu.getLocalBounds().width / 2, menu.getLocalBounds().height / 2 );
+	menu.setPosition( 0, 100 );
+
 	sf::Event ev;
 	bool quit = false;
 
 	window->setVerticalSyncEnabled( true );
 
-	cout << "beginning input loop" << endl;
+	//cout << "beginning input loop" << endl;
 	while( !quit )
 	{
 		window->clear();
 	
 		while( window->pollEvent( ev ) )
 		{
-			cout << "some input" << endl;
+		//	cout << "some input" << endl;
 			switch( ev.type )
 			{
-			case Event::KeyPressed:
+			case sf::Event::KeyPressed:
 				{
 					if( ev.key.code == Keyboard::Num1 )
 					{
@@ -170,6 +185,8 @@ int main()
 
 		window->setView( v );
 		window->draw( titleSprite );
+		window->draw( menu );		
+
 		window->display();
 	}
 
