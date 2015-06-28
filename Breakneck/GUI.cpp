@@ -94,3 +94,183 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 
 	return false;
 }
+
+Panel::Panel( int width, int height, sf::Font &f)
+	:t( 0, 0, 10, f, "hello" )
+{
+	control.create( width, height );
+	control.clear(sf::Color::White );
+	controlSprite.setTexture( control.getTexture() );
+}
+
+void Panel::Draw( RenderTarget *target )
+{
+	//control.clear(sf::Color::White );
+	target->draw( controlSprite );
+	t.Draw( target, true );
+}
+
+TextBox::TextBox( int posx, int posy, int lengthLimit, sf::Font &f, const std::string & initialText = "")
+	:pos( posx, posy ), maxLength( lengthLimit ), cursorIndex( initialText.length() )
+{
+
+	text.setString( initialText );
+	text.setFont( f );
+	text.setColor( Color::Black );
+	text.setCharacterSize( 50 );
+
+	cursor.setString( "|" );
+	cursor.setFont( f );
+	cursor.setColor( Color::Red );
+	cursor.setCharacterSize( 50 );
+	
+	/*sf::Text test;
+	test = text;
+	test.setString( test.getString().substring( 0, cursorIndex) );*/
+	
+	cursor.setPosition( text.getLocalBounds().width, 0 );
+}
+
+void TextBox::SendKey( Keyboard::Key k, bool shift )
+{
+	char c = 0;
+	switch( k )
+	{
+		case Keyboard::A:
+			c = 'a';
+			break;
+		case Keyboard::B:
+			c = 'b';
+			break;
+		case Keyboard::C:
+			c = 'c';
+			break;
+		case Keyboard::D:
+			c = 'd';
+			break;
+		case Keyboard::E:
+			c = 'e';
+			break;
+		case Keyboard::F:
+			c = 'f';
+			break;
+		case Keyboard::G:
+			c = 'g';
+			break;
+		case Keyboard::H:
+			c = 'h';
+			break;
+		case Keyboard::I:
+			c = 'i';
+			break;
+		case Keyboard::J:
+			c = 'j';
+			break;
+		case Keyboard::K:
+			c = 'k';
+			break;
+		case Keyboard::L:
+			c = 'l';
+			break;
+		case Keyboard::M:
+			c = 'm';
+			break;
+		case Keyboard::N:
+			c = 'n';
+			break;
+		case Keyboard::O:
+			c = 'o';
+			break;
+		case Keyboard::P:
+			c = 'p';
+			break;
+		case Keyboard::Q:
+			c = 'q';
+			break;
+		case Keyboard::R:
+			c = 'r';
+			break;
+		case Keyboard::S:
+			c = 's';
+			break;
+		case Keyboard::T:
+			c = 't';
+			break;
+		case Keyboard::U:
+			c = 'u';
+			break;
+		case Keyboard::V:
+			c = 'v';
+			break;
+		case Keyboard::W:
+			c = 'w';
+			break;
+		case Keyboard::X:
+			c = 'x';
+			break;
+		case Keyboard::Y:
+			c = 'y';
+			break;
+		case Keyboard::Z:
+			c = 'z';
+			break;
+		case Keyboard::Space:
+			c = ' ';
+			break;
+		case Keyboard::BackSpace:
+			{
+			//text.setString( text.getString().substring( 0, cursorIndex ) + text.getString().substring( cursorIndex + 1 ) );
+			cursorIndex -= 1;
+
+			if( cursorIndex < 0 )
+				cursorIndex = 0;
+			else
+			{
+				sf::String s = text.getString();
+				s.erase( cursorIndex );
+				text.setString( s );
+			}
+
+			break;
+			}
+		case Keyboard::Left:
+			cursorIndex -= 1;
+			if( cursorIndex < 0 )
+				cursorIndex = 0;
+			break;
+		case Keyboard::Right:
+			cursorIndex += 1;
+			break;
+		
+	}
+
+	if( c != 0 )
+	{
+		if( shift && c >= 'a' && c <= 'z' )
+		{
+			c -= 32;
+		}
+		sf::String s = text.getString();
+		
+		s.insert( cursorIndex, sf::String( c ) );
+		text.setString( s );
+		cursorIndex++;
+	}
+
+	sf::Text test;
+	test = text;
+	test.setString( test.getString().substring( 0, cursorIndex) );
+	
+	sf::FloatRect r;
+	
+	cursor.setPosition( test.getLocalBounds().width, 0 );
+
+
+}
+
+void TextBox::Draw( sf::RenderTarget *target, bool focused )
+{
+
+	target->draw( cursor );
+	target->draw( text );
+}

@@ -718,6 +718,14 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
+	
+
+	sf::Font arial;
+	arial.loadFromFile( "arial.ttf" );
+
+	Panel p( 300, 300, arial );
+	p.active = true;
+
 	GridSelector gs( 2, 2, 32, 32 );
 	gs.active = true;
 	Texture patrolTex;
@@ -956,7 +964,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case Event::KeyPressed:
 				{
-					if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
+					if( true )
+					{
+						p.t.SendKey( ev.key.code, ev.key.shift );
+					}
+					else if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
 					{
 						Emode oldMode = mode;
 
@@ -1398,7 +1410,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 		w->setView( uiView );
 
-		gs.Draw( w );
+		//gs.Draw( w );
+		p.Draw( w );
 
 		w->setView( view );
 
