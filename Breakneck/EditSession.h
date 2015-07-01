@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "VectorMath.h"
-
+#include "GUI.h"
 
 #ifndef __EDIT_SESSION__
 #define __EDIT_SESSION__
@@ -33,7 +33,37 @@ struct TerrainPolygon
 	int bottom;
 };
 
-struct EditSession
+
+
+struct ActorType
+{
+	ActorType( const std::string & name, Panel *panel );
+	std::string name;
+	sf::Texture iconTexture;
+	sf::Texture imageTexture;
+	Panel *panel;
+};
+
+struct ActorParams
+{
+	virtual void WriteFile( std::ofstream &of );
+	void CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
+	//sf::Sprite icon;
+	sf::Sprite image;
+	std::list<std::string> params;
+	ActorType *type;
+	void Draw( sf::RenderTarget *target );
+};
+
+struct ActorGroup
+{
+	ActorGroup( const std::string &name );
+	std::string name;
+	std::list<ActorParams*> actors;
+	void Draw( sf::RenderTarget *target );
+};
+
+struct EditSession : GUIHandler
 {
 	EditSession( sf::RenderWindow *w);
 	~EditSession();
@@ -68,7 +98,14 @@ struct EditSession
 	int polygonTimeoutTextTimer;
 	int polygonTimeoutTextLength;
 
+	//static void TestButton();
+
+	void ButtonCallback( Button *b, const std::string & e );
+	void TextBoxCallback( TextBox *tb, const std::string & e );
+	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	
+	std::map<std::string, ActorGroup*> groups;
+	std::map<std::string, ActorType*> types;
 
 	enum Emode
 	{

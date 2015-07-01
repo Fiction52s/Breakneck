@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <iostream>
 #include "poly2tri/poly2tri.h"
+#include <sstream>
 
 using namespace std;
 using namespace sf;
@@ -716,27 +717,37 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
+
+
+
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
-	
-
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
 
-	Panel p( 300, 300, arial );
-	p.active = true;
+//	Panel p( 300, 300, this );
+//	p.active = true;
+//	p.AddButton( Vector2i( 50, 100 ), Vector2f( 50, 50 ), "LOL");
+//	p.AddTextBox( Vector2i( 200, 200 ), 200, 15, "testing" );
 
-	GridSelector gs( 2, 2, 32, 32 );
-	gs.active = true;
+	ActorGroup *emptyGroup = new ActorGroup;
+	emptyGroup->name = "";
+	groups.insert( emptyGroup->name, emptyGroup );
+
+	
+
+
+	GridSelector gs( 2, 2, 32, 32, this );
+	gs.active = false;
 	Texture patrolTex;
 	patrolTex.loadFromFile( "patroller.png" );
 	Texture patrol2Tex;
 	patrol2Tex.loadFromFile( "patroller2.png" );
 	sf::Sprite s0( patrolTex );
 	sf::Sprite s1( patrol2Tex );
-	gs.Set( 0, 0, s0 );
+	gs.Set( 0, 0, s0, "patroller" );
 	//gs.Set( 0, 1, s0 );
-	gs.Set( 1, 1, s1 );
+	gs.Set( 1, 1, s1, "patroller" );
 	//gs.Set( 1, 1, s1 );
 
 	int returnVal = 0;
@@ -835,12 +846,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					if( ev.mouseButton.button == Mouse::Left )
 					{
-						mode = CREATE_ENEMY;
+						//mode = CREATE_ENEMY;
+						//if( p.active )
+						{
+						//	p.Update( true, pixelPos.x, pixelPos.y );
+						}
+						
 						if( mode == CREATE_ENEMY && gs.active )
 						{
 
 							//gs.Update( true, worldPos.x - view.getCenter().x, worldPos.y - view.getCenter().y );//pixelPos.x - gs.controlSprite., pixelPos.y - w->getSize().y / 2 );
 							gs.Update( true, pixelPos.x, pixelPos.y );
+							canCreatePoint = false;
 						}
 						else if( mode == PLACE_PLAYER )
 						{
@@ -877,7 +894,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					else if( ev.mouseButton.button == Mouse::Button::Left )
 					{
-						mode = CREATE_ENEMY;
+					//	mode = CREATE_ENEMY;
+						//if( p.active )
+						{
+						//	p.Update( false, pixelPos.x, pixelPos.y );
+						}
+						
 						if( mode == CREATE_ENEMY && gs.active )
 						{
 
@@ -964,11 +986,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case Event::KeyPressed:
 				{
-					if( true )
-					{
-						p.t.SendKey( ev.key.code, ev.key.shift );
-					}
-					else if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
+					//if( true )
+					//{
+						//p.SendKey( ev.key.code, ev.key.shift );
+					//}
+					if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
 					{
 						Emode oldMode = mode;
 
@@ -996,6 +1018,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						else if( ev.key.code == Keyboard::C )
 						{
 							mode = CREATE_POLYGONS;
+						}
+						else if( ev.key.code == Keyboard::F )
+						{
+							mode = CREATE_ENEMY;
+							gs.active = true;
 						}
 						else if( ev.key.code == Keyboard::Space )
 						{
@@ -1410,8 +1437,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 		w->setView( uiView );
 
-		//gs.Draw( w );
-		p.Draw( w );
+		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+		{
+			(*it).second->Draw( w );
+		}
+
+		gs.Draw( w );
+		//p.Draw( w );
 
 		w->setView( view );
 
@@ -1611,3 +1643,95 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	return true;
 }
 
+void EditSession::ButtonCallback( Button *b, const std::string & e )
+{
+	cout <<"button" << endl;
+}
+
+void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
+{
+}
+
+void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & name )
+{
+	if( name != "not set" )
+	{
+		cout << "set your cursor as the image" << endl;
+	}
+	else
+	{
+		cout << "not set" << endl;
+	}
+}
+
+ActorType::ActorType( const std::string & n, Panel *p )
+	:name( n ), panel( p )
+{
+	
+	iconTexture.loadFromFile( name + "_icon.png" );
+	//icon.setTexture( iconTexture );
+	imageTexture.loadFromFile( name + "_editor.png" );
+	//image.setTexture( imageTexture );
+}
+
+void ActorParams::CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed )
+{
+	type = t;
+
+	//icon.setTexture( type->iconTexture );
+	image.setTexture( type->imageTexture );
+	image.setPosition( pos.x, pos.y );
+
+	params.clear();
+
+	stringstream ss;
+
+	ss << pos.x << " " << pos.y;
+	params.push_back( ss.str() );
+	ss.str( "" );
+	
+	if( clockwise )
+		params.push_back( "true" );
+	else
+		params.push_back( "false" );
+
+	
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );
+}
+
+void ActorParams::Draw( sf::RenderTarget *target )
+{
+	target->draw( image );
+}
+
+void ActorParams::WriteFile( ofstream &of )
+{
+	if( params.size() == 0 )
+	{
+		assert( false && "no params" );
+	}
+	
+	list<string>::iterator it = params.begin();
+	of << (*it);
+	for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
+	{
+		of << " " << (*it);
+	}
+	of << endl;
+}
+
+void ActorGroup::Draw( sf::RenderTarget *target )
+{
+	for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+	{
+		(*it)->Draw( target );
+	}
+}
+
+ActorGroup::ActorGroup( const std::string &n )
+	:name( n )
+{
+
+}
