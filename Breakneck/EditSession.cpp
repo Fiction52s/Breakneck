@@ -422,6 +422,73 @@ bool EditSession::OpenFile( string fileName )
 			poly->Finalize();
 		}
 
+		//enemies here
+		int numGroups;
+		is >> numGroups;
+		cout << "num groups " << numGroups << endl;
+		for( int i = 0; i < numGroups; ++i )
+		{
+			string groupName;
+			is >> groupName;
+
+			int numActors;
+			is >> numActors;
+
+			ActorGroup *gr = new ActorGroup( groupName );
+			groups[groupName] = gr;
+
+			for( int j = 0; j < numActors; ++j )
+			{
+				string typeName;
+				is >> typeName;
+
+				ActorParams *a = new ActorParams;
+				gr->actors.push_back( a );
+
+
+				ActorType *at;
+				cout << "typename: " << typeName << endl;
+				if( types.count( typeName ) == 0 )
+				{
+					assert( false && "bad typename" );
+				//	at = new ActorType( typeName, CreateOptionsPanel( typeName ) );
+				//	types[typeName] = at;
+				}
+				else
+				{
+					at = types[typeName];
+				}
+
+
+				if( typeName == "patroller" )
+				{
+					Vector2i pos;
+
+					is >> pos.x;
+					is >> pos.y;
+
+					bool clockwise;
+					string clockwiseStr;
+					is >> clockwiseStr;
+
+					if( clockwiseStr == "true" )
+						clockwise = true;
+					else if( clockwiseStr == "false" )
+						clockwise = false;
+					else
+						assert( false && "should be a boolean" );
+
+					float speed;
+					is >> speed;
+
+					a->CreatePatroller( at, pos, clockwise, speed );	
+				}
+
+			}
+		}
+
+
+
 		is.close();
 
 
@@ -460,6 +527,17 @@ void EditSession::WriteFile(string fileName)
 			of << (*it2).x << " " << (*it2).y << endl;
 		}
 	}
+
+	of << groups.size() << endl;
+	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+	{
+		(*it).second->WriteFile( of );
+		//(*it).second->( w );
+	}
+
+	//enemies here
+
+
 }
 
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
@@ -717,9 +795,6 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
-
-
-
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
 	sf::Font arial;
@@ -730,20 +805,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 //	p.AddButton( Vector2i( 50, 100 ), Vector2f( 50, 50 ), "LOL");
 //	p.AddTextBox( Vector2i( 200, 200 ), 200, 15, "testing" );
 
-	ActorGroup *emptyGroup = new ActorGroup;
-	emptyGroup->name = "";
-	groups.insert( emptyGroup->name, emptyGroup );
+	ActorGroup *emptyGroup = new ActorGroup( "--" );
+	//emptyGroup->name = "";
+	groups[emptyGroup->name] = emptyGroup;
 
-	
 
+	Panel *patrollerPanel = new Panel( 300, 300, this );
+	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
+
+	types["patroller"] = patrollerType;
 
 	GridSelector gs( 2, 2, 32, 32, this );
 	gs.active = false;
 	Texture patrolTex;
-	patrolTex.loadFromFile( "patroller.png" );
+//	patrolTex.loadFromFile( "patroller.png" );
 	Texture patrol2Tex;
 	patrol2Tex.loadFromFile( "patroller2.png" );
-	sf::Sprite s0( patrolTex );
+	sf::Sprite s0( patrollerType->iconTexture );
 	sf::Sprite s1( patrol2Tex );
 	gs.Set( 0, 0, s0, "patroller" );
 	//gs.Set( 0, 1, s0 );
@@ -786,6 +864,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	w->setVerticalSyncEnabled( false );
 
 	OpenFile( fileName );
+
+
+//	ActorParams *ap = new ActorParams;
+//	ap->CreatePatroller( patrollerType, Vector2i( playerPosition.x, playerPosition.y ), true, 10 );
+//	groups["--"]->actors.push_back( ap );
+	//ap->CreatePatroller( 
+
+
+
 	//Vector2f vs(  );
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
 		view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
@@ -852,11 +939,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						//	p.Update( true, pixelPos.x, pixelPos.y );
 						}
 						
-						if( mode == CREATE_ENEMY && gs.active )
+						if( mode == CREATE_ENEMY)
 						{
 
 							//gs.Update( true, worldPos.x - view.getCenter().x, worldPos.y - view.getCenter().y );//pixelPos.x - gs.controlSprite., pixelPos.y - w->getSize().y / 2 );
-							gs.Update( true, pixelPos.x, pixelPos.y );
+
+							if( gs.active )
+							{
+
+								gs.Update( true, pixelPos.x, pixelPos.y );
+							}
 							canCreatePoint = false;
 						}
 						else if( mode == PLACE_PLAYER )
@@ -900,14 +992,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						//	p.Update( false, pixelPos.x, pixelPos.y );
 						}
 						
-						if( mode == CREATE_ENEMY && gs.active )
+						if( mode == CREATE_ENEMY  )
 						{
 
-							//gs.Update( true, worldPos.x - view.getCenter().x, worldPos.y - view.getCenter().y );//pixelPos.x - gs.controlSprite., pixelPos.y - w->getSize().y / 2 );
-							if( gs.Update( false, pixelPos.x, pixelPos.y ) )
+							if( trackingEnemy )
 							{
-								cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
+								trackingEnemy = false;
+								ActorParams *actor = new ActorParams;
+								actor->CreatePatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
+								groups["--"]->actors.push_back( actor);
 							}
+
+							//gs.Update( true, worldPos.x - view.getCenter().x, worldPos.y - view.getCenter().y );//pixelPos.x - gs.controlSprite., pixelPos.y - w->getSize().y / 2 );
+							if( gs.active )
+							{
+								if( gs.Update( false, pixelPos.x, pixelPos.y ) )
+								{
+									cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
+								}
+							}
+
+							
 						}
 						else if( mode == SELECT_POLYGONS )
 						{
@@ -1023,6 +1128,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							mode = CREATE_ENEMY;
 							gs.active = true;
+							trackingEnemy = false;
 						}
 						else if( ev.key.code == Keyboard::Space )
 						{
@@ -1365,6 +1471,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		else
 			playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
+
+
+
 		if( mode == PLACE_GOAL )
 		{
 			goalSprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
@@ -1372,6 +1481,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		else
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );
 		
+		if( mode == CREATE_ENEMY && trackingEnemy )
+		{
+			enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+		}
+
 		//canCreatePoint = true;
 
 	
@@ -1433,14 +1547,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			w->draw( alphaTextSprite );
 		}
 
-		
-		sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
-		w->setView( uiView );
-
 		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 		{
 			(*it).second->Draw( w );
 		}
+
+		if( mode == CREATE_ENEMY && trackingEnemy )
+		{
+			w->draw( enemySprite );
+			//enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+		}
+
+		
+		sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+		w->setView( uiView );
+
 
 		gs.Draw( w );
 		//p.Draw( w );
@@ -1656,12 +1777,21 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 {
 	if( name != "not set" )
 	{
+		enemySprite.setTexture( types[name]->imageTexture );
+		enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
+		trackingEnemy = true;
+//		enemySprite.setPosition
 		cout << "set your cursor as the image" << endl;
 	}
 	else
 	{
 		cout << "not set" << endl;
 	}
+}
+
+Panel * EditSession::CreateOptionsPanel( const std::string &name )
+{
+	return NULL;
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )
@@ -1680,6 +1810,8 @@ void ActorParams::CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwis
 
 	//icon.setTexture( type->iconTexture );
 	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+//	cout << "image pos: " << pos.x << ", " << pos.y << endl;
 	image.setPosition( pos.x, pos.y );
 
 	params.clear();
@@ -1713,9 +1845,14 @@ void ActorParams::WriteFile( ofstream &of )
 		assert( false && "no params" );
 	}
 	
+	//dont need number of params because the actortype determines that.
+	of << type->name << " ";
+
 	list<string>::iterator it = params.begin();
 	of << (*it);
-	for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
+	++it;
+
+	for( ; it != params.end(); ++it )
 	{
 		of << " " << (*it);
 	}
@@ -1734,4 +1871,14 @@ ActorGroup::ActorGroup( const std::string &n )
 	:name( n )
 {
 
+}
+
+void ActorGroup::WriteFile( std::ofstream &of )
+{
+	//group name and number of actors in the group
+	of << name << " " << actors.size() << endl;
+	for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+	{
+		(*it)->WriteFile( of );
+	}
 }

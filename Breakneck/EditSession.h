@@ -46,7 +46,7 @@ struct ActorType
 
 struct ActorParams
 {
-	virtual void WriteFile( std::ofstream &of );
+	void WriteFile( std::ofstream &of );
 	void CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
 	//sf::Sprite icon;
 	sf::Sprite image;
@@ -61,6 +61,7 @@ struct ActorGroup
 	std::string name;
 	std::list<ActorParams*> actors;
 	void Draw( sf::RenderTarget *target );
+	void WriteFile( std::ofstream &of );
 };
 
 struct EditSession : GUIHandler
@@ -106,6 +107,12 @@ struct EditSession : GUIHandler
 	
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
+
+	sf::Sprite enemySprite;
+	bool trackingEnemy;
+	bool trackingEnemyDown;
+	Panel *CreateOptionsPanel( const std::string &name );
+
 
 	enum Emode
 	{

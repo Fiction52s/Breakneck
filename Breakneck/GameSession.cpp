@@ -228,7 +228,13 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileName )
 {
-	
+	sf::Texture backTex;
+	backTex.loadFromFile( "bg01.png" );
+	sf::Sprite background( backTex );
+	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
+	background.setPosition( 0, 0 );
+	sf::View bgView( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
+
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
 	Sprite alphaTextSprite(alphaTex);
@@ -592,7 +598,18 @@ int GameSession::Run( string fileName )
 		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );
 		view.setCenter( cam.pos.x, cam.pos.y );
 		lastViewCenter = view.getCenter();
+
+
+		
+		window->setView( bgView );
+
+		window->draw( background );
+
+		
+		
 		window->setView( view );
+
+
 
 		
 		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
