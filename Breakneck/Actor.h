@@ -3,6 +3,8 @@
 #include "Physics.h"
 #include "Input.h"
 #include <SFML/Audio.hpp>
+#include <list>
+#include <map>
 
 #ifndef __ACTOR_H__
 #define __ACTOR_H__
@@ -32,7 +34,8 @@ struct Actor : EdgeQuadTreeCollider
 		GRINDBALL,
 		AIRDASH,
 		STEEPCLIMB,
-		HITSTUN,
+		AIRHITSTUN,
+		GROUNDHITSTUN,
 		Count
 	};
 
@@ -46,6 +49,8 @@ struct Actor : EdgeQuadTreeCollider
 
 	void UpdatePrePhysics();
 	
+	void ApplyHit( HitboxInfo *info );
+
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void UpdatePhysics();
 	void UpdatePostPhysics();
@@ -90,7 +95,14 @@ struct Actor : EdgeQuadTreeCollider
 	bool showSword1;
 
 	CollisionBox b;
-	CollisionBox hurt;
+	CollisionBox hurtBody;
+	std::list<CollisionBox> *currHitboxes;
+	//int numCurrHitboxes;
+	HitboxInfo *currHitboxInfo;
+
+	std::map<int, std::list<CollisionBox>*> fairHitboxes;
+
+
 
 	ControllerState prevInput;
 	ControllerState currInput;
@@ -176,6 +188,13 @@ struct Actor : EdgeQuadTreeCollider
 	sf::Vector2<double> tempVel;
 	std::string queryMode;
 	bool checkValid;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int invincibleFrames;
+	HitboxInfo *receivedHit;
+
+
 };
 
 #endif

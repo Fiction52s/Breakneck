@@ -523,8 +523,8 @@ int GameSession::Run( string fileName )
 				}
 			}
 
-			//if( currInput.leftShoulder )
-			//	oneFrameMode = true;
+			if( currInput.leftShoulder )
+				oneFrameMode = true;
 
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )

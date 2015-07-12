@@ -54,10 +54,17 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
-bool CollisionBox::Insersects( CollisionBox &c )
+bool CollisionBox::Insersects( CollisionBox &c, V2d thisPos, V2d otherPos )
 {
 	//first, box with box aabb. can adjust it later
-
+	if( c.isCircle == true && this->isCircle == true )
+	{
+		double dist = length( thisPos - otherPos );
+		//cout << "dist: " << dist << endl;
+		if( dist <= this->rw + c.rw )
+			return true;
+	}
+	return false;
 }
 
 //CONTACT FUNCTIONS

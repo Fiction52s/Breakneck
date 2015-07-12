@@ -20,6 +20,7 @@ struct Enemy : EdgeQuadTreeCollider
 	GameSession *owner;
 	bool spawned;
 	sf::Rect<double> spawnRect;
+	HitboxInfo *receivedHit;
 };
 
 struct Patroller : Enemy
@@ -42,6 +43,10 @@ struct Patroller : Enemy
 	Tileset *ts;
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
 };
 
 struct EnemyParentNode;

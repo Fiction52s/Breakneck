@@ -29,13 +29,23 @@ struct CollisionBox
 	};
 
 	sf::Vector2<double> offset;
-	bool Insersects( CollisionBox &c ); 
+	bool Insersects( CollisionBox &c, sf::Vector2<double> thisPos,
+		sf::Vector2<double> otherPos );
 	double offsetAngle;
 	
 	double rw; //radius or half width
 	double rh; //radius or half height
 	bool isCircle;
 	BoxType type;	
+};
+
+struct HitboxInfo
+{
+	double knockback; //0+
+	double drain; //0-1
+	int hitstunFrames; 
+	int hitlagFrames;
+	int damage;
 };
 
 struct Contact

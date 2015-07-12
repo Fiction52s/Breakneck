@@ -49,6 +49,23 @@ Actor::Actor( GameSession *gs )
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 
 		actionLength[FAIR] = 10 * 2;
+		fairHitboxes[4] = new list<CollisionBox>;
+
+		CollisionBox cb;
+		cb.type = CollisionBox::Hit;
+		cb.isCircle = true;
+		cb.offset.x = 0;
+		cb.offset.y = 0;
+		cb.offsetAngle = 0;
+		cb.rw = 64;
+		cb.rh = 64;
+		fairHitboxes[4]->push_back( cb );
+
+		//map<int, list<CollisionBox>> &fairHit = *fairHitboxes;
+		//fairHit[4].push_back( CollisionBox() );
+		//CollisionBox &cb = fairHit[4].back();
+		
+			
 		tileset[FAIR] = owner->GetTileset( "fair.png", 128, 64 );
 
 		actionLength[JUMP] = 2;
@@ -98,6 +115,12 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[STEEPCLIMB] = 8 * 4;
 		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb.png", 128, 64 );
+
+		actionLength[AIRHITSTUN] = 1;
+		tileset[AIRHITSTUN] = owner->GetTileset( "steepclimb.png", 128, 64 );
+
+		actionLength[GROUNDHITSTUN] = 1;
+		tileset[GROUNDHITSTUN] = owner->GetTileset( "steepslide.png", 64, 32 );
 
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
@@ -201,6 +224,14 @@ Actor::Actor( GameSession *gs )
 
 		
 		b.type = b.Physics;
+
+		hurtBody.isCircle = true;
+		hurtBody.offsetAngle = 0;
+		hurtBody.offset.x = 0;
+		hurtBody.offset.y = 0;
+		hurtBody.rw = 32;
+		hurtBody.rh = 32;
+
 	}
 
 void Actor::ActionEnded()
@@ -272,6 +303,12 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case STEEPCLIMB:
+			frame = 0;
+			break;
+		case AIRHITSTUN:
+			frame = 0;
+			break;
+		case GROUNDHITSTUN:
 			frame = 0;
 			break;
 		}
@@ -1473,13 +1510,28 @@ void Actor::UpdatePrePhysics()
 			
 			break;
 		}
+	case AIRHITSTUN:
+		{
+			if( hitstunFrames == 0 )
+			{
+				action = JUMP;
+				frame = 1;
+			}
+			break;
+		}
+	case GROUNDHITSTUN:
+		{
+			if( hitstunFrames == 0 )
+			{
+				action = LAND;
+				frame = 0;
+			}
+			break;
+		}
 	}
 	
-	//cout << "standing up? : " << CheckStandUp() << endl;
-	
+	currHitboxes = NULL;
 
-
-	
 	//react to action
 	switch( action )
 	{
@@ -1720,7 +1772,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
-			
+			//currHitboxes = fairHitboxes;
+			if( fairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = fairHitboxes[frame];
+			}
+
 			if( frame == 0 )
 			{
 				//fairSound.play();
@@ -2186,6 +2243,16 @@ void Actor::UpdatePrePhysics()
 				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			
+			break;
+		}
+	case AIRHITSTUN:
+		{
+			hitstunFrames--;
+			break;
+		}
+	case GROUNDHITSTUN:
+		{
+			hitstunFrames--;
 			break;
 		}
 	}
@@ -3647,6 +3714,19 @@ void Actor::UpdatePostPhysics()
 
 	V2d gn;
 
+	if( receivedHit != NULL )
+	{
+		hitlagFrames = receivedHit->hitlagFrames;
+		hitstunFrames = receivedHit->hitstunFrames;
+		invincibleFrames = receivedHit->damage;
+		//if( ground != NULL )
+		//{
+			action = AIRHITSTUN;
+			frame = 0;
+		//}
+		receivedHit = NULL;
+	}
+
 	//cout << "frame: " << frame << endl;
 	if( grindEdge != NULL )
 	{
@@ -3660,15 +3740,23 @@ void Actor::UpdatePostPhysics()
 		gn = ground->Normal();
 		if( collision )
 		{
-			if( currInput.LLeft() || currInput.LRight() )
+			if( action == AIRHITSTUN )
 			{
-				action = LAND2;
+				action = GROUNDHITSTUN;
 				frame = 0;
 			}
 			else
 			{
-				action = LAND;
-				frame = 0;
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					action = LAND2;
+					frame = 0;
+				}
+				else
+				{
+					action = LAND;
+					frame = 0;
+				}
 			}
 			
 
@@ -3768,6 +3856,9 @@ void Actor::UpdatePostPhysics()
 				wallJumpFrameCounter++;
 			framesInAir++;
 		}
+
+		if( action != AIRHITSTUN )
+		{
 		if( collision )
 		{
 			//cout << "wallcling" << endl;
@@ -3798,10 +3889,7 @@ void Actor::UpdatePostPhysics()
 				}
 			}
 		}
-		else
-		
-
-		if( action == WALLCLING && length( wallNormal ) == 0 )
+		else if( action == WALLCLING && length( wallNormal ) == 0 )
 		{
 			action = JUMP;
 			frame = 1;
@@ -3811,6 +3899,7 @@ void Actor::UpdatePostPhysics()
 		{
 			action = JUMP;
 			frame = 1;
+		}
 		}
 	}
 
@@ -3834,8 +3923,6 @@ void Actor::UpdatePostPhysics()
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
-		//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		//sprite->setRotation(  );
 
 
 		if( ground != NULL )
@@ -4588,10 +4675,42 @@ void Actor::UpdatePostPhysics()
 			//	sprite->setPosition( pp.x, pp.y );
 			break;
 		}
-		
+	case AIRHITSTUN:
+		{
+			sprite->setTexture( *(tileset[AIRHITSTUN]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[AIRHITSTUN]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[AIRHITSTUN]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case GROUNDHITSTUN:
+		{
+			sprite->setTexture( *(tileset[GROUNDHITSTUN]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[GROUNDHITSTUN]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[GROUNDHITSTUN]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
 	}
 
-	//cout << "offsetX: " << offsetX << endl;
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
@@ -4599,7 +4718,6 @@ void Actor::UpdatePostPhysics()
 	}
 	else
 		slowCounter++;
-	//cout << "end frame: " << position.x << ", " << position.y << endl;
 }
 
 void Actor::HandleEdge( Edge *e )
@@ -4666,6 +4784,14 @@ void Actor::HandleEdge( Edge *e )
 		}
 	}
 	++possibleEdgeCount;
+}
+
+void Actor::ApplyHit( HitboxInfo *info )
+{
+	if( receivedHit == NULL || info->damage > receivedHit->damage )
+	{
+		receivedHit = info;
+	}
 }
 
 void Actor::Draw( sf::RenderTarget *target )
