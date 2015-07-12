@@ -2,11 +2,12 @@
 #include "Tileset.h"
 #include <list>
 #include "Actor.h"
+#include "Enemy.h"
 
 #ifndef _GAMESESSION_H__
 #define _GAMESESSION_H__
 
-struct GameSession
+struct GameSession : EnemyQuadTreeCollider
 {
 	GameSession(GameController &c, sf::RenderWindow *rw);
 	~GameSession();
@@ -18,6 +19,16 @@ struct GameSession
 	Tileset * GetTileset( const std::string & s,
 		int tileWidth, int tileHeight );
 	void Test( Edge *e );
+	void AddEnemy( Enemy * e );
+	void RemoveEnemy( Enemy * e );
+	void UpdateEnemiesPrePhysics();
+	void UpdateEnemiesPhysics();
+	void UpdateEnemiesPostPhysics();
+	void UpdateEnemiesSprites();
+	void UpdateEnemiesDraw();
+
+	void HandleEnemy( Enemy *e );
+
 	Actor player;
 	sf::Shader polyShader;
 	Edge **edges;
@@ -33,9 +44,14 @@ struct GameSession
 	sf::Vector2f lastViewCenter;
 	sf::Sprite goalSprite;
 	sf::Texture goalTex;
-	QNode *testTree;
+	EdgeQNode *testTree;
+	EnemyQNode *enemyTree;
+
+	Enemy *activeEnemyList;
+	Enemy *inactiveEnemyList;
 
 	sf::Vector2<double> originalPos;
+	sf::Rect<double> screenRect;
 };
 
 #endif

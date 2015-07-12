@@ -21,11 +21,10 @@ struct GridSelector
 	int ySize;
 	sf::Sprite ** icons;
 	std::string ** names;
-	sf::RenderTexture control;
-	sf::Sprite controlSprite;
 	bool active;
 	int focusX;
 	int focusY;
+	sf::Vector2i pos;
 	GUIHandler *handler;
 };
 
@@ -33,12 +32,13 @@ struct GridSelector
 
 struct TextBox
 {
-	TextBox( int posx, int posy, int width, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	TextBox( const std::string &name, int posx, int posy, int width, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void Draw( sf::RenderTarget *rt );
 	bool Update( bool mouseDown, int posx, int posy );
 	sf::Vector2i pos;
 	int width;
+	std::string name;
 	int maxLength;
 	sf::Text text;
 	int cursorIndex;
@@ -53,12 +53,13 @@ struct TextBox
 
 struct Button
 {
-	Button( int posx, int posy, int width, int height, sf::Font &f, const std::string & text, Panel *owner );
+	Button( const std::string &name, int posx, int posy, int width, int height, sf::Font &f, const std::string & text, Panel *owner );
 	void Draw( sf::RenderTarget *rt );
 	bool Update( bool mouseDown, int posx, int posy );
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	sf::Text text;
+	std::string name;
 
 	int characterHeight;
 	bool clickedDown;
@@ -67,24 +68,26 @@ struct Button
 
 struct Panel
 {
-	Panel( int width, int height, GUIHandler *handler );
+	Panel( const std::string &name, int width, int height, GUIHandler *handler );
 	void Draw(sf::RenderTarget *rt);
 	void Update( bool mouseDown, int posx, int posy );
-	void AddButton( sf::Vector2i pos, sf::Vector2f size, const std::string &text );
-	void AddTextBox( sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
+	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
+	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
+	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void SendEvent( Button *b, const std::string & e );
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );
 	sf::Font arial;
+	std::string name;
 	//TextBox t;
 	//TextBox t2;
 	//Button b;
-	std::list<TextBox*> textBoxes;
-	std::list<Button*> buttons;
-	sf::RenderTexture control;
-	sf::Sprite controlSprite;
-
+	std::map<std::string, TextBox*> textBoxes;
+	std::map<std::string, Button*> buttons;
+	std::map<std::string, sf::Text*> labels;
+	sf::Vector2i pos;
+	sf::Vector2f size;
 	GUIHandler *handler;
 	
 	bool active;

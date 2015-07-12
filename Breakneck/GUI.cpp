@@ -1,5 +1,6 @@
 #include "GUI.h"
 #include <assert.h>
+#include <iostream>
 
 using namespace sf;
 using namespace std;
@@ -17,38 +18,47 @@ GridSelector::GridSelector( int xSizep, int ySizep, int iconX, int iconY, GUIHan
 		for( int j = 0; j < ySize; ++j )
 		{
 			icons[i][j].setTextureRect( sf::IntRect( 0, 0, tileSizeX, tileSizeY ) );
+			//icons[i][j].setPosition( i * tileSizeX, j * tileSizeY );
 			names[i][j] = "not set";
 		}
 	}
 
-
-	control.create( xSize * tileSizeX, ySize * tileSizeY );
-	control.clear(sf::Color::White );
-	controlSprite.setTexture( control.getTexture() );
+	pos.x = 32;
+	pos.y = 32;
 	focusX = -1;
 	focusY = -1;
-	//controlSprite.setOrigin( controlSprite.getLocalBounds().width / 2, controlSprite.getLocalBounds().height / 2 );
-//	controlSprite.setPosition( -controlSprite.getLocalBounds().width / 2, -controlSprite.getLocalBounds().height / 2 );
-//	controlSprite.move( -200, -200 );
 }
 
 void GridSelector::Set( int xi, int yi, Sprite s, const std::string &name )
 {
-	//no idea why its backwards on the Y but oh well.
-	//xi = xSize - 1 - xi;
-	int t = yi;
-	yi = ySize - 1 - yi;
 	icons[xi][yi] = s;
-	names[xi][t] = name;
-	s.setPosition( xi * tileSizeX, yi * tileSizeY );
-	//s.setPosition( 0, 0 );
-	control.draw( s );
+	icons[xi][yi].setPosition( xi * tileSizeX, yi * tileSizeY );
+	names[xi][yi] = name;
 }
 
 void GridSelector::Draw( sf::RenderTarget *target )
 {
 	if( active )
-		target->draw( controlSprite );
+	{
+		sf::RectangleShape rs;
+		rs.setSize( Vector2f( xSize * tileSizeX, ySize * tileSizeY ) );
+		rs.setFillColor( Color::Yellow );
+		rs.setPosition( pos.x, pos.y );
+
+		target->draw( rs );
+
+		for( int x = 0; x < xSize; ++x )
+		{
+			for( int y = 0; y < ySize; ++y )
+			{
+				Sprite &s = icons[x][y];
+				Vector2f realPos = s.getPosition();
+				s.setPosition( Vector2f( realPos.x + pos.x, realPos.y + pos.y ) );
+				target->draw( s );
+				s.setPosition( realPos );
+			}
+		}
+	}
 }
 
 //returns true if a selection has been made
@@ -60,13 +70,14 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	}
 	if( mouseDown )
 	{
-		sf::Rect<int> r( controlSprite.getPosition().x, controlSprite.getPosition().y, controlSprite.getLocalBounds().width, controlSprite.getLocalBounds().height );
-		//if( controlSprite.getTextureRect().contains( sf::Vector2i( posx, posy ) ) )
+
+		sf::Rect<int> r( pos.x, pos.y, xSize * tileSizeX, ySize * tileSizeY );
 		if( r.contains( sf::Vector2i( posx, posy ) ) )
 		{
-			//cout << "contains index: " << posx / tileSizeX << ", " << posy / tileSizeY << endl;		
-			focusX = posx / tileSizeX;
-			focusY = posy / tileSizeY;
+			
+			focusX = ( posx - pos.x ) / tileSizeX;
+			focusY = ( posy - pos.y ) / tileSizeY;
+			cout << "contains index: " << focusX << ", " << focusY << endl;
 		}
 		else
 		{
@@ -78,13 +89,14 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	}
 	else
 	{
-		sf::Rect<int> r( controlSprite.getPosition().x, controlSprite.getPosition().y, controlSprite.getLocalBounds().width, controlSprite.getLocalBounds().height );
+		sf::Rect<int> r( pos.x, pos.y, xSize * tileSizeX, ySize * tileSizeY );
 		if( r.contains( sf::Vector2i( posx, posy ) ) )
 		{
-			int tempX = posx / tileSizeX;
-			int tempY = posy / tileSizeY;
+			int tempX = ( posx - pos.x ) / tileSizeX;
+			int tempY = ( posy - pos.y ) / tileSizeY;
 			if( tempX == focusX && tempY == focusY )
 			{
+				cout << "tempX: " << tempX << ", tempY: " << tempY << endl;
 				handler->GridSelectorCallback( this, names[tempX][tempY] );
 				return true;
 		//		cout << "success!" << endl;
@@ -109,23 +121,32 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	return false;
 }
 
-Panel::Panel( int width, int height, GUIHandler *h )
-	:handler( h )
+Panel::Panel( const string &n, int width, int height, GUIHandler *h )
+	:handler( h ), size( width, height ), name( n )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
 	arial.loadFromFile( "arial.ttf" );
-
-	control.create( width, height );
-	control.clear(sf::Color::White );
-	controlSprite.setTexture( control.getTexture() );
 }
 
 void Panel::Update( bool mouseDown, int posx, int posy )
 {
-	for( std::list<TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
+	//cout << "pos: " << posx << ", " << posy << endl;
+	for( std::map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it)->Update( mouseDown, posx, posy );
+		bool temp = (*it).second->Update( mouseDown, posx, posy );
+		if( temp )
+		{
+			for( std::map<string,TextBox*>::iterator it2 = textBoxes.begin(); it2 != textBoxes.end(); ++it2 )
+			{
+				if( (*it2).second != (*it).second )
+				{
+					(*it2).second->focused = false;
+				}
+			}
+
+			(*it).second->focused = true;
+		}
 	}
 	/*if( t.Update( mouseDown, posx, posy ) )
 	{
@@ -139,10 +160,10 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 		t2.focused = true;
 	}*/
 
-	for( list<Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
+	for( map<string,Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it)->Update( mouseDown, posx, posy );
+		bool temp = (*it).second->Update( mouseDown, posx, posy );
 
 	}
 
@@ -166,32 +187,53 @@ void Panel::SendEvent( TextBox *tb, const std::string & e )
 	handler->TextBoxCallback( tb, e );
 }
 
-void Panel::AddButton( sf::Vector2i pos, sf::Vector2f size, const std::string &text )
+void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
 {
+	assert( buttons.count( name ) == 0 );
+	buttons[name] = new Button( name, pos.x, pos.y, size.x, size.y, arial, text, this );
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
-	buttons.push_back( new Button( pos.x, pos.y, size.x, size.y, arial, text, this ) );
+	//buttons.push_back( new Button( pos.x, pos.y, size.x, size.y, arial, text, this ) );
 }
 
-void Panel::AddTextBox( sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText )
+void Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText )
 {
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
-	textBoxes.push_back( new TextBox( pos.x, pos.y, width, lengthLimit, arial, this, initialText ) );
+	assert( textBoxes.count( name ) == 0 );
+	textBoxes[name] = new TextBox( name, pos.x, pos.y, width, lengthLimit, arial, this, initialText );
+	//textBoxes.push_back(  );
+}
+
+void Panel::AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text )
+{
+	assert( labels.count( name ) == 0 );
+	sf::Text *t = new sf::Text( text, arial, characterHeight );
+	t->setPosition( pos.x, pos.y );
+	t->setColor( Color::Black );
+
+	labels[name] = t;
 }
 
 void Panel::Draw( RenderTarget *target )
 {
-	target->draw( controlSprite );
-	for( list<TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
+	sf::RectangleShape rs;
+	rs.setSize( size );
+	rs.setFillColor( Color::Yellow );
+	rs.setPosition( pos.x, pos.y );
+	target->draw( rs );
+
+	for( map<string,sf::Text*>::iterator it = labels.begin(); it != labels.end(); ++it )
 	{
-		(*it)->Draw( target );
+		target->draw( *(*it).second );
+	}
+
+	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
+	{
+		(*it).second->Draw( target );
 	}
 	
-	for( list<Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
+	for( map<string,Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
 	{
-		//(*it).SendKey( k, shift );
-		//bool temp = (*it)->Update( mouseDown, posx, posy );
-		(*it)->Draw( target );
-
+		(*it).second->Draw( target );
 	}
 	
 }
@@ -199,14 +241,15 @@ void Panel::Draw( RenderTarget *target )
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 {
 	
-	for( list<TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
+	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
-		(*it)->SendKey( k, shift );
+		if( (*it).second->focused )
+			(*it).second->SendKey( k, shift );
 	}
 }
 
-TextBox::TextBox( int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
-	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false )
+TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
+	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n )
 {
 	focused = false;
 	leftBorder = 3;
@@ -478,7 +521,7 @@ void TextBox::Draw( sf::RenderTarget *target )
 	sf::RectangleShape rs;
 	//rs.setSize( Vector2f( 300, characterHeight + verticalBorder) );
 	rs.setSize( Vector2f( width, characterHeight + verticalBorder ) );
-	rs.setFillColor( Color::Yellow );
+	rs.setFillColor( Color::White );
 	rs.setPosition( pos.x, pos.y );
 
 	target->draw( rs );
@@ -490,8 +533,8 @@ void TextBox::Draw( sf::RenderTarget *target )
 	target->draw( text );
 }
 
-Button::Button( int posx, int posy, int width, int height, sf::Font &f, const std::string & t, Panel *p )
-	:pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), owner( p )
+Button::Button( const string &n, int posx, int posy, int width, int height, sf::Font &f, const std::string & t, Panel *p )
+	:pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), owner( p ), name( n )
 {	
 	text.setString( t );
 	text.setFont( f );

@@ -16,7 +16,7 @@ using namespace std;
 using namespace sf;
 
 GameSession::GameSession( GameController &c, RenderWindow *rw)
-	:controller(c),va(NULL),edges(NULL), window(rw), player( this )
+	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL )
 {
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -32,9 +32,13 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	goalSprite.setTexture( goalTex );
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
-	testTree = new LeafNode( V2d( 0, 0), 1000000, 1000000);
+	testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	testTree->parent = NULL;
 	testTree->debug = rw;
+
+	enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
+	enemyTree->parent = NULL;
+	enemyTree->debug = rw;
 }
 
 
@@ -83,9 +87,101 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 	//make sure to set up tileset here
 }
 
+void GameSession::UpdateEnemiesPrePhysics()
+{
+	Enemy *current = activeEnemyList;
+	while( current != NULL )
+	{
+		current->UpdatePrePhysics();
+		current = current->next;
+	}
+}
+
+void GameSession::UpdateEnemiesPhysics()
+{
+	Enemy *current = activeEnemyList;
+	while( current != NULL )
+	{
+		current->UpdatePhysics();
+		current = current->next;
+	}
+}
+
+void GameSession::UpdateEnemiesPostPhysics()
+{
+	Enemy *current = activeEnemyList;
+	while( current != NULL )
+	{
+		current->UpdatePostPhysics();
+		current = current->next;
+	}
+}
+
+void GameSession::UpdateEnemiesDraw()
+{
+	Enemy *current = activeEnemyList;
+	while( current != NULL )
+	{
+		current->Draw( window );
+		current = current->next;
+	}
+}
+
+void GameSession::UpdateEnemiesSprites()
+{
+	Enemy *current = activeEnemyList;
+	while( current != NULL )
+	{
+	//	current->up();
+		current = current->next;
+	}
+}
+
 void GameSession::Test( Edge *e )
 {
 	cout << "testing" << endl;
+}
+
+void GameSession::AddEnemy( Enemy *e )
+{
+	if( activeEnemyList != NULL )
+	{
+		activeEnemyList->prev = e;
+		e->next = activeEnemyList;
+		activeEnemyList = e;
+	}
+	else
+	{
+		activeEnemyList = e;
+	}
+	
+}
+
+void GameSession::RemoveEnemy( Enemy *e )
+{
+	Enemy *prev = e->prev;
+	Enemy *next = e->next;
+
+	if( prev != NULL )
+	{
+		prev->next = next;
+	}
+
+	if( next != NULL )
+	{
+		next->prev = prev;
+	}
+
+	/*if( inactiveEnemyList != NULL )
+	{
+		inactiveEnemyList->next = e;
+	}
+	else
+	{
+		inactiveEnemyList = e;
+	}*/
+	
+	
 }
 
 bool GameSession::OpenFile( string fileName )
@@ -216,6 +312,48 @@ bool GameSession::OpenFile( string fileName )
 			//	delete tris[i];
 			}
 		}
+
+
+		
+		int numGroups;
+		is >> numGroups;
+		for( int i = 0; i < numGroups; ++i )
+		{
+			string gName;
+			is >> gName;
+			int numActors;
+			is >> numActors;
+
+			for( int j = 0; j < numActors; ++j )
+			{
+				string typeName;
+				is >> typeName;
+
+				if( typeName == "patroller" )
+				{
+					Patroller *enemy = new Patroller( this );
+					int xPos,yPos;
+					is >> xPos;
+					is >> yPos;
+					string blah;
+					is >> blah;
+					float speed;
+					is >> speed;
+					enemy->position = V2d( xPos, yPos );
+					//AddEnemy( enemy );
+					enemy->spawnRect = sf::Rect<double>( xPos - 16, yPos - 16, xPos + 16, yPos + 16 );
+					enemyTree = Insert( enemyTree, enemy );
+
+					//enemy->maxSpeed = spee
+				}
+				else
+				{
+					assert( false && "not a valid type name" );
+				}
+
+			}
+		}
+		
 		is.close();
 	}
 	else
@@ -523,6 +661,9 @@ int GameSession::Run( string fileName )
 			player.currInput = currInput;
 			player.UpdatePrePhysics();
 
+			UpdateEnemiesPrePhysics();
+			
+
 			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
 
 			//colMode = 
@@ -532,7 +673,9 @@ int GameSession::Run( string fileName )
 			//Query( &player, testTree, qrect );
 
 
-			player.UpdatePhysics( edges, numPoints );
+			player.UpdatePhysics( );
+
+			UpdateEnemiesPhysics();
 
 			//temporary for goal collision
 			double gLeft = goalSprite.getPosition().x - goalSprite.getLocalBounds().width / 2.0;
@@ -554,9 +697,26 @@ int GameSession::Run( string fileName )
 
 			player.UpdatePostPhysics();
 
+			UpdateEnemiesPostPhysics();
 		
 
+			cam.Update( &player );
+
+			double camWidth = 960 * cam.GetZoom();
+			double camHeight = 540 * cam.GetZoom();
+			screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 			
+			
+			/*sf::RectangleShape rs;
+			rs.setSize( sf::Vector2f(screenRect.width, screenRect.height ) );
+			rs.setPosition( screenRect.left, screenRect.top );
+			//rs.setSize( Vector2f(64, 64) );
+			//rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
+			//rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
+			rs.setFillColor( sf::Color( 0, 0, 255, 100 ) );
+			window->draw( rs );*/
+
+			Query( this, enemyTree, screenRect );
 
 			accumulator -= TIMESTEP;
 		}
@@ -590,7 +750,9 @@ int GameSession::Run( string fileName )
 		
 		
 		
-		cam.Update( &player );
+		
+		
+
 
 		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
 		lastViewSize = view.getSize();
@@ -639,7 +801,7 @@ int GameSession::Run( string fileName )
 		window->draw( goalSprite );
 
 		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
-		if( false )
+		/*if( false )
 		//if( player.action == player.RUN )
 		{
 			player.sh.setParameter( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
@@ -655,11 +817,12 @@ int GameSession::Run( string fileName )
 		{
 			if( player.action != player.GRINDBALL )
 				window->draw( *player.sprite );
-		}
+		}*/
 
 		
+		player.Draw( window );
 
-
+		UpdateEnemiesDraw();
 
 
 		
@@ -686,17 +849,7 @@ int GameSession::Run( string fileName )
 
 		//DebugDrawQuadTree( window, testTree );
 
-		if( player.action == player.GRINDBALL )
-		{
-			window->draw( *player.sprite );
-			window->draw( player.gsdodeca );
-			window->draw( player.gstriblue );
-			window->draw( player.gstricym );
-			window->draw( player.gstrigreen );
-			window->draw( player.gstrioran );
-			window->draw( player.gstripurp );
-			window->draw( player.gstrirgb );
-		}
+		
 
 		if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
 		{
@@ -710,11 +863,28 @@ int GameSession::Run( string fileName )
 			window->draw( alphaTextSprite );
 		}
 
+//		DebugDrawQuadTree( window, enemyTree );
+
 		window->display();
 
 		
 	}
 
 	delete [] line;
+
+	//window->setView( window->getDefaultView() );
+	//window->clear( Color::Red );
+	//window->display();
 	return returnVal;
+}
+
+void GameSession::HandleEnemy( Enemy *e )
+{
+	//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+	if( e->spawnRect.intersects( screenRect ) )
+	{
+		//cout << "spawning enemy!" << endl;
+		e->spawned = true;
+		AddEnemy( e );
+	}
 }

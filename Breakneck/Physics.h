@@ -29,6 +29,7 @@ struct CollisionBox
 	};
 
 	sf::Vector2<double> offset;
+	bool Insersects( CollisionBox &c ); 
 	double offsetAngle;
 	
 	double rw; //radius or half width
@@ -59,49 +60,49 @@ struct Collider
 		sf::RenderWindow *w);
 };
 
-struct ParentNode;
+struct EdgeParentNode;
 
-struct QNode
+struct EdgeQNode
 {
-	QNode():parent(NULL),debug(NULL){}
+	EdgeQNode():parent(NULL),debug(NULL){}
 	sf::Vector2<double> pos;
 	double rw;
 	double rh;
 	sf::RenderWindow *debug;
-	ParentNode *parent;
+	EdgeParentNode *parent;
 	bool leaf;
 };
 
 
 
-struct ParentNode : QNode
+struct EdgeParentNode : EdgeQNode
 {
-	ParentNode( const sf::Vector2<double> &pos, double rw, double rh );
-	QNode *children[4];
+	EdgeParentNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EdgeQNode *children[4];
 	// 0    |     1
 	//--------------
 	// 2    |     3
 	
 };
 
-struct LeafNode : QNode
+struct EdgeLeafNode : EdgeQNode
 {
 	int objCount;
-	LeafNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EdgeLeafNode( const sf::Vector2<double> &pos, double rw, double rh );
 	Edge *edges[4];
 };
 
-QNode *Insert( QNode *node, Edge* e );
-//void Query( QNode *node, void (*f)( Edge *e ) );
+EdgeQNode *Insert( EdgeQNode *node, Edge* e );
+//void Query( EdgeQNode *node, void (*f)( Edge *e ) );
 
-void DebugDrawQuadTree( sf::RenderWindow *rw, QNode *node );
+void DebugDrawQuadTree( sf::RenderWindow *rw, EdgeQNode *node );
 
-struct QuadTreeCollider
+struct EdgeQuadTreeCollider
 {
 	virtual void HandleEdge( Edge *e ) = 0;
 };
 
-void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
+void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &r );
 
 bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir );
 

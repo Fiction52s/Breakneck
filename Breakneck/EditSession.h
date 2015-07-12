@@ -47,7 +47,8 @@ struct ActorType
 struct ActorParams
 {
 	void WriteFile( std::ofstream &of );
-	void CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
+	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
+	std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;
@@ -109,7 +110,8 @@ struct EditSession : GUIHandler
 	std::map<std::string, ActorType*> types;
 
 	sf::Sprite enemySprite;
-	bool trackingEnemy;
+	ActorType *trackingEnemy;//bool trackingEnemy;
+	Panel *showPanel;
 	bool trackingEnemyDown;
 	Panel *CreateOptionsPanel( const std::string &name );
 

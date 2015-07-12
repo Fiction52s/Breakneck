@@ -8,7 +8,7 @@
 #define __ACTOR_H__
 
 struct GameSession;
-struct Actor : QuadTreeCollider
+struct Actor : EdgeQuadTreeCollider
 {
 	enum Action
 	{
@@ -32,6 +32,7 @@ struct Actor : QuadTreeCollider
 		GRINDBALL,
 		AIRDASH,
 		STEEPCLIMB,
+		HITSTUN,
 		Count
 	};
 
@@ -45,14 +46,13 @@ struct Actor : QuadTreeCollider
 
 	void UpdatePrePhysics();
 	
-	bool ResolvePhysics( Edge** edges, 
-		int numPoints, sf::Vector2<double> vel );
-	void UpdatePhysics( Edge **edges, 
-		int numPoints );
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void UpdatePhysics();
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool CheckStandUp();
-	void UpdateReversePhysics( Edge **edges, int numPoints );
+	void UpdateReversePhysics();
+	void Draw( sf::RenderTarget *target );
 	GameSession *owner;
 
 	
@@ -72,6 +72,8 @@ struct Actor : QuadTreeCollider
 	sf::Sprite gstripurp;
 	sf::Sprite gstrirgb;
 
+
+
 	int grindActionLength;
 	double grindActionCurrent;
 
@@ -83,9 +85,13 @@ struct Actor : QuadTreeCollider
 	Tileset * tsgstripurp;
 	Tileset * tsgstrirgb;
 	
-
+	sf::Sprite fairSword1;
+	Tileset *ts_fairSword1;
+	bool showSword1;
 
 	CollisionBox b;
+	CollisionBox hurt;
+
 	ControllerState prevInput;
 	ControllerState currInput;
 	sf::Vector2<double> oldVelocity;
@@ -171,6 +177,5 @@ struct Actor : QuadTreeCollider
 	std::string queryMode;
 	bool checkValid;
 };
-
 
 #endif

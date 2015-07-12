@@ -481,7 +481,7 @@ bool EditSession::OpenFile( string fileName )
 					float speed;
 					is >> speed;
 
-					a->CreatePatroller( at, pos, clockwise, speed );	
+					a->SetAsPatroller( at, pos, clockwise, speed );	
 				}
 
 			}
@@ -797,6 +797,17 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
+	//RenderTexture rtt;
+	//rtt.create( 0, 0 );
+	//rtt.clear(Color::Red);
+	
+	//rtt.
+	//rtt.create( 400, 400 );
+	//rtt.clear();
+
+	trackingEnemy = NULL;
+	showPanel = NULL;
+
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
 
@@ -810,7 +821,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	groups[emptyGroup->name] = emptyGroup;
 
 
-	Panel *patrollerPanel = new Panel( 300, 300, this );
+	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
 	types["patroller"] = patrollerType;
@@ -854,7 +865,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 
 	
-
+	sf::Vector2u wSize = w->getSize();
+	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+	//sf::View uiView( Vector2f( wSize.x / 2, wSize.y / 2 ), Vector2f( wSize.x, wSize.y ) );
 
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
@@ -923,6 +936,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		 worldPos.x = tempWorldPos.x;
 		 worldPos.y = tempWorldPos.y;
 
+		w->setView( uiView );
+		Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
+		w->setView( view );
 		sf::Event ev;
 		
 		while( w->pollEvent( ev ) )
@@ -935,19 +951,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						//mode = CREATE_ENEMY;
 						//if( p.active )
-						{
+						if( showPanel != NULL )
+						{	
+							showPanel->Update( true, uiMouse.x, uiMouse.y );
+							
 						//	p.Update( true, pixelPos.x, pixelPos.y );
 						}
-						
-						if( mode == CREATE_ENEMY)
+						else if( mode == CREATE_ENEMY)
 						{
-
-							//gs.Update( true, worldPos.x - view.getCenter().x, worldPos.y - view.getCenter().y );//pixelPos.x - gs.controlSprite., pixelPos.y - w->getSize().y / 2 );
-
 							if( gs.active )
 							{
 
-								gs.Update( true, pixelPos.x, pixelPos.y );
+								gs.Update( true, uiMouse.x, uiMouse.y );
 							}
 							canCreatePoint = false;
 						}
@@ -986,27 +1001,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					else if( ev.mouseButton.button == Mouse::Button::Left )
 					{
-					//	mode = CREATE_ENEMY;
-						//if( p.active )
+						if( showPanel != NULL )
 						{
+							showPanel->Update( false, uiMouse.x, uiMouse.y );
 						//	p.Update( false, pixelPos.x, pixelPos.y );
 						}
-						
-						if( mode == CREATE_ENEMY  )
+						else if( mode == CREATE_ENEMY  )
 						{
 
-							if( trackingEnemy )
+							if( trackingEnemy != NULL )
 							{
-								trackingEnemy = false;
+								showPanel = trackingEnemy->panel;
+								trackingEnemy = NULL;
 								ActorParams *actor = new ActorParams;
-								actor->CreatePatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
+								actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
 								groups["--"]->actors.push_back( actor);
 							}
 
-							//gs.Update( true, worldPos.x - view.getCenter().x, worldPos.y - view.getCenter().y );//pixelPos.x - gs.controlSprite., pixelPos.y - w->getSize().y / 2 );
 							if( gs.active )
 							{
-								if( gs.Update( false, pixelPos.x, pixelPos.y ) )
+								if( gs.Update( false, uiMouse.x, uiMouse.y ) )
 								{
 									cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
 								}
@@ -1091,11 +1105,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case Event::KeyPressed:
 				{
-					//if( true )
-					//{
-						//p.SendKey( ev.key.code, ev.key.shift );
-					//}
-					if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
+					if( showPanel != NULL )
+					{
+						showPanel->SendKey( ev.key.code, ev.key.shift );
+					}
+					else if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
 					{
 						Emode oldMode = mode;
 
@@ -1128,7 +1142,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							mode = CREATE_ENEMY;
 							gs.active = true;
-							trackingEnemy = false;
+							trackingEnemy = NULL;
 						}
 						else if( ev.key.code == Keyboard::Space )
 						{
@@ -1481,14 +1495,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		else
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );
 		
-		if( mode == CREATE_ENEMY && trackingEnemy )
+		if( mode == CREATE_ENEMY && trackingEnemy != NULL )
 		{
 			enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
 		}
-
-		//canCreatePoint = true;
-
-	
 
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);
@@ -1525,7 +1535,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					++i;
 				}
 				w->draw( v );
-				//Vertex *p[polygonInProgress->points.size()]
 			}
 			
 			
@@ -1539,7 +1548,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		w->draw( goalSprite );
 		w->draw( iconSprite );
 
-		if( sf::Keyboard::isKeyPressed( Keyboard::H ) )
+		if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )
 		{
 			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
@@ -1552,18 +1561,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			(*it).second->Draw( w );
 		}
 
-		if( mode == CREATE_ENEMY && trackingEnemy )
+		if( mode == CREATE_ENEMY && trackingEnemy != NULL )
 		{
 			w->draw( enemySprite );
 			//enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
 		}
 
 		
-		sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+		
 		w->setView( uiView );
 
 
 		gs.Draw( w );
+		if( showPanel != NULL )
+		{
+			showPanel->Draw( w );
+		}
 		//p.Draw( w );
 
 		w->setView( view );
@@ -1766,6 +1779,21 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
+	Panel *p = b->owner;
+	if( p->name == "patroller_options" )
+	{
+		if( b->name == "ok" );
+		{
+			string result;
+
+			//do checks when switching focus from a text box or pressing ok. 
+			//for now just use pressing ok
+			//do checks? assign variables to the enemy
+
+			showPanel = NULL;
+		}
+	}
+	
 	cout <<"button" << endl;
 }
 
@@ -1777,9 +1805,11 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 {
 	if( name != "not set" )
 	{
-		enemySprite.setTexture( types[name]->imageTexture );
+		trackingEnemy = types[name];
+		enemySprite.setTexture( trackingEnemy->imageTexture );
 		enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
-		trackingEnemy = true;
+	//	trackingEnemy = true;
+		
 //		enemySprite.setPosition
 		cout << "set your cursor as the image" << endl;
 	}
@@ -1791,6 +1821,16 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
+	if( name == "patroller" )
+	{
+		Panel *p = new Panel( "patroller_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
 	return NULL;
 }
 
@@ -1804,7 +1844,8 @@ ActorType::ActorType( const std::string & n, Panel *p )
 	//image.setTexture( imageTexture );
 }
 
-void ActorParams::CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed )
+//returns an error msg or "success" on success
+std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed )
 {
 	type = t;
 
@@ -1831,6 +1872,9 @@ void ActorParams::CreatePatroller( ActorType *t, sf::Vector2i pos, bool clockwis
 	ss.precision( 5 );
 	ss << fixed << speed;
 	params.push_back( ss.str() );
+
+	
+	return "success";
 }
 
 void ActorParams::Draw( sf::RenderTarget *target )

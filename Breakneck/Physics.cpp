@@ -54,6 +54,12 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
+bool CollisionBox::Insersects( CollisionBox &c )
+{
+	//first, box with box aabb. can adjust it later
+
+}
+
 //CONTACT FUNCTIONS
 Contact::Contact()
 	:edge( NULL )
@@ -606,22 +612,23 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	return NULL;
 }
 
-ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
+EdgeParentNode::EdgeParentNode( const V2d &poss, double rww, double rhh )
 {
 	pos = poss;
 	rw = rww;
 	rh = rhh;
 	leaf = false;
-	children[0] = new LeafNode( V2d(pos.x - rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[1] = new LeafNode( V2d(pos.x + rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[2] = new LeafNode( V2d(pos.x - rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[3] = new LeafNode( V2d(pos.x + rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
+	children[0] = new EdgeLeafNode( V2d(pos.x - rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
+	children[1] = new EdgeLeafNode( V2d(pos.x + rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
+	children[2] = new EdgeLeafNode( V2d(pos.x - rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
+	children[3] = new EdgeLeafNode( V2d(pos.x + rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
 
 	
 }
 
 
-LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
+
+EdgeLeafNode::EdgeLeafNode( const V2d &poss, double rww, double rhh )
 	:objCount(0)
 {
 	pos = poss;
@@ -724,21 +731,21 @@ bool IsCircleTouchingCircle( V2d pos0, double rad0, V2d pos1, double rad1 )
 	return length( pos1 - pos0 ) <= rad0 + rad1;
 }
 
-QNode *Insert( QNode *node, Edge* e )
+EdgeQNode *Insert( EdgeQNode *node, Edge* e )
 {
 	if( node->leaf )
 	{
-		LeafNode *n = (LeafNode*)node;
+		EdgeLeafNode *n = (EdgeLeafNode*)node;
 		if( n->objCount == 4 ) //full
 		{
 		//	cout << "splitting" << endl;	
-			ParentNode *p = new ParentNode( n->pos, n->rw, n->rh );
+			EdgeParentNode *p = new EdgeParentNode( n->pos, n->rw, n->rh );
 			p->parent = n->parent;
 			p->debug = n->debug;
 
 		/*	for( int i = 0; i < 4; ++i )
 			{
-				//LeafNode *inner = (LeafNode*)p->children[i];
+				//EdgeLeafNode *inner = (EdgeLeafNode*)p->children[i];
 				Edge * tempEdge = n->edges[i];
 				sf::IntRect nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
 				sf::IntRect ne( node->pos.x + node->rw, node->pos.y - node->rh, node->rw, node->rh );
@@ -780,7 +787,7 @@ QNode *Insert( QNode *node, Edge* e )
 	else
 	{
 	//	cout << "inserting into parent" << endl;
-		ParentNode *n = (ParentNode*)node;
+		EdgeParentNode *n = (EdgeParentNode*)node;
 		sf::Rect<double> nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
 		sf::Rect<double> ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
 		sf::Rect<double> sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
@@ -814,12 +821,12 @@ QNode *Insert( QNode *node, Edge* e )
 	return node;
 }
 
-void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
+void DebugDrawQuadTree( sf::RenderWindow *w, EdgeQNode *node )
 {
 	//cout << "pos: " << node->pos.x << ", " << node->pos.y << " , rw: " << node->rw << ", rh: " << node->rh << endl;
 	if( node->leaf )
 	{
-		LeafNode *n = (LeafNode*)node;
+		EdgeLeafNode *n = (EdgeLeafNode*)node;
 
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		int trans = 100;
@@ -857,7 +864,7 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 	}
 	else
 	{
-		ParentNode *n = (ParentNode*)node;
+		EdgeParentNode *n = (EdgeParentNode*)node;
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		//rs.setOutlineColor( Color::Red );
 		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
@@ -883,13 +890,13 @@ void DebugDrawQuadTree( sf::RenderWindow *w, QNode *node )
 	
 }
 
-void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r )
+void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &r )
 {
 	sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 
 	if( node->leaf )
 	{
-		LeafNode *n = (LeafNode*)node;
+		EdgeLeafNode *n = (EdgeLeafNode*)node;
 
 		if( IsBoxTouchingBox( r, nodeBox ) )
 		{
@@ -901,7 +908,7 @@ void Query( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r )
 	}
 	else
 	{
-		ParentNode *n = (ParentNode*)node;
+		EdgeParentNode *n = (EdgeParentNode*)node;
 
 		for( int i = 0; i < 4; ++i )
 		{

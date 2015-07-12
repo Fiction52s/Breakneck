@@ -116,6 +116,8 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
+		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 192, 128 );
+		fairSword1.setTexture( *ts_fairSword1->texture );
 
 		grindActionLength = 32;
 
@@ -2422,7 +2424,7 @@ bool Actor::CheckStandUp()
 }
 
 
-bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
+bool Actor::ResolvePhysics( V2d vel )
 {
 	//if( reversed )
 	//	vel.x = -vel.x;
@@ -2465,7 +2467,7 @@ bool Actor::ResolvePhysics( Edge** edges, int numPoints, V2d vel )
 	return col;
 }
 
-void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
+void Actor::UpdateReversePhysics()
 {
 	leftGround = false;
 	double movement = 0;
@@ -2690,7 +2692,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 
 				if(!approxEquals( m, 0 ) )
 				{
-					bool hit = ResolvePhysics( edges, numPoints, V2d( -m, 0 ));
+					bool hit = ResolvePhysics( V2d( -m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
@@ -2781,7 +2783,7 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 			//	if(m != 0 )//!approxEquals( m, 0 ) )
 				{	
 					
-					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
+					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
 						V2d eNorm = minContact.edge->Normal();
@@ -2879,11 +2881,11 @@ void Actor::UpdateReversePhysics( Edge **edges, int numPoints )
 	}
 }
 
-void Actor::UpdatePhysics( Edge **edges, int numPoints )
+void Actor::UpdatePhysics()
 {
 	if( reversed )
 	{
-		UpdateReversePhysics( edges, numPoints );
+		UpdateReversePhysics();
 		return;
 	}
 
@@ -3102,7 +3104,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 
 				if(!approxEquals( m, 0 ) )
 				{
-					bool hit = ResolvePhysics( edges, numPoints, V2d( m, 0 ));
+					bool hit = ResolvePhysics( V2d( m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
@@ -3191,7 +3193,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			//	if(m != 0 )//!approxEquals( m, 0 ) )
 				{	
 					bool down = true;
-					bool hit = ResolvePhysics( edges, numPoints, normalize( ground->v1 - ground->v0 ) * m);
+					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 						if( down)
@@ -3327,7 +3329,7 @@ void Actor::UpdatePhysics( Edge **edges, int numPoints )
 			V2d newVel( 0, 0 );
 				
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
-			bool tempCollision = ResolvePhysics( edges, numPoints, movementVec );
+			bool tempCollision = ResolvePhysics( movementVec );
 			V2d extraVel(0, 0);
 			if( tempCollision  )
 			{
@@ -4231,20 +4233,44 @@ void Actor::UpdatePostPhysics()
 		}
 	case FAIR:
 		{
-	
+			showSword1 = frame / 2 >= 2 && frame / 2 <= 10;
 			sprite->setTexture( *(tileset[FAIR]->texture));
+
+			Vector2i offset( -32, -32 );
+
 			if( facingRight )
 			{
 				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
+				//2 - 10
+				if( showSword1 )
+					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 ) );
 			}
 			else
 			{
 				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				
+
+				if( showSword1  )
+				{
+					offset.x = -offset.x;
+					//xoffset = -xoffset;
+					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 );
+					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+					
 			}
+
+			fairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			
 			break;
 		}
 	case DAIR:
@@ -4640,4 +4666,26 @@ void Actor::HandleEdge( Edge *e )
 		}
 	}
 	++possibleEdgeCount;
+}
+
+void Actor::Draw( sf::RenderTarget *target )
+{
+	if( action != GRINDBALL )
+	{
+		target->draw( *sprite );
+
+		if( action == FAIR && showSword1 )
+			target->draw( fairSword1 );
+	}
+	else
+	{
+		target->draw( *sprite );
+		target->draw( gsdodeca );
+		target->draw( gstriblue );
+		target->draw( gstricym );
+		target->draw( gstrigreen );
+		target->draw( gstrioran );
+		target->draw( gstripurp );
+		target->draw( gstrirgb );
+	}
 }

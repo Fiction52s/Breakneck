@@ -2,7 +2,7 @@
 #include "GameSession.h"
 
 Enemy::Enemy( GameSession *own )
-	:owner( own ), prev( NULL ), next( NULL )
+	:owner( own ), prev( NULL ), next( NULL ), spawned( false )
 {
 
 }
@@ -12,6 +12,7 @@ Patroller::Patroller( GameSession *owner )
 {
 	ts = owner->GetTileset( "patroller.png", 32, 32 );
 	sprite.setTexture( *ts->texture );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	position.x = 0;
 	position.y = 0;
 	hurtBody.type = CollisionBox::Hurt;
@@ -45,6 +46,7 @@ void Patroller::UpdatePhysics()
 
 void Patroller::UpdatePostPhysics()
 {
+	UpdateSprite();
 }
 
 void Patroller::UpdateSprite()
@@ -52,13 +54,17 @@ void Patroller::UpdateSprite()
 	sprite.setPosition( position.x, position.y );
 }
 
-void Patroller::Draw()
+void Patroller::Draw( sf::RenderTarget *target )
 {
-	owner->window->draw( sprite );
+	target->draw( sprite );
 }
+
+
 
 bool Patroller::IHitPlayer()
 {
+	
+	if( hitBody
 	Actor &player = owner->player;
 	return false;
 }
@@ -68,3 +74,4 @@ bool Patroller::PlayerHitMe()
 	Actor &player = owner->player;
 	return false;
 }
+
