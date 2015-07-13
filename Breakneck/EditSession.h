@@ -118,12 +118,14 @@ struct EditSession : GUIHandler
 	Panel *CreateOptionsPanel( const std::string &name );
 
 	std::list<sf::Vector2i> patrolPath;
+	double minimumPathEdgeLength;
 
 	enum Emode
 	{
 		CREATE_TERRAIN,
 		EDIT,
 		SELECT_MODE,
+		CREATE_PATROL_PATH,
 		//PLACE_PLAYER,
 		//PLACE_GOAL,
 		SELECT_POLYGONS,

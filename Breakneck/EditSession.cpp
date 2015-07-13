@@ -1165,12 +1165,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( trackingEnemy != NULL )
 								{
-									showPanel = trackingEnemy->panel;
-									trackingEnemy = NULL;
-									ActorParams *actor = new ActorParams;
-									actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
-									groups["--"]->actors.push_back( actor);
-									
+									if( trackingEnemy->name == "patroller" )
+									{
+										mode = CREATE_PATROL_PATH;
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+									}
+									else
+									{
+										showPanel = trackingEnemy->panel;
+										trackingEnemy = NULL;
+										ActorParams *actor = new ActorParams;
+										actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
+										groups["--"]->actors.push_back( actor);
+									}
 								}
 
 								if( showPanel != NULL )
@@ -1262,10 +1270,51 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					break;
 				}
+			case CREATE_PATROL_PATH:
+				{
+					minimumPathEdgeLength = 16;
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							if( ev.key.code == Keyboard::V && patrolPath.size() > 1 )
+							{
+								patrolPath.pop_back();
+							}
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+					break;
+				}
 			}
 
 			//ones that aren't specific to mode
-
+			
 			if( mode != PAUSED && mode != SELECT_MODE )
 			{
 				switch( ev.type )
@@ -1921,6 +1970,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				break;
 			}
+		case CREATE_PATROL_PATH:
+			{
+				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
+				{
+					if( length( worldPos - Vector2<double>(patrolPath.back().x, 
+						patrolPath.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					{
+						Vector2i worldi( testPoint.x, testPoint.y );
+
+						patrolPath.push_back( worldi );
+					}					
+				}
+				break;
+			}
 		}
 
 
@@ -2008,6 +2071,61 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( trackingEnemy != NULL )
 				{
 					w->draw( enemySprite );
+				}
+				break;
+			}
+		case CREATE_PATROL_PATH:
+			{
+				if( trackingEnemy != NULL )
+				{
+					w->draw( enemySprite );
+				}
+				int pathSize = patrolPath.size();
+				if( pathSize > 1 )
+				{
+					Vector2i backPoint = patrolPath.back();
+			
+					Color validColor = Color::Green;
+					Color invalidColor = Color::Red;
+					Color colorSelection;
+					if( true )
+					{
+						colorSelection = validColor;
+					}
+					sf::Vertex activePreview[2] =
+					{
+						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
+						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+					};
+					w->draw( activePreview, 2, sf::Lines );
+
+					if( pathSize > 1 )
+					{
+						VertexArray v( sf::LinesStrip, pathSize );
+						int i = 0;
+						for( list<sf::Vector2i>::iterator it = patrolPath.begin(); 
+							it != patrolPath.end(); ++it )
+						{
+							v[i] = Vertex( Vector2f( (*it).x, (*it).y ) );
+							++i;
+						}
+						w->draw( v );
+					}
+				}
+				
+				if( pathSize > 0 ) //always
+				{
+					CircleShape cs;
+					cs.setRadius( 5 * zoomMultiple  );
+					cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+					cs.setFillColor( Color::Green );
+
+		
+					for( list<Vector2i>::iterator it = patrolPath.begin(); it != patrolPath.end(); ++it )
+					{
+						cs.setPosition( (*it).x, (*it).y );
+						w->draw( cs );
+					}		
 				}
 				break;
 			}
