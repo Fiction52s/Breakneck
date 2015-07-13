@@ -48,7 +48,8 @@ struct ActorParams
 {
 	void WriteFile( std::ofstream &of );
 	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
-	std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
+	std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
+		std::list<sf::Vector2i> &globalPath, float speed, bool loop );
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;

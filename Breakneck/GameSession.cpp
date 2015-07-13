@@ -331,14 +331,46 @@ bool GameSession::OpenFile( string fileName )
 
 				if( typeName == "patroller" )
 				{
-					Patroller *enemy = new Patroller( this );
+					
 					int xPos,yPos;
 					is >> xPos;
 					is >> yPos;
-					string blah;
-					is >> blah;
+
+					int pathLength;
+					is >> pathLength;
+
+					list<Vector2i> localPath;
+					for( int i = 0; i < pathLength; ++i )
+					{
+						int localX,localY;
+						is >> localX;
+						is >> localY;
+						localPath.push_back( Vector2i( localX, localY ) );
+					}
+
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+
+					if( loopStr == "+loop" )
+					{
+						loop = true;
+					}
+					else if( loopStr == "-loop" )
+					{
+						loop = false;
+					}
+					else
+					{
+						assert( false && "should be a boolean" );
+					}
+
+
 					float speed;
 					is >> speed;
+
+					Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
 					enemy->position = V2d( xPos, yPos );
 					//AddEnemy( enemy );
 					enemy->spawnRect = sf::Rect<double>( xPos - 16, yPos - 16, xPos + 16, yPos + 16 );

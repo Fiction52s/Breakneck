@@ -466,21 +466,36 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-					bool clockwise;
-					string clockwiseStr;
-					is >> clockwiseStr;
+					int pathLength;
+					is >> pathLength;
+					
+					list<Vector2i> globalPath;
+					globalPath.push_back( Vector2i( pos.x, pos.y ) );
 
-					if( clockwiseStr == "true" )
-						clockwise = true;
-					else if( clockwiseStr == "false" )
-						clockwise = false;
+					for( int i = 0; i < pathLength; ++i )
+					{
+						int localX,localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
+					}
+
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+					if( loopStr == "+loop" )
+						loop = true;
+					else if( loopStr == "-loop" )
+						loop = false;
 					else
 						assert( false && "should be a boolean" );
+
 
 					float speed;
 					is >> speed;
 
-					a->SetAsPatroller( at, pos, clockwise, speed );	
+					a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 				}
 
 			}
@@ -1173,11 +1188,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else
 									{
-										showPanel = trackingEnemy->panel;
+									/*	showPanel = trackingEnemy->panel;
 										trackingEnemy = NULL;
 										ActorParams *actor = new ActorParams;
 										actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
-										groups["--"]->actors.push_back( actor);
+										groups["--"]->actors.push_back( actor);*/
 									}
 								}
 
@@ -1293,6 +1308,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( ev.key.code == Keyboard::V && patrolPath.size() > 1 )
 							{
 								patrolPath.pop_back();
+							}
+							else if( ev.key.code == Keyboard::Space )
+							{
+								showPanel = trackingEnemy->panel;
+								trackingEnemy = NULL;
+								ActorParams *actor = new ActorParams;
+								actor->SetAsPatroller( patrollerType, patrolPath.front(), patrolPath, 10, false );
+								groups["--"]->actors.push_back( actor);
+								patrolPath.clear();
+								mode = CREATE_ENEMY;
 							}
 							break;
 						}
@@ -2081,7 +2106,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					w->draw( enemySprite );
 				}
 				int pathSize = patrolPath.size();
-				if( pathSize > 1 )
+				if( pathSize > 0 )
 				{
 					Vector2i backPoint = patrolPath.back();
 			
@@ -2438,7 +2463,8 @@ ActorType::ActorType( const std::string & n, Panel *p )
 }
 
 //returns an error msg or "success" on success
-std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed )
+std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos, 
+	list<Vector2i> &globalPath, float speed, bool loop )
 {
 	type = t;
 
@@ -2456,11 +2482,34 @@ std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos, bool cl
 	params.push_back( ss.str() );
 	ss.str( "" );
 	
-	if( clockwise )
-		params.push_back( "true" );
-	else
-		params.push_back( "false" );
 
+	list<Vector2i> localPath;
+	if( globalPath.size() > 1 )
+	{
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for( ; it != globalPath.end(); ++it )
+		{
+			Vector2i temp( (*it).x - pos.x, (*it).y - pos.y );
+			localPath.push_back( temp );
+		}
+	}
+
+	ss << localPath.size();
+	params.push_back( ss.str() );
+	ss.str( "" );
+
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		ss << (*it).x  << " " << (*it).y;
+		params.push_back( ss.str() );
+		ss.str( "" );
+	}
+
+	if( loop )
+		params.push_back( "+loop" );
+	else
+		params.push_back( "-loop" );
 	
 	ss.precision( 5 );
 	ss << fixed << speed;
@@ -2485,15 +2534,14 @@ void ActorParams::WriteFile( ofstream &of )
 	//dont need number of params because the actortype determines that.
 	of << type->name << " ";
 
-	list<string>::iterator it = params.begin();
-	of << (*it);
-	++it;
+	
+	//of << (*it);
+	//++it;
 
-	for( ; it != params.end(); ++it )
+	for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
 	{
-		of << " " << (*it);
+		of << (*it) << endl;
 	}
-	of << endl;
 }
 
 void ActorGroup::Draw( sf::RenderTarget *target )

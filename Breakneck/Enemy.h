@@ -25,7 +25,7 @@ struct Enemy : EdgeQuadTreeCollider
 
 struct Patroller : Enemy
 {
-	Patroller( GameSession *owner );
+	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );
 	void HandleEdge( Edge *e );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -34,7 +34,17 @@ struct Patroller : Enemy
 	bool IHitPlayer();
 	bool PlayerHitMe();
 	void UpdateSprite();
-	std::list<sf::Vector2<double>> nodes;
+
+
+	//std::list<sf::Vector2i> path;
+	sf::Vector2i *path; //global
+	int pathLength;
+	bool loop;
+
+	int targetNode;
+	bool forward;
+
+
 	double acceleration;
 	double maxSpeed;
 	int nodeWaitFrames;
