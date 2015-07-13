@@ -76,38 +76,40 @@ struct EditSession : GUIHandler
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
-	double minimumEdgeLength;
-	std::list<TerrainPolygon*> polygons;
+	void ButtonCallback( Button *b, const std::string & e );
+	void TextBoxCallback( TextBox *tb, const std::string & e );
+	void GridSelectorCallback( GridSelector *gs, const std::string & e );
+
+	std::string mode;
+	sf::RenderWindow *w;
 	sf::Vector2i playerPosition;
 	sf::Vector2i goalPosition;
-	TerrainPolygon *polygonInProgress;
-	sf::RenderWindow *w;
-	std::string mode;
 	std::string currentFile;
 	double zoomMultiple;
+	sf::Vector2f testPoint;
+	std::map<std::string, ActorGroup*> groups;
+	std::map<std::string, ActorType*> types;
+
+	//CREATE_TERRAIN mode
 	void Add( TerrainPolygon *brush, TerrainPolygon *poly);	
-	//std::string polygonTool;
-	std::list<sf::VertexArray*> progressDrawList;
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
-	sf::Vector2f testPoint;
-	double minAngle;
 
- 
-	sf::Text polygonTimeoutText;
-	int polygonTimeoutTextTimer;
-	int polygonTimeoutTextLength;
+	double minimumEdgeLength;
+	double minAngle;
+	std::list<TerrainPolygon*> polygons;
+	TerrainPolygon *polygonInProgress;
+	std::list<sf::VertexArray*> progressDrawList;
+	
+	//sf::Text polygonTimeoutText;
+	//int polygonTimeoutTextTimer;
+	//int polygonTimeoutTextLength;
 
 	//static void TestButton();
 
-	void ButtonCallback( Button *b, const std::string & e );
-	void TextBoxCallback( TextBox *tb, const std::string & e );
-	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	
-	std::map<std::string, ActorGroup*> groups;
-	std::map<std::string, ActorType*> types;
 
 	sf::Sprite enemySprite;
 	ActorType *trackingEnemy;//bool trackingEnemy;
@@ -121,6 +123,7 @@ struct EditSession : GUIHandler
 	{
 		CREATE_TERRAIN,
 		EDIT,
+		SELECT_MODE,
 		//PLACE_PLAYER,
 		//PLACE_GOAL,
 		SELECT_POLYGONS,

@@ -915,25 +915,32 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
 	};
 
+	sf::Texture guiMenuCubeTexture;
+	guiMenuCubeTexture.loadFromFile( "guioptions.png" );
+	sf::Sprite guiMenuSprite;
+	guiMenuSprite.setTexture( guiMenuCubeTexture );
+	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
+
 	
 
 	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	
-	
+	V2d menuDownPos;
+	Emode menuDownStored;
 
 	Emode mode = CREATE_TERRAIN;
 	Emode stored = mode;
 	bool canCreatePoint = true;
-
+	gs.active = true;
 
 	while( !quit )
 	{
 		w->clear();
-		 prevWorldPos = worldPos;
-		 pixelPos = sf::Mouse::getPosition( *w );
-		 Vector2f tempWorldPos = w->mapPixelToCoords(pixelPos);
-		 worldPos.x = tempWorldPos.x;
-		 worldPos.y = tempWorldPos.y;
+		prevWorldPos = worldPos;
+		pixelPos = sf::Mouse::getPosition( *w );
+		Vector2f tempWorldPos = w->mapPixelToCoords(pixelPos);
+		worldPos.x = tempWorldPos.x;
+		worldPos.y = tempWorldPos.y;
 
 		w->setView( uiView );
 		Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
@@ -1081,6 +1088,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 					case Event::MouseButtonPressed:
 						{
+							/*bool emptySpace = true;
+							if( polygonInProgress->points.size() == 0 )
+							{
+								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+						
+										if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+										{
+											emptySpace = false;
+											(*it)->SetSelected( !((*it)->selected ) );
+											break;
+										}
+								}
+							}
+
+							if( emptySpace )
+							{
+
+							}
+							else
+							{
+								polygonInProgress->points.clear();
+							}*/
 							break;
 						}
 					case Event::MouseButtonReleased:
@@ -1112,17 +1142,131 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case CREATE_ENEMY:
 				{
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+							if( ev.mouseButton.button == Mouse::Left )
+							{
+								if( showPanel != NULL )
+								{	
+									showPanel->Update( true, uiMouse.x, uiMouse.y );
+								}
+								else if( gs.active )
+								{
+									gs.Update( true, uiMouse.x, uiMouse.y );
+								}
+							}
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							if( ev.mouseButton.button == Mouse::Left )
+							{
+								if( trackingEnemy != NULL )
+								{
+									showPanel = trackingEnemy->panel;
+									trackingEnemy = NULL;
+									ActorParams *actor = new ActorParams;
+									actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
+									groups["--"]->actors.push_back( actor);
+									
+								}
+
+								if( showPanel != NULL )
+								{	
+									showPanel->Update( false, uiMouse.x, uiMouse.y );
+								}
+								else if( gs.active )
+								{
+									if( gs.Update( false, uiMouse.x, uiMouse.y ) )
+									{
+										cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
+									}
+								}
+
+								
+							}
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							
+						}
+					}
 					break;
 				}
 			case PAUSED:
 				{
+					switch( ev.type )
+					{
+						case Event::MouseButtonPressed:
+							{
+								break;
+							}
+						case Event::MouseButtonReleased:
+							{
+
+								break;
+							}
+						case Event::GainedFocus:
+						{
+							mode = stored;
+							break;
+						}
+					}
+					break;
+				}
+			case SELECT_MODE:
+				{
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							V2d releasePos(uiMouse.x, uiMouse.y);
+							if( length( releasePos - menuDownPos ) > 100 )
+							{
+								//mode = EDIT;
+								mode = CREATE_ENEMY;
+								//cout << "blah: " << length( releasePos - menuDownPos ) << endl;
+							}
+							else
+								mode = menuDownStored;
+
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
 					break;
 				}
 			}
 
 			//ones that aren't specific to mode
 
-			if( mode != PAUSED )
+			if( mode != PAUSED && mode != SELECT_MODE )
 			{
 				switch( ev.type )
 				{
@@ -1132,6 +1276,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							panning = true;
 							panAnchor = worldPos;
+						}
+						else if( ev.mouseButton.button == Mouse::Button::Right )
+						{
+							menuDownStored = mode;
+							mode = SELECT_MODE;
+							menuDownPos = V2d( uiMouse.x, uiMouse.y );
+							guiMenuSprite.setPosition( uiMouse.x, uiMouse.y );//pixelPos.x, pixelPos.y );//uiMouse.x, uiMouse.y );
 						}
 						break;
 					}
@@ -1758,6 +1909,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case CREATE_ENEMY:
 			{
+				if( trackingEnemy != NULL )
+				{
+					enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+				}
+
+				
 				break;
 			}
 		case PAUSED:
@@ -1796,15 +1953,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		else
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );*/
 		
-		if( mode == CREATE_ENEMY && trackingEnemy != NULL )
-		{
-			enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
-		}
+		
 
 		w->setView( view );
 		w->draw(border, 8, sf::Lines);
 
 		Draw();
+
+		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+		{
+			(*it).second->Draw( w );
+		}
 
 		switch( mode )
 		{
@@ -1844,6 +2003,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				break;
 			}
+		case CREATE_ENEMY:
+			{
+				if( trackingEnemy != NULL )
+				{
+					w->draw( enemySprite );
+				}
+				break;
+			}
 		}
 		
 
@@ -1862,29 +2029,30 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
 			w->draw( alphaTextSprite );
 		}
-
-		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-		{
-			(*it).second->Draw( w );
-		}
-
-		if( mode == CREATE_ENEMY && trackingEnemy != NULL )
-		{
-			w->draw( enemySprite );
-			//enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
-		}
-
-		
 		
 		w->setView( uiView );
 
-
-		gs.Draw( w );
-		if( showPanel != NULL )
+		switch( mode )
 		{
-			showPanel->Draw( w );
+			case CREATE_TERRAIN:
+				{
+					break;
+				}
+			case CREATE_ENEMY:
+				{
+					gs.Draw( w );
+					if( showPanel != NULL )
+					{
+						showPanel->Draw( w );
+					}
+					break;
+				}
+			case SELECT_MODE:
+				{
+					w->draw( guiMenuSprite );
+					break;
+				}
 		}
-		//p.Draw( w );
 
 		w->setView( view );
 
