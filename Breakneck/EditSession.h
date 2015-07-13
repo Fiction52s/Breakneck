@@ -115,15 +115,18 @@ struct EditSession : GUIHandler
 	bool trackingEnemyDown;
 	Panel *CreateOptionsPanel( const std::string &name );
 
+	std::list<sf::Vector2i> patrolPath;
 
 	enum Emode
 	{
-		CREATE_POLYGONS,
-		PLACE_PLAYER,
-		PLACE_GOAL,
+		CREATE_TERRAIN,
+		EDIT,
+		//PLACE_PLAYER,
+		//PLACE_GOAL,
 		SELECT_POLYGONS,
 		PAUSED,
-		CREATE_ENEMY
+		CREATE_ENEMY,
+		DRAW_PATROL_PATH
 	};
 
 	

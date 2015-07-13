@@ -31,7 +31,6 @@ TerrainPolygon::~TerrainPolygon()
 
 void TerrainPolygon::Finalize()
 {
-
 	material = "mat";
 	lines = new sf::Vertex[points.size()*2+1];
 	int i = 0;
@@ -922,7 +921,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	
 	
 
-	Emode mode = CREATE_POLYGONS;
+	Emode mode = CREATE_TERRAIN;
 	Emode stored = mode;
 	bool canCreatePoint = true;
 
@@ -940,17 +939,336 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
 		w->setView( view );
 		sf::Event ev;
+
+		testPoint.x = worldPos.x;
+		testPoint.y = worldPos.y;
 		
 		while( w->pollEvent( ev ) )
 		{
-			switch( ev.type )
+			switch( mode )
+			{
+			case CREATE_TERRAIN:
+				{
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+							if( ev.mouseButton.button == Mouse::Left )
+							{
+							}
+							
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							
+						}
+					case Event::KeyPressed:
+						{
+							if( ev.key.code == Keyboard::Space )
+							{
+								if( polygonInProgress->points.size() > 2 )
+								{
+									//test final line
+
+									if( !PointValid( polygonInProgress->points.back(), polygonInProgress->points.front() ) )
+										break;
+
+									list<TerrainPolygon*>::iterator it = polygons.begin();
+									bool added = false;
+									polygonInProgress->Finalize();
+									bool recursionDone = false;
+									TerrainPolygon *currentBrush = polygonInProgress;
+
+										while( it != polygons.end() )
+										{
+											TerrainPolygon *temp = (*it);
+											if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+											{
+												cout << "before addi: " << (*it)->points.size() << endl;
+						
+												Add( currentBrush, temp );
+
+												polygonInProgress->Reset();
+						
+												cout << "after adding: " << (*it)->points.size() << endl;
+												polygons.erase( it );
+
+												currentBrush = temp;
+
+												it = polygons.begin();
+
+												added = true;
+							
+												continue;
+											}
+											else
+											{
+												//cout << "not" << endl;
+											}
+											++it;
+										}
+				
+									//add final check for validity here
+				
+									if( !added )
+									{
+										polygonInProgress->Finalize();
+										polygons.push_back( polygonInProgress );
+										polygonInProgress = new TerrainPolygon();
+									}
+									else
+									{
+
+										polygons.push_back( currentBrush );
+										polygonInProgress->Reset();
+									}
+								}
+
+								if( polygonInProgress->points.size() <= 2 && polygonInProgress->points.size() > 0  )
+								{
+									cout << "cant finalize. cant make polygon" << endl;
+									polygonInProgress->points.clear();
+								}
+							}
+							else if( ev.key.code == sf::Keyboard::V )
+							{
+								if( polygonInProgress->points.size() > 0 )
+								{
+									polygonInProgress->points.pop_back();
+								}
+								/*else if( mode == SELECT_POLYGONS )
+								{
+									list<TerrainPolygon*>::iterator it = polygons.begin();
+									while( it != polygons.end() )
+									{
+										if( (*it)->selected )
+										{
+											delete (*it);
+											polygons.erase( it++ );
+										}
+										else
+											++it;
+									}
+								}*/
+							}
+							
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+					break;	
+				}
+			case EDIT:
+				{
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+					break;
+				}
+			case CREATE_ENEMY:
+				{
+					break;
+				}
+			case PAUSED:
+				{
+					break;
+				}
+			}
+
+			//ones that aren't specific to mode
+
+			if( mode != PAUSED )
+			{
+				switch( ev.type )
+				{
+				case Event::MouseButtonPressed:
+					{
+						if( ev.mouseButton.button == Mouse::Button::Middle )
+						{
+							panning = true;
+							panAnchor = worldPos;
+						}
+						break;
+					}
+				case Event::MouseButtonReleased:
+					{
+						if( ev.mouseButton.button == Mouse::Button::Middle )
+						{
+							panning = false;
+						}
+						break;
+					}
+				case Event::MouseWheelMoved:
+					{
+						if( ev.mouseWheel.delta > 0 )
+						{
+							zoomMultiple /= 2;
+						}
+						else if( ev.mouseWheel.delta < 0 )
+						{
+							zoomMultiple *= 2;
+						}
+
+						if( zoomMultiple < .25 )
+						{
+							zoomMultiple = .25;
+							cout << "min zoom" << endl;
+						}
+						else if( zoomMultiple > 65536 )
+						{
+							zoomMultiple = 65536;
+						}
+						else if( abs(zoomMultiple - 1.0) < .1 )
+						{
+							zoomMultiple = 1;
+						}
+				
+						Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
+						view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
+						w->setView( view );
+						Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
+						Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
+						Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
+						view.setCenter( tempCenter.x, tempCenter.y );
+						w->setView( view );
+						break;
+					}
+				case Event::KeyPressed:
+					{
+						if( ev.key.code == Keyboard::S && ev.key.control )
+						{
+							polygonInProgress->points.clear();
+							cout << "writing to file: " << currentFile << ".brknk" << endl;
+							WriteFile(currentFile);
+						}
+						else if( ev.key.code == Keyboard::T )
+						{
+							quit = true;
+						}
+						else if( ev.key.code == Keyboard::Escape )
+						{
+							if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+							{
+								quit = true;
+								returnVal = 1;
+							}
+						}
+						else if( ev.key.code == sf::Keyboard::Z )
+						{
+							panning = true;
+							panAnchor = worldPos;	
+						}
+						else if( ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash )
+						{
+							if( ev.key.code == sf::Keyboard::Equal )
+							{
+								zoomMultiple /= 2;
+							}
+							else if( ev.key.code == sf::Keyboard::Dash )
+							{
+								zoomMultiple *= 2;
+							}
+
+							if( zoomMultiple < .25 )
+							{
+								zoomMultiple = .25;
+								cout << "min zoom" << endl;
+							}
+							else if( zoomMultiple > 65536 )
+							{
+								zoomMultiple = 65536;
+							}
+							else if( abs(zoomMultiple - 1.0) < .1 )
+							{
+								zoomMultiple = 1;
+							}
+				
+							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
+							view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
+							w->setView( view );
+							Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
+							Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
+							Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
+							view.setCenter( tempCenter.x, tempCenter.y );
+							w->setView( view );
+
+							break;
+						}
+						break;
+					}
+				case Event::KeyReleased:
+					{
+						if( ev.key.code == sf::Keyboard::Z )
+						{
+							panning = false;
+						}
+						break;
+					}
+				case Event::LostFocus:
+					{
+						stored = mode;
+						mode = PAUSED;
+						break;
+					}
+				case Event::GainedFocus:
+					{
+						mode = stored;
+						break;
+					}
+				}
+			}
+			
+			/*switch( ev.type )
 			{
 			case Event::MouseButtonPressed:
 				{
 					if( ev.mouseButton.button == Mouse::Left )
 					{
-						//mode = CREATE_ENEMY;
-						//if( p.active )
 						if( showPanel != NULL )
 						{	
 							showPanel->Update( true, uiMouse.x, uiMouse.y );
@@ -1320,153 +1638,136 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					mode = stored;
 				}
-			}
+			}*/
 		}
 
 		if( quit )
 			break;
-		testPoint.x = worldPos.x;
-		testPoint.y = worldPos.y;
 
-		if( polygonInProgress->points.size() > 0 && Keyboard::isKeyPressed( Keyboard::LShift ) ) 
+		
+
+		switch( mode )
 		{
+		case CREATE_TERRAIN:
+			{
+				if( polygonInProgress->points.size() > 0 && Keyboard::isKeyPressed( Keyboard::LShift ) ) 
+				{
 
-			Vector2i last = polygonInProgress->points.back();
-			Vector2f diff = testPoint - Vector2f(last.x, last.y);
+					Vector2i last = polygonInProgress->points.back();
+					Vector2f diff = testPoint - Vector2f(last.x, last.y);
 
-			double len;
-			double angle = atan2( -diff.y, diff.x );
-			if( angle < 0 )
-				angle += 2 * PI;
-			Vector2f dir;
+					double len;
+					double angle = atan2( -diff.y, diff.x );
+					if( angle < 0 )
+						angle += 2 * PI;
+					Vector2f dir;
 			
-			//cout << "angle : " << angle << endl;
-			if( angle + PI / 8 >= 2 * PI || angle < PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), V2d( 1, 0 ) );
-				dir = Vector2f( 1, 0 );
-			}
-			else if( angle < 3 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), normalize( V2d( 1, -1 ) ) );
-				V2d tt = normalize( V2d( 1, -1 ) );
-				dir = Vector2f( tt.x, tt.y );
-			}
-			else if( angle < 5 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), V2d( 0, -1 ) );
-				dir = Vector2f( 0, -1 );
-			}
-			else if( angle < 7 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, -1 )) );
-				V2d tt = normalize( V2d( -1, -1 ) );
-				dir = Vector2f( tt.x, tt.y );
-			}
-			else if( angle < 9 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), V2d( -1, 0 ) );
-				dir = Vector2f( -1, 0 );
-			}
-			else if( angle < 11 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, 1 )) );
-				V2d tt = normalize( V2d( -1, 1 ) );
-				dir = Vector2f( tt.x, tt.y );
-			}
-			else if( angle < 13 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), V2d( 0, 1 ) );
-				dir = Vector2f( 0, 1 );
-			}
-			else //( angle < 15 * PI / 8 )
-			{
-				len = dot( V2d( diff.x, diff.y ), normalize(V2d( 1, 1 )) );
-				V2d tt = normalize( V2d( 1, 1 ) );
-				dir = Vector2f( tt.x, tt.y );
-			}
-
-			testPoint = Vector2f(last.x, last.y) + dir * (float)len;
-			//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
-		}
-
-
-		 if( canCreatePoint && Mouse::isButtonPressed( Mouse::Left ) )
-		{
-			if( mode == CREATE_POLYGONS && !panning )
-			{
-				//testPoint.x = worldPos.x;
-				//testPoint.y = worldPos.y;
-
-
-				
-
-				bool emptySpace = true;
-				for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-				{
-					if((*it)->ContainsPoint( testPoint ) )
+					//cout << "angle : " << angle << endl;
+					if( angle + PI / 8 >= 2 * PI || angle < PI / 8 )
 					{
-						//emptySpace = false;
-						
-						break;
+						len = dot( V2d( diff.x, diff.y ), V2d( 1, 0 ) );
+						dir = Vector2f( 1, 0 );
 					}
+					else if( angle < 3 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), normalize( V2d( 1, -1 ) ) );
+						V2d tt = normalize( V2d( 1, -1 ) );
+						dir = Vector2f( tt.x, tt.y );
+					}
+					else if( angle < 5 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), V2d( 0, -1 ) );
+						dir = Vector2f( 0, -1 );
+					}
+					else if( angle < 7 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, -1 )) );
+						V2d tt = normalize( V2d( -1, -1 ) );
+						dir = Vector2f( tt.x, tt.y );
+					}
+					else if( angle < 9 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), V2d( -1, 0 ) );
+						dir = Vector2f( -1, 0 );
+					}
+					else if( angle < 11 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, 1 )) );
+						V2d tt = normalize( V2d( -1, 1 ) );
+						dir = Vector2f( tt.x, tt.y );
+					}
+					else if( angle < 13 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), V2d( 0, 1 ) );
+						dir = Vector2f( 0, 1 );
+					}
+					else //( angle < 15 * PI / 8 )
+					{
+						len = dot( V2d( diff.x, diff.y ), normalize(V2d( 1, 1 )) );
+						V2d tt = normalize( V2d( 1, 1 ) );
+						dir = Vector2f( tt.x, tt.y );
+					}
+
+					testPoint = Vector2f(last.x, last.y) + dir * (float)len;
+					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}
 
-				if( emptySpace )
+				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
-					if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
-						polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+					bool emptySpace = true;
+					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
-						Vector2i worldi( testPoint.x, testPoint.y );
-						
-						
-						if( polygonInProgress->points.size() > 0 )
+						if((*it)->ContainsPoint( testPoint ) )
 						{
-							if( PointValid( polygonInProgress->points.back(), worldi ) )
-							{
-								polygonInProgress->points.push_back( worldi );
-							}
-						}
-						else
-							polygonInProgress->points.push_back( worldi );
-						//		//cout << "point valid" << endl;
-						//		polygonInProgress->points.push_back( worldi  );
-						//		for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						//		{
-						//			//(*it)->SetSelected( false );					
-						//		}
-						//	}
-						//	//else
-						//		//cout << "INVALID" << endl;
-						//	
-						//}
-						//else
-						//{
-						//	bool okay = true;
-						//	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						//	{
-						//		if( (*it)->ContainsPoint( Vector2f(worldi.x, worldi.y) ) )
-						//		{
-						//			okay = false;
-						//			break;
-						//		}
-
-						//	//	(*it)->SetSelected( false );					
-						//	}
-						//	if( okay)
-						//	polygonInProgress->points.push_back( worldi  );
-						//
-						//}
+							//emptySpace = false;
 						
-
+							break;
+						}
 					}
+
+					if( emptySpace )
+					{
+						if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
+							polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+						{
+							Vector2i worldi( testPoint.x, testPoint.y );
+						
+						
+							if( polygonInProgress->points.size() > 0 )
+							{
+								if( PointValid( polygonInProgress->points.back(), worldi ) )
+								{
+									polygonInProgress->points.push_back( worldi );
+								}
+							}
+							else
+								polygonInProgress->points.push_back( worldi );
+						}
+					}
+					else
+					{
+						//polygonInProgress->points.clear();
+					}
+					
 				}
-				else
-				{
-					//polygonInProgress->points.clear();
-				}
+				break;
+			}
+		case EDIT:
+			{
+				break;
+			}
+		case CREATE_ENEMY:
+			{
+				break;
+			}
+		case PAUSED:
+			{
+				break;
 			}
 		}
+
+
+		
 
 		if( panning )
 		{
@@ -1477,23 +1778,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 
 
-		if( mode == PLACE_PLAYER )
+	/*	if( mode == PLACE_PLAYER )
 		{
 			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
 			//cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
 		}
 		else
-			playerSprite.setPosition( playerPosition.x, playerPosition.y );
+			playerSprite.setPosition( playerPosition.x, playerPosition.y );*/
 
 
 
 
-		if( mode == PLACE_GOAL )
+	/*	if( mode == PLACE_GOAL )
 		{
 			goalSprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
 		}
 		else
-			goalSprite.setPosition( goalPosition.x, goalPosition.y );
+			goalSprite.setPosition( goalPosition.x, goalPosition.y );*/
 		
 		if( mode == CREATE_ENEMY && trackingEnemy != NULL )
 		{
@@ -1505,40 +1806,46 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		Draw();
 
-		int progressSize = polygonInProgress->points.size();
-		if( progressSize > 0 )
+		switch( mode )
 		{
-			Vector2i backPoint = polygonInProgress->points.back();
-			
-			Color validColor = Color::Green;
-			Color invalidColor = Color::Red;
-			Color colorSelection;
-			if( true )
+		case CREATE_TERRAIN:
 			{
-				colorSelection = validColor;
-			}
-			sf::Vertex activePreview[2] =
-			{
-				sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
-				sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
-			};
-			w->draw( activePreview, 2, sf::Lines );
-
-			if( progressSize > 1 )
-			{
-				VertexArray v( sf::LinesStrip, progressSize );
-				int i = 0;
-				for( list<sf::Vector2i>::iterator it = polygonInProgress->points.begin(); 
-					it != polygonInProgress->points.end(); ++it )
+				int progressSize = polygonInProgress->points.size();
+				if( progressSize > 0 )
 				{
-					v[i] = Vertex( Vector2f( (*it).x, (*it).y ) );
-					++i;
+					Vector2i backPoint = polygonInProgress->points.back();
+			
+					Color validColor = Color::Green;
+					Color invalidColor = Color::Red;
+					Color colorSelection;
+					if( true )
+					{
+						colorSelection = validColor;
+					}
+					sf::Vertex activePreview[2] =
+					{
+						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
+						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+					};
+					w->draw( activePreview, 2, sf::Lines );
+
+					if( progressSize > 1 )
+					{
+						VertexArray v( sf::LinesStrip, progressSize );
+						int i = 0;
+						for( list<sf::Vector2i>::iterator it = polygonInProgress->points.begin(); 
+							it != polygonInProgress->points.end(); ++it )
+						{
+							v[i] = Vertex( Vector2f( (*it).x, (*it).y ) );
+							++i;
+						}
+						w->draw( v );
+					}
 				}
-				w->draw( v );
+				break;
 			}
-			
-			
 		}
+		
 
 		iconSprite.setScale( view.getSize().x / 960.0, view.getSize().y / 540.0 );
 		iconSprite.setPosition( view.getCenter().x + 200 * iconSprite.getScale().x, view.getCenter().y - 250 * iconSprite.getScale().y );

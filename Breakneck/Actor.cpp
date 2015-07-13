@@ -232,6 +232,12 @@ Actor::Actor( GameSession *gs )
 		hurtBody.rw = 32;
 		hurtBody.rh = 32;
 
+		currHitboxes = NULL;
+		currHitboxInfo = NULL;
+		receivedHit = NULL;
+		hitlagFrames = 0;
+		hitstunFrames = 0;
+		invincibleFrames = 0;
 	}
 
 void Actor::ActionEnded()
