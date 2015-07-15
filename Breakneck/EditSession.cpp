@@ -463,8 +463,18 @@ bool EditSession::OpenFile( string fileName )
 				{
 					Vector2i pos;
 
-					is >> pos.x;
-					is >> pos.y;
+					string airStr;
+					is >> airStr;
+
+					if( airStr == "+air" )
+					{
+						is >> pos.x;
+						is >> pos.y;
+					}
+					else
+					{
+						assert( false && "air wrong" );
+					}
 
 					int pathLength;
 					is >> pathLength;
@@ -496,6 +506,65 @@ bool EditSession::OpenFile( string fileName )
 					is >> speed;
 
 					a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+				}
+				else if( typeName == "crawler" )
+				{
+
+					//always grounded
+					string airStr;
+					is >> airStr;
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					bool clockwise;
+					string cwStr;
+					is >> cwStr;
+
+					if( cwStr == "+clockwise" )
+						clockwise = true;
+					else if( cwStr == "-clockwise" )
+						clockwise = false;
+					else
+					{
+						assert( false && "boolean problem" );
+					}
+
+					float speed;
+					is >> speed;
+
+					int testIndex = 0;
+					TerrainPolygon *terrain = NULL;
+					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing" );
+
+					if( edgeIndex == terrain->points.size() - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
+					//Crawler *enemy = new Crawler( this, edges[edgeIndex], edgeQuantity, clockwise, speed );
+					//enemyTree = Insert( enemyTree, enemy );
+
 				}
 
 			}
@@ -533,8 +602,12 @@ void EditSession::WriteFile(string fileName)
 	of << playerPosition.x << " " << playerPosition.y << endl;
 	of << goalPosition.x << " " << goalPosition.y << endl;
 
+	int writeIndex = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
+		(*it)->writeIndex = writeIndex;
+		++writeIndex;
+
 		of << (*it)->material << " " << (*it)->points.size() << endl;
 		for( list<Vector2i>::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 		{
@@ -838,20 +911,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
+	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
+	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
+
 	types["patroller"] = patrollerType;
+	types["crawler"] = crawlerType;
 
 	GridSelector gs( 2, 2, 32, 32, this );
 	gs.active = false;
-	Texture patrolTex;
-//	patrolTex.loadFromFile( "patroller.png" );
-	Texture patrol2Tex;
-	patrol2Tex.loadFromFile( "patroller2.png" );
+
 	sf::Sprite s0( patrollerType->iconTexture );
-	sf::Sprite s1( patrol2Tex );
+	sf::Sprite s1( crawlerType->iconTexture );
 	gs.Set( 0, 0, s0, "patroller" );
-	//gs.Set( 0, 1, s0 );
-	gs.Set( 1, 1, s1, "patroller" );
-	//gs.Set( 1, 1, s1 );
+	gs.Set( 1, 0, s1, "crawler" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -947,6 +1019,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Emode stored = mode;
 	bool canCreatePoint = true;
 	gs.active = true;
+
+	int enemyEdgeIndex;
+	TerrainPolygon *enemyEdgePolygon;
+	double enemyEdgeQuantity;
 
 	while( !quit )
 	{
@@ -1186,8 +1262,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										patrolPath.clear();
 										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
-									else
+									else if( trackingEnemy->name == "crawler" )
 									{
+
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											trackingEnemy = NULL;
+											ActorParams *actor = new ActorParams;
+											actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity, true, 10 );
+											groups["--"]->actors.push_back( actor);
+										}
+										
+										//int enemyEdgeIndex;
+										//TerrainPolygon *enemyEdgePolygon;
+										//double enemyEdgeQuantity;
+										
+										//showPanel = trackingEnemy->panel;
+										//trackingEnemy = NULL;
+										
 									/*	showPanel = trackingEnemy->panel;
 										trackingEnemy = NULL;
 										ActorParams *actor = new ActorParams;
@@ -1985,7 +2079,103 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				if( trackingEnemy != NULL )
 				{
+					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
 					enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+				}
+
+				if( trackingEnemy != NULL && trackingEnemy->name == "crawler" )
+				{
+					enemyEdgePolygon = NULL;
+					//actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
+					//							enemyEdgeQuantity, true, 10 );
+					enemySprite.setRotation( 0 );
+					double testRadius = 200;
+					
+					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+
+						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
+						{
+							list<Vector2i>::iterator prevIt = (*it)->points.end();
+							prevIt--;
+							list<Vector2i>::iterator currIt = (*it)->points.begin();
+
+							if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+							{
+								//prev is starting at 0. start normally at 1
+								//cout << "contains" << endl;
+								int edgeIndex = 0;
+								double minDistance = 10000000;
+								int storedIndex;
+								double storedQuantity;
+							
+								V2d closestPoint;
+
+								for( ; currIt != (*it)->points.end(); ++currIt )
+								{
+									double dist = abs(
+										cross( 
+										V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
+										normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) ) );
+									double testQuantity =  dot( 
+											V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
+											normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) );
+
+									V2d pr( (*prevIt).x, (*prevIt).y );
+									V2d cu( (*currIt).x, (*currIt).y );
+									V2d te( testPoint.x, testPoint.y );
+
+
+									//if( testQuantity > l )
+									//	testQuantity = l;
+									//if( testQuantity < 0 )
+									//	testQuantity = 0;
+									
+									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(testQuantity / length( cu - pr ) ) );
+
+									if( dist < 100 && testQuantity >= 16 && testQuantity <= length( cu - pr ) - 16 && length( newPoint - te ) < length( closestPoint - te ) )
+									{
+										minDistance = dist;
+										storedIndex = edgeIndex;
+										double l = length( cu - pr );
+										
+										storedQuantity = testQuantity;
+										closestPoint = newPoint ;
+										//minDistance = length( closestPoint - te )  
+										
+										enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
+										enemySprite.setPosition( closestPoint.x, closestPoint.y );
+										enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+									}
+
+									prevIt = currIt;
+									++edgeIndex;
+								}
+
+								enemyEdgeIndex = storedIndex;
+								/*if( enemyEdgeIndex == 0 )
+								{
+									enemyEdgeIndex = (*it)->points.size() - 1;
+								}
+								else
+									enemyEdgeIndex--;*/
+
+								enemyEdgeQuantity = storedQuantity;
+								
+								enemyEdgePolygon = (*it);
+								
+
+								//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
+								//cout << "minDist: " << minDistance << endl;
+
+								break;
+							}
+						}
+					}
+
+
 				}
 
 				
@@ -2411,6 +2601,19 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "crawler_options" )
+	{
+		if( b->name == "ok" );
+		{
+			string result;
+
+			//do checks when switching focus from a text box or pressing ok. 
+			//for now just use pressing ok
+			//do checks? assign variables to the enemy
+
+			showPanel = NULL;
+		}
+	}
 	
 	cout <<"button" << endl;
 }
@@ -2449,6 +2652,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
+	else if( name == "crawler" )
+	{
+		Panel *p = new Panel( "crawler_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
 	return NULL;
 }
 
@@ -2468,20 +2680,15 @@ std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos,
 {
 	type = t;
 
-	//icon.setTexture( type->iconTexture );
 	image.setTexture( type->imageTexture );
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
-//	cout << "image pos: " << pos.x << ", " << pos.y << endl;
 	image.setPosition( pos.x, pos.y );
 
 	params.clear();
 
 	stringstream ss;
 
-	ss << pos.x << " " << pos.y;
-	params.push_back( ss.str() );
-	ss.str( "" );
-	
+	position = pos;	
 
 	list<Vector2i> localPath;
 	if( globalPath.size() > 1 )
@@ -2519,6 +2726,74 @@ std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos,
 	return "success";
 }
 
+std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
+		int eIndex, double edgeQuantity, bool clockwise, float speed )
+{
+	type = t;
+	ground = edgePolygon;
+	edgeIndex = eIndex;
+	groundQuantity = edgeQuantity;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+	
+	//	image.setPosition( pos.x, pos.y );
+	int testIndex = 0;
+
+	Vector2i point;
+
+	list<Vector2i>::iterator prev = ground->points.end();
+	prev--;
+	list<Vector2i>::iterator curr = ground->points.begin();
+
+	for( ; curr != ground->points.end(); ++curr )
+	{
+		if( edgeIndex == testIndex )
+		{
+			V2d pr( (*prev).x, (*prev).y );
+			V2d cu( (*curr).x, (*curr).y );
+
+			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(groundQuantity / length( cu - pr ) ) );
+
+			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+
+			image.setPosition( newPoint.x, newPoint.y );
+			image.setRotation( angle );
+
+			break;
+		}
+		prev = curr;
+		++testIndex;
+	}
+
+
+	//adjust for ordery
+	if( edgeIndex == 0 )
+		edgeIndex = ground->points.size() - 1;
+	else
+		edgeIndex--;
+
+
+	params.clear();
+
+	stringstream ss; 
+
+	if( clockwise )
+		params.push_back( "+clockwise" );
+	else
+		params.push_back( "-clockwise" );
+
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );	
+}
+
+ActorParams::ActorParams()
+	:ground( NULL ), groundQuantity( 420.69 )
+{
+}
+
 void ActorParams::Draw( sf::RenderTarget *target )
 {
 	target->draw( image );
@@ -2534,9 +2809,14 @@ void ActorParams::WriteFile( ofstream &of )
 	//dont need number of params because the actortype determines that.
 	of << type->name << " ";
 
-	
-	//of << (*it);
-	//++it;
+	if( ground != NULL )
+	{
+		of << "-air" << " " << ground->writeIndex << " " << edgeIndex << " " << groundQuantity << endl;
+	}
+	else
+	{
+		of << "+air" << " " << position.x << " " << position.y << endl;
+	}
 
 	for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
 	{

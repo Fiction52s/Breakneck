@@ -8,6 +8,7 @@
 #ifndef __EDIT_SESSION__
 #define __EDIT_SESSION__
 
+struct ActorParams;
 
 struct TerrainPolygon
 {
@@ -31,6 +32,10 @@ struct TerrainPolygon
 	int right;
 	int top;
 	int bottom;
+	
+	std::list<ActorParams*> enemies;
+
+	int writeIndex;
 };
 
 
@@ -46,14 +51,21 @@ struct ActorType
 
 struct ActorParams
 {
+	ActorParams();
 	void WriteFile( std::ofstream &of );
 	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
 	std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
 		std::list<sf::Vector2i> &globalPath, float speed, bool loop );
+	std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;
 	ActorType *type;
+	sf::Vector2i position;
+	double groundQuantity;
+	TerrainPolygon *ground;
+	int edgeIndex;
 	void Draw( sf::RenderTarget *target );
 };
 

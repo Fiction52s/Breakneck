@@ -203,7 +203,7 @@ bool GameSession::OpenFile( string fileName )
 
 		int goalPositionx, goalPositiony;
 		is >> goalPositionx;
-		is >> goalPositiony;
+		is >> goalPositiony;  
 		goalSprite.setPosition( goalPositionx, goalPositiony );
 
 		int pointsLeft = numPoints;
@@ -331,10 +331,21 @@ bool GameSession::OpenFile( string fileName )
 
 				if( typeName == "patroller" )
 				{
-					
+					string airStr;
+					is >> airStr;
+
 					int xPos,yPos;
-					is >> xPos;
-					is >> yPos;
+
+					if( airStr == "+air" )
+					{
+						is >> xPos;
+						is >> yPos;
+					}
+					else
+					{
+						assert( false && "air wrong gamesession" );
+					}
+					
 
 					int pathLength;
 					is >> pathLength;
@@ -371,12 +382,41 @@ bool GameSession::OpenFile( string fileName )
 					is >> speed;
 
 					Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
-					enemy->position = V2d( xPos, yPos );
-					//AddEnemy( enemy );
-					enemy->spawnRect = sf::Rect<double>( xPos - 16, yPos - 16, xPos + 16, yPos + 16 );
 					enemyTree = Insert( enemyTree, enemy );
+				}
+				else if( typeName == "crawler" )
+				{
+					//always grounded
+					string airStr;
+					is >> airStr;
 
-					//enemy->maxSpeed = spee
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					bool clockwise;
+					string cwStr;
+					is >> cwStr;
+
+					if( cwStr == "+clockwise" )
+						clockwise = true;
+					else if( cwStr == "-clockwise" )
+						clockwise = false;
+					else
+					{
+						assert( false && "boolean problem" );
+					}
+
+					float speed;
+					is >> speed;
+
+					Crawler *enemy = new Crawler( this, edges[terrainIndex + edgeIndex], edgeQuantity, clockwise, speed );
+					enemyTree = Insert( enemyTree, enemy );
 				}
 				else
 				{

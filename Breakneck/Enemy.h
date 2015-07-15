@@ -59,6 +59,27 @@ struct Patroller : Enemy
 	int hitstunFrames;
 };
 
+struct Crawler : Enemy
+{
+	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
+	void HandleEdge( Edge *e );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool PlayerHitMe();
+	void UpdateSprite();
+
+	sf::Sprite sprite;
+	Tileset *ts;
+
+	bool clockwise;
+	double speed;
+	Edge *ground;
+	double groundQuantity;
+};
+
 struct EnemyParentNode;
 
 struct EnemyQNode

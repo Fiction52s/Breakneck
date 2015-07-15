@@ -19,6 +19,8 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 {
 	position.x = pos.x;
 	position.y = pos.y;
+
+	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, pos.x + 16, pos.y + 16 );
 	
 	pathLength = pathParam.size() + 1;
 	path = new Vector2i[pathLength];
@@ -135,8 +137,6 @@ void Patroller::Draw( sf::RenderTarget *target )
 	target->draw( sprite );
 }
 
-
-
 bool Patroller::IHitPlayer()
 {
 	Actor &player = owner->player;
@@ -175,3 +175,50 @@ bool Patroller::PlayerHitMe()
 	return false;
 }
 
+Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
+:Enemy( owner ), ground( g ), groundQuantity( q ), clockwise( cw ), speed( s )
+{
+	ts = owner->GetTileset( "crawler.png", 32, 32 );
+	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	V2d gPoint = g->GetPoint( groundQuantity );
+	sprite.setPosition( gPoint.x, gPoint.y );
+
+	spawnRect = sf::Rect<double>( gPoint.x - 16, gPoint.y - 16, gPoint.x + 16, gPoint.y + 16 );
+}
+
+void Crawler::HandleEdge( Edge *e )
+{
+}
+
+void Crawler::UpdatePrePhysics()
+{
+}
+
+void Crawler::UpdatePhysics()
+{
+}
+
+void Crawler::UpdatePostPhysics()
+{
+}
+
+void Crawler::Draw(sf::RenderTarget *target )
+{
+	target->draw( sprite );
+}
+
+bool Crawler::IHitPlayer()
+{
+	return false;
+}
+
+bool Crawler::PlayerHitMe()
+{
+	return false;
+}
+
+void Crawler::UpdateSprite()
+{
+}
