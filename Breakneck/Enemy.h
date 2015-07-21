@@ -14,7 +14,9 @@ struct Enemy : EdgeQuadTreeCollider
 	virtual void UpdatePostPhysics() = 0;
 	virtual void Draw( sf::RenderTarget *target) = 0;
 	virtual bool IHitPlayer() = 0;
+	virtual void UpdateHitboxes() = 0;
 	virtual bool PlayerHitMe() = 0;
+	virtual void DebugDraw(sf::RenderTarget *target) = 0;
 	Enemy *prev;
 	Enemy *next;
 	GameSession *owner;
@@ -31,9 +33,12 @@ struct Patroller : Enemy
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
 	bool IHitPlayer();
 	bool PlayerHitMe();
 	void UpdateSprite();
+	void UpdateHitboxes();
+
 
 
 	//std::list<sf::Vector2i> path;
@@ -70,6 +75,8 @@ struct Crawler : Enemy
 	bool IHitPlayer();
 	bool PlayerHitMe();
 	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -77,7 +84,12 @@ struct Crawler : Enemy
 	bool clockwise;
 	double speed;
 	Edge *ground;
+	double offsetX;
 	double groundQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
 };
 
 struct EnemyParentNode;

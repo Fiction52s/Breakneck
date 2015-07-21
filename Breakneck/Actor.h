@@ -58,8 +58,11 @@ struct Actor : EdgeQuadTreeCollider
 	bool CheckStandUp();
 	void UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
+
+	void DebugDraw( sf::RenderTarget *target );
 	GameSession *owner;
 
+	void UpdateHitboxes();
 	
 	double steepClimbSpeedThresh;
 	bool leftGround;

@@ -27,6 +27,8 @@ struct GameSession : EnemyQuadTreeCollider
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
 
+	void DebugDrawActors();
+
 	void HandleEnemy( Enemy *e );
 
 	Actor player;

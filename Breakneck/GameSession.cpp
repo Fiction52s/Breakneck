@@ -770,7 +770,7 @@ int GameSession::Run( string fileName )
 			player.UpdatePostPhysics();
 
 			UpdateEnemiesPostPhysics();
-		
+			
 
 			cam.Update( &player );
 
@@ -935,6 +935,8 @@ int GameSession::Run( string fileName )
 			window->draw( alphaTextSprite );
 		}
 
+		DebugDrawActors();
+
 //		DebugDrawQuadTree( window, enemyTree );
 
 		window->display();
@@ -958,5 +960,17 @@ void GameSession::HandleEnemy( Enemy *e )
 		//cout << "spawning enemy!" << endl;
 		e->spawned = true;
 		AddEnemy( e );
+	}
+}
+
+void GameSession::DebugDrawActors()
+{
+	player.DebugDraw( window );
+	
+	Enemy *currEnemy = activeEnemyList;
+	while( currEnemy != NULL )
+	{
+		currEnemy->DebugDraw( window );
+		currEnemy = currEnemy->next;
 	}
 }

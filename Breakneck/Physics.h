@@ -29,11 +29,13 @@ struct CollisionBox
 	};
 
 	
-	bool Intersects( CollisionBox &c, 
-		sf::Vector2<double> thisPos, double thisRot, 
-		sf::Vector2<double> otherPos, double otherRot );
-	double offsetAngle;
+	bool Intersects( CollisionBox &c );
+	//double offsetAngle;
+	sf::Vector2<double> globalPosition;
+	double globalAngle;
+
 	sf::Vector2<double> offset;
+	void DebugDraw( sf::RenderTarget *target );
 
 	double rw; //radius or half width
 	double rh; //radius or half height

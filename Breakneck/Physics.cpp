@@ -54,17 +54,46 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
-bool CollisionBox::Intersects( CollisionBox &c, V2d thisPos, double thisRot, V2d otherPos, double otherRot )
+bool CollisionBox::Intersects( CollisionBox &c )
 {
 	//first, box with box aabb. can adjust it later
-	if( c.isCircle == true && this->isCircle == true )
+	if( c.isCircle && this->isCircle )
 	{
-		double dist = length( thisPos - otherPos );
+		double dist = length( this->globalPosition - c.globalPosition );
 		//cout << "dist: " << dist << endl;
 		if( dist <= this->rw + c.rw )
 			return true;
 	}
+	else if( c.isCircle && !this->isCircle )
+	{
+	}
+	else if( !c.isCircle && this->isCircle )
+	{
+	}
+	else //both are boxes
+	{
+
+	}
 	return false;
+}
+
+void CollisionBox::DebugDraw( sf::RenderTarget *target )
+{
+	if( isCircle )
+	{
+		CircleShape cs;
+		cs.setFillColor( Color( 100, 100, 100, 100 ) );
+
+		cs.setRadius( rw );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( globalPosition.x, globalPosition.y );
+
+		target->draw( cs );
+
+	}
+	else
+	{
+	}
 }
 
 //CONTACT FUNCTIONS

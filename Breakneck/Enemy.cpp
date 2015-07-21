@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "GameSession.h"
 #include <iostream>
+#include "VectorMath.h"
 
 
 using namespace std;
@@ -44,7 +45,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.y = 0;
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
-	hurtBody.offsetAngle = 0;
+	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
 	hurtBody.rw = 16;
@@ -52,7 +53,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
-	hitBody.offsetAngle = 0;
+	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
 	hitBody.rw = 16;
@@ -113,6 +114,8 @@ void Patroller::UpdatePhysics()
 
 void Patroller::UpdatePostPhysics()
 {
+	UpdateHitboxes();
+
 	if( PlayerHitMe() )
 	{
 		cout << "patroller received damage of: " << receivedHit->damage;
@@ -140,12 +143,18 @@ void Patroller::Draw( sf::RenderTarget *target )
 bool Patroller::IHitPlayer()
 {
 	Actor &player = owner->player;
-	if( hitBody.Intersects( player.hurtBody, position, 0, player.position, player.rotation ) )
+	if( hitBody.Intersects( player.hurtBody ) )
 	{
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
+}
+
+void Patroller::UpdateHitboxes()
+{
+	hurtBody.globalPosition = position;
+	hitBody.globalPosition = position;
 }
 
 bool Patroller::PlayerHitMe()
@@ -157,7 +166,7 @@ bool Patroller::PlayerHitMe()
 
 		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
 		{
-			if( hurtBody.Intersects( (*it), position, 0,  player.position, player.rotation ) )
+			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
@@ -173,6 +182,12 @@ bool Patroller::PlayerHitMe()
 		
 	}
 	return false;
+}
+
+void Patroller::DebugDraw( RenderTarget *target )
+{
+	hurtBody.DebugDraw( target );
+	hitBody.DebugDraw( target );
 }
 
 Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
@@ -192,6 +207,34 @@ void Crawler::HandleEdge( Edge *e )
 {
 }
 
+void Crawler::UpdateHitboxes()
+{
+	
+	if( ground != NULL )
+	{
+		V2d gn = ground->Normal();
+		double angle = 0;
+		if( !approxEquals( abs(offsetX), physBody.rw ) )
+		{
+
+			//this should never happen
+		}
+		else
+		{
+			angle = atan2( gn.x, -gn.y );
+		}
+		hitBody.globalAngle = angle;
+		hurtBody.globalAngle = angle;
+	}
+	else
+	{
+		hitBody.globalAngle = 0;
+		hurtBody.globalAngle = 0;
+	}
+
+	hitBody.globalPosition = V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
+}
+
 void Crawler::UpdatePrePhysics()
 {
 }
@@ -202,6 +245,7 @@ void Crawler::UpdatePhysics()
 
 void Crawler::UpdatePostPhysics()
 {
+	UpdateHitboxes();
 }
 
 void Crawler::Draw(sf::RenderTarget *target )
@@ -221,4 +265,10 @@ bool Crawler::PlayerHitMe()
 
 void Crawler::UpdateSprite()
 {
+}
+
+void Crawler::DebugDraw( RenderTarget *target )
+{
+//	hurtBody.DebugDraw( target );
+//	hitBody.DebugDraw( target );
 }

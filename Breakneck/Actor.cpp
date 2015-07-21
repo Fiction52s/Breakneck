@@ -56,7 +56,7 @@ Actor::Actor( GameSession *gs )
 		cb.isCircle = true;
 		cb.offset.x = 0;
 		cb.offset.y = 0;
-		cb.offsetAngle = 0;
+		//cb.offsetAngle = 0;
 		cb.rw = 64;
 		cb.rh = 64;
 		fairHitboxes[4]->push_back( cb );
@@ -216,7 +216,7 @@ Actor::Actor( GameSession *gs )
 
 		//CollisionBox b;
 		b.isCircle = false;
-		b.offsetAngle = 0;
+		//b.offsetAngle = 0;
 		b.offset.x = 0;
 		b.offset.y = 0;
 		b.rw = 10;
@@ -226,7 +226,7 @@ Actor::Actor( GameSession *gs )
 		b.type = b.Physics;
 
 		hurtBody.isCircle = true;
-		hurtBody.offsetAngle = 0;
+		//hurtBody.offsetAngle = 0;
 		hurtBody.offset.x = 0;
 		hurtBody.offset.y = 0;
 		hurtBody.rw = 32;
@@ -323,6 +323,9 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+
+
+
 	if( reversed )
 	{
 		bool up = currInput.LUp();
@@ -340,6 +343,26 @@ void Actor::UpdatePrePhysics()
 	V2d gNorm;
 	if( ground != NULL )
 		gNorm = ground->Normal();
+
+	if( receivedHit != NULL )
+	{
+		hitlagFrames = receivedHit->hitlagFrames;
+		hitstunFrames = receivedHit->hitstunFrames;
+		invincibleFrames = receivedHit->damage;
+		if( ground == NULL )
+		{
+			action = AIRHITSTUN;
+			frame = 0;
+		}
+		else
+		{
+			action = GROUNDHITSTUN;
+			frame = 0;
+		}
+		receivedHit = NULL;
+	}
+
+	cout << "hitstunFrames: " << hitstunFrames << endl;
 	//choose action
 
 	
@@ -1217,7 +1240,6 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
-
 	case GRINDBALL:
 		{
 		
@@ -1720,7 +1742,6 @@ void Actor::UpdatePrePhysics()
 			
 			break;
 		}
-		
 	case WALLJUMP:
 		{
 			if( frame == 0 )
@@ -2497,7 +2518,7 @@ bool Actor::CheckStandUp()
 }
 
 
-bool Actor::ResolvePhysics( V2d vel )
+bool Actor:: ResolvePhysics( V2d vel )
 {
 	//if( reversed )
 	//	vel.x = -vel.x;
@@ -3703,6 +3724,55 @@ void Actor::UpdatePhysics()
 	}
 }
 
+void Actor::UpdateHitboxes()
+{
+	double angle = 0;
+	if( ground != NULL )
+	{
+
+		V2d gn = ground->Normal();
+		if( !approxEquals( abs(offsetX), b.rw ) )
+		{
+			if( reversed )
+				angle = PI;
+			//this should never happen
+		}
+		else
+		{
+			angle = atan2( gn.x, -gn.y );
+		}
+	}
+
+	if( currHitboxes != NULL )
+	{
+		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+		{
+			if( ground != NULL )
+			{
+				(*it).globalAngle = angle;
+			}
+			else
+			{
+				(*it).globalAngle = 0;
+			}
+
+			(*it).globalPosition = position + V2d( (*it).offset.x * cos( (*it).globalAngle ) + (*it).offset.y * sin( (*it).globalAngle ), 
+				(*it).offset.x * -sin( (*it).globalAngle ) + (*it).offset.y * cos( (*it).globalAngle ) );
+
+			//(*it).globalPosition = position + (*it).offset;
+		
+		}
+	}
+	
+	hurtBody.globalAngle = angle;
+	hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
+				hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
+
+	b.globalPosition = position + b.offset;
+	b.globalAngle = 0;
+		
+}
+
 void Actor::UpdatePostPhysics()
 {
 	//if( slowMultiple > 1 )
@@ -3720,18 +3790,7 @@ void Actor::UpdatePostPhysics()
 
 	V2d gn;
 
-	if( receivedHit != NULL )
-	{
-		hitlagFrames = receivedHit->hitlagFrames;
-		hitstunFrames = receivedHit->hitstunFrames;
-		invincibleFrames = receivedHit->damage;
-		//if( ground != NULL )
-		//{
-			action = AIRHITSTUN;
-			frame = 0;
-		//}
-		receivedHit = NULL;
-	}
+	
 
 	//cout << "frame: " << frame << endl;
 	if( grindEdge != NULL )
@@ -3863,49 +3922,55 @@ void Actor::UpdatePostPhysics()
 			framesInAir++;
 		}
 
-		if( action != AIRHITSTUN )
+		if( action == GROUNDHITSTUN )
 		{
-		if( collision )
-		{
-			//cout << "wallcling" << endl;
-			if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
-			//if( false )
-			{
-				
-				if( wallNormal.x > 0)
-				{
-					//cout << "facing right: " << endl;
-					if( currInput.LLeft() )
-					{
-						facingRight = true;
-						action = WALLCLING;
-						frame = 0;
-					}
-				}
-				else
-				{
-					if( currInput.LRight() )
-					{
-					//	cout << "facing left: " << endl;
-						facingRight = false;
-						action = WALLCLING;
-						frame = 0;
-					}
-					
-				}
-			}
-		}
-		else if( action == WALLCLING && length( wallNormal ) == 0 )
-		{
-			action = JUMP;
-			frame = 1;
+			action = AIRHITSTUN;
+			frame = 0;
 		}
 
-		if( leftGround )
+		if( action != AIRHITSTUN )
 		{
-			action = JUMP;
-			frame = 1;
-		}
+			if( collision )
+			{
+				//cout << "wallcling" << endl;
+				if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
+				//if( false )
+				{
+				
+					if( wallNormal.x > 0)
+					{
+						//cout << "facing right: " << endl;
+						if( currInput.LLeft() )
+						{
+							facingRight = true;
+							action = WALLCLING;
+							frame = 0;
+						}
+					}
+					else
+					{
+						if( currInput.LRight() )
+						{
+						//	cout << "facing left: " << endl;
+							facingRight = false;
+							action = WALLCLING;
+							frame = 0;
+						}
+					
+					}
+				}
+			}
+			else if( action == WALLCLING && length( wallNormal ) == 0 )
+			{
+				action = JUMP;
+				frame = 1;
+			}
+
+			if( leftGround )
+			{
+				action = JUMP;
+				frame = 1;
+			}
 		}
 	}
 
@@ -4724,6 +4789,8 @@ void Actor::UpdatePostPhysics()
 	}
 	else
 		slowCounter++;
+
+	UpdateHitboxes();
 }
 
 void Actor::HandleEdge( Edge *e )
@@ -4820,4 +4887,18 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( gstripurp );
 		target->draw( gstrirgb );
 	}
+}
+
+void Actor::DebugDraw( RenderTarget *target )
+{
+	if( currHitboxes != NULL )
+	{
+		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+		{
+			(*it).DebugDraw( target );
+		}
+	}
+
+	hurtBody.DebugDraw( target );
+	b.DebugDraw( target );
 }
