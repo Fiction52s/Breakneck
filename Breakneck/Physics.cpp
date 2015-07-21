@@ -54,7 +54,7 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
-bool CollisionBox::Insersects( CollisionBox &c, V2d thisPos, V2d otherPos )
+bool CollisionBox::Intersects( CollisionBox &c, V2d thisPos, double thisRot, V2d otherPos, double otherRot )
 {
 	//first, box with box aabb. can adjust it later
 	if( c.isCircle == true && this->isCircle == true )

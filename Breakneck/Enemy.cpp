@@ -140,7 +140,7 @@ void Patroller::Draw( sf::RenderTarget *target )
 bool Patroller::IHitPlayer()
 {
 	Actor &player = owner->player;
-	if( hitBody.Insersects( player.hurtBody, position, player.position ) )
+	if( hitBody.Intersects( player.hurtBody, position, 0, player.position, player.rotation ) )
 	{
 		player.ApplyHit( hitboxInfo );
 		return true;
@@ -157,7 +157,7 @@ bool Patroller::PlayerHitMe()
 
 		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
 		{
-			if( hurtBody.Insersects( (*it), position, player.position ) )
+			if( hurtBody.Intersects( (*it), position, 0,  player.position, player.rotation ) )
 			{
 				hit = true;
 				break;

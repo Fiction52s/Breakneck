@@ -28,11 +28,13 @@ struct CollisionBox
 		Hurt
 	};
 
-	sf::Vector2<double> offset;
-	bool Insersects( CollisionBox &c, sf::Vector2<double> thisPos,
-		sf::Vector2<double> otherPos );
-	double offsetAngle;
 	
+	bool Intersects( CollisionBox &c, 
+		sf::Vector2<double> thisPos, double thisRot, 
+		sf::Vector2<double> otherPos, double otherRot );
+	double offsetAngle;
+	sf::Vector2<double> offset;
+
 	double rw; //radius or half width
 	double rh; //radius or half height
 	bool isCircle;

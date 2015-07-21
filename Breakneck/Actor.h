@@ -194,6 +194,7 @@ struct Actor : EdgeQuadTreeCollider
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
 
+	double rotation;
 
 };
 

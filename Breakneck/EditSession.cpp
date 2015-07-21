@@ -562,9 +562,6 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
-					//Crawler *enemy = new Crawler( this, edges[edgeIndex], edgeQuantity, clockwise, speed );
-					//enemyTree = Insert( enemyTree, enemy );
-
 				}
 
 			}
@@ -1273,6 +1270,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity, true, 10 );
 											groups["--"]->actors.push_back( actor);
+
+											
 										}
 										
 										//int enemyEdgeIndex;
@@ -2080,7 +2079,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( trackingEnemy != NULL )
 				{
 					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
+					enemySprite.setRotation( 0 );
 					enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+					
 				}
 
 				if( trackingEnemy != NULL && trackingEnemy->name == "crawler" )
@@ -2088,7 +2089,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemyEdgePolygon = NULL;
 					//actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
 					//							enemyEdgeQuantity, true, 10 );
-					enemySprite.setRotation( 0 );
+				
 					double testRadius = 200;
 					
 					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
