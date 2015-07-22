@@ -66,9 +66,45 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else if( c.isCircle && !this->isCircle )
 	{
+		V2d pA = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pB = globalPosition + V2d( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pC = globalPosition + V2d( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d pD = globalPosition + V2d( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		
+		double A = cross( c.globalPosition - pA, normalize(pB - pA) );
+		double B = cross( c.globalPosition - pB, normalize(pC - pB) );
+		double C = cross( c.globalPosition - pC, normalize(pD - pC) );
+		double D = cross( c.globalPosition - pD, normalize(pA - pD) );
+
+		if( A <= c.rw && B <= c.rw && C <= c.rw && D <= c.rw )
+		{
+			return true;
+		}
+
+
+		return false;
 	}
 	else if( !c.isCircle && this->isCircle )
 	{
+		V2d pA = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pB = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pC = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pD = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		
+		double A = cross( globalPosition - pA, normalize(pB - pA) );
+		double B = cross( globalPosition - pB, normalize(pC - pB) );
+		double C = cross( globalPosition - pC, normalize(pD - pC) );
+		double D = cross( globalPosition - pD, normalize(pA - pD) );
+
+		//cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << ", rw: " << rw << endl;
+
+		if( A <= rw && B <= rw && C <= rw && D <= rw )
+		{
+			return true;
+		}
+
+
+		return false;
 	}
 	else //both are boxes
 	{
@@ -93,6 +129,31 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 	}
 	else
 	{
+		V2d pos = globalPosition;
+		double angle = globalAngle;
+		sf::RectangleShape r;
+		if( type == Physics )
+		{
+			r.setFillColor( Color( 255, 0, 0, 100 ) );
+		}
+		else if( type == Hit )
+		{
+			r.setFillColor( Color( 0, 255, 0, 100 ) );
+		}
+		else if( type == Hurt )
+		{
+			r.setFillColor( Color( 0, 0, 255, 255 ) );
+		}
+		
+		r.setSize( sf::Vector2f( rw * 2, rh * 2 ) );
+		r.setOrigin( r.getLocalBounds().width / 2, r.getLocalBounds().height / 2 );
+		r.setRotation( angle / PI * 180 );
+		
+		r.setPosition( globalPosition.x, globalPosition.y );
+
+
+		target->draw( r );
+
 	}
 }
 

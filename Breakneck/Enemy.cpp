@@ -154,7 +154,9 @@ bool Patroller::IHitPlayer()
 void Patroller::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
+	hurtBody.globalAngle = 0;
 	hitBody.globalPosition = position;
+	hitBody.globalAngle = 0;
 }
 
 bool Patroller::PlayerHitMe()

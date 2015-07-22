@@ -221,16 +221,18 @@ Actor::Actor( GameSession *gs )
 		b.offset.y = 0;
 		b.rw = 10;
 		b.rh = normalHeight;
+		b.type = CollisionBox::BoxType::Physics;
 
 		
 		b.type = b.Physics;
 
-		hurtBody.isCircle = true;
+		hurtBody.isCircle = false;
 		//hurtBody.offsetAngle = 0;
 		hurtBody.offset.x = 0;
 		hurtBody.offset.y = 0;
-		hurtBody.rw = 32;
-		hurtBody.rh = 32;
+		hurtBody.rw = 10;
+		hurtBody.rh = normalHeight;
+		hurtBody.type = CollisionBox::BoxType::Hurt;
 
 		currHitboxes = NULL;
 		currHitboxInfo = NULL;
@@ -3764,9 +3766,16 @@ void Actor::UpdateHitboxes()
 		}
 	}
 	
+	
+	hurtBody.rw = b.rw;
+	hurtBody.rh = b.rh;
+	hurtBody.offset = b.offset;
+	cout << "hurtbody offset: " << hurtBody.offset.x << ", " << hurtBody.offset.y << endl;
 	hurtBody.globalAngle = angle;
-	hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
-				hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
+	hurtBody.globalPosition = position + hurtBody.offset;
+	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
+	//			hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
+	//hurtBody.globalPosition = position;
 
 	b.globalPosition = position + b.offset;
 	b.globalAngle = 0;
