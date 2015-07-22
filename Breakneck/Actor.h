@@ -10,7 +10,8 @@
 #define __ACTOR_H__
 
 struct GameSession;
-struct Actor : EdgeQuadTreeCollider
+struct Actor : EdgeQuadTreeCollider,
+	RayCastHandler
 {
 	enum Action
 	{
@@ -36,6 +37,7 @@ struct Actor : EdgeQuadTreeCollider
 		STEEPCLIMB,
 		AIRHITSTUN,
 		GROUNDHITSTUN,
+		WIREHOLD,
 		Count
 	};
 
@@ -60,6 +62,7 @@ struct Actor : EdgeQuadTreeCollider
 	void Draw( sf::RenderTarget *target );
 
 	void DebugDraw( sf::RenderTarget *target );
+	void HandleRayCollision( Edge *edge, double edgeQuantity );
 	GameSession *owner;
 
 	void UpdateHitboxes();
@@ -199,6 +202,10 @@ struct Actor : EdgeQuadTreeCollider
 
 	double rotation;
 
+	int framesFiring;
+	sf::Vector2<double> fireDir;
+	Edge *rcPoint;
+	double rcQuantity;
 };
 
 #endif

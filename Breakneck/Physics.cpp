@@ -108,6 +108,17 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else //both are boxes
 	{
+		V2d pA0 = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pB0 = globalPosition + V2d( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pC0 = globalPosition + V2d( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d pD0 = globalPosition + V2d( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+
+		V2d pA1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pB1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pC1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pD1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+
+		//finish this up!
 
 	}
 	return false;
@@ -723,8 +734,6 @@ EdgeParentNode::EdgeParentNode( const V2d &poss, double rww, double rhh )
 	
 }
 
-
-
 EdgeLeafNode::EdgeLeafNode( const V2d &poss, double rww, double rhh )
 	:objCount(0)
 {
@@ -1005,6 +1014,7 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 	}
 	else
 	{
+		//shouldn't this check for box touching box right here??
 		EdgeParentNode *n = (EdgeParentNode*)node;
 
 		for( int i = 0; i < 4; ++i )
@@ -1013,4 +1023,40 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 		}
 	}
 	
+}
+
+void RayCast( RayCastHandler *handler, EdgeQNode *node, V2d startPoint, V2d endPoint )
+{
+	if( node->leaf )
+	{
+		EdgeLeafNode *n = (EdgeLeafNode*)node;
+
+		Edge e;
+		e.v0 = startPoint;
+		e.v1 = endPoint;
+
+		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+	
+		if( IsEdgeTouchingBox( &e, nodeBox ) )
+		{
+			for( int i = 0; i < n->objCount; ++i )
+			{
+				LineIntersection li = SegmentIntersect( startPoint, endPoint, n->edges[i]->v0, n->edges[i]->v1 );	
+				if( !li.parallel )
+				{
+					handler->HandleRayCollision( n->edges[i], n->edges[i]->GetQuantity( li.position ) );
+				}
+			}
+		}
+		
+	}
+	else
+	{
+		EdgeParentNode *n = (EdgeParentNode*)node;
+
+		for( int i = 0; i < 4; ++i )
+		{
+			RayCast( handler, n->children[i], startPoint, endPoint );
+		}
+	}
 }

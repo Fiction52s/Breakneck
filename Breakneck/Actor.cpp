@@ -122,6 +122,9 @@ Actor::Actor( GameSession *gs )
 		actionLength[GROUNDHITSTUN] = 1;
 		tileset[GROUNDHITSTUN] = owner->GetTileset( "steepslide.png", 64, 32 );
 
+		actionLength[WIREHOLD] = 1;
+		tileset[WIREHOLD] = owner->GetTileset( "steepslide.png", 64, 32 );
+
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
 		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	
@@ -319,15 +322,15 @@ void Actor::ActionEnded()
 		case GROUNDHITSTUN:
 			frame = 0;
 			break;
+		case WIREHOLD:
+			frame = 0;
+			break;
 		}
 	}
 }
 
 void Actor::UpdatePrePhysics()
 {
-
-
-
 	if( reversed )
 	{
 		bool up = currInput.LUp();
@@ -339,7 +342,6 @@ void Actor::UpdatePrePhysics()
 		if( up ) currInput.leftStickPad += 2;
 		if( down ) currInput.leftStickPad += 1;
 	}
-
 
 	ActionEnded();
 	V2d gNorm;
@@ -624,6 +626,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
+			if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 )
+			{
+				action = WIREHOLD;
+				framesFiring = 0;
+				frame = 0;
+				break;
+			}
+
 			if( hasAirDash && !prevInput.B && currInput.B )
 			{
 				action = AIRDASH;
@@ -1558,6 +1568,9 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+	case WIREHOLD:
+
+		break;
 	}
 	
 	currHitboxes = NULL;
@@ -2284,6 +2297,39 @@ void Actor::UpdatePrePhysics()
 			hitstunFrames--;
 			break;
 		}
+	case WIREHOLD:
+		if( framesFiring == 0 )
+		{
+			fireDir = V2d( 0, 0 );
+			if( currInput.LLeft() )
+			{
+				fireDir.x -= 1;
+			}
+			else if( currInput.LRight() )
+			{
+				fireDir.x += 1;
+			}
+			
+			if( currInput.LUp() )
+			{
+				fireDir.y -= 1;
+			}
+			else if( currInput.LDown() )
+			{
+				fireDir.y += 1;
+			}
+
+			fireDir = normalize( fireDir );
+		}
+		
+		double dist = 40;
+
+
+		rcPoint = NULL;
+		//rcQuantity = 0;
+		RayCast( this, owner->testTree, position, fireDir * dist * (framesFiring + 1 ) );
+
+		break;
 	}
 
 
@@ -4789,6 +4835,21 @@ void Actor::UpdatePostPhysics()
 			sprite->setRotation( 0 );
 			break;
 		}
+	case WIREHOLD:
+			sprite->setTexture( *(tileset[WIREHOLD]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[WIREHOLD]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[WIREHOLD]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+		break;
 	}
 
 	if( slowCounter == slowMultiple )
@@ -4880,6 +4941,17 @@ void Actor::Draw( sf::RenderTarget *target )
 {
 	if( action != GRINDBALL )
 	{
+
+		RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
+		
+		sf::Vertex line[] =
+		{
+			sf::Vertex(sf::Vector2f(position.x, position.y)),
+			sf::Vertex(sf::Vector2f(position.x - 100, position.y))
+		};
+
+		target->draw(line, 2, sf::Lines);
+
 		target->draw( *sprite );
 
 		if( action == FAIR && showSword1 )
@@ -4910,4 +4982,18 @@ void Actor::DebugDraw( RenderTarget *target )
 
 	hurtBody.DebugDraw( target );
 	b.DebugDraw( target );
+}
+
+void Actor::HandleRayCollision( Edge *edge, double edgeQuantity )
+{
+	
+	CircleShape cs;
+	cs.setFillColor( Color::Cyan );
+	cs.setRadius( 10 );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( edge->GetPoint( edgeQuantity ).x, edge->GetPoint( edgeQuantity ).y );
+
+	owner->window->draw( cs );
+
+	cout << "ray collision! at: " << edgeQuantity << endl;
 }

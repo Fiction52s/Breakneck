@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include "VectorMath.h"
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
@@ -119,6 +120,15 @@ struct EdgeQuadTreeCollider
 void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &r );
 
 bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir );
+
+struct RayCastHandler
+{
+	virtual void HandleRayCollision( Edge *edge, double edgeQuantity ) = 0;
+};
+
+void RayCast( RayCastHandler *handler, EdgeQNode *node, 
+	sf::Vector2<double> startPoint, 
+	sf::Vector2<double> endPoint );
 
 
 
