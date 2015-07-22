@@ -123,7 +123,7 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir );
 
 struct RayCastHandler
 {
-	virtual void HandleRayCollision( Edge *edge, double edgeQuantity ) = 0;
+	virtual void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion ) = 0;
 };
 
 void RayCast( RayCastHandler *handler, EdgeQNode *node, 

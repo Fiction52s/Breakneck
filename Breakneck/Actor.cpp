@@ -243,6 +243,10 @@ Actor::Actor( GameSession *gs )
 		hitlagFrames = 0;
 		hitstunFrames = 0;
 		invincibleFrames = 0;
+
+		wireEdge = NULL;
+		wireState = 0;
+		pointNum = 0;
 	}
 
 void Actor::ActionEnded()
@@ -366,7 +370,7 @@ void Actor::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	cout << "hitstunFrames: " << hitstunFrames << endl;
+	//cout << "hitstunFrames: " << hitstunFrames << endl;
 	//choose action
 
 	
@@ -631,6 +635,7 @@ void Actor::UpdatePrePhysics()
 				action = WIREHOLD;
 				framesFiring = 0;
 				frame = 0;
+				wireState = 1;
 				break;
 			}
 
@@ -2298,8 +2303,17 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case WIREHOLD:
+		
+
+
+		break;
+	}
+
+	if( wireState >0 )
+	{
 		if( framesFiring == 0 )
 		{
+			//wireState = 1;
 			fireDir = V2d( 0, 0 );
 			if( currInput.LLeft() )
 			{
@@ -2320,17 +2334,95 @@ void Actor::UpdatePrePhysics()
 			}
 
 			fireDir = normalize( fireDir );
+			cout << "firedir: " << fireDir.x << ", " << fireDir.y << endl;
 		}
 		
-		double dist = 40;
 
 
-		rcPoint = NULL;
-		//rcQuantity = 0;
-		RayCast( this, owner->testTree, position, fireDir * dist * (framesFiring + 1 ) );
+		if( wireState == 1 )
+		{
+			cout << "firing" << endl;
+			double dist = 40;
+			
 
-		break;
+			rcEdge = NULL;
+			//rcQuantity = 0;
+			rayCastMode = "edge";
+			RayCast( this, owner->testTree, position, position + fireDir * dist * (double)(framesFiring + 1 ) );
+			framesFiring++;
+
+			if( rcEdge != NULL )
+			{
+				wireEdge = rcEdge;
+				wireQuant = rcQuantity;
+				wireState = 2;
+				pointNum = 0;
+			}
+		}
+		else if( wireState == 2 )
+		{
+			
+
+			rayCastMode = "check";
+			rcEdge = NULL;
+
+			if( pointNum == 0 )
+			{
+				RayCast( this, owner->testTree, wireEdge->GetPoint( wireQuant ), position );
+			}
+			else
+			{
+				RayCast( this, owner->testTree, wirePoints[pointNum - 1].pos, position  );
+			}
+
+			if( rcEdge != NULL )
+			{
+				if( pointNum > 0 )
+				cout << "accumulating: " << wirePoints[pointNum-1].pos.x << ", " << wirePoints[pointNum -1].pos.y << endl;
+				if( rcQuantity > length( rcEdge->v1 - rcEdge->v0 ) - rcQuantity )
+				{
+					wirePoints[pointNum].pos = rcEdge->v1;
+					//wirePoints[pointNum].e = rcEdge;
+					wirePoints[pointNum].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
+					cout << "over" << endl;
+
+					pointNum++;
+				}
+				else
+				{
+					cout << "under" << endl;
+					wirePoints[pointNum].pos = rcEdge->v0;
+					wirePoints[pointNum].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
+					pointNum++;
+				}
+			}
+
+			for( int i = pointNum - 1; i >= 0; --i )
+			{
+				double result = cross( position - wirePoints[pointNum-1].pos, wirePoints[i].test );
+				if( result > 0 )
+				{
+					cout << "removing point " << result << endl;
+					pointNum--;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+		
+
+		}
+
 	}
+
+
+
+
+
+
+
 
 
 	if( currInput.leftTrigger > 200 )
@@ -3816,7 +3908,7 @@ void Actor::UpdateHitboxes()
 	hurtBody.rw = b.rw;
 	hurtBody.rh = b.rh;
 	hurtBody.offset = b.offset;
-	cout << "hurtbody offset: " << hurtBody.offset.x << ", " << hurtBody.offset.y << endl;
+	//cout << "hurtbody offset: " << hurtBody.offset.x << ", " << hurtBody.offset.y << endl;
 	hurtBody.globalAngle = angle;
 	hurtBody.globalPosition = position + hurtBody.offset;
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
@@ -4942,15 +5034,93 @@ void Actor::Draw( sf::RenderTarget *target )
 	if( action != GRINDBALL )
 	{
 
-		RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
+		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
 		
-		sf::Vertex line[] =
+
+		if( wireEdge != NULL )
 		{
-			sf::Vertex(sf::Vector2f(position.x, position.y)),
-			sf::Vertex(sf::Vector2f(position.x - 100, position.y))
+
+		V2d wirePos = wireEdge->GetPoint( wireQuant );
+		if( pointNum == 0 )
+		{
+		
+		sf::Vertex line0[] =
+		{
+			sf::Vertex(sf::Vector2f( position.x, position.y ), Color::Red),
+			sf::Vertex(sf::Vector2f( wirePos.x, wirePos.y ), Color::Magenta)
 		};
 
-		target->draw(line, 2, sf::Lines);
+		target->draw(line0, 2, sf::Lines);
+		}
+		else
+		{
+			sf::Vertex line0[] =
+			{
+				sf::Vertex(sf::Vector2f( wirePoints[pointNum-1].pos.x, wirePoints[pointNum-1].pos.y ), Color::Red),
+				sf::Vertex(sf::Vector2f( position.x, position.y ), Color::Magenta)
+			};
+
+			target->draw(line0, 2, sf::Lines);
+		}
+
+		if( pointNum > 0 )
+		{
+			sf::Vertex line1[] =
+			{
+				sf::Vertex(sf::Vector2f( wirePos.x, wirePos.y ), Color::Red),
+				sf::Vertex(sf::Vector2f( wirePoints[0].pos.x, wirePoints[0].pos.y ), Color::Magenta)
+			};
+
+			target->draw(line1, 2, sf::Lines);
+		}
+
+		for( int i = 1; i < pointNum; ++i )
+		{
+		
+			sf::Vertex line[] =
+			{
+				sf::Vertex(sf::Vector2f(wirePoints[i-1].pos.x, wirePoints[i-1].pos.y ), Color::Red),
+				sf::Vertex(sf::Vector2f(wirePoints[i].pos.x, wirePoints[i].pos.y ), Color::Magenta)
+			};
+
+			target->draw(line, 2, sf::Lines);
+		}
+
+		CircleShape cs1;
+		cs1.setFillColor( Color::Red );
+		cs1.setRadius( 20 );
+		cs1.setOrigin( cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2 );
+		cs1.setPosition( wirePos.x, wirePos.y );
+
+		target->draw( cs1 );
+
+
+		for( int i = 0; i < pointNum; ++i )
+		{
+			CircleShape cs;
+			cs.setFillColor( Color::Cyan );
+			cs.setRadius( 20 );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( wirePoints[i].pos.x, wirePoints[i].pos.y );
+
+			target->draw( cs );
+		}
+		}
+		else
+		{
+		/*	if( wireState == 1 )
+			{
+				sf::Vertex line[] =
+				{
+					//sf::Vertex(sf::Vector2f(position.x, position.y), Color::Blue),
+					//sf::Vertex(sf::Vector2f(position.x + fireDir.x * dist *  ), Color::Magenta)
+				};
+
+	//			target->draw(line, 2, sf::Lines);
+			}
+			*/
+			//RayCast( this, owner->testTree, position, fireDir * dist * (double)(framesFiring + 1 ) );
+		}
 
 		target->draw( *sprite );
 
@@ -4984,16 +5154,12 @@ void Actor::DebugDraw( RenderTarget *target )
 	b.DebugDraw( target );
 }
 
-void Actor::HandleRayCollision( Edge *edge, double edgeQuantity )
+void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	
-	CircleShape cs;
-	cs.setFillColor( Color::Cyan );
-	cs.setRadius( 10 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( edge->GetPoint( edgeQuantity ).x, edge->GetPoint( edgeQuantity ).y );
 
-	owner->window->draw( cs );
-
-	cout << "ray collision! at: " << edgeQuantity << endl;
+	if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
 }

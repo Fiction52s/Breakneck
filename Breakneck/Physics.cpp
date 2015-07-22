@@ -1044,7 +1044,8 @@ void RayCast( RayCastHandler *handler, EdgeQNode *node, V2d startPoint, V2d endP
 				LineIntersection li = SegmentIntersect( startPoint, endPoint, n->edges[i]->v0, n->edges[i]->v1 );	
 				if( !li.parallel )
 				{
-					handler->HandleRayCollision( n->edges[i], n->edges[i]->GetQuantity( li.position ) );
+					handler->HandleRayCollision( n->edges[i], n->edges[i]->GetQuantity( li.position ), 
+						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
 				}
 			}
 		}

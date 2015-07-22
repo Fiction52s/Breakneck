@@ -62,7 +62,7 @@ struct Actor : EdgeQuadTreeCollider,
 	void Draw( sf::RenderTarget *target );
 
 	void DebugDraw( sf::RenderTarget *target );
-	void HandleRayCollision( Edge *edge, double edgeQuantity );
+	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	GameSession *owner;
 
 	void UpdateHitboxes();
@@ -204,8 +204,27 @@ struct Actor : EdgeQuadTreeCollider,
 
 	int framesFiring;
 	sf::Vector2<double> fireDir;
-	Edge *rcPoint;
+	Edge *rcEdge;
 	double rcQuantity;
+	int wireState;
+	Edge *wireEdge;
+	double wireQuant;
+	std::string rayCastMode;
+
+	struct WirePoint
+	{
+		Edge *e;
+		bool start;
+		sf::Vector2<double> pos;
+		sf::Vector2<double> edgeEnd;
+		sf::Vector2<double> test;
+		bool clockwise;
+	};
+
+	int pointNum;
+	//sf::Vector2<double> points[16];
+	WirePoint wirePoints[16];
+
 };
 
 #endif
