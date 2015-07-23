@@ -248,7 +248,7 @@ Actor::Actor( GameSession *gs )
 		wireState = 0;
 		pointNum = 0;
 		maxLength = 100;
-		minLength = 10;
+		minLength = 32;
 	}
 
 void Actor::ActionEnded()
@@ -2365,13 +2365,16 @@ void Actor::UpdatePrePhysics()
 		else if( wireState == 2 )
 		{
 			V2d wirePoint = wireEdge->GetPoint( wireQuant );
-			double pullStrength = 1;
+			double pullStrength = 20;
 			if( currInput.rightTrigger > 200 )
 			{
-				if( pointNum == 0 )
-					velocity += normalize( wirePoint - position ) * pullStrength;
-				else
-					velocity += normalize( wirePoints[pointNum - 1].pos - position ) * pullStrength;
+				//if( pointNum == 0 )
+				//	velocity += normalize( wirePoint - position ) * pullStrength;
+				//else
+				//	velocity += normalize( wirePoints[pointNum - 1].pos - position ) * pullStrength;
+				maxLength -= pullStrength;
+				if( maxLength < minLength )
+					maxLength = minLength;
 			}
 
 			rayCastMode = "check";
@@ -3188,15 +3191,21 @@ void Actor::UpdatePhysics()
 		tes.x = tes.y;
 		tes.y = -temp;
 		
+
+		V2d old = velocity;
+
+		//velocity.y *= 10;
 		velocity = dot( velocity, tes ) * tes;
 
 		V2d future = position + velocity;
 		V2d diff = wirePoint - future;
+		
 		if( length( diff ) > maxLength )
 		{
-			velocity += normalize(diff) * ( length( diff ) - maxLength );
+			position += normalize(diff) * ( length( diff ) - maxLength );
+			//velocity += normalize(diff) * ( length( diff ) - maxLength );
 		}
-		cout << "new vel: " << velocity.x << ", " << velocity.y << endl;
+		cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
 	}
 
 	
@@ -3597,6 +3606,61 @@ void Actor::UpdatePhysics()
 				
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
 			bool tempCollision = ResolvePhysics( movementVec );
+
+			if( wireEdge != NULL && wireState == 2 )
+			{
+				rayCastMode = "check";
+				rcEdge = NULL;
+
+				if( pointNum == 0 )
+				{
+					RayCast( this, owner->testTree, wireEdge->GetPoint( wireQuant ), position );
+				}
+				else
+				{
+					RayCast( this, owner->testTree, wirePoints[pointNum - 1].pos, position  );
+				}
+
+				if( rcEdge != NULL )
+				{
+					if( pointNum > 0 )
+					//cout << "accumulating: " << wirePoints[pointNum-1].pos.x << ", " << wirePoints[pointNum -1].pos.y << endl;
+					if( rcQuantity > length( rcEdge->v1 - rcEdge->v0 ) - rcQuantity )
+					{
+						wirePoints[pointNum].pos = rcEdge->v1;
+						//wirePoints[pointNum].e = rcEdge;
+						wirePoints[pointNum].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
+						//cout << "over" << endl;
+
+						pointNum++;
+					}
+					else
+					{
+						//cout << "under" << endl;
+						wirePoints[pointNum].pos = rcEdge->v0;
+						wirePoints[pointNum].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
+						pointNum++;
+					}
+				}
+
+				for( int i = pointNum - 1; i >= 0; --i )
+				{
+					double result = cross( position - wirePoints[pointNum-1].pos, wirePoints[i].test );
+					if( result > 0 )
+					{
+						//cout << "removing point " << result << endl;
+						pointNum--;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+
+
+
+
 			V2d extraVel(0, 0);
 			if( tempCollision  )
 			{
@@ -5070,90 +5134,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
 		
 
-		if( wireEdge != NULL )
-		{
-
-		V2d wirePos = wireEdge->GetPoint( wireQuant );
-		if( pointNum == 0 )
-		{
 		
-		sf::Vertex line0[] =
-		{
-			sf::Vertex(sf::Vector2f( position.x, position.y ), Color::Red),
-			sf::Vertex(sf::Vector2f( wirePos.x, wirePos.y ), Color::Magenta)
-		};
-
-		target->draw(line0, 2, sf::Lines);
-		}
-		else
-		{
-			sf::Vertex line0[] =
-			{
-				sf::Vertex(sf::Vector2f( wirePoints[pointNum-1].pos.x, wirePoints[pointNum-1].pos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f( position.x, position.y ), Color::Magenta)
-			};
-
-			target->draw(line0, 2, sf::Lines);
-		}
-
-		if( pointNum > 0 )
-		{
-			sf::Vertex line1[] =
-			{
-				sf::Vertex(sf::Vector2f( wirePos.x, wirePos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f( wirePoints[0].pos.x, wirePoints[0].pos.y ), Color::Magenta)
-			};
-
-			target->draw(line1, 2, sf::Lines);
-		}
-
-		for( int i = 1; i < pointNum; ++i )
-		{
-		
-			sf::Vertex line[] =
-			{
-				sf::Vertex(sf::Vector2f(wirePoints[i-1].pos.x, wirePoints[i-1].pos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f(wirePoints[i].pos.x, wirePoints[i].pos.y ), Color::Magenta)
-			};
-
-			target->draw(line, 2, sf::Lines);
-		}
-
-		CircleShape cs1;
-		cs1.setFillColor( Color::Red );
-		cs1.setRadius( 20 );
-		cs1.setOrigin( cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2 );
-		cs1.setPosition( wirePos.x, wirePos.y );
-
-		target->draw( cs1 );
-
-
-		for( int i = 0; i < pointNum; ++i )
-		{
-			CircleShape cs;
-			cs.setFillColor( Color::Cyan );
-			cs.setRadius( 20 );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( wirePoints[i].pos.x, wirePoints[i].pos.y );
-
-			target->draw( cs );
-		}
-		}
-		else
-		{
-		/*	if( wireState == 1 )
-			{
-				sf::Vertex line[] =
-				{
-					//sf::Vertex(sf::Vector2f(position.x, position.y), Color::Blue),
-					//sf::Vertex(sf::Vector2f(position.x + fireDir.x * dist *  ), Color::Magenta)
-				};
-
-	//			target->draw(line, 2, sf::Lines);
-			}
-			*/
-			//RayCast( this, owner->testTree, position, fireDir * dist * (double)(framesFiring + 1 ) );
-		}
 
 		target->draw( *sprite );
 
