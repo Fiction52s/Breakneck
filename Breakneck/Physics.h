@@ -1,8 +1,10 @@
-#include <SFML/Graphics.hpp>
-#include "VectorMath.h"
+
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
+
+#include <SFML/Graphics.hpp>
+#include "VectorMath.h"
 
 struct Edge
 {

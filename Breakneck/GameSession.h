@@ -1,11 +1,11 @@
+#ifndef _GAMESESSION_H__
+#define _GAMESESSION_H__
+
 #include "Physics.h"
 #include "Tileset.h"
 #include <list>
-#include "Actor.h"
 #include "Enemy.h"
-
-#ifndef _GAMESESSION_H__
-#define _GAMESESSION_H__
+#include "Actor.h"
 
 struct GameSession : EnemyQuadTreeCollider
 {

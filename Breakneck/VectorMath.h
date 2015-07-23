@@ -1,7 +1,8 @@
-#include <SFML/Graphics.hpp>
+
 
 #ifndef __VECTOR_MATH_H__
 #define __VECTOR_MATH_H__
+#include <SFML/Graphics.hpp>
 
 double cross( sf::Vector2<double> a, sf::Vector2<double> b );
 
