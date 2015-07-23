@@ -249,8 +249,6 @@ Actor::Actor( GameSession *gs )
 		pointNum = 0;
 		maxLength = 100;
 		minLength = 32;
-
-		wire = new Wire( this );
 	}
 
 void Actor::ActionEnded()
@@ -5133,6 +5131,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	if( action != GRINDBALL )
 	{
 
+		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
+		
+
+		
 
 		target->draw( *sprite );
 

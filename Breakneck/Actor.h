@@ -1,6 +1,3 @@
-#ifndef __ACTOR_H__
-#define __ACTOR_H__
-
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
 #include "Physics.h"
@@ -8,10 +5,11 @@
 #include <SFML/Audio.hpp>
 #include <list>
 #include <map>
-#include "Wire.h"
+
+#ifndef __ACTOR_H__
+#define __ACTOR_H__
 
 struct GameSession;
-
 struct Actor : EdgeQuadTreeCollider,
 	RayCastHandler
 {
@@ -224,15 +222,13 @@ struct Actor : EdgeQuadTreeCollider,
 	};
 
 	
-	Wire *wire;
+
 	int pointNum;
 	//sf::Vector2<double> points[16];
 	WirePoint wirePoints[16];
 
 	double maxLength;
 	double minLength;
-
-
 
 };
 

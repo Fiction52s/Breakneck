@@ -1,10 +1,9 @@
-#ifndef __ENEMY_H__
-#define __ENEMY_H__
-
 #include "Actor.h"
 #include <list>
 
-struct GameSession;
+
+#ifndef __ENEMY_H__
+#define __ENEMY_H__
 
 struct Enemy : EdgeQuadTreeCollider
 {

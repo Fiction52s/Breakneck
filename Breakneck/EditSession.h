@@ -1,12 +1,12 @@
-#ifndef __EDIT_SESSION__
-#define __EDIT_SESSION__
-
 #include <string>
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "VectorMath.h"
 #include "GUI.h"
+
+#ifndef __EDIT_SESSION__
+#define __EDIT_SESSION__
 
 struct ActorParams;
 
