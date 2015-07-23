@@ -221,9 +221,14 @@ struct Actor : EdgeQuadTreeCollider,
 		bool clockwise;
 	};
 
+	
+
 	int pointNum;
 	//sf::Vector2<double> points[16];
 	WirePoint wirePoints[16];
+
+	double maxLength;
+	double minLength;
 
 };
 

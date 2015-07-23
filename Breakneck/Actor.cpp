@@ -247,6 +247,8 @@ Actor::Actor( GameSession *gs )
 		wireEdge = NULL;
 		wireState = 0;
 		pointNum = 0;
+		maxLength = 100;
+		minLength = 10;
 	}
 
 void Actor::ActionEnded()
@@ -630,9 +632,9 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
-			if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 )
+			if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
 			{
-				action = WIREHOLD;
+			//	action = WIREHOLD;
 				framesFiring = 0;
 				frame = 0;
 				wireState = 1;
@@ -2353,6 +2355,7 @@ void Actor::UpdatePrePhysics()
 
 			if( rcEdge != NULL )
 			{
+				maxLength = length( rcEdge->GetPoint( rcQuantity ) - position );
 				wireEdge = rcEdge;
 				wireQuant = rcQuantity;
 				wireState = 2;
@@ -2361,7 +2364,15 @@ void Actor::UpdatePrePhysics()
 		}
 		else if( wireState == 2 )
 		{
-			
+			V2d wirePoint = wireEdge->GetPoint( wireQuant );
+			double pullStrength = 1;
+			if( currInput.rightTrigger > 200 )
+			{
+				if( pointNum == 0 )
+					velocity += normalize( wirePoint - position ) * pullStrength;
+				else
+					velocity += normalize( wirePoints[pointNum - 1].pos - position ) * pullStrength;
+			}
 
 			rayCastMode = "check";
 			rcEdge = NULL;
@@ -2658,46 +2669,28 @@ bool Actor::CheckStandUp()
 }
 
 
-bool Actor:: ResolvePhysics( V2d vel )
+bool Actor::ResolvePhysics( V2d vel )
 {
-	//if( reversed )
-	//	vel.x = -vel.x;
 	possibleEdgeCount = 0;
 	position += vel;
+	
+
+
 	
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	minContact.collisionPriority = 1000000;
 
-/*	sf::RectangleShape rs;
-	rs.setSize( Vector2f(r.width, r.height ));
-	rs.setFillColor( Color::Yellow );
-	rs.setPosition( r.left, r.top );
-
-	owner->window->draw( rs );*/
 	col = false;
 
-	//if( reversed )
-	//	tempVel = -vel;
-	//else
-		tempVel = vel;
+	tempVel = vel;
 	minContact.edge = NULL;
-	//minContact.resolution( 0, 0 );
 
 	queryMode = "resolve";
 	Query( this, owner->testTree, r );
 
 	if( minContact.edge != NULL )
 		cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
-	//cout << "resolve: " << vel.x << ", " << vel.y << endl;
 
-	//cout << "possible edge count: " << possibleEdgeCount << ", before: " << owner->numPoints << endl;
-	//int collisionNumber = 0;
-			
-	
-	//for( int i = 0; i < numPoints; ++i )
-	//{
-		
-	//}
 	return col;
 }
 
@@ -3183,7 +3176,47 @@ void Actor::UpdatePhysics()
 		grindQuantity = q;
 		return;
 	}
+	
+	if( wireEdge != NULL )
+	{
+		V2d wirePoint = wireEdge->GetPoint( wireQuant );
+		if( pointNum > 0 )
+			wirePoint = wirePoints[pointNum-1].pos;
+
+		V2d tes =  normalize( position - wirePoint );
+		double temp = tes.x;
+		tes.x = tes.y;
+		tes.y = -temp;
 		
+		velocity = dot( velocity, tes ) * tes;
+
+		V2d future = position + velocity;
+		V2d diff = wirePoint - future;
+		if( length( diff ) > maxLength )
+		{
+			velocity += normalize(diff) * ( length( diff ) - maxLength );
+		}
+		cout << "new vel: " << velocity.x << ", " << velocity.y << endl;
+	}
+
+	
+
+	/*if( wireEdge != NULL )
+	{
+		V2d wirePoint = wireEdge->GetPoint( wireQuant );
+		if( pointNum > 0 )
+			wirePoint = wirePoints[pointNum-1].pos;
+	
+		if( length( position - wirePoint) > maxLength )
+		{
+			V2d test = normalize(position - wirePoint); 	
+		//	position = wirePoint + test * maxLength;
+		}	
+	}
+	else
+	{
+	}*/
+
 	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
 	{
 		if( ground != NULL )
