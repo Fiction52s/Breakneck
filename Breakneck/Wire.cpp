@@ -236,7 +236,7 @@ void Wire::Draw( RenderTarget *target )
 		{
 			sf::Vertex line0[] =
 			{
-				sf::Vertex(sf::Vector2f( position.x, position.y ), Color::Red),
+				sf::Vertex(sf::Vector2f( player->position.x, player->position.y ), Color::Red),
 				sf::Vertex(sf::Vector2f( anchor.pos.x, anchor.pos.y ), Color::Magenta)
 			};
 
@@ -257,8 +257,8 @@ void Wire::Draw( RenderTarget *target )
 		{
 			sf::Vertex line1[] =
 			{
-				sf::Vertex(sf::Vector2f( wirePos.x, wirePos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f( wirePoints[0].pos.x, wirePoints[0].pos.y ), Color::Magenta)
+				sf::Vertex(sf::Vector2f( anchor.pos.x, anchor.pos.y ), Color::Red),
+				sf::Vertex(sf::Vector2f( points[0].pos.x, points[0].pos.y ), Color::Magenta)
 			};
 
 			target->draw(line1, 2, sf::Lines);
