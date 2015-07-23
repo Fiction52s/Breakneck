@@ -125,6 +125,12 @@ Actor::Actor( GameSession *gs )
 		actionLength[WIREHOLD] = 1;
 		tileset[WIREHOLD] = owner->GetTileset( "steepslide.png", 64, 32 );
 
+		actionLength[BOUNCEAIR] = 1;
+		tileset[BOUNCEAIR] = owner->GetTileset( "steepslide.png", 64, 32 );
+
+		actionLength[BOUNCEGROUND] = 10;
+		tileset[BOUNCEGROUND] = owner->GetTileset( "steepslide.png", 64, 32 );
+
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
 		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	
@@ -244,11 +250,11 @@ Actor::Actor( GameSession *gs )
 		hitstunFrames = 0;
 		invincibleFrames = 0;
 
-		wireEdge = NULL;
+		/*wireEdge = NULL;
 		wireState = 0;
 		pointNum = 0;
 		maxLength = 100;
-		minLength = 32;
+		minLength = 32;*/
 
 		wire = new Wire( this );
 	}
@@ -331,6 +337,12 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case WIREHOLD:
+			frame = 0;
+			break;
+		case BOUNCEAIR:
+			frame = 0;
+			break;
+		case BOUNCEGROUND:
 			frame = 0;
 			break;
 		}
@@ -438,7 +450,12 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-
+			if( currInput.back && !prevInput.back )
+			{
+				action = BOUNCEGROUND;
+				frame = 0;
+				break;
+			}
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -488,6 +505,13 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
+			if( currInput.back && !prevInput.back )
+			{
+				action = BOUNCEGROUND;
+				frame = 0;
+				break;
+			}
+
 			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
@@ -643,6 +667,13 @@ void Actor::UpdatePrePhysics()
 				break;
 			}*/
 
+			if( currInput.back && !prevInput.back )
+			{
+				action = BOUNCEAIR;
+				frame = 0;
+				break;
+			}
+
 			if( hasAirDash && !prevInput.B && currInput.B )
 			{
 				action = AIRDASH;
@@ -708,6 +739,14 @@ void Actor::UpdatePrePhysics()
 		}
 		case DOUBLE:
 		{
+
+			if( currInput.back && !prevInput.back )
+			{
+				action = BOUNCEAIR;
+				frame = 0;
+				break;
+			}
+
 			if( hasAirDash && !prevInput.B && currInput.B )
 			{
 				action = AIRDASH;
@@ -1578,8 +1617,32 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case WIREHOLD:
-
 		break;
+	case BOUNCEAIR:
+		{
+			if( !currInput.back )
+			{
+				action = JUMP;
+				frame = 1;
+			}
+			break;
+		}
+	case BOUNCEGROUND:
+		{
+			if( !currInput.back )
+			{
+				action = LAND;
+				frame = 0;
+			}
+			if( frame == actionLength[BOUNCEGROUND] - 1 )
+			{
+				action = BOUNCEAIR;
+				frame = 0;
+				velocity = length( storedBounceVel ) * ground->Normal();//V2d( storedBounceVel.x, storedBounceVel.x ) ;
+				ground = NULL;
+			}
+			break;
+		}
 	}
 	
 	currHitboxes = NULL;
@@ -2307,7 +2370,18 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case WIREHOLD:
-		break;
+		{
+			break;
+		}
+	case BOUNCEAIR:
+		{
+			break;
+		}
+	case BOUNCEGROUND:
+		{
+			groundSpeed = 0;
+			break;
+		}
 	}
 
 	wire->UpdateState();
@@ -2436,7 +2510,7 @@ void Actor::UpdatePrePhysics()
 	if( wire->state == wire->PULLING  )
 	{
 		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
-		if( pointNum > 0 )
+		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
 			//wirePoint = wirePoints[pointNum-1].pos;
 
@@ -4060,7 +4134,14 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				if( currInput.LLeft() || currInput.LRight() )
+				if( action == BOUNCEAIR )
+				{
+					storedBounceVel = velocity;
+					action = BOUNCEGROUND;
+					frame = 0;
+
+				}
+				else if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = LAND2;
 					frame = 0;
@@ -5029,6 +5110,7 @@ void Actor::UpdatePostPhysics()
 			break;
 		}
 	case WIREHOLD:
+		{
 			sprite->setTexture( *(tileset[WIREHOLD]->texture));
 			if( facingRight )
 			{
@@ -5042,7 +5124,63 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
-		break;
+			break;
+		}
+	case BOUNCEAIR:
+		{
+			sprite->setTexture( *(tileset[BOUNCEAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[BOUNCEAIR]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[BOUNCEAIR]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case BOUNCEGROUND:
+		{
+			sprite->setTexture( *(tileset[BOUNCEGROUND]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[BOUNCEGROUND]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[BOUNCEGROUND]->GetSubRect( 0 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+						angle = PI;
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+		
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+				sprite->setRotation( angle / PI * 180 );
+				V2d pp = ground->GetPoint( edgeQuantity );
+				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+					sprite->setPosition( pp.x + offsetX, pp.y );
+				else
+					sprite->setPosition( pp.x, pp.y );
+
+			break;
+		}
 	}
 
 	if( slowCounter == slowMultiple )
@@ -5175,9 +5313,9 @@ void Actor::DebugDraw( RenderTarget *target )
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
 
-	if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
+	/*if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
 	{
 		rcEdge = edge;
 		rcQuantity = edgeQuantity;
-	}
+	}*/
 }

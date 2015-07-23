@@ -923,7 +923,7 @@ int GameSession::Run( string fileName )
 
 		
 
-		if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
+		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
 		{
 			//alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 //			alphaTextSprite.setScale( .5, .5 );

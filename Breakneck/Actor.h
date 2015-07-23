@@ -40,6 +40,8 @@ struct Actor : EdgeQuadTreeCollider,
 		AIRHITSTUN,
 		GROUNDHITSTUN,
 		WIREHOLD,
+		BOUNCEAIR,
+		BOUNCEGROUND,
 		Count
 	};
 
@@ -204,33 +206,14 @@ struct Actor : EdgeQuadTreeCollider,
 
 	double rotation;
 
-	int framesFiring;
-	sf::Vector2<double> fireDir;
+	//int framesFiring;
+	//sf::Vector2<double> fireDir;
 	Edge *rcEdge;
 	double rcQuantity;
-	int wireState;
-	Edge *wireEdge;
-	double wireQuant;
 	std::string rayCastMode;
 
-	struct WirePoint
-	{
-		Edge *e;
-		bool start;
-		sf::Vector2<double> pos;
-		sf::Vector2<double> edgeEnd;
-		sf::Vector2<double> test;
-		bool clockwise;
-	};
-
+	sf::Vector2<double> storedBounceVel;
 	Wire *wire;
-
-	int pointNum;
-	//sf::Vector2<double> points[16];
-	WirePoint wirePoints[16];
-
-	double maxLength;
-	double minLength;
 
 };
 
