@@ -1,9 +1,8 @@
-#include "Actor.h"
-#include <list>
-
-
 #ifndef __ENEMY_H__
 #define __ENEMY_H__
+
+#include "Actor.h"
+#include <list>
 
 struct Enemy : EdgeQuadTreeCollider
 {

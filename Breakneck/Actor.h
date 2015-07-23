@@ -1,15 +1,17 @@
-#include <SFML/Graphics.hpp>
-#include "Tileset.h"
-#include "Physics.h"
-#include "Input.h"
-#include <SFML/Audio.hpp>
-#include <list>
-#include <map>
-
 #ifndef __ACTOR_H__
 #define __ACTOR_H__
 
+#include <list>
+#include <map>
+#include <SFML/Audio.hpp>
+#include "Tileset.h"
+#include "Physics.h"
+#include "Input.h"
+#include <SFML/Graphics.hpp>
+#include "Wire.h"
+
 struct GameSession;
+
 struct Actor : EdgeQuadTreeCollider,
 	RayCastHandler
 {

@@ -1,6 +1,6 @@
 #include "Wire.h"
-
-
+#include "Actor.h"
+#include "GameSession.h"
 
 using namespace sf;
 using namespace std;

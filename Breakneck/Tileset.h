@@ -1,7 +1,7 @@
-#include <SFML/Graphics.hpp>
-
 #ifndef __TILESET_H__
 #define __TILESET_H__
+
+#include <SFML/Graphics.hpp>
 
 struct Tileset
 {

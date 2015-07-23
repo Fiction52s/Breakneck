@@ -1,13 +1,12 @@
-#include <SFML/Graphics.hpp>
-#include "Actor.h"
-#include "Physics.h"
-#include "GameSession.h"
-
 #ifndef __WIRE_H__
 #define __WIRE_H__
 
+#include <SFML/Graphics.hpp>
+//#include "Actor.h"
+#include "Physics.h"
+//#include "GameSession.h"
 
-
+struct Actor;
 struct Wire : RayCastHandler
 {
 	enum WireState
