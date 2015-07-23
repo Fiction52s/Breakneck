@@ -1,9 +1,12 @@
 #include "Wire.h"
 #include "Actor.h"
 #include "GameSession.h"
+#include <iostream>
 
 using namespace sf;
 using namespace std;
+
+#define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p )
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 500 ), minSegmentLength( 50 )
@@ -19,10 +22,35 @@ void Wire::UpdateState()
 	{
 	case IDLE:
 		{
-			if( currInput.rightTrigger >= triggerThresh && !prevInput.rightTrigger >= triggerThresh )
+			
+			if( currInput.rightTrigger >= triggerThresh && prevInput.rightTrigger < triggerThresh )
 			{
-				state = FIRING;
-				framesFiring = 0;
+				cout << "firing" << endl;
+				fireDir = V2d( 0, 0 );
+				if( currInput.LLeft() )
+				{
+					fireDir.x -= 1;
+				}
+				else if( currInput.LRight() )
+				{
+					fireDir.x += 1;
+				}
+			
+				if( currInput.LUp() )
+				{
+					fireDir.y -= 1;
+				}
+				else if( currInput.LDown() )
+				{
+					fireDir.y += 1;
+				}
+
+				if( length( fireDir ) > .1 )
+				{
+					fireDir = normalize( fireDir );
+					state = FIRING;
+					framesFiring = 0;
+				}
 			}
 			break;
 		}
@@ -131,7 +159,8 @@ void Wire::UpdateState()
 			else
 				segmentLength = length( points[numPoints-1].pos - player->position );
 
-			if( currInput.rightTrigger >= triggerThresh )
+			//if( currInput.rightTrigger >= triggerThresh )
+			if( false )
 			{
 				//totalLength -= pullStrength;
 
@@ -170,7 +199,7 @@ void Wire::UpdateAnchors()
 
 		if( rcEdge != NULL )
 		{
-			if( numPoints > 0 )
+			//if( numPoints > 0 )
 			//cout << "accumulating: " << wirePoints[pointNum-1].pos.x << ", " << wirePoints[pointNum -1].pos.y << endl;
 			if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - rcQuant )
 			{

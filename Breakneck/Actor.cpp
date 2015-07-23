@@ -249,6 +249,8 @@ Actor::Actor( GameSession *gs )
 		pointNum = 0;
 		maxLength = 100;
 		minLength = 32;
+
+		wire = new Wire( this );
 	}
 
 void Actor::ActionEnded()
@@ -632,14 +634,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
-			if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
+			/*if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
 			{
 			//	action = WIREHOLD;
 				framesFiring = 0;
 				frame = 0;
 				wireState = 1;
 				break;
-			}
+			}*/
 
 			if( hasAirDash && !prevInput.B && currInput.B )
 			{
@@ -2305,13 +2307,13 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case WIREHOLD:
-		
-
-
 		break;
 	}
 
-	if( wireState >0 )
+	wire->UpdateState();
+	wire->UpdateAnchors();
+
+	/*if( wireState >0 )
 	{
 		if( framesFiring == 0 )
 		{
@@ -2429,9 +2431,36 @@ void Actor::UpdatePrePhysics()
 
 		}
 
+	}*/
+
+	if( wire->state == wire->PULLING  )
+	{
+		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
+		if( pointNum > 0 )
+			wirePoint = wire->points[wire->numPoints-1].pos;
+			//wirePoint = wirePoints[pointNum-1].pos;
+
+		V2d tes =  normalize( position - wirePoint );
+		double temp = tes.x;
+		tes.x = tes.y;
+		tes.y = -temp;
+		
+
+		V2d old = velocity;
+
+		//velocity.y *= 10;
+		velocity = dot( velocity, tes ) * tes;
+
+		V2d future = position + velocity;
+		V2d diff = wirePoint - future;
+		
+		if( length( diff ) > wire->segmentLength )
+		{
+			position += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			//velocity += normalize(diff) * ( length( diff ) - maxLength );
+		}
+		cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
 	}
-
-
 
 
 
@@ -3180,33 +3209,7 @@ void Actor::UpdatePhysics()
 		return;
 	}
 	
-	if( wireEdge != NULL )
-	{
-		V2d wirePoint = wireEdge->GetPoint( wireQuant );
-		if( pointNum > 0 )
-			wirePoint = wirePoints[pointNum-1].pos;
-
-		V2d tes =  normalize( position - wirePoint );
-		double temp = tes.x;
-		tes.x = tes.y;
-		tes.y = -temp;
-		
-
-		V2d old = velocity;
-
-		//velocity.y *= 10;
-		velocity = dot( velocity, tes ) * tes;
-
-		V2d future = position + velocity;
-		V2d diff = wirePoint - future;
-		
-		if( length( diff ) > maxLength )
-		{
-			position += normalize(diff) * ( length( diff ) - maxLength );
-			//velocity += normalize(diff) * ( length( diff ) - maxLength );
-		}
-		cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
-	}
+	
 
 	
 
@@ -3607,7 +3610,8 @@ void Actor::UpdatePhysics()
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
 			bool tempCollision = ResolvePhysics( movementVec );
 
-			if( wireEdge != NULL && wireState == 2 )
+			wire->UpdateAnchors();
+			/*if( wireEdge != NULL && wireState == 2 )
 			{
 				rayCastMode = "check";
 				rcEdge = NULL;
@@ -3656,7 +3660,7 @@ void Actor::UpdatePhysics()
 						break;
 					}
 				}
-			}
+			}*/
 
 
 
@@ -5133,7 +5137,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
 		
-
+		wire->Draw( target );
 		
 
 		target->draw( *sprite );

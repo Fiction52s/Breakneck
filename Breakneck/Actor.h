@@ -223,7 +223,7 @@ struct Actor : EdgeQuadTreeCollider,
 		bool clockwise;
 	};
 
-	
+	Wire *wire;
 
 	int pointNum;
 	//sf::Vector2<double> points[16];
