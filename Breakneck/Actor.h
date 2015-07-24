@@ -214,6 +214,9 @@ struct Actor : EdgeQuadTreeCollider,
 
 	sf::Vector2<double> storedBounceVel;
 	Wire *wire;
+	Edge *bounceEdge;
+	double bounceQuant;
+	sf::Vector2<double> bounceOffset;
 
 };
 
