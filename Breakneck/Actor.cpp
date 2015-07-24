@@ -259,6 +259,12 @@ Actor::Actor( GameSession *gs )
 		wire = new Wire( this );
 
 		bounceEdge = NULL;
+
+		record = false;
+		blah = false;
+
+		testGhost = new PlayerGhost;
+		ghostFrame = 0;
 	}
 
 void Actor::ActionEnded()
@@ -353,6 +359,25 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	if( currInput.RLeft() && !prevInput.RLeft() )
+	{
+		SaveState();
+		testGhost->currFrame = 0;
+		record = true;
+		blah = false;
+	}
+
+	if( currInput.RRight() && !prevInput.RRight() )
+	{
+		record = false;
+		LoadState();
+		blah = true;
+		testGhost->totalRecorded = testGhost->currFrame;
+		ghostFrame = 0;
+	}
+
+
+
 	if( reversed )
 	{
 		bool up = currInput.LUp();
@@ -2629,14 +2654,19 @@ void Actor::UpdatePrePhysics()
 		V2d old = velocity;
 
 		//velocity.y *= 10;
+		
 		velocity = dot( velocity, tes ) * tes;
 
 		V2d future = position + velocity;
+		
 		V2d diff = wirePoint - future;
 		
 		if( length( diff ) > wire->segmentLength )
 		{
-			position += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			//position += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			future += normalize(diff) * ( length( diff ) - wire->segmentLength );
+
+			velocity = future - position;
 			//velocity += normalize(diff) * ( length( diff ) - maxLength );
 		}
 		cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
@@ -5236,6 +5266,18 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
+	if( record )
+	{
+		PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
+		p.action = (PlayerGhost::Action)action;
+		p.frame = frame;
+		p.s = *sprite;
+		//p.position = V2d(sprite->getPosition();
+		testGhost->currFrame++;
+	}
+
+
+
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
@@ -5245,6 +5287,8 @@ void Actor::UpdatePostPhysics()
 		slowCounter++;
 
 	UpdateHitboxes();
+
+	
 }
 
 void Actor::HandleEdge( Edge *e )
@@ -5347,6 +5391,15 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( gstripurp );
 		target->draw( gstrirgb );
 	}
+
+	if( blah )
+	{
+		if( ghostFrame <= testGhost->totalRecorded )
+		{
+			target->draw( testGhost->states[ghostFrame].s );
+			ghostFrame++;
+		}
+	}
 }
 
 void Actor::DebugDraw( RenderTarget *target )
@@ -5371,4 +5424,126 @@ void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPorti
 		rcEdge = edge;
 		rcQuantity = edgeQuantity;
 	}*/
+}
+
+void Actor::SaveState()
+{
+	stored.leftGround = leftGround;
+	
+	stored.grindActionCurrent = grindActionCurrent;
+	stored.prevInput = prevInput;
+	stored.currInput = currInput;
+	stored.oldVelocity = oldVelocity;
+	stored.framesInAir = framesInAir;
+	stored.startAirDashVel = startAirDashVel;
+	stored.ground = ground;
+	stored.hasAirDash = hasAirDash;
+	stored.hasGravReverse = hasGravReverse;
+
+	stored.grindEdge = grindEdge;
+	stored.grindQuantity = grindQuantity;
+	stored.grindSpeed = grindSpeed;
+
+	stored.reversed = reversed;
+
+	stored.edgeQuantity = edgeQuantity;
+	
+	stored.groundOffsetX = groundOffsetX;
+
+	stored.offsetX = offsetX;
+
+	stored.holdJump = holdJump;
+
+	stored.wallJumpFrameCounter = wallJumpFrameCounter;
+
+	stored.groundSpeed = groundSpeed;
+
+	stored.facingRight = facingRight;
+	
+	stored.hasDoubleJump = hasDoubleJump;
+
+	stored.slowMultiple = slowMultiple;
+	stored.slowCounter = slowCounter;
+
+	stored.wallNormal = wallNormal;
+
+	stored.action = action;
+	stored.frame = frame;
+	stored.position = position;
+	stored.velocity = velocity;
+	//CollisionBox *physBox;
+
+	stored.hitlagFrames = hitlagFrames;
+	stored.hitstunFrames = hitstunFrames;
+	stored.invincibleFrames = invincibleFrames;
+	stored.receivedHit = receivedHit;
+
+	stored.storedBounceVel = storedBounceVel;
+	stored.wire = wire;
+	stored.bounceEdge = bounceEdge;
+	stored.bounceQuant = bounceQuant;
+}
+
+void Actor::LoadState()
+{
+	stored.leftGround;
+	
+	grindActionCurrent= stored.grindActionCurrent;
+	prevInput = stored.prevInput;
+	currInput = stored.currInput;
+	oldVelocity = stored.oldVelocity;
+	framesInAir = stored.framesInAir;
+	startAirDashVel = stored.startAirDashVel;
+	ground = stored.ground;
+	hasAirDash = stored.hasAirDash;
+	hasGravReverse = stored.hasGravReverse;
+
+	grindEdge = stored.grindEdge;
+	grindQuantity = stored.grindQuantity;
+	grindSpeed = stored.grindSpeed;
+
+	reversed = stored.reversed;
+
+	edgeQuantity = stored.edgeQuantity;
+	
+	groundOffsetX = stored.groundOffsetX;
+
+	offsetX = stored.offsetX;
+
+	holdJump = stored.holdJump;
+
+	wallJumpFrameCounter = stored.wallJumpFrameCounter;
+
+	groundSpeed = stored.groundSpeed;
+
+	facingRight = stored.facingRight;
+	
+	hasDoubleJump = stored.hasDoubleJump;
+
+	slowMultiple = stored.slowMultiple;
+	slowCounter = stored.slowCounter;
+
+	wallNormal = stored.wallNormal;
+
+	action = stored.action;
+	frame = stored.frame;
+	position = stored.position;
+	velocity = stored.velocity;
+	//CollisionBox *physBox;
+
+	hitlagFrames = stored.hitlagFrames;
+	hitstunFrames = stored.hitstunFrames;
+	invincibleFrames = stored.invincibleFrames;
+	receivedHit = stored.receivedHit;
+
+	storedBounceVel = stored.storedBounceVel;
+	wire = stored.wire;
+	bounceEdge = stored.bounceEdge;
+	bounceQuant = stored.bounceQuant;
+}
+
+PlayerGhost::PlayerGhost()
+	:currFrame( 0 ), maxFrames( 240 )
+{
+
 }

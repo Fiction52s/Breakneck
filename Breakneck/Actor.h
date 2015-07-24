@@ -11,6 +11,7 @@
 #include "Wire.h"
 
 struct GameSession;
+struct PlayerGhost;
 
 struct Actor : EdgeQuadTreeCollider,
 	RayCastHandler
@@ -219,13 +220,128 @@ struct Actor : EdgeQuadTreeCollider,
 	Edge *bounceEdge;
 	double bounceQuant;
 
+	void SaveState();
+	void LoadState();
+
+	struct Stored
+	{
+		bool leftGround;
+		double grindActionCurrent;
+		ControllerState prevInput;
+		ControllerState currInput;
+		sf::Vector2<double> oldVelocity;
+		int framesInAir;
+		sf::Vector2<double> startAirDashVel;
+		Edge *ground;
+		bool hasAirDash;
+		bool hasGravReverse;
+
+		Edge *grindEdge;
+		double grindQuantity;
+		double grindSpeed;
+
+		bool reversed;
+
+		double edgeQuantity;
+	
+		double groundOffsetX;
+
+		double offsetX;
+
+		bool holdJump;
+
+		int wallJumpFrameCounter;
+
+		double groundSpeed;
+
+		bool facingRight;
+	
+		bool hasDoubleJump;
+
+		int slowMultiple;
+		int slowCounter;
+
+		sf::Vector2<double> wallNormal;
+
+		Action action;
+		int frame;
+		sf::Vector2<double> position;
+		sf::Vector2<double> velocity;
+		//CollisionBox *physBox;
+
+		int hitlagFrames;
+		int hitstunFrames;
+		int invincibleFrames;
+		HitboxInfo *receivedHit;
+
+		sf::Vector2<double> storedBounceVel;
+		Wire *wire;
+		Edge *bounceEdge;
+		double bounceQuant;
+	};
+	Stored stored;
+
 
 	//double rotation;
-
 	
-
+	PlayerGhost *testGhost;
 	
+	bool record;
+	bool blah;
+	int ghostFrame;
 	//sf::Vector2<double> bounceOffset;
+
+};
+
+struct PlayerGhost
+{
+	enum Action
+	{
+		DAIR,
+		DASH,
+		DOUBLE,
+		FAIR,
+		JUMP,
+		LAND,
+		LAND2,
+		RUN,
+		SLIDE,
+		SPRINT,
+		STAND,
+		STANDD,
+		STANDN,
+		UAIR,
+		WALLCLING,
+		WALLJUMP,
+		STEEPSLIDE,
+		GRINDBALL,
+		AIRDASH,
+		STEEPCLIMB,
+		AIRHITSTUN,
+		GROUNDHITSTUN,
+		WIREHOLD,
+		BOUNCEAIR,
+		BOUNCEGROUND,
+		Count
+	};
+	PlayerGhost();
+
+	struct P
+	{
+		sf::Vector2<double> position;
+		Action action;
+		int frame;
+		sf::Sprite s;
+	};
+	
+	void Draw( sf::RenderTarget *target );
+
+	P states[240];
+	int totalRecorded;
+	int maxFrames;
+	int currFrame;
+
+
 
 };
 
