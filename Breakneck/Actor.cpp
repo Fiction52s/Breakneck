@@ -12,8 +12,8 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs )
 	{
-		activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
-		numActiveEdges = 0;
+		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
+		//numActiveEdges = 0;
 
 		assert( Shader::isAvailable() && "help me" );
 		if (!sh.loadFromFile("player_shader.frag", sf::Shader::Fragment))
@@ -4239,42 +4239,7 @@ void Actor::UpdatePostPhysics()
 					frame = 0;
 				}
 			}
-			
-
-//			hasDoubleJump = true;
-//			hasAirDash = true;
-			//hasGravReverse = true;
-			
-			//cout << "wallcling" << endl;
-			if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
-			//if( false )
-			{
-				
-				if( wallNormal.x > 0)
-				{
-					//cout << "facing right: " << endl;
-					if( currInput.LLeft() )
-					{
-					//	facingRight = true;
-					//	action = WALLCLING;
-					//	frame = 0;
-					}
-				}
-				else
-				{
-					if( currInput.LRight() )
-					{
-					//	cout << "facing left: " << endl;
-					//	facingRight = false;
-					//	action = WALLCLING;
-					//	frame = 0;
-					}
-					
-				}
-			}	
 		}
-		
-
 
 		if( action == WALLCLING && abs( gn.x ) <= wallThresh ) //length( wallNormal ) == 0 )
 		{

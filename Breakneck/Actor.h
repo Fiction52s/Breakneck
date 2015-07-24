@@ -50,7 +50,7 @@ struct Actor : EdgeQuadTreeCollider,
 	void ActionEnded();
 
 	void HandleEdge( Edge *e );
-	int possibleEdgeCount;
+	
 
 
 	void UpdatePrePhysics();
@@ -67,18 +67,19 @@ struct Actor : EdgeQuadTreeCollider,
 
 	void DebugDraw( sf::RenderTarget *target );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
-	GameSession *owner;
-
 	void UpdateHitboxes();
-	
+
+
+	//unsaved vars
+	int possibleEdgeCount;
+	GameSession *owner;
 	double steepClimbSpeedThresh;
-	bool leftGround;
 	Contact minContact;
 	sf::Shader sh;
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
-	
+
 	sf::Sprite gsdodeca;
 	sf::Sprite gstriblue;
 	sf::Sprite gstricym;
@@ -87,10 +88,7 @@ struct Actor : EdgeQuadTreeCollider,
 	sf::Sprite gstripurp;
 	sf::Sprite gstrirgb;
 
-
-
 	int grindActionLength;
-	double grindActionCurrent;
 
 	Tileset * tsgsdodeca;
 	Tileset * tsgstriblue;
@@ -99,10 +97,15 @@ struct Actor : EdgeQuadTreeCollider,
 	Tileset * tsgstrioran;
 	Tileset * tsgstripurp;
 	Tileset * tsgstrirgb;
-	
+
 	sf::Sprite fairSword1;
 	Tileset *ts_fairSword1;
 	bool showSword1;
+
+	double holdDashAccel;
+	double wallThresh;
+
+	double airDashSpeed;
 
 	CollisionBox b;
 	CollisionBox hurtBody;
@@ -112,43 +115,14 @@ struct Actor : EdgeQuadTreeCollider,
 
 	std::map<int, std::list<CollisionBox>*> fairHitboxes;
 
-
-
-	ControllerState prevInput;
-	ControllerState currInput;
-	sf::Vector2<double> oldVelocity;
-	int framesInAir;
-	double holdDashAccel;
-	double wallThresh;
-	sf::Vector2<double> startAirDashVel;
-
-	Edge *ground;
-	
-	bool hasAirDash;
-	bool hasGravReverse;
-
-	double airDashSpeed;
-
-	Edge *grindEdge;
-	double grindQuantity;
-	double grindSpeed;
-
 	double steepThresh;
-	bool reversed;
 
-	int numActiveEdges;
-	Edge ** activeEdges;
-	double edgeQuantity;
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
-	double groundOffsetX;
-	double offsetX;
-	bool holdJump;
+
+	int wallJumpMovementLimit;
 
 	sf::SoundBuffer testSound;
 	sf::Sound fairSound;
-
-	int wallJumpFrameCounter;
-	int wallJumpMovementLimit;
 
 	double dashHeight;
 	double normalHeight;
@@ -164,12 +138,11 @@ struct Actor : EdgeQuadTreeCollider,
 	double runGain;
 	double sprintAccel;
 
-	double groundSpeed;
 	double maxNormalRun;
 	double runAccel;
 	double maxFallSpeed;
 	double gravity;
-	bool facingRight;
+
 	double jumpStrength;
 	double airAccel;
 	double maxAirXSpeed;
@@ -177,14 +150,56 @@ struct Actor : EdgeQuadTreeCollider,
 	double dashSpeed;
 
 	double doubleJumpStrength;
-	bool hasDoubleJump;
 
-	int slowMultiple;
-	int slowCounter;
 	int timeSlowStrength;
 
 	sf::Vector2<double> wallJumpStrength;
 	double clingSpeed;
+
+	bool col;
+	sf::Vector2<double> tempVel;
+	std::string queryMode;
+	bool checkValid;
+
+	Edge *rcEdge;
+	double rcQuantity;
+	std::string rayCastMode;
+
+	bool leftGround;
+	double grindActionCurrent;
+	ControllerState prevInput;
+	ControllerState currInput;
+	sf::Vector2<double> oldVelocity;
+	int framesInAir;
+	sf::Vector2<double> startAirDashVel;
+	Edge *ground;
+	bool hasAirDash;
+	bool hasGravReverse;
+
+	Edge *grindEdge;
+	double grindQuantity;
+	double grindSpeed;
+
+	bool reversed;
+
+	double edgeQuantity;
+	
+	double groundOffsetX;
+
+	double offsetX;
+
+	bool holdJump;
+
+	int wallJumpFrameCounter;
+
+	double groundSpeed;
+
+	bool facingRight;
+	
+	bool hasDoubleJump;
+
+	int slowMultiple;
+	int slowCounter;
 
 	sf::Vector2<double> wallNormal;
 
@@ -192,31 +207,25 @@ struct Actor : EdgeQuadTreeCollider,
 	int frame;
 	sf::Vector2<double> position;
 	sf::Vector2<double> velocity;
-	CollisionBox *physBox;
-
-	bool col;
-	sf::Vector2<double> tempVel;
-	std::string queryMode;
-	bool checkValid;
+	//CollisionBox *physBox;
 
 	int hitlagFrames;
 	int hitstunFrames;
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
 
-	double rotation;
-
-	//int framesFiring;
-	//sf::Vector2<double> fireDir;
-	Edge *rcEdge;
-	double rcQuantity;
-	std::string rayCastMode;
-
 	sf::Vector2<double> storedBounceVel;
 	Wire *wire;
 	Edge *bounceEdge;
 	double bounceQuant;
-	sf::Vector2<double> bounceOffset;
+
+
+	//double rotation;
+
+	
+
+	
+	//sf::Vector2<double> bounceOffset;
 
 };
 
