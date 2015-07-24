@@ -2900,8 +2900,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "resolve";
 	Query( this, owner->testTree, r );
 
-	if( minContact.edge != NULL )
-		cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
+	//if( minContact.edge != NULL )
+	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 
 	return col;
 }
@@ -3955,7 +3955,7 @@ void Actor::UpdatePhysics()
 				}
 				if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 				{
-					cout << "glitcffff: " << extraVel.x << ", " << extraVel.y << endl;
+				//	cout << "glitcffff: " << extraVel.x << ", " << extraVel.y << endl;
 					break;		
 				}
 				if( length( extraVel ) > 0 )
@@ -3985,7 +3985,7 @@ void Actor::UpdatePhysics()
 				bounceQuant = minContact.edge->GetQuantity( minContact.position );
 				movement = 0;
 				//groundSpeed = 0;
-				cout << "bouncing" << endl;
+			//	cout << "bouncing" << endl;
 			}
 			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
@@ -5297,7 +5297,7 @@ void Actor::HandleEdge( Edge *e )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
 		if( c != NULL )
 		{
-			cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
+		//	cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
 		//	collisionNumber++;
 			//if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
 			//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
@@ -5316,11 +5316,11 @@ void Actor::HandleEdge( Edge *e )
 				}
 				else
 				{
-					if( minContact.edge != NULL )
-					cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
-						<< e->Normal().x << ", " << e->Normal().y << endl;
+					//if( minContact.edge != NULL )
+					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
+					//	<< e->Normal().x << ", " << e->Normal().y << endl;
 					minContact.collisionPriority = c->collisionPriority;
-					cout << "pri: " << c->collisionPriority << endl;
+					//cout << "pri: " << c->collisionPriority << endl;
 					minContact.edge = e;
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
