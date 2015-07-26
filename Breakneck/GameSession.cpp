@@ -212,14 +212,19 @@ bool GameSession::OpenFile( string fileName )
 
 		edges = new Edge*[numPoints];
 
-	
+		int polyCounter = 0;
+		//could use an array later if i wanted to
+		map<int, int> polyIndex;
 
 		while( pointCounter < numPoints )
 		{
+			
 			string matStr;
 			is >> matStr;
 			int polyPoints;
 			is >> polyPoints;
+
+			polyIndex[polyCounter] = pointCounter;
 
 			int currentEdgeIndex = pointCounter;
 			for( int i = 0; i < polyPoints; ++i )
@@ -311,6 +316,9 @@ bool GameSession::OpenFile( string fileName )
 				delete polyline[i];
 			//	delete tris[i];
 			}
+
+
+			++polyCounter;
 		}
 
 
@@ -415,7 +423,7 @@ bool GameSession::OpenFile( string fileName )
 					float speed;
 					is >> speed;
 
-					Crawler *enemy = new Crawler( this, edges[terrainIndex + edgeIndex], edgeQuantity, clockwise, speed );
+					Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
 					enemyTree = Insert( enemyTree, enemy );
 				}
 				else

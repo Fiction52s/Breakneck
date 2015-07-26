@@ -76,19 +76,27 @@ struct Crawler : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
 
 	sf::Sprite sprite;
 	Tileset *ts;
 
 	bool clockwise;
-	double speed;
+	double groundSpeed;
 	Edge *ground;
-	double offsetX;
-	double groundQuantity;
+	sf::Vector2<double> offset;
+	double edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	CollisionBox physBody;
+	sf::Vector2<double> position;
+	sf::Vector2<double> tempVel;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
 };
 
 struct EnemyParentNode;
