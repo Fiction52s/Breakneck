@@ -301,7 +301,7 @@ void Crawler::UpdateHitboxes()
 
 void Crawler::UpdatePrePhysics()
 {
-	groundSpeed = -1;
+	groundSpeed = 1;
 }
 
 void Crawler::UpdatePhysics()
@@ -336,7 +336,6 @@ void Crawler::UpdatePhysics()
 					movement = -maxMovement;
 				}
 			}
-
 
 			double extra = 0;
 			bool leaveGround = false;
@@ -383,19 +382,15 @@ void Crawler::UpdatePhysics()
 						if( offset.x == -physBody.rw && offset.y == -physBody.rh )
 						{
 							transferLeft = true;
-							cout << "transferring left" << endl;
-							//transfer
 						}
 						else
 						{
-							cout << "changing offset: " << offset.x << endl;
 							if( offset.x > -physBody.rw )
 								changeOffsetX = true;
 							else if( offset.y > -physBody.rh )
 								changeOffsetY = true;
 							else
 								assert( false && "what 0" );
-							//offset
 						}
 					}
 					else if( e0n.y > 0 )
@@ -403,7 +398,6 @@ void Crawler::UpdatePhysics()
 						if( offset.x == -physBody.rw && offset.y == physBody.rh )
 						{
 							transferLeft = true;
-							//transfer
 						}
 						else
 						{
@@ -413,7 +407,6 @@ void Crawler::UpdatePhysics()
 								changeOffsetY = true;
 							else
 								assert( false && "what 1" );
-							//offset
 						}
 					}
 					else
@@ -421,7 +414,6 @@ void Crawler::UpdatePhysics()
 						if( offset.x == -physBody.rw && offset.y == -physBody.rh )
 						{
 							transferLeft = true;
-							//transfer
 						}
 						else
 						{
@@ -441,17 +433,15 @@ void Crawler::UpdatePhysics()
 						if( offset.x == physBody.rw && offset.y == -physBody.rh )
 						{
 							transferLeft = true;
-							//transfer
 						}
 						else
 						{
 							if( offset.x < physBody.rw )
 								changeOffsetX = true;
-							else if( offset.y < physBody.rh )
+							else if( offset.y > -physBody.rh )
 								changeOffsetY = true;
 							else
 								assert( false && "what 1" );
-							//offset
 						}
 					}
 					else if( e0n.y > 0 )
@@ -459,7 +449,6 @@ void Crawler::UpdatePhysics()
 						if( offset.x == physBody.rw && offset.y == physBody.rh )
 						{
 							transferLeft = true;
-							//transfer
 						}
 						else
 						{
@@ -469,7 +458,6 @@ void Crawler::UpdatePhysics()
 								changeOffsetY = true;
 							else
 								assert( false && "what 1" );
-							//offset
 						}
 					}
 					else
@@ -494,6 +482,125 @@ void Crawler::UpdatePhysics()
 						if( offset.x == physBody.rw )
 						{
 							transferLeft = true;
+						}
+						else
+						{
+							changeOffsetX = true;
+						}
+					}
+					else
+						assert( false && "cant happen" );
+				}
+			}
+			else if( q == groundLength && movement > 0 )
+			{
+				if( e1n.x < 0 )
+				{
+					if( e1n.y < 0 )
+					{
+						if( offset.x == -physBody.rw && offset.y == -physBody.rh )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							if( offset.x > -physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y > -physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "what 0" );
+						}
+					}
+					else if( e1n.y > 0 )
+					{
+						if( offset.x == -physBody.rw && offset.y == physBody.rh )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							if( offset.x > -physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y < physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "what 1" );
+						}
+					}
+					else
+					{
+						if( offset.x == -physBody.rw && offset.y == physBody.rh )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							if( offset.x > -physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y > -physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "what 0" );
+						}
+					}
+				}
+				else if( e1n.x > 0 )
+				{
+					if( e1n.y < 0 )
+					{
+						if( offset.x == physBody.rw && offset.y == -physBody.rh )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							if( offset.x < physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y > -physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "what 1" );
+						}
+					}
+					else if( e1n.y > 0 )
+					{
+						if( offset.x == physBody.rw && offset.y == physBody.rh )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							if( offset.x < physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y < physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "what 1" );
+						}
+					}
+					else
+					{
+					}
+				}
+				else
+				{
+					if( e1n.y < 0 )
+					{
+						if( offset.x == physBody.rw )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							changeOffsetX = true;
+						}
+					}
+					else if( e1n.y > 0 )
+					{
+						if( offset.x == -physBody.rw )
+						{
+							transferRight = true;
 						}
 						else
 						{
@@ -546,25 +653,19 @@ void Crawler::UpdatePhysics()
 			}
 			else if( changeOffsetX )
 			{
+				if( gNormal.y <= 0 )
+				{
 				if( movement > 0 )
 				{				
 					extra = (offset.x + movement) - physBody.rw;				
 				}
 				else 
 				{
-					if( gNormal.y < 0 )
-					{
-						extra = (offset.x + movement) + physBody.rw;
-					}
-					else
-					{
-						extra = (offset.x + movement) + physBody.rw;
-					}
+					extra = (offset.x + movement) + physBody.rw;
 				}
 				double m = movement;
-				if( (m > 0 && extra > 0) || (m < 0 && extra < 0) )
+				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 				{
-					cout << "here" << endl;
 					m -= extra;
 					movement = extra;
 
@@ -583,8 +684,6 @@ void Crawler::UpdatePhysics()
 					offset.x += m;
 				}
 
-				if( gNormal.y > 0 )
-					m = -m;
 				if(!approxEquals( m, 0 ) )
 				{
 					bool hit = ResolvePhysics( V2d( m, 0 ));
@@ -614,12 +713,6 @@ void Crawler::UpdatePhysics()
 								
 
 							}
-							/*else
-							{
-								offset.x += minContact.resolution.x;
-								groundSpeed = 0;
-								break;
-							}*/
 						}
 						else
 						{
@@ -629,111 +722,213 @@ void Crawler::UpdatePhysics()
 						}
 					}
 				}
-			}
-			else if( changeOffsetY )
-			{
-				cout << "changing offsety: " << offset.x << ", " << offset.y << endl;
-				if( movement > 0 )
-				{				
-					extra = (offset.y + movement) - physBody.rh;				
-				}
-				else 
-				{
-					extra = (offset.y + movement) + physBody.rh;
-				}
-				double m = movement;
 
-				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+				}
+				else
 				{
-					//m -= extra;
-					
-					m -= extra;
-					movement = extra;
-
 					if( movement > 0 )
+					{				
+						extra = (-offset.x + movement) - physBody.rw;				
+					}
+					else 
 					{
-						offset.y = physBody.rh;
-						cout << "a" << endl;
+						extra = (-offset.x + movement) + physBody.rw;
+					}
+					double m = movement;
+					if( (m > 0 && extra > 0) || (m < 0 && extra < 0) )
+					{
+						m -= extra;
+						movement = extra;
+
+						if( movement > 0 )
+						{
+							offset.x = -physBody.rw;
+						}
+						else
+						{
+							offset.x = physBody.rw;
+						}
 					}
 					else
 					{
-						offset.y = -physBody.rh;
-						cout << "b" << endl;
+						movement = 0;
+						offset.x -= m;
+					}
+
+					if(!approxEquals( m, 0 ) )
+					{
+						bool hit = ResolvePhysics( V2d( -m, 0 ));
+						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+						{
+							V2d eNorm = minContact.edge->Normal();
+							if( eNorm.y < 0 )
+							{
+								//if( minContact.position.y >= position.y + physBody.rh - 5 )
+								{
+									if( m > 0 && eNorm.x < 0 )
+									{
+										ground = minContact.edge;
+										q = ground->GetQuantity( minContact.position );
+										edgeQuantity = q;
+										offset.x = -physBody.rw;
+										continue;
+									}
+									else if( m < 0 && eNorm.x > 0 )
+									{
+										ground = minContact.edge;
+										q = ground->GetQuantity( minContact.position );
+										edgeQuantity = q;
+										offset.x = physBody.rw;
+										continue;
+									}
+								
+
+								}
+							}
+							else
+							{
+									offset.x += minContact.resolution.x;
+									groundSpeed = 0;
+									break;
+							}
+						}
+					}
+				}
+
+			}
+			else if( changeOffsetY )
+			{
+				if( gNormal.x < 0 )
+				{
+					cout << "changing offsety: " << offset.x << ", " << offset.y << endl;
+					if( movement > 0 )
+					{				
+						extra = (-offset.y + movement) - physBody.rh;				
+					}
+					else 
+					{
+						extra = (-offset.y + movement) + physBody.rh;
+					}
+					double m = movement;
+
+					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+					{
+						//m -= extra;
+					
+						m -= extra;
+						movement = extra;
+
+						if( movement > 0 )
+						{
+							offset.y = -physBody.rh;
+						}
+						else
+						{
+							offset.y = physBody.rh;
+						}
+					}
+					else
+					{
+						//m = -m;
+						movement = 0;
+						offset.y -= m;
+					}
+
+					if(!approxEquals( m, 0 ) )
+					{
+						bool hit = ResolvePhysics( V2d( 0, -m ));
+						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+						{
+							V2d eNorm = minContact.edge->Normal();
+
+							ground = minContact.edge;
+
+							q = ground->GetQuantity( minContact.position + minContact.resolution );
+							edgeQuantity = q;
+
+							V2d gn = ground->Normal();
+							if( gn.x > 0 )
+								offset.x = physBody.rw;
+							else if( gn.x < 0 )
+								offset.x = -physBody.rw;
+
+							if( gn.y > 0 )
+								offset.y = physBody.rh;
+							else if( gn.y < 0 )
+								offset.y = -physBody.rh;
+
+							position = ground->GetPoint( edgeQuantity ) + offset;
+
+							break;
+						}
 					}
 				}
 				else
 				{
-					//m = -m;
-					cout << "c" << endl;
-					movement = 0;
-					offset.y += m;
-				}
-
-				if(!approxEquals( m, 0 ) )
-				{
-					bool hit = ResolvePhysics( V2d( 0, m ));
-					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					//cout << "changing offsety: " << offset.x << ", " << offset.y << endl;
+					if( movement > 0 )
+					{				
+						extra = (offset.y + movement) - physBody.rh;				
+					}
+					else 
 					{
-						V2d eNorm = minContact.edge->Normal();
+						extra = (offset.y + movement) + physBody.rh;
+					}
+					double m = movement;
 
-						ground = minContact.edge;
+					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+					{
+						//m -= extra;
+					
+						m -= extra;
+						movement = extra;
 
-						q = ground->GetQuantity( minContact.position + minContact.resolution );
-						edgeQuantity = q;
-
-						V2d gn = ground->Normal();
-						if( gn.x > 0 )
-							offset.x = physBody.rw;
-						else if( gn.x < 0 )
-							offset.x = -physBody.rw;
-
-						if( gn.y > 0 )
+						if( movement > 0 )
+						{
 							offset.y = physBody.rh;
-						else if( gn.y < 0 )
+						}
+						else
+						{
 							offset.y = -physBody.rh;
+						}
+					}
+					else
+					{
+						//m = -m;
+						movement = 0;
+						offset.y += m;
+					}
 
-						position = ground->GetPoint( edgeQuantity ) + offset;
+					if(!approxEquals( m, 0 ) )
+					{
+						bool hit = ResolvePhysics( V2d( 0, m ));
+						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+						{
+							V2d eNorm = minContact.edge->Normal();
 
-						break;
-						
-						//if( eNorm.y < 0 )
-						//{
-						//	//if( minContact.position.y >= position.y + physBody.rh - 5 )
-						//	{
-						//		if( m > 0 && eNorm.x < 0 )
-						//		{
-						//			ground = minContact.edge;
-						//			q = ground->GetQuantity( minContact.position );
-						//			edgeQuantity = q;
-						//			offset.x = -physBody.rw;
-						//			continue;
-						//		}
-						//		else if( m < 0 && eNorm.x > 0 )
-						//		{
-						//			ground = minContact.edge;
-						//			q = ground->GetQuantity( minContact.position );
-						//			edgeQuantity = q;
-						//			offset.x = physBody.rw;
-						//			continue;
-						//		}
-						//		
+							ground = minContact.edge;
 
-						//	}
-						//	/*else
-						//	{
-						//		offset.x += minContact.resolution.x;
-						//		groundSpeed = 0;
-						//		break;
-						//	}*/
-						//}
-						//else
-						//{
-						//		offset.x += minContact.resolution.x;
-						//		groundSpeed = 0;
-						//		break;
-						//}
+							q = ground->GetQuantity( minContact.position + minContact.resolution );
+							edgeQuantity = q;
+
+							V2d gn = ground->Normal();
+							if( gn.x > 0 )
+								offset.x = physBody.rw;
+							else if( gn.x < 0 )
+								offset.x = -physBody.rw;
+
+							if( gn.y > 0 )
+								offset.y = physBody.rh;
+							else if( gn.y < 0 )
+								offset.y = -physBody.rh;
+
+							position = ground->GetPoint( edgeQuantity ) + offset;
+
+							break;
+						}
 					}
 				}
+				
 			}
 			else
 			{
@@ -846,8 +1041,19 @@ void Crawler::UpdatePostPhysics()
 	V2d gn = ground->Normal();
 	if( !approxEquals( abs(offset.x), physBody.rw ) )
 	{
-		//if( reversed )
-		//	angle = PI;
+		if( gn.y > 0 )
+			angle = PI;
+	}
+	else if( !approxEquals( abs( offset.y ), physBody.rh ) )
+	{
+		if( gn.x > 0 )
+		{
+			angle = PI / 2;
+		}
+		else 
+		{
+			angle = -PI / 2;
+		}
 	}
 	else
 	{
@@ -859,8 +1065,12 @@ void Crawler::UpdatePostPhysics()
 
 	V2d pp = ground->GetPoint( edgeQuantity );
 
-	if( angle == 0 )
+	if( angle == 0 || angle == PI )
 		sprite.setPosition( pp.x + offset.x, pp.y );
+	else if( angle == PI / 2 || angle == -PI / 2 )
+	{
+		sprite.setPosition( pp.x, pp.y + offset.y );
+	}
 	else
 		sprite.setPosition( pp.x, pp.y );
 
