@@ -372,6 +372,7 @@ void Crawler::UpdatePhysics()
 			bool changeOffsetX = false;
 			bool changeOffsetY = false;
 			
+			cout << "offset: " << offset.x << ", " << offset.y << endl;
 
 			if( q == 0 && movement < 0 )
 			{
@@ -530,7 +531,7 @@ void Crawler::UpdatePhysics()
 					}
 					else
 					{
-						if( offset.x == -physBody.rw && offset.y == physBody.rh )
+						if( offset.x == -physBody.rw && offset.y == -physBody.rh )
 						{
 							transferRight = true;
 						}
@@ -581,60 +582,59 @@ void Crawler::UpdatePhysics()
 					}
 					else
 					{
+						if( offset.x == physBody.rw && offset.y == physBody.rh )
+						{
+							transferRight = true;
+						}
+						else
+						{
+							if( offset.x < physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y < physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "what 0" );
+						}
 					}
 				}
 				else
 				{
 					if( e1n.y < 0 )
 					{
-						if( offset.x == physBody.rw )
+						if( offset.x == physBody.rw && offset.y == -physBody.rh )
 						{
 							transferRight = true;
 						}
 						else
 						{
-							changeOffsetX = true;
+							if( offset.x < physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y > -physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "blah1" );
 						}
 					}
 					else if( e1n.y > 0 )
 					{
-						if( offset.x == -physBody.rw )
+						if( offset.x == -physBody.rw && offset.y == physBody.rh )
 						{
 							transferRight = true;
 						}
 						else
 						{
-							changeOffsetX = true;
+							if( offset.x > -physBody.rw )
+								changeOffsetX = true;
+							else if( offset.y < physBody.rh )
+								changeOffsetY = true;
+							else
+								assert( false && "blah2" );
 						}
 					}
 					else
 						assert( false && "cant happen" );
 				}
 			}
-
-			//bool test = q == 0 && movement < 0
-			//	&& ( offset.x == -physBody.rw && offset.y == -physBody.rh && e0n.x <= 0 && e0n.y < 0 )
-			//	|| ( offset.x == physBody.rw && offset.y == physBody.rh
-				//|| ( offset.x == -physBody.rw && (e0n.x <= 0 || e0n.y > 0)  )
-				//|| ( offset.x == physBody.rw && e0n.x >= 0 )
-				//|| ( offset.y == physBody.rh && e0n.y <= 0 )
-				//|| ( offset.y == -physBody.rh &&   
-				//);
-			
-
-			//bool transferLeft =  q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh || e0n.x <= 0 )
-			//	&& ((gNormal.x == 0 && e0n.x == 0 )
-			//	|| ( offsetX == -physBody.rw && (e0n.x <= 0 || e0n.y > 0)  ) 
-			//	|| (offsetX == physBody.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ) );
-			//bool transferRight = q == groundLength && movement > 0 //(groundSpeed < -steepClimbSpeedThresh || e1n.y <= -steepThresh || e1n.x >= 0 )
-			//	&& ((gNormal.x == 0 && e1n.x == 0 )
-			//	|| ( offsetX == physBody.rw && ( e1n.x >= 0 || e1n.y > 0 ))
-			//	|| (offsetX == -physBody.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ));
-		//	cout << "transferRight: " << transferRight << ": offset: " << offsetX << endl;
-			//bool offsetLeft = movement < 0 && offsetX > -physBody.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
-				
-			//bool offsetRight = movement > 0 && offsetX < physBody.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
-			//bool changeOffset = offsetLeft || offsetRight;
 				
 			if( transferLeft )
 			{
@@ -653,7 +653,7 @@ void Crawler::UpdatePhysics()
 			}
 			else if( changeOffsetX )
 			{
-				if( gNormal.y <= 0 )
+				if( gNormal.y < 0 || (gNormal.y == 0 && gNormal.x < 0 ) )
 				{
 				if( movement > 0 )
 				{				
@@ -865,7 +865,6 @@ void Crawler::UpdatePhysics()
 				}
 				else
 				{
-					//cout << "changing offsety: " << offset.x << ", " << offset.y << endl;
 					if( movement > 0 )
 					{				
 						extra = (offset.y + movement) - physBody.rh;				
@@ -989,11 +988,18 @@ void Crawler::UpdatePhysics()
 							offset.x = physBody.rw;
 						else if( gn.x < 0 )
 							offset.x = -physBody.rw;
+						else
+						{
+							//offsetX = position.x + minContact.resolution.x - minContact.position.x;
+						}
 
 						if( gn.y > 0 )
 							offset.y = physBody.rh;
 						else if( gn.y < 0 )
 							offset.y = -physBody.rh;
+						else
+						{
+						}
 
 						position = ground->GetPoint( edgeQuantity ) + offset;
 
@@ -1066,13 +1072,21 @@ void Crawler::UpdatePostPhysics()
 	V2d pp = ground->GetPoint( edgeQuantity );
 
 	if( angle == 0 || angle == PI )
-		sprite.setPosition( pp.x + offset.x, pp.y );
-	else if( angle == PI / 2 || angle == -PI / 2 )
 	{
+		cout << "one" << endl;
+		sprite.setPosition( pp.x + offset.x, pp.y );
+	}
+	else if( approxEquals( angle, PI / 2 ) || approxEquals( angle, -PI / 2 ) )
+	{
+		cout << "two" << endl;
 		sprite.setPosition( pp.x, pp.y + offset.y );
 	}
 	else
+	{
+		cout << "three" << endl;
 		sprite.setPosition( pp.x, pp.y );
+
+	}
 
 	//sprite.setPosition( position );
 	UpdateHitboxes();
@@ -1080,7 +1094,7 @@ void Crawler::UpdatePostPhysics()
 
 void Crawler::Draw(sf::RenderTarget *target )
 {
-	target->draw( sprite );
+//	target->draw( sprite );
 
 
 }

@@ -27,9 +27,136 @@ Camera::Camera()
 	minZoom = 1;
 	maxOffset.x = 100 * 10;
 	maxOffset.y = 100 * 10;
+
+	left = 300;
+	right = -300;
+	top = 150;
+	bottom = -150;
+
+	
 }
 
 void Camera::Update( Actor *player )
+{
+	V2d ideal;// = player->position;
+	//pos.x = player->position.x;
+	//pos.y = player->position.y;
+
+
+	V2d pVel;
+	if( player->grindEdge != NULL )
+	{
+		pVel = normalize( player->grindEdge->v1 - player->grindEdge->v0 ) * player->grindSpeed;
+	}
+	else if( player->ground != NULL )
+	{
+		pVel = normalize( player->ground->v1 - player->ground->v0 ) * player->groundSpeed;
+		if( player->reversed )
+		{
+			pVel = -pVel;
+		}
+	}
+	else
+	{
+		pVel = player->velocity;
+	}
+		
+
+		
+
+	//zoomFactor = abs(pVel.x) / 40.0 + 1;//length( pVel ) / 40 + 1;
+	//zoomFactor = 2;
+	//zoomFactor = 1;
+
+	float temp;
+	V2d f;
+	if( player->ground != NULL )
+	{
+		temp = abs(player->groundSpeed) / 20.0;
+		f = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed * 10.0;
+		//if( abs(temp - zoomFactor) > 1 )
+		if( player->reversed )
+			f = -f;
+		
+	}
+	else
+	{
+		temp = length( player->velocity ) / 20.0;
+		//temp = abs( player->velocity.x ) / 20.0;
+		//temp = zoomFactor;
+		f = player->velocity * 10.0;
+	}
+
+	double zDiff = temp - zoomFactor;
+	zoomFactor += zDiff / 35.0 / player->slowMultiple;
+
+	if( zoomFactor < 1 )
+		zoomFactor = 1;
+	else if( zoomFactor > maxZoom )
+		zoomFactor = maxZoom;
+
+
+	//cout << "zoomFactor: " << zoomFactor << endl;
+	pos.x = player->position.x;
+	pos.y = player->position.y;
+	
+	offset.x += pVel.x * 1.05;
+	offset.y += pVel.y * .3;
+
+	if( pVel.x == 0 )
+	{
+		offset.x += (-offset.x) / 100;
+	}
+	if( pVel.y == 0 )
+	{
+		offset.y += (-offset.y) / 100;
+	}
+	//cout << "pVel.y: " << pVel.y << endl;
+	//cout << "offset.y << " << offset.y << " add: " << pVel.y * 1.0000001  << "what: " << pVel.y << endl;
+	if( offset.x < -300 * zoomFactor )
+		offset.x = -300 * zoomFactor;
+	else if( offset.x > 300 * zoomFactor )
+		offset.x = 300 * zoomFactor;
+
+	if( offset.y < -150 * zoomFactor )
+		offset.y = -150 * zoomFactor;
+	else if( offset.y > 150 * zoomFactor )
+		offset.y = 150 * zoomFactor;
+
+	pos.x += offset.x;
+	pos.y += offset.y;
+
+
+	/*if(pVel.x > 0 )
+	{
+		pos.x += left;
+	}
+	else if( pVel.x < 0 )
+	{
+		pos.x -= bottom;
+	}*/
+
+	if( pVel.y > 0 )
+	{
+		ideal.y += top * zoomFactor;
+	}
+	else if( pVel.y < 0 )
+	{
+		ideal.y += bottom * zoomFactor;
+	}
+
+	if( pVel.x > 0 )
+	{
+		ideal.x += left * zoomFactor;
+	}
+	else if( pVel.x < 0 )
+	{
+		ideal.x += right * zoomFactor;
+	}
+	
+}
+
+void Camera::Update2( Actor *player )
 {
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;

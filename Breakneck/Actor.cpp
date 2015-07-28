@@ -5412,6 +5412,16 @@ void Actor::DebugDraw( RenderTarget *target )
 		}
 	}
 
+	sf::CircleShape cs;
+	cs.setOutlineThickness( 10 );
+	cs.setOutlineColor( Color::Red );
+	cs.setFillColor( Color::Transparent );
+	cs.setRadius( 160 );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
+	//target->draw( cs );
+	
+
 	hurtBody.DebugDraw( target );
 	b.DebugDraw( target );
 }
