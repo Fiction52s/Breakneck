@@ -32,9 +32,11 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	goalSprite.setTexture( goalTex );
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
-	testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
-	testTree->parent = NULL;
-	testTree->debug = rw;
+	terrainTree = new QuadTree(  1000000, 1000000 );
+	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
+	//testTree->parent = NULL;
+	//testTree->debug = rw;
+
 
 	enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	enemyTree->parent = NULL;
@@ -250,14 +252,17 @@ bool GameSession::OpenFile( string fileName )
 					ee->v1 = points[currentEdgeIndex];
 
 			//	cout << "here we go " << i << " out of " << polyPoints << " "  << ee->Normal().x << ", " << ee->Normal().y << endl;
-				testTree = Insert(testTree, ee );
+				//testTree = Insert(testTree, ee );
+				terrainTree->Insert( ee );
 
 				//if( testTree->debug != NULL )
-				if( false )
-				{
-					DebugDrawQuadTree( testTree->debug, testTree );
-					testTree->debug->display();
-				}
+				//if( false )
+				//{
+				//	DebugDrawQuadTree( testTree->debug, testTree );
+				//	testTree->debug->display();
+				//}
+				//terrainTree->DebugDraw( window );
+				window->display();
 			}
 
 
@@ -1019,6 +1024,7 @@ int GameSession::Run( string fileName )
 
 		DebugDrawActors();
 
+//		terrainTree->DebugDraw( window );
 //		DebugDrawQuadTree( window, enemyTree );
 
 		window->display();

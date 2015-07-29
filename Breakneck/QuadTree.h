@@ -48,6 +48,7 @@ struct LeafNode : QNode
 	QuadTreeEntrant *entrants[4];
 };
 
+struct RayCastHandler;
 struct QuadTree
 {
 	QuadTree( int width, int height );
@@ -55,10 +56,11 @@ struct QuadTree
 	void DebugDraw( sf::RenderTarget *target );
 	void Insert( QuadTreeEntrant *qte );
 	void Query(QuadTreeCollider *qtc, const sf::Rect<double> &r );
+	QNode *startNode;
 private:
 	void rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
 	QNode * rInsert( QNode *node, QuadTreeEntrant *qte );
-	QNode *startNode;
+	
 	void rDebugDraw( sf::RenderTarget *target, QNode *node );
 };
 

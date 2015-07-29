@@ -1,16 +1,20 @@
 #include <SFML/Graphics.hpp>
 #include "VectorMath.h"
+#include "QuadTree.h"
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
 
-struct Edge
+struct Edge : QuadTreeEntrant
 {
 	Edge();
 	sf::Vector2<double> Normal();
 	sf::Vector2<double> GetPoint( double quantity );
 	double GetQuantity( sf::Vector2<double> p );
 	double GetQuantityGivenX( double x );
+
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( sf::Rect<double> &r );
 
 	sf::Vector2<double> v0;
 	sf::Vector2<double> v1;
@@ -126,7 +130,7 @@ struct RayCastHandler
 	virtual void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion ) = 0;
 };
 
-void RayCast( RayCastHandler *handler, EdgeQNode *node, 
+void RayCast( RayCastHandler *handler, QNode *node, 
 	sf::Vector2<double> startPoint, 
 	sf::Vector2<double> endPoint );
 

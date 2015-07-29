@@ -70,7 +70,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	forward = true;
 }
 
-void Patroller::HandleEdge( Edge *e )
+void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 {
 }
 
@@ -226,9 +226,12 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	position = gPoint + offset;
 }
 
-void Crawler::HandleEdge( Edge *e )
+void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 {
 	assert( queryMode != "" );
+
+	Edge *e = (Edge*)qte;
+
 
 	if( ground == e )
 			return;
@@ -1036,7 +1039,8 @@ bool Crawler::ResolvePhysics( V2d vel )
 	minContact.edge = NULL;
 
 	queryMode = "resolve";
-	Query( this, owner->testTree, r );
+	owner->terrainTree->Query( this, r );
+	//Query( this, owner->testTree, r );
 
 	return col;
 }

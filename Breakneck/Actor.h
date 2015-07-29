@@ -13,7 +13,7 @@
 struct GameSession;
 struct PlayerGhost;
 
-struct Actor : EdgeQuadTreeCollider,
+struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
 	enum Action
@@ -50,8 +50,8 @@ struct Actor : EdgeQuadTreeCollider,
 	
 	void ActionEnded();
 
-	void HandleEdge( Edge *e );
-	
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
 
 
 	void UpdatePrePhysics();

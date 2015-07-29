@@ -2902,7 +2902,8 @@ bool Actor::CheckStandUp()
 
 		queryMode = "check";
 		checkValid = true;
-		Query( this, owner->testTree, r );
+	//	Query( this, owner->testTree, r );
+		owner->terrainTree->Query( this, r );
 	//	cout << "col number: " << possibleEdgeCount << endl;
 		possibleEdgeCount = 0;
 		return checkValid;
@@ -2928,7 +2929,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	minContact.edge = NULL;
 
 	queryMode = "resolve";
-	Query( this, owner->testTree, r );
+//	Query( this, owner->testTree, r );
+	owner->terrainTree->Query( this, r );
 
 	//if( minContact.edge != NULL )
 	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
@@ -5291,8 +5293,11 @@ void Actor::UpdatePostPhysics()
 	
 }
 
-void Actor::HandleEdge( Edge *e )
+void Actor::HandleEntrant( QuadTreeEntrant *qte )
 {
+
+	Edge *e = (Edge*)qte;
+
 	assert( queryMode != "" );
 
 	if( ground == e )

@@ -118,7 +118,7 @@ void Wire::UpdateState()
 			rcEdge = NULL;
 			//rcQuantity = 0;
 
-			RayCast( this, player->owner->testTree, player->position, player->position + fireDir * fireRate * (double)(framesFiring + 1 ) );
+			RayCast( this, player->owner->terrainTree->startNode, player->position, player->position + fireDir * fireRate * (double)(framesFiring + 1 ) );
 			
 			++framesFiring;
 
@@ -190,11 +190,11 @@ void Wire::UpdateAnchors()
 
 		if( numPoints == 0 )
 		{
-			RayCast( this, player->owner->testTree, anchor.pos, player->position );
+			RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
 		}
 		else
 		{
-			RayCast( this, player->owner->testTree, points[numPoints - 1].pos, player->position  );
+			RayCast( this, player->owner->terrainTree->startNode, points[numPoints - 1].pos, player->position  );
 		}
 
 		if( rcEdge != NULL )

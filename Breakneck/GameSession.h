@@ -6,6 +6,7 @@
 #include <list>
 #include "Actor.h"
 #include "Enemy.h"
+#include "QuadTree.h"
 
 
 struct GameSession : EnemyQuadTreeCollider
@@ -56,6 +57,8 @@ struct GameSession : EnemyQuadTreeCollider
 
 	sf::Vector2<double> originalPos;
 	sf::Rect<double> screenRect;
+
+	QuadTree * terrainTree;
 };
 
 

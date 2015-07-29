@@ -4,10 +4,11 @@
 #include "Actor.h"
 #include <list>
 
-struct Enemy : EdgeQuadTreeCollider
+struct Enemy : QuadTreeCollider
 {
 	Enemy( GameSession *owner );
-	virtual void HandleEdge( Edge *e ) = 0;
+	//virtual void HandleEdge( Edge *e ) = 0;
+	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
 	virtual void UpdatePrePhysics() = 0;
 	virtual void UpdatePhysics() = 0;
 	virtual void UpdatePostPhysics() = 0;
@@ -27,7 +28,8 @@ struct Enemy : EdgeQuadTreeCollider
 struct Patroller : Enemy
 {
 	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );
-	void HandleEdge( Edge *e );
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void UpdatePostPhysics();
@@ -66,7 +68,8 @@ struct Patroller : Enemy
 struct Crawler : Enemy
 {
 	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
-	void HandleEdge( Edge *e );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void UpdatePostPhysics();
