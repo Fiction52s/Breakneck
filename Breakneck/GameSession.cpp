@@ -322,7 +322,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 			while( testEdge != edges[currentEdgeIndex] );
 
-			double spacing = 32;
+			double spacing = 8;
 			double amount = totalPerimeter / spacing;
 			cout << "total perimeter: " << totalPerimeter << endl;
 			cout << "num vertexes: " << (int)amount * 4 << endl;
@@ -352,11 +352,15 @@ bool GameSession::OpenFile( string fileName )
 				}
 
 				V2d spriteCenter = testEdge->GetPoint( testQuantity );
+				spriteCenter.x = floor( spriteCenter.x + .5 );
+				spriteCenter.y = floor( spriteCenter.y + .5 );
 				VertexArray & testVa = (*va);
-				testVa[i*4].position = Vector2f( spriteCenter.x - 16, spriteCenter.y - 16 );
-				testVa[i*4+1].position = Vector2f( spriteCenter.x + 16, spriteCenter.y - 16 );
-				testVa[i*4+2].position = Vector2f( spriteCenter.x + 16, spriteCenter.y + 16 );
-				testVa[i*4+3].position = Vector2f( spriteCenter.x - 16, spriteCenter.y + 16 );
+				int size = 8;
+				int halfSize = size / 2;
+				testVa[i*4].position = Vector2f( spriteCenter.x - halfSize, spriteCenter.y - halfSize );
+				testVa[i*4+1].position = Vector2f( spriteCenter.x + halfSize, spriteCenter.y - halfSize );
+				testVa[i*4+2].position = Vector2f( spriteCenter.x + halfSize, spriteCenter.y + halfSize );
+				testVa[i*4+3].position = Vector2f( spriteCenter.x - halfSize, spriteCenter.y + halfSize );
 				//testVa[i*4].position = Vector2f( 0, i * 32 + 100 );
 				//testVa[i*4+1].position = Vector2f( 32, i * 32 + 100 );
 				//testVa[i*4+2].position = Vector2f( 32, (i+1) * 32+ 100 );
@@ -369,9 +373,9 @@ bool GameSession::OpenFile( string fileName )
 			//		testVa[i+3].position.x << endl;
 
 				testVa[i*4].texCoords = Vector2f( 0, 0 );
-				testVa[i*4+1].texCoords = Vector2f( 32, 0 );
-				testVa[i*4+2].texCoords = Vector2f( 32, 32 );
-				testVa[i*4+3].texCoords = Vector2f( 0, 32 );
+				testVa[i*4+1].texCoords = Vector2f( size, 0 );
+				testVa[i*4+2].texCoords = Vector2f( size, size );
+				testVa[i*4+3].texCoords = Vector2f( 0, size );
 				
 				polygonBorders.push_back( va );
 			}
@@ -979,11 +983,12 @@ int GameSession::Run( string fileName )
 		rs.setFillColor( Color::Blue );
 		//window->draw( circle );
 		//window->draw(line, numPoints * 2, sf::Lines);
-		//polyShader.setParameter( "resolution", view.getSize().x, view.getSize().y );
+		polyShader.setParameter( "resolution", view.getSize().x, view.getSize().y );
 		//polyShader.setParameter( "random", rand() % 100 );
 		//polyShader.setParameter( "topLeft", player.velocity.x, player.velocity.y );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
 		polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
+		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
 
 		//polyShader.setParameter(  = GetTileset( "testterrain.png", 25, 25 )->texture;

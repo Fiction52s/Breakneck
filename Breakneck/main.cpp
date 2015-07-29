@@ -96,7 +96,7 @@ void GameEditLoop2( std::string filename)
 int main()
 {
 	cout << "starting program" << endl;
-	bool fullWindow = true ;
+	bool fullWindow = false ;
 
 	if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
 		fullWindow = false;
