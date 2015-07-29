@@ -295,6 +295,7 @@ bool GameSession::OpenFile( string fileName )
 			vector<p2t::Triangle*> tris;
 			tris = cdt->GetTriangles();
 
+			
 			va = new VertexArray( sf::Triangles , tris.size() * 3 );
 			VertexArray & v = *va;
 			Color testColor( 0x75, 0x70, 0x90 );
@@ -309,6 +310,71 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 			polygons.push_back( va );
+
+			
+			double totalPerimeter = 0;
+			Edge * testEdge = edges[currentEdgeIndex];
+
+			do
+			{
+				totalPerimeter += length( testEdge->v1 - testEdge->v0 );
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+
+			double spacing = 32;
+			double amount = totalPerimeter / spacing;
+			cout << "total perimeter: " << totalPerimeter << endl;
+			cout << "num vertexes: " << (int)amount * 4 << endl;
+
+			va = new VertexArray( sf::Quads, (int)amount * 4 + 4 );
+
+			double testQuantity = 0;
+
+			testEdge = edges[currentEdgeIndex];
+			for( int i = 0; i < amount; ++i )
+			{
+				double movement = spacing;
+				while( movement > 0 )
+				{
+					testQuantity += movement;
+					double testLength = length( testEdge->v1 - testEdge->v0 );
+					if( testQuantity > testLength )
+					{
+						movement = testQuantity - testLength;
+						testEdge = testEdge->edge1;
+						testQuantity = 0;
+					}
+					else
+					{
+						movement = 0;
+					}
+				}
+
+				V2d spriteCenter = testEdge->GetPoint( testQuantity );
+				VertexArray & testVa = (*va);
+				testVa[i*4].position = Vector2f( spriteCenter.x - 16, spriteCenter.y - 16 );
+				testVa[i*4+1].position = Vector2f( spriteCenter.x + 16, spriteCenter.y - 16 );
+				testVa[i*4+2].position = Vector2f( spriteCenter.x + 16, spriteCenter.y + 16 );
+				testVa[i*4+3].position = Vector2f( spriteCenter.x - 16, spriteCenter.y + 16 );
+				//testVa[i*4].position = Vector2f( 0, i * 32 + 100 );
+				//testVa[i*4+1].position = Vector2f( 32, i * 32 + 100 );
+				//testVa[i*4+2].position = Vector2f( 32, (i+1) * 32+ 100 );
+				//testVa[i*4+3].position = Vector2f( 0, (i+1) * 32+100);
+				
+
+			//	cout << "vertex x: " << testVa[i].position.x << ", " <<
+			//		testVa[i+1].position.x << ", " <<
+			//		testVa[i+2].position.x << ", " <<
+			//		testVa[i+3].position.x << endl;
+
+				testVa[i*4].texCoords = Vector2f( 0, 0 );
+				testVa[i*4+1].texCoords = Vector2f( 32, 0 );
+				testVa[i*4+2].texCoords = Vector2f( 32, 32 );
+				testVa[i*4+3].texCoords = Vector2f( 0, 32 );
+				
+				polygonBorders.push_back( va );
+			}
 
 			delete cdt;
 			for( int i = 0; i < polyPoints; ++i )
@@ -915,20 +981,23 @@ int GameSession::Run( string fileName )
 		//window->draw(line, numPoints * 2, sf::Lines);
 		//polyShader.setParameter( "resolution", view.getSize().x, view.getSize().y );
 		//polyShader.setParameter( "random", rand() % 100 );
-		polyShader.setParameter( "vel", player.velocity.x, player.velocity.y );
-		polyShader.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
-		//polyShader.CurrentTexture = GetTileset( "testrocks.png", 25, 25 )->texture;
+		//polyShader.setParameter( "topLeft", player.velocity.x, player.velocity.y );
+		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
+		polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
+
+
+		//polyShader.setParameter(  = GetTileset( "testterrain.png", 25, 25 )->texture;
 
 		for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 		{
-		//	window->draw( *(*it) );
-			//window->draw
-			window->draw( *(*it ) );//, &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
+			window->draw( *(*it ), &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
-		//window->draw(border, 8, sf::Lines);
-
-		//DebugDrawQuadTree( window, testTree );
-
+		
+		Texture & borderTex = *GetTileset( "testpattern.png", 32, 32 )->texture;
+		for( list<VertexArray*>::iterator it = polygonBorders.begin(); it != polygonBorders.end(); ++it )
+		{
+			window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
+		}
 		
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )

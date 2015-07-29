@@ -43,6 +43,7 @@ struct GameSession : EnemyQuadTreeCollider
 	GameController &controller;
 	Collider coll;
 	std::list<sf::VertexArray*> polygons;
+	std::list<sf::VertexArray*> polygonBorders;
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
 	sf::Sprite goalSprite;
