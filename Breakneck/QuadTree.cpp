@@ -1,8 +1,12 @@
 #include "QuadTree.h"
 #include "Physics.h"
+#include <assert.h>
+#include <iostream>
 
 #define V2d sf::Vector2<double>
 
+using namespace sf;
+using namespace std;
 
 ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
 {
@@ -80,6 +84,11 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 	if( node->leaf )
 	{
 		LeafNode *n = (LeafNode*)node;
+		//assert( n );
+		//cout << "- " << endl;
+		//ParentNode *n2 = (ParentNode*)node;
+		//cout << n2->children[0]->pos.x << endl;
+	//	cout << "count" << n->objCount << endl;
 		if( n->objCount == 4 ) //full
 		{
 		//	cout << "splitting" << endl;	
@@ -113,21 +122,22 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 
 		if( qte->IsTouchingBox( nw ) )
 		{
+		//	cout << "calling northwest insert" << endl;
 			n->children[0] = rInsert( n->children[0], qte );
 		}
 		if( qte->IsTouchingBox( ne ) )
 		{
-	//		cout << "calling northeast insert" << endl;
+		//	cout << "calling northeast insert" << endl;
 			n->children[1] = rInsert( n->children[1], qte );
 		}
 		if( qte->IsTouchingBox( sw ) )
 		{
-	//		cout << "calling southwest insert" << endl;
+		//	cout << "calling southwest insert" << endl;
 			n->children[2] = rInsert( n->children[2], qte );
 		}
 		if( qte->IsTouchingBox( se ) )
 		{
-	//		cout << "calling southeast insert" << endl;
+		//	cout << "calling southeast insert" << endl;
 			n->children[3] = rInsert( n->children[3], qte );
 		}
 	}
@@ -136,6 +146,7 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 
 void QuadTree::Insert( QuadTreeEntrant *qte )
 {
+//	cout << "starting insert!" << endl;
 	startNode = rInsert( startNode, qte );
 }
 

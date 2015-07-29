@@ -38,6 +38,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	//testTree->debug = rw;
 
 	enemyTree = new QuadTree( 1000000, 1000000 );
+
+	borderTree = new QuadTree( 1000000, 1000000 ); 
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -189,7 +191,7 @@ void GameSession::RemoveEnemy( Enemy *e )
 bool GameSession::OpenFile( string fileName )
 {
 	currentFile = fileName;
-
+	int insertCount = 0;
 	ifstream is;
 	is.open( fileName + ".brknk" );
 	if( is.is_open() )
@@ -251,18 +253,8 @@ bool GameSession::OpenFile( string fileName )
 				else
 					ee->v1 = points[currentEdgeIndex];
 
-			//	cout << "here we go " << i << " out of " << polyPoints << " "  << ee->Normal().x << ", " << ee->Normal().y << endl;
-				//testTree = Insert(testTree, ee );
 				terrainTree->Insert( ee );
 
-				//if( testTree->debug != NULL )
-				//if( false )
-				//{
-				//	DebugDrawQuadTree( testTree->debug, testTree );
-				//	testTree->debug->display();
-				//}
-				//terrainTree->DebugDraw( window );
-				//window->display();
 			}
 
 
@@ -329,14 +321,19 @@ bool GameSession::OpenFile( string fileName )
 
 			double spacing = 8;
 			double amount = totalPerimeter / spacing;
-			cout << "total perimeter: " << totalPerimeter << endl;
-			cout << "num vertexes: " << (int)amount * 4 << endl;
+		//	cout << "total perimeter: " << totalPerimeter << endl;
+		//	cout << "num vertexes: " << (int)amount * 4 << endl;
 
 			va = new VertexArray( sf::Quads, (int)amount * 4 + 4 );
 
 			double testQuantity = 0;
 
 			testEdge = edges[currentEdgeIndex];
+
+
+			double left, right, bottom, top;
+			bool first = true;
+			
 			for( int i = 0; i < amount; ++i )
 			{
 				double movement = spacing;
@@ -382,8 +379,55 @@ bool GameSession::OpenFile( string fileName )
 				testVa[i*4+2].texCoords = Vector2f( size, size );
 				testVa[i*4+3].texCoords = Vector2f( 0, size );
 				
-				polygonBorders.push_back( va );
+				if( first )
+				{
+					left = spriteCenter.x - halfSize;
+					right = spriteCenter.x + halfSize;
+					top = spriteCenter.y - halfSize;
+					bottom = spriteCenter.y + halfSize;
+
+					first = false;
+				}
+				else
+				{
+					double tempLeft = spriteCenter.x - halfSize;
+					double tempRight = spriteCenter.x + halfSize;
+					double tempTop = spriteCenter.y - halfSize;
+					double tempBottom = spriteCenter.y + halfSize;
+
+					if( tempLeft < left )
+						left = tempLeft;
+					if( tempRight > right )
+						right = tempRight;
+					if( tempTop < top )
+						top = tempTop;
+					if( tempBottom > bottom )
+						bottom = tempBottom;
+				}
+				
+
+
+				
+				//testva->aabb
+				//polygonBorders.push_back( va );
+
 			}
+
+			TestVA * testva = new TestVA;
+			testva->next = NULL;
+			testva->va = va;
+			testva->aabb.left = left;
+			testva->aabb.top = top;
+			testva->aabb.width = right - left;
+			testva->aabb.height = bottom - top;
+			
+			//cout << "before insert border: " << insertCount << endl;
+			borderTree->Insert( testva );
+
+
+			//cout << "after insert border: " << insertCount << endl;
+			insertCount++;
+			
 
 			delete cdt;
 			for( int i = 0; i < polyPoints; ++i )
@@ -395,8 +439,8 @@ bool GameSession::OpenFile( string fileName )
 
 			++polyCounter;
 		}
-
-
+		//cout << "insertCount: " << insertCount << endl;
+		//cout << "polyCOUNTER: " << polyCounter << endl;
 		
 		int numGroups;
 		is >> numGroups;
@@ -871,7 +915,12 @@ int GameSession::Run( string fileName )
 			//rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
 			rs.setFillColor( sf::Color( 0, 0, 255, 100 ) );
 			window->draw( rs );*/
+			queryMode = "enemy";
 			enemyTree->Query( this, screenRect );
+
+
+		
+		//	cout << "query for: " << numBorders << endl;
 			//Query( this, enemyTree, screenRect );
 
 			accumulator -= TIMESTEP;
@@ -999,16 +1048,50 @@ int GameSession::Run( string fileName )
 
 		//polyShader.setParameter(  = GetTileset( "testterrain.png", 25, 25 )->texture;
 
+
 		for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 		{
 			window->draw( *(*it ), &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
 		
-		Texture & borderTex = *GetTileset( "testpattern.png", 32, 32 )->texture;
-		for( list<VertexArray*>::iterator it = polygonBorders.begin(); it != polygonBorders.end(); ++it )
+		Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
+
+		sf::Rect<double> testRect( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2,
+			view.getSize().x, view.getSize().y );
+
+		while( listVA != NULL )
 		{
-			window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
+			TestVA *t = listVA->next;
+			listVA->next = NULL;
+			listVA = t;
 		}
+
+		queryMode = "border";
+		numBorders = 0;
+		borderTree->Query( this, screenRect );
+
+
+		//listVA = NULL;
+		
+
+		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+		
+		
+		int timesDraw = 0;
+		TestVA * listVAIter = listVA;
+		//listVAIter->next = NULL;
+		while( listVAIter != NULL )
+		//for( int i = 0; i < numBorders; ++i )
+		{
+			window->draw( *listVAIter->va, &borderTex );
+			listVAIter = listVAIter->next;
+			//timesDraw++; 
+		}
+		//cout << "drew: " << timesDraw << endl;
+		//for( list<VertexArray*>::iterator it = polygonBorders.begin(); it != polygonBorders.end(); ++it )
+	//	{
+	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
+	//	}
 		
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
@@ -1043,13 +1126,53 @@ int GameSession::Run( string fileName )
 
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 {
-	Enemy *e = (Enemy*)qte;
-	//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-	if( e->spawnRect.intersects( screenRect ) )
+	if( queryMode == "enemy" )
 	{
-		//cout << "spawning enemy!" << endl;
-		e->spawned = true;
-		AddEnemy( e );
+		Enemy *e = (Enemy*)qte;
+		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+		if( e->spawnRect.intersects( screenRect ) )
+		{
+			//cout << "spawning enemy!" << endl;
+			e->spawned = true;
+			AddEnemy( e );
+		}
+	}
+
+	if( queryMode == "border" )
+	{
+		if( listVA == NULL )
+		{
+			listVA = (TestVA*)qte;
+		//	cout << "1" << endl;
+			numBorders++;
+		}
+		else
+		{
+			
+			TestVA *tva = (TestVA*)qte;
+			TestVA *temp = listVA;
+			bool okay = true;
+			while( temp != NULL )
+			{
+				if( temp == tva )
+				{
+					okay = false;
+					break;
+				}	
+				temp = temp->next;
+			}
+
+			if( okay )
+			{
+			
+			//cout << "blah: " << (unsigned)tva << endl;
+				tva->next = listVA;
+				listVA = tva;
+				numBorders++;
+				//cout << numBorders + 1 << endl;
+			}
+		}
+		
 	}
 }
 
@@ -1063,4 +1186,14 @@ void GameSession::DebugDrawActors()
 		currEnemy->DebugDraw( window );
 		currEnemy = currEnemy->next;
 	}
+}
+
+void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
+{
+	qtc->HandleEntrant( this );
+}
+
+bool GameSession::TestVA::IsTouchingBox( sf::Rect<double> &r )
+{
+	return IsBoxTouchingBox( aabb, r );
 }

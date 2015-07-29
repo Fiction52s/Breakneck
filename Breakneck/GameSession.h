@@ -45,6 +45,22 @@ struct GameSession : QuadTreeCollider
 	Collider coll;
 	std::list<sf::VertexArray*> polygons;
 	std::list<sf::VertexArray*> polygonBorders;
+
+	struct TestVA : QuadTreeEntrant
+	{
+		sf::VertexArray *va;
+		bool show;
+		//TestVA *prev;
+		TestVA *next;
+		sf::Rect<double> aabb;
+		void HandleQuery( QuadTreeCollider * qtc );
+		bool IsTouchingBox( sf::Rect<double> &r );
+	};
+	TestVA *listVA;
+	std::string queryMode;
+	QuadTree *borderTree;
+	int numBorders;
+
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
 	sf::Sprite goalSprite;
