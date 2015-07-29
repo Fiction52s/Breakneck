@@ -9,7 +9,7 @@
 #include "QuadTree.h"
 
 
-struct GameSession : EnemyQuadTreeCollider
+struct GameSession : QuadTreeCollider
 {
 	GameSession(GameController &c, sf::RenderWindow *rw);
 	~GameSession();
@@ -31,7 +31,7 @@ struct GameSession : EnemyQuadTreeCollider
 
 	void DebugDrawActors();
 
-	void HandleEnemy( Enemy *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
 
 	Actor player;
 	sf::Shader polyShader;
@@ -49,8 +49,9 @@ struct GameSession : EnemyQuadTreeCollider
 	sf::Vector2f lastViewCenter;
 	sf::Sprite goalSprite;
 	sf::Texture goalTex;
-	EdgeQNode *testTree;
-	EnemyQNode *enemyTree;
+	//EdgeQNode *testTree;
+	//EnemyQNode *enemyTree;
+
 
 	Enemy *activeEnemyList;
 	Enemy *inactiveEnemyList;
@@ -59,6 +60,7 @@ struct GameSession : EnemyQuadTreeCollider
 	sf::Rect<double> screenRect;
 
 	QuadTree * terrainTree;
+	QuadTree * enemyTree;
 };
 
 

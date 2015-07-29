@@ -15,6 +15,17 @@ Enemy::Enemy( GameSession *own )
 
 }
 
+void Enemy::HandleQuery( QuadTreeCollider * qtc )
+{
+	if( !spawned )
+		qtc->HandleEntrant( this );
+}
+
+bool Enemy::IsTouchingBox( sf::Rect<double> &r )
+{
+	return IsBoxTouchingBox( spawnRect, r );
+}
+
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float speed )
 	:Enemy( owner )
 {

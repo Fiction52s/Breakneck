@@ -32,15 +32,15 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	goalSprite.setTexture( goalTex );
 	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
-	terrainTree = new QuadTree(  1000000, 1000000 );
+	terrainTree = new QuadTree( 1000000, 1000000 );
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
 	//testTree->debug = rw;
 
-
-	enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
-	enemyTree->parent = NULL;
-	enemyTree->debug = rw;
+	enemyTree = new QuadTree( 1000000, 1000000 );
+	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
+	//enemyTree->parent = NULL;
+	//enemyTree->debug = rw;
 }
 
 
@@ -262,7 +262,7 @@ bool GameSession::OpenFile( string fileName )
 				//	testTree->debug->display();
 				//}
 				//terrainTree->DebugDraw( window );
-				window->display();
+				//window->display();
 			}
 
 
@@ -465,7 +465,7 @@ bool GameSession::OpenFile( string fileName )
 					is >> speed;
 
 					Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
-					enemyTree = Insert( enemyTree, enemy );
+					enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 				}
 				else if( typeName == "crawler" )
 				{
@@ -499,7 +499,8 @@ bool GameSession::OpenFile( string fileName )
 					is >> speed;
 
 					Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
-					enemyTree = Insert( enemyTree, enemy );
+					//enemyTree = Insert( enemyTree, enemy );
+					enemyTree->Insert( enemy );
 				}
 				else
 				{
@@ -870,8 +871,8 @@ int GameSession::Run( string fileName )
 			//rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
 			rs.setFillColor( sf::Color( 0, 0, 255, 100 ) );
 			window->draw( rs );*/
-
-			Query( this, enemyTree, screenRect );
+			enemyTree->Query( this, screenRect );
+			//Query( this, enemyTree, screenRect );
 
 			accumulator -= TIMESTEP;
 		}
@@ -1040,8 +1041,9 @@ int GameSession::Run( string fileName )
 	return returnVal;
 }
 
-void GameSession::HandleEnemy( Enemy *e )
+void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 {
+	Enemy *e = (Enemy*)qte;
 	//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 	if( e->spawnRect.intersects( screenRect ) )
 	{

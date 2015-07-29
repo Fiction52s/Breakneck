@@ -4,7 +4,7 @@
 #include "Actor.h"
 #include <list>
 
-struct Enemy : QuadTreeCollider
+struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {
 	Enemy( GameSession *owner );
 	//virtual void HandleEdge( Edge *e ) = 0;
@@ -23,6 +23,9 @@ struct Enemy : QuadTreeCollider
 	bool spawned;
 	sf::Rect<double> spawnRect;
 	HitboxInfo *receivedHit;
+
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( sf::Rect<double> &r );
 };
 
 struct Patroller : Enemy
