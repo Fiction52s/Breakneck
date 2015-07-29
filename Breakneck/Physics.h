@@ -130,7 +130,7 @@ void RayCast( RayCastHandler *handler, EdgeQNode *node,
 	sf::Vector2<double> startPoint, 
 	sf::Vector2<double> endPoint );
 
-
+bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 );
 
 //struct QuadTree
 //{

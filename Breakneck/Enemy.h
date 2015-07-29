@@ -146,4 +146,6 @@ void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<double>
 bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<double> & ir );
 
 
+
+
 #endif

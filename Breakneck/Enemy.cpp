@@ -1128,3 +1128,4 @@ void Crawler::DebugDraw( RenderTarget *target )
 //	hurtBody.DebugDraw( target );
 //	hitBody.DebugDraw( target );
 }
+

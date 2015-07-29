@@ -58,4 +58,6 @@ struct GameSession : EnemyQuadTreeCollider
 	sf::Rect<double> screenRect;
 };
 
+
+
 #endif

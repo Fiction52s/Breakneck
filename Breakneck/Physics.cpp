@@ -1017,9 +1017,12 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 		//shouldn't this check for box touching box right here??
 		EdgeParentNode *n = (EdgeParentNode*)node;
 
-		for( int i = 0; i < 4; ++i )
+		if( r.intersects( nodeBox ) )
 		{
-			Query( qtc, n->children[i], r );
+			for( int i = 0; i < 4; ++i )
+			{
+				Query( qtc, n->children[i], r );
+			}
 		}
 	}
 	

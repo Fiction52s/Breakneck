@@ -257,9 +257,12 @@ void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<double>
 	{
 		EnemyParentNode *n = (EnemyParentNode*)node;
 
-		for( int i = 0; i < 4; ++i )
+		if( r.intersects( nodeBox ) )
 		{
-			Query( qtc, n->children[i], r );
+			for( int i = 0; i < 4; ++i )
+			{
+				Query( qtc, n->children[i], r );
+			}
 		}
 	}
 	
