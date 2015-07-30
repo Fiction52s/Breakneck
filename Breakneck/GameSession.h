@@ -77,6 +77,8 @@ struct GameSession : QuadTreeCollider
 
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
+
+
 };
 
 

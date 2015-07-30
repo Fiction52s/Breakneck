@@ -126,10 +126,10 @@ Actor::Actor( GameSession *gs )
 		tileset[WIREHOLD] = owner->GetTileset( "steepslide.png", 64, 32 );
 
 		actionLength[BOUNCEAIR] = 1;
-		tileset[BOUNCEAIR] = owner->GetTileset( "steepslide.png", 64, 32 );
+		tileset[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
 
 		actionLength[BOUNCEGROUND] = 5;
-		tileset[BOUNCEGROUND] = owner->GetTileset( "steepslide.png", 64, 32 );
+		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce.png", 96, 96 );
 
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
@@ -697,6 +697,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.back && !prevInput.back )
 			{
 				action = BOUNCEAIR;
+				oldBounceEdge = NULL;
 				frame = 0;
 				break;
 			}
@@ -770,6 +771,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.back && !prevInput.back )
 			{
 				action = BOUNCEAIR;
+				oldBounceEdge = NULL;
 				frame = 0;
 				break;
 			}
@@ -1666,26 +1668,29 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			framesSinceBounce = 0;
 			V2d bn = bounceEdge->Normal();
 			if( frame == actionLength[BOUNCEGROUND] - 1 )
 			{
 				action = BOUNCEAIR;
+				oldBounceEdge = bounceEdge;
 				frame = 0;
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 				V2d bounceNorm;
 				if( bn.y < 0 )
 				{
-
+					cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
 					if( bn.y > -steepThresh )
 					{
-						if( bn.x > 0 && velocity.x < 0 )
+						if( bn.x > 0 && storedBounceVel.x < 0 )
 						{
 							velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
 						}
-						else if( bn.x < 0 && velocity.x > 0 )
+						else if( bn.x < 0 && storedBounceVel.x > 0 )
 						{
-							velocity = V2d( -storedBounceVel.x, -storedBounceVel.y );
+							
+							velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
 						}
 						
 						//if( 
@@ -1700,11 +1705,11 @@ void Actor::UpdatePrePhysics()
 				{
 					if( -bn.y > -steepThresh )
 					{
-						if( bn.x > 0 && velocity.x < 0 )
+						if( bn.x > 0 && storedBounceVel.x < 0 )
 						{
 							velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
 						}
-						else if( bn.x < 0 && velocity.x > 0 )
+						else if( bn.x < 0 && storedBounceVel.x > 0 )
 						{
 							velocity = V2d( -storedBounceVel.x, -storedBounceVel.y );
 						}
@@ -2720,9 +2725,14 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 
+	cout << "groundspeed: " << groundSpeed << endl;
+
+
 	groundSpeed /= slowMultiple;
 	velocity /= (double)slowMultiple;
 	grindSpeed /= slowMultiple;
+
+
 }
 
 bool Actor::CheckWall( bool right )
@@ -4016,6 +4026,8 @@ void Actor::UpdatePhysics()
 				bounceEdge = minContact.edge;
 				bounceQuant = minContact.edge->GetQuantity( minContact.position );
 				movement = 0;
+				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+			//	cout << "offset now!: " << offsetX << endl;
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
 			}
@@ -4245,7 +4257,39 @@ void Actor::UpdatePostPhysics()
 			storedBounceVel = velocity;
 			action = BOUNCEGROUND;
 			frame = 0;
+
+			V2d bn = bounceEdge->Normal();
+
+			if( bn.y != 0 )
+			{
+				position = bounceEdge->GetPoint( bounceQuant );
+		
+				position.x += offsetX + b.offset.x;
+
+			
+
+		
+				if( bn.y > 0 )
+				{
+					{
+						position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+						//cout << "offset: " << b.offset.y << endl;
+					}
+				}
+				else
+				{
+					if( bn.y < 0 )
+					{
+						position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+						//cout << "offset: " << b.offset.y << endl;
+					}
+				}
+			}
+
+
 		}
+
+
 	}
 	else if( ground != NULL )
 	{
@@ -4333,6 +4377,11 @@ void Actor::UpdatePostPhysics()
 			if( wallJumpFrameCounter < wallJumpMovementLimit )
 				wallJumpFrameCounter++;
 			framesInAir++;
+
+			if( action == BOUNCEAIR && oldBounceEdge != NULL )
+			{
+				framesSinceBounce++;
+			}
 		}
 
 		if( action == GROUNDHITSTUN )
@@ -5212,14 +5261,55 @@ void Actor::UpdatePostPhysics()
 		}
 	case BOUNCEAIR:
 		{
-			sprite->setTexture( *(tileset[BOUNCEAIR]->texture));
-			if( facingRight )
+			int bounceFrame = 0;
+			if( oldBounceEdge == NULL )
 			{
-				sprite->setTextureRect( tileset[BOUNCEAIR]->GetSubRect( 0 ) );
+				bounceFrame = 6;
+			}
+			else if( framesSinceBounce < 10 )
+			{
+				V2d bn = oldBounceEdge->Normal();
+				if( bn.y <= 0 && bn.y > -steepThresh )
+				{
+					bounceFrame = 3;
+					if( facingRight )
+					{
+						//facingRight = false;
+
+					}
+				}
+				else if( bn.y >= 0 && -bn.y > -steepThresh )
+				{
+					bounceFrame = 3;
+				}
+				else if( bn.y == 0 )
+				{
+					bounceFrame = 3;
+				}
+				else if( bn.y < 0 )
+				{
+					bounceFrame = 1;
+				}
+				else if( bn.y > 0 )
+				{
+					bounceFrame = 5;
+				}
 			}
 			else
 			{
-				sf::IntRect ir = tileset[BOUNCEAIR]->GetSubRect( 0 );
+				bounceFrame = 6;
+			}
+			
+			
+
+			sprite->setTexture( *(tileset[BOUNCEAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[BOUNCEAIR]->GetSubRect( bounceFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[BOUNCEAIR]->GetSubRect( bounceFrame );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -5229,15 +5319,46 @@ void Actor::UpdatePostPhysics()
 		}
 	case BOUNCEGROUND:
 		{
+			int bounceFrame = 0;
 			V2d bn = bounceEdge->Normal();
+
+			if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				bounceFrame = 2;
+				if( facingRight )
+				{
+					//facingRight = false;
+
+				}
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+				bounceFrame = 2;
+			}
+			else if( bn.y == 0 )
+			{
+				bounceFrame = 2;
+			}
+			else if( bn.y < 0 )
+			{
+				bounceFrame = 0;
+			}
+			else if( bn.y > 0 )
+			{
+				bounceFrame = 4;
+			}
+
+
+
+			
 			sprite->setTexture( *(tileset[BOUNCEGROUND]->texture));
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
-				sprite->setTextureRect( tileset[BOUNCEGROUND]->GetSubRect( 0 ) );
+				sprite->setTextureRect( tileset[BOUNCEGROUND]->GetSubRect( bounceFrame  ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[BOUNCEGROUND]->GetSubRect( 0 );
+				sf::IntRect ir = tileset[BOUNCEGROUND]->GetSubRect( bounceFrame  );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
@@ -5254,15 +5375,40 @@ void Actor::UpdatePostPhysics()
 				angle = atan2( bn.x, -bn.y );
 			}
 
-		
+			if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				if( facingRight )
+				{
+					//facingRight = false;
 
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-				sprite->setRotation( angle / PI * 180 );
+				}
+			//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+			//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+			}
+			else if( bn.y == 0 )
+			{
+			//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+			}
+			else if( bn.y < 0 )
+			{
+		//		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
+			}
+			else if( bn.y > 0 )
+			{
+		//		sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			sprite->setPosition( position.x, position.y );
+		//		sprite->setRotation( angle / PI * 180 );
 				V2d pp = bounceEdge->GetPoint( bounceQuant );
-				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-					sprite->setPosition( pp.x + offsetX, pp.y );
-				else
-					sprite->setPosition( pp.x, pp.y );
+				//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				//	sprite->setPosition( pp.x + offsetX, pp.y );
+				//else
+				//	sprite->setPosition( pp.x, pp.y );
 
 			break;
 		}
