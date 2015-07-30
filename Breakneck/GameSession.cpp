@@ -1106,7 +1106,7 @@ int GameSession::Run( string fileName )
 			window->draw( alphaTextSprite );
 		}
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 //		terrainTree->DebugDraw( window );
 //		DebugDrawQuadTree( window, enemyTree );

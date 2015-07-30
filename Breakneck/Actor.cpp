@@ -4260,6 +4260,30 @@ void Actor::UpdatePostPhysics()
 
 			V2d bn = bounceEdge->Normal();
 
+			
+
+			if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				facingRight = !facingRight;
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+				facingRight = !facingRight;
+			}
+			else if( bn.y == 0 )
+			{	
+				facingRight = !facingRight;
+			}
+			else if( bn.y < 0 )
+			{
+			
+			}
+			else if( bn.y > 0 )
+			{
+			
+			}
+
+
 			if( bn.y != 0 )
 			{
 				position = bounceEdge->GetPoint( bounceQuant );
@@ -5325,19 +5349,17 @@ void Actor::UpdatePostPhysics()
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
 				bounceFrame = 2;
-				if( facingRight )
-				{
-					//facingRight = false;
-
-				}
+				//facingRight = !facingRight;
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
 				bounceFrame = 2;
+				//facingRight = !facingRight;
 			}
 			else if( bn.y == 0 )
 			{
 				bounceFrame = 2;
+			//	facingRight = !facingRight;
 			}
 			else if( bn.y < 0 )
 			{
@@ -5375,6 +5397,8 @@ void Actor::UpdatePostPhysics()
 				angle = atan2( bn.x, -bn.y );
 			}
 
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
 				if( facingRight )
@@ -5382,11 +5406,12 @@ void Actor::UpdatePostPhysics()
 					//facingRight = false;
 
 				}
-			//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-			//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				
+				sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
 			}
 			else if( bn.y == 0 )
 			{
@@ -5394,14 +5419,14 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( bn.y < 0 )
 			{
-		//		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
 			}
 			else if( bn.y > 0 )
 			{
 		//		sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
 			}
 
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			
 			sprite->setPosition( position.x, position.y );
 		//		sprite->setRotation( angle / PI * 180 );
 				V2d pp = bounceEdge->GetPoint( bounceQuant );
