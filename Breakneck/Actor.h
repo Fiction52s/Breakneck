@@ -280,6 +280,9 @@ struct Actor : QuadTreeCollider,
 		Wire *wire;
 		Edge *bounceEdge;
 		double bounceQuant;
+
+		Edge *oldBounceEdge;
+		int framesSinceBounce;
 	};
 	Stored stored;
 

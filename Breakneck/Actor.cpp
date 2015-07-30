@@ -5668,6 +5668,9 @@ void Actor::SaveState()
 	stored.wire = wire;
 	stored.bounceEdge = bounceEdge;
 	stored.bounceQuant = bounceQuant;
+
+	stored.oldBounceEdge = oldBounceEdge;
+	stored.framesSinceBounce = framesSinceBounce;
 }
 
 void Actor::LoadState()
@@ -5726,6 +5729,9 @@ void Actor::LoadState()
 	wire = stored.wire;
 	bounceEdge = stored.bounceEdge;
 	bounceQuant = stored.bounceQuant;
+
+	oldBounceEdge = stored.oldBounceEdge;
+	framesSinceBounce = stored.framesSinceBounce;
 }
 
 PlayerGhost::PlayerGhost()
