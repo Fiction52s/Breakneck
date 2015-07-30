@@ -96,6 +96,7 @@ void GameSession::UpdateEnemiesPrePhysics()
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
+	//	cout << "update enemy: " << (unsigned)current << endl;
 		current->UpdatePrePhysics();
 		current = current->next;
 	}
@@ -861,9 +862,11 @@ int GameSession::Run( string fileName )
 			player.currInput = currInput;
 			player.UpdatePrePhysics();
 
+			cout << "player updated" << endl;
+
 			UpdateEnemiesPrePhysics();
 			
-
+			cout << "enemies updated" << endl;
 			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
 
 			//colMode = 
@@ -1132,7 +1135,8 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( e->spawnRect.intersects( screenRect ) )
 		{
-			//cout << "spawning enemy!" << endl;
+			cout << "spawning enemy!" << endl;
+			assert( e->spawned == false );
 			e->spawned = true;
 			AddEnemy( e );
 		}
