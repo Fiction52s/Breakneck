@@ -1261,15 +1261,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( trackingEnemy->name == "crawler" )
 									{
-
+										//groups["--"]->name
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new ActorParams;
+											cout << "blah" << endl;
 											actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity, true, 10 );
+											
 											groups["--"]->actors.push_back( actor);
+											//groups["--"]->a
 
 											
 										}
@@ -2767,8 +2770,6 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 		prev = curr;
 		++testIndex;
 	}
-
-
 	//adjust for ordery
 	if( edgeIndex == 0 )
 		edgeIndex = ground->points.size() - 1;
@@ -2788,6 +2789,8 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 	ss.precision( 5 );
 	ss << fixed << speed;
 	params.push_back( ss.str() );	
+
+	return "success";
 }
 
 ActorParams::ActorParams()
