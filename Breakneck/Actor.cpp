@@ -50,11 +50,8 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[FAIR] = 10 * 2;
 
-		testGhost = new PlayerGhost;
+		//testGhost = new PlayerGhost;
 
-		
-
-		testGhost->fairHitboxes[4] = new list<CollisionBox>;
 		fairHitboxes[4] = new list<CollisionBox>;
 
 		CollisionBox cb;
@@ -65,8 +62,20 @@ Actor::Actor( GameSession *gs )
 		//cb.offsetAngle = 0;
 		cb.rw = 64;
 		cb.rh = 64;
-		testGhost->fairHitboxes[4]->push_back( cb );
+
 		fairHitboxes[4]->push_back( cb );
+
+		for( int i = 0; i < 4; ++i )
+		{
+			ghosts[i] = new PlayerGhost;
+			ghosts[i]->fairHitboxes[4] = new list<CollisionBox>;
+			ghosts[i]->fairHitboxes[4]->push_back( cb );
+		}
+
+		//testGhost->fairHitboxes[4] = new list<CollisionBox>;
+		
+		//testGhost->fairHitboxes[4]->push_back( cb );
+		
 
 		//map<int, list<CollisionBox>> &fairHit = *fairHitboxes;
 		//fairHit[4].push_back( CollisionBox() );
@@ -273,6 +282,8 @@ Actor::Actor( GameSession *gs )
 		touchEdgeWithWire = false;
 		
 		ghostFrame = 0;
+
+		recordedGhosts = 0;
 	}
 
 void Actor::ActionEnded()
@@ -369,19 +380,39 @@ void Actor::UpdatePrePhysics()
 {
 	if( currInput.RLeft() && !prevInput.RLeft() )
 	{
-		SaveState();
-		testGhost->currFrame = 0;
-		record = true;
+		if( record == 0 )
+		{
+			SaveState();
+			recordedGhosts = 1;
+			ghosts[record]->currFrame = 0;
+			ghostFrame = 0;
+		}
+		else
+		{
+			LoadState();
+			recordedGhosts++;
+			ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
+			ghosts[record]->currFrame = 0;
+			ghostFrame = 0;
+		}
+
+		record++;
+		
+		//testGhost->currFrame = 0;
+
+		//record = true;
 		blah = false;
 	}
 
 	if( currInput.RRight() && !prevInput.RRight() )
 	{
-		record = false;
+		//record = false;
+		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
+		record = 0;
 		LoadState();
 		blah = true;
-		testGhost->totalRecorded = testGhost->currFrame;
 		ghostFrame = 0;
+		cout << "recordedGhosts: " << recordedGhosts << endl;
 	}
 
 
@@ -2529,7 +2560,14 @@ void Actor::UpdatePrePhysics()
 	}
 
 	if( blah )
-		testGhost->UpdatePrePhysics( ghostFrame );
+	{
+		for( int i = 0; i < recordedGhosts; ++i )
+		{
+			if( ghostFrame < ghosts[i]->totalRecorded )
+				ghosts[i]->UpdatePrePhysics( ghostFrame );
+		}
+		//testGhost->UpdatePrePhysics( ghostFrame );
+	}
 
 	wire->UpdateState();
 	wire->UpdateAnchors();
@@ -2746,7 +2784,7 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 
-	cout << "groundspeed: " << groundSpeed << endl;
+	//cout << "groundspeed: " << groundSpeed << endl;
 
 
 	groundSpeed /= slowMultiple;
@@ -4091,12 +4129,12 @@ void Actor::UpdatePhysics()
 				//	groundSpeed = -groundSpeed;
 				}
 
-				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
+				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
 
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
-				cout << "offset now!: " << offsetX << endl;
+				//cout << "offset now!: " << offsetX << endl;
 				//V2d gn = ground->Normal();
 				
 				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
@@ -4488,9 +4526,10 @@ void Actor::UpdatePostPhysics()
 
 	//display action
 
-	if( record )
+	if( record > 0 )
 	{
-		PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
+
+		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
 		p.showSword1 = false;
 	}
 
@@ -4948,9 +4987,9 @@ void Actor::UpdatePostPhysics()
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
 
-			if( record )
+			if( record > 0 )
 			{
-				PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
 				p.showSword1 = showSword1;
 				p.swordSprite1 = fairSword1;
 			}
@@ -5479,16 +5518,16 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
-	if( record )
+	if( record > 0 )
 	{
-		PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
+		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
 		p.action = (PlayerGhost::Action)action;
 		p.frame = frame;
 		p.angle = sprite->getRotation() / 180 * PI;
 		p.position = position;
 		p.s = *sprite;
 		//p.position = V2d(sprite->getPosition();
-		testGhost->currFrame++;
+		ghosts[record-1]->currFrame++;
 	}
 
 
@@ -5612,13 +5651,22 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	if( blah )
 	{
-		if( ghostFrame <= testGhost->totalRecorded )
+		for( int i = 0; i < recordedGhosts; ++i )
 		{
-			target->draw( testGhost->states[ghostFrame].s );
-			if( testGhost->states[ghostFrame].showSword1 )
-				target->draw( testGhost->states[ghostFrame].swordSprite1 );
-			ghostFrame++;
+			PlayerGhost *g = ghosts[i];
+			if( ghostFrame < g->totalRecorded )
+			{
+				target->draw( g->states[ghostFrame].s );
+				if( g->states[ghostFrame].showSword1 )
+					target->draw( g->states[ghostFrame].swordSprite1 );
+			}
+			
 		}
+
+		if( ghostFrame < 240 )
+				ghostFrame++;
+		//PlayerGhost *g = ghosts[record-1];
+		
 	}
 }
 
@@ -5645,7 +5693,11 @@ void Actor::DebugDraw( RenderTarget *target )
 	hurtBody.DebugDraw( target );
 	b.DebugDraw( target );
 
-	testGhost->DebugDraw( target );
+	for( int i = 0; i < recordedGhosts; ++i )
+	{
+		ghosts[i]->DebugDraw( target );
+	}
+	
 }
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

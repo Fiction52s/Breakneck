@@ -293,9 +293,14 @@ struct Actor : QuadTreeCollider,
 
 	//double rotation;
 	
+
+
+
 	PlayerGhost *testGhost;
-	
-	bool record;
+	PlayerGhost *ghosts[4];
+	int recordedGhosts;
+	int record;
+	//bool record;
 	bool blah;
 	int ghostFrame;
 	

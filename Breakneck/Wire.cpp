@@ -9,8 +9,8 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p )
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 2000 ), minSegmentLength( 50 )
-	, player( p ), triggerThresh( 200 ), hitStallFrames( 30 ), hitStallCounter( 0 ), pullStrength( 20 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 1000 ), minSegmentLength( 50 )
+	, player( p ), triggerThresh( 200 ), hitStallFrames( 30 ), hitStallCounter( 0 ), pullStrength( 10 )
 {
 }
 
