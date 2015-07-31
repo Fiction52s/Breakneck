@@ -42,7 +42,7 @@ struct Wire : RayCastHandler
 
 	int numPoints;
 	//sf::Vector2<double> points[16];
-	WirePoint points[16];
+	WirePoint points[100];
 	int framesFiring;
 	double fireRate;
 	sf::Vector2<double> fireDir;

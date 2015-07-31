@@ -3391,7 +3391,6 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
