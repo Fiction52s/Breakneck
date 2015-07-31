@@ -9,7 +9,7 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p )
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 500 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 2000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 30 ), hitStallCounter( 0 ), pullStrength( 20 )
 {
 }
@@ -101,6 +101,7 @@ void Wire::UpdateState()
 			{
 				state = RELEASED;
 			}
+			
 			break;
 		}
 	case RELEASED:
@@ -156,15 +157,39 @@ void Wire::UpdateState()
 			if( total < totalLength )
 				totalLength = total;
 
+
+			V2d wn;
+
 			if( numPoints == 0 )
 			{
 				segmentLength = totalLength;
+				wn = normalize( anchor.pos - player->position );
 			}
 			else
+			{
 				segmentLength = length( points[numPoints-1].pos - player->position );
+				wn = normalize( points[numPoints-1].pos - player->position );
+			}
 
-			//if( currInput.rightTrigger >= triggerThresh )
-			if( false )
+			bool shrinkInput = false;
+
+			if( wn.x > 0 )
+			{
+				shrinkInput = currInput.LRight();
+			}
+			else if( wn.x < 0 )
+			{
+				shrinkInput = currInput.LLeft();
+			}
+			else
+			{
+				shrinkInput = currInput.LUp();
+			}
+
+			shrinkInput = true;
+
+			if( shrinkInput && currInput.rightTrigger >= triggerThresh && player->ground == NULL )
+			//if( false )
 			{
 				//totalLength -= pullStrength;
 
