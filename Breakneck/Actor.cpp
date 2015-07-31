@@ -270,6 +270,7 @@ Actor::Actor( GameSession *gs )
 		record = false;
 		blah = false;
 
+		touchEdgeWithWire = false;
 		
 		ghostFrame = 0;
 	}
@@ -2652,9 +2653,11 @@ void Actor::UpdatePrePhysics()
 		}
 
 	}*/
-
+	
 	if( wire->state == wire->PULLING  )
 	{
+		
+
 		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
@@ -2664,13 +2667,21 @@ void Actor::UpdatePrePhysics()
 		double temp = tes.x;
 		tes.x = tes.y;
 		tes.y = -temp;
-		
+
+		double val = dot( velocity, normalize( wirePoint - position ) );
+		V2d otherTes;
+		if( val > 0 )
+		{
+			otherTes = val * normalize( wirePoint - position );
+		}
+		 
 
 		V2d old = velocity;
 
 		//velocity.y *= 10;
-		
+	
 		velocity = dot( velocity, tes ) * tes;
+		velocity += otherTes;
 
 		V2d future = position + velocity;
 		
@@ -2742,7 +2753,7 @@ void Actor::UpdatePrePhysics()
 	velocity /= (double)slowMultiple;
 	grindSpeed /= slowMultiple;
 
-
+	touchEdgeWithWire = false;
 }
 
 bool Actor::CheckWall( bool right )
@@ -4031,6 +4042,12 @@ void Actor::UpdatePhysics()
 			
 
 			int maxJumpHeightFrame = 10;
+
+			if( tempCollision && wire->state == Wire::PULLING )
+			{
+				touchEdgeWithWire = true;
+			}
+
 			if( action == BOUNCEAIR && tempCollision )
 			{
 				bounceEdge = minContact.edge;
@@ -5701,6 +5718,8 @@ void Actor::SaveState()
 
 	stored.oldBounceEdge = oldBounceEdge;
 	stored.framesSinceBounce = framesSinceBounce;
+
+	stored.touchEdgeWithWire = touchEdgeWithWire;
 }
 
 void Actor::LoadState()
@@ -5762,6 +5781,8 @@ void Actor::LoadState()
 
 	oldBounceEdge = stored.oldBounceEdge;
 	framesSinceBounce = stored.framesSinceBounce;
+
+	touchEdgeWithWire = stored.touchEdgeWithWire;
 }
 
 PlayerGhost::PlayerGhost()

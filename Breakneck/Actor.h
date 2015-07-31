@@ -283,6 +283,8 @@ struct Actor : QuadTreeCollider,
 
 		Edge *oldBounceEdge;
 		int framesSinceBounce;
+
+		bool touchEdgeWithWire;
 	};
 	Stored stored;
 
@@ -294,7 +296,9 @@ struct Actor : QuadTreeCollider,
 	bool record;
 	bool blah;
 	int ghostFrame;
+	
 
+	bool touchEdgeWithWire;
 
 	//sf::Vector2<double> bounceOffset;
 

@@ -97,6 +97,10 @@ void Wire::UpdateState()
 			{
 				state = RELEASED;
 			}
+			if( player->touchEdgeWithWire )
+			{
+				state = RELEASED;
+			}
 			break;
 		}
 	case RELEASED:
