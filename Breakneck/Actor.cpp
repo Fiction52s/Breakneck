@@ -4472,6 +4472,12 @@ void Actor::UpdatePostPhysics()
 
 	//display action
 
+	if( record )
+	{
+		PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
+		p.showSword1 = false;
+	}
+
 	switch( action )
 	{
 	case STAND:
@@ -4894,6 +4900,7 @@ void Actor::UpdatePostPhysics()
 
 			if( facingRight )
 			{
+				
 				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
 				//2 - 10
 				if( showSword1 )
@@ -4901,6 +4908,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
+				offset.x = -offset.x;
 				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
@@ -4924,6 +4932,12 @@ void Actor::UpdatePostPhysics()
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
 
+			if( record )
+			{
+				PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
+				p.showSword1 = showSword1;
+				p.swordSprite1 = fairSword1;
+			}
 			
 			break;
 		}
@@ -5585,6 +5599,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		if( ghostFrame <= testGhost->totalRecorded )
 		{
 			target->draw( testGhost->states[ghostFrame].s );
+			if( testGhost->states[ghostFrame].showSword1 )
+				target->draw( testGhost->states[ghostFrame].swordSprite1 );
 			ghostFrame++;
 		}
 	}

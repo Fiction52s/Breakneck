@@ -339,6 +339,8 @@ struct PlayerGhost
 		Action action;
 		int frame;
 		sf::Sprite s;
+		bool showSword1;
+		sf::Sprite swordSprite1;
 		double angle;
 	};
 	
