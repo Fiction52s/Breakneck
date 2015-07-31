@@ -133,10 +133,10 @@ Actor::Actor( GameSession *gs )
 		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb.png", 128, 64 );
 
 		actionLength[AIRHITSTUN] = 1;
-		tileset[AIRHITSTUN] = owner->GetTileset( "steepclimb.png", 128, 64 );
+		tileset[AIRHITSTUN] = owner->GetTileset( "hurt_air.png", 64, 64 );
 
 		actionLength[GROUNDHITSTUN] = 1;
-		tileset[GROUNDHITSTUN] = owner->GetTileset( "steepslide.png", 64, 32 );
+		tileset[GROUNDHITSTUN] = owner->GetTileset( "hurt_stand.png", 64, 64 );
 
 		actionLength[WIREHOLD] = 1;
 		tileset[WIREHOLD] = owner->GetTileset( "steepslide.png", 64, 32 );
@@ -5340,9 +5340,28 @@ void Actor::UpdatePostPhysics()
 				sf::IntRect ir = tileset[GROUNDHITSTUN]->GetSubRect( 0 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
+			
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+						angle = PI;
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+		
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 			break;
 		}
 	case WIREHOLD:
@@ -5541,8 +5560,6 @@ void Actor::UpdatePostPhysics()
 		slowCounter++;
 
 	UpdateHitboxes();
-
-	
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )

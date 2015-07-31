@@ -304,6 +304,7 @@ struct Actor : QuadTreeCollider,
 	bool blah;
 	int ghostFrame;
 	
+	int health;
 
 	
 

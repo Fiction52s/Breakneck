@@ -577,6 +577,12 @@ int GameSession::Run( string fileName )
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
 	Sprite alphaTextSprite(alphaTex);
+
+	sf::Texture healthTex;
+	healthTex.loadFromFile( "lifebar.png" );
+	sf::Sprite healthSprite( healthTex );
+	healthSprite.setScale( 4, 4 );
+	healthSprite.setPosition( 10, 100 );
 	
 	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
@@ -585,6 +591,8 @@ int GameSession::Run( string fileName )
 
 	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	window->setView( view );
+
+	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 
 	window->setVerticalSyncEnabled( true );
 
@@ -1109,7 +1117,12 @@ int GameSession::Run( string fileName )
 			window->draw( alphaTextSprite );
 		}
 
-		DebugDrawActors();
+		window->setView( uiView );
+		window->draw( healthSprite );
+
+		window->setView( view );
+
+		//DebugDrawActors();
 
 //		terrainTree->DebugDraw( window );
 //		DebugDrawQuadTree( window, enemyTree );

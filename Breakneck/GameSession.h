@@ -78,6 +78,7 @@ struct GameSession : QuadTreeCollider
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 
+	//sf::Sprite healthSprite;
 
 };
 

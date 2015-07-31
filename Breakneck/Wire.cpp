@@ -173,6 +173,8 @@ void Wire::UpdateState()
 
 			bool shrinkInput = false;
 
+			
+
 			if( wn.x > 0 )
 			{
 				shrinkInput = currInput.LRight();
