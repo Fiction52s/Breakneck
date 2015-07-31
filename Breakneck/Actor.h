@@ -339,14 +339,22 @@ struct PlayerGhost
 		Action action;
 		int frame;
 		sf::Sprite s;
+		double angle;
 	};
 	
 	void Draw( sf::RenderTarget *target );
+	void UpdatePrePhysics( int ghostFrame );
+	void DebugDraw( sf::RenderTarget *target );
 
 	P states[240];
 	int totalRecorded;
 	int maxFrames;
 	int currFrame;
+
+	std::list<CollisionBox> *currHitboxes;
+
+	std::map<int, std::list<CollisionBox>*> fairHitboxes;
+
 
 
 

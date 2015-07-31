@@ -49,6 +49,12 @@ Actor::Actor( GameSession *gs )
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 
 		actionLength[FAIR] = 10 * 2;
+
+		testGhost = new PlayerGhost;
+
+		
+
+		testGhost->fairHitboxes[4] = new list<CollisionBox>;
 		fairHitboxes[4] = new list<CollisionBox>;
 
 		CollisionBox cb;
@@ -59,6 +65,7 @@ Actor::Actor( GameSession *gs )
 		//cb.offsetAngle = 0;
 		cb.rw = 64;
 		cb.rh = 64;
+		testGhost->fairHitboxes[4]->push_back( cb );
 		fairHitboxes[4]->push_back( cb );
 
 		//map<int, list<CollisionBox>> &fairHit = *fairHitboxes;
@@ -263,7 +270,7 @@ Actor::Actor( GameSession *gs )
 		record = false;
 		blah = false;
 
-		testGhost = new PlayerGhost;
+		
 		ghostFrame = 0;
 	}
 
@@ -2519,6 +2526,9 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	}
+
+	if( blah )
+		testGhost->UpdatePrePhysics( ghostFrame );
 
 	wire->UpdateState();
 	wire->UpdateAnchors();
@@ -5444,6 +5454,8 @@ void Actor::UpdatePostPhysics()
 		PlayerGhost::P & p = testGhost->states[testGhost->currFrame];
 		p.action = (PlayerGhost::Action)action;
 		p.frame = frame;
+		p.angle = sprite->getRotation() / 180 * PI;
+		p.position = position;
 		p.s = *sprite;
 		//p.position = V2d(sprite->getPosition();
 		testGhost->currFrame++;
@@ -5600,6 +5612,8 @@ void Actor::DebugDraw( RenderTarget *target )
 
 	hurtBody.DebugDraw( target );
 	b.DebugDraw( target );
+
+	testGhost->DebugDraw( target );
 }
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
@@ -5735,7 +5749,54 @@ void Actor::LoadState()
 }
 
 PlayerGhost::PlayerGhost()
-	:currFrame( 0 ), maxFrames( 240 )
+	:currFrame( 0 ), maxFrames( 240 ), currHitboxes( NULL )
 {
 
+}
+
+void PlayerGhost::DebugDraw( sf::RenderTarget *target )
+{
+	if( currHitboxes != NULL )
+	{
+		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+		{
+			(*it).DebugDraw( target );
+		}
+	}
+}
+
+void PlayerGhost::UpdatePrePhysics( int ghostFrame )
+{
+	Action action = states[ghostFrame].action;
+	int frame = states[ghostFrame].frame;
+	double angle = states[ghostFrame].angle;
+	V2d position = states[ghostFrame].position;
+
+	currHitboxes = NULL;
+
+	switch( action )
+	{
+	case FAIR:
+		{
+			if( fairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = fairHitboxes[frame];
+			}
+			break;
+		}
+	}
+
+	if( currHitboxes != NULL )
+	{
+		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+		{
+			(*it).globalAngle = angle;
+
+			(*it).globalPosition = position + V2d( (*it).offset.x * cos( (*it).globalAngle ) + (*it).offset.y * sin( (*it).globalAngle ), 
+				(*it).offset.x * -sin( (*it).globalAngle ) + (*it).offset.y * cos( (*it).globalAngle ) );
+
+			//(*it).globalPosition = position ;//+ (*it).offset;
+		
+		}
+	}
 }

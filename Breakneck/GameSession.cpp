@@ -862,11 +862,11 @@ int GameSession::Run( string fileName )
 			player.currInput = currInput;
 			player.UpdatePrePhysics();
 
-			cout << "player updated" << endl;
+			//cout << "player updated" << endl;
 
 			UpdateEnemiesPrePhysics();
 			
-			cout << "enemies updated" << endl;
+			//cout << "enemies updated" << endl;
 			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
 
 			//colMode = 
@@ -1109,7 +1109,7 @@ int GameSession::Run( string fileName )
 			window->draw( alphaTextSprite );
 		}
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 //		terrainTree->DebugDraw( window );
 //		DebugDrawQuadTree( window, enemyTree );
