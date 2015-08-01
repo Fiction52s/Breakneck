@@ -22,12 +22,14 @@ struct PowerBar
 	sf::Sprite panelSprite;
 	sf::Texture panelTex;
 
+	int maxRecover;
+	int maxRecoverLayer;
 
-	
-	sf::RectangleShape powerRect;
 	void Draw( sf::RenderTarget *target );
-	void SetPower( int power );
-	
+	bool Damage( int power );
+    bool Use( int power );
+	void Recover( int power );
+	void Charge( int power );
 };
 
 struct GameSession : QuadTreeCollider
@@ -98,6 +100,8 @@ struct GameSession : QuadTreeCollider
 
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
+
+	PowerBar powerBar;
 
 	//sf::Sprite healthSprite;
 

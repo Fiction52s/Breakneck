@@ -386,6 +386,7 @@ void Actor::UpdatePrePhysics()
 			recordedGhosts = 1;
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
+			owner->powerBar.Use( 20 );
 		}
 		else
 		{
@@ -394,6 +395,7 @@ void Actor::UpdatePrePhysics()
 			ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
+			
 		}
 
 		record++;
@@ -412,7 +414,8 @@ void Actor::UpdatePrePhysics()
 		LoadState();
 		blah = true;
 		ghostFrame = 0;
-		cout << "recordedGhosts: " << recordedGhosts << endl;
+		//cout << "recordedGhosts: " << recordedGhosts << endl;
+		owner->powerBar.Charge( 20 );
 	}
 
 

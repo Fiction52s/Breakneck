@@ -625,7 +625,6 @@ int GameSession::Run( string fileName )
 	sf::CircleShape circle( 30 );
 	circle.setFillColor( Color::Blue );
 
-	PowerBar powerBar;
 
 	
 
@@ -1229,28 +1228,147 @@ PowerBar::PowerBar()
 	panelSprite.setScale( 4, 4 );
 	panelSprite.setPosition( 10, 100 );
 
-	powerRect.setPosition( 42, 108 );
-	powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 ) );
-	powerRect.setFillColor( Color::Green );
+	//powerRect.setPosition( 42, 108 );
+	//powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 ) );
+	//powerRect.setFillColor( Color::Green );
 	//powerRect.
-	SetPower( 25 );
+
+	maxRecover = 75;
+	maxRecoverLayer = 0;
 }
 
 void PowerBar::Draw( sf::RenderTarget *target )
 {
-	target->draw( panelSprite );
-	target->draw( powerRect );
-}
+	switch( layer )
+	{
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	case 4:
+		break;
+	case 5:
+		break;
+	case 6:
+		break;
+	case 7:
+		break;
+	}
 
-void PowerBar::SetPower( int power )
-{
-	double diffz = (double)power / (double)pointsPerLayer;
+
+	double diffz = (double)points / (double)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
 	diffz *= 59 * 4;
 
-	int diff = pointsPerLayer - power;
-	powerRect.setPosition( 42, 108 + diffz );
-	powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 - diffz ) );
-	powerRect.setFillColor( Color::Green );
+	sf::RectangleShape rs;
+	rs.setPosition( 42, 108 + diffz );
+	rs.setSize( sf::Vector2f( 4 * 4, 59 * 4 - diffz ) );
+	rs.setFillColor( Color::Blue );
+
+	target->draw( panelSprite );
+	target->draw( rs );
+}
+
+bool PowerBar::Damage( int power )
+{
+	points -= power;
+	if( points <= 0 )
+	{
+		if( layer > 0 )
+		{
+			layer--;
+			points = pointsPerLayer + points;
+		}
+		else
+		{
+			points = 0;
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool PowerBar::Use( int power )
+{
+	if( layer == 0 )
+	{
+		if( points - power < minUse )
+		{
+			return false;
+		}
+		else
+		{
+			points -= power;
+		}
+	}
+	else
+	{
+		points -= power;
+		if( points <= 0 )
+		{
+			points = pointsPerLayer + points;
+			layer--;
+		}
+	}
+	return true;
+}
+
+void PowerBar::Recover( int power )
+{
+	if( layer == maxRecoverLayer )
+	{
+		if( points + power > maxRecover )
+		{
+			points = maxRecover;
+		}
+		else
+		{
+			points += power;
+		}
+	}
+	else
+	{
+		if( points + power > pointsPerLayer )
+		{
+			layer++;
+			points = points + power - pointsPerLayer;
+		}
+		else
+		{
+			points += power;
+		}
+	}
+}
+
+void PowerBar::Charge( int power )
+{
+	if( layer == maxLayer )
+	{
+		if( points + power > pointsPerLayer )
+		{
+			points = pointsPerLayer;
+		}
+		else
+		{
+			points += power;
+		}
+	}
+	else
+	{
+		if( points + power > pointsPerLayer )
+		{
+			layer++;
+			points = points + power - pointsPerLayer;
+		}
+		else
+		{
+			points += power;
+		}
+	}
 }
