@@ -40,6 +40,10 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	enemyTree = new QuadTree( 1000000, 1000000 );
 
 	borderTree = new QuadTree( 1000000, 1000000 ); 
+
+	listVA = NULL;
+
+
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -1081,7 +1085,7 @@ int GameSession::Run( string fileName )
 		borderTree->Query( this, screenRect );
 
 
-		//listVA = NULL;
+		
 		
 
 		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
