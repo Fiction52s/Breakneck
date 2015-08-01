@@ -1243,23 +1243,34 @@ PowerBar::PowerBar()
 
 void PowerBar::Draw( sf::RenderTarget *target )
 {
+	Color c;
 	switch( layer )
 	{
 	case 0:
+		c = Color( 0, 0xee, 0xff );
+		//c = Color( 0x00eeff );
 		break;
 	case 1:
+		//c = Color( 0x0066cc );
+		c = Color( 0, 0x66, 0xcc );
 		break;
 	case 2:
+		c = Color( 0, 0xcc, 0x44 );
 		break;
 	case 3:
+		c = Color( 0xff, 0xf0, 0 );
 		break;
 	case 4:
+		c = Color( 0xff, 0xbb, 0 );
 		break;
 	case 5:
+		c = Color( 0xff, 0x22, 0 );
 		break;
 	case 6:
+		c = Color( 0xff, 0, 0xff );
 		break;
 	case 7:
+		c = Color( 0xff, 0xff, 0xff );
 		break;
 	}
 
@@ -1272,7 +1283,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	sf::RectangleShape rs;
 	rs.setPosition( 42, 108 + diffz );
 	rs.setSize( sf::Vector2f( 4 * 4, 59 * 4 - diffz ) );
-	rs.setFillColor( Color::Blue );
+	rs.setFillColor( c );
 
 	target->draw( panelSprite );
 	target->draw( rs );
