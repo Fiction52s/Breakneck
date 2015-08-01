@@ -7,7 +7,28 @@
 #include "Actor.h"
 #include "Enemy.h"
 #include "QuadTree.h"
+#include <SFML/Graphics.hpp>
 
+
+struct PowerBar
+{
+	PowerBar();
+	int pointsPerLayer;
+	int points;
+	int layer;
+
+	int maxLayer;
+	int minUse;
+	sf::Sprite panelSprite;
+	sf::Texture panelTex;
+
+
+	
+	sf::RectangleShape powerRect;
+	void Draw( sf::RenderTarget *target );
+	void SetPower( int power );
+	
+};
 
 struct GameSession : QuadTreeCollider
 {

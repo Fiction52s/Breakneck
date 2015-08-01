@@ -578,11 +578,11 @@ int GameSession::Run( string fileName )
 	alphaTex.loadFromFile( "alphatext.png" );
 	Sprite alphaTextSprite(alphaTex);
 
-	sf::Texture healthTex;
-	healthTex.loadFromFile( "lifebar.png" );
-	sf::Sprite healthSprite( healthTex );
-	healthSprite.setScale( 4, 4 );
-	healthSprite.setPosition( 10, 100 );
+	//sf::Texture healthTex;
+	//healthTex.loadFromFile( "lifebar.png" );
+	//sf::Sprite healthSprite( healthTex );
+	//healthSprite.setScale( 4, 4 );
+	//healthSprite.setPosition( 10, 100 );
 	
 	//window->setPosition( pos );
 	window->setVerticalSyncEnabled( true );
@@ -625,7 +625,7 @@ int GameSession::Run( string fileName )
 	sf::CircleShape circle( 30 );
 	circle.setFillColor( Color::Blue );
 
-
+	PowerBar powerBar;
 
 	
 
@@ -1118,7 +1118,8 @@ int GameSession::Run( string fileName )
 		}
 
 		window->setView( uiView );
-		window->draw( healthSprite );
+	//	window->draw( healthSprite );
+		powerBar.Draw( window );
 
 		window->setView( view );
 
@@ -1213,4 +1214,43 @@ void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 bool GameSession::TestVA::IsTouchingBox( sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( aabb, r );
+}
+
+PowerBar::PowerBar()
+{
+	pointsPerLayer = 100;
+	points = pointsPerLayer;
+	layer = 0;
+	maxLayer = 0;
+	minUse = 50;
+	
+	panelTex.loadFromFile( "lifebar.png" );
+	panelSprite.setTexture( panelTex );
+	panelSprite.setScale( 4, 4 );
+	panelSprite.setPosition( 10, 100 );
+
+	powerRect.setPosition( 42, 108 );
+	powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 ) );
+	powerRect.setFillColor( Color::Green );
+	//powerRect.
+	SetPower( 25 );
+}
+
+void PowerBar::Draw( sf::RenderTarget *target )
+{
+	target->draw( panelSprite );
+	target->draw( powerRect );
+}
+
+void PowerBar::SetPower( int power )
+{
+	double diffz = (double)power / (double)pointsPerLayer;
+	assert( diffz <= 1 );
+	diffz = 1 - diffz;
+	diffz *= 59 * 4;
+
+	int diff = pointsPerLayer - power;
+	powerRect.setPosition( 42, 108 + diffz );
+	powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 - diffz ) );
+	powerRect.setFillColor( Color::Green );
 }
