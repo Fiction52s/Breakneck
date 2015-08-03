@@ -739,22 +739,9 @@ int GameSession::Run( string fileName )
 				oneFrameMode = true;
 
 
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) )
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead )
 			{
-				player.position = originalPos;
-				player.action = player.JUMP;
-				player.frame = 1;
-				player.velocity.x = 0;
-				player.velocity.y = 0;
-				player.reversed = false;
-				player.b.offset.y = 0;
-				player.b.rh = player.normalHeight;
-				player.facingRight = true;
-				player.offsetX = 0;
-				player.prevInput = ControllerState();
-				player.currInput = ControllerState();
-				player.ground = NULL;
-				player.grindEdge = NULL;
+				RespawnPlayer();
 			}
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) || currInput.start )
@@ -1128,8 +1115,8 @@ int GameSession::Run( string fileName )
 
 		DebugDrawActors();
 
-//		terrainTree->DebugDraw( window );
-//		DebugDrawQuadTree( window, enemyTree );
+		//terrainTree->DebugDraw( window );
+		//DebugDrawQuadTree( window, enemyTree );
 
 		window->display();
 
@@ -1217,6 +1204,27 @@ void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 bool GameSession::TestVA::IsTouchingBox( sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( aabb, r );
+}
+
+void GameSession::RespawnPlayer()
+{
+	player.position = originalPos;
+	player.action = player.JUMP;
+	player.frame = 1;
+	player.velocity.x = 0;
+	player.velocity.y = 0;
+	player.reversed = false;
+	player.b.offset.y = 0;
+	player.b.rh = player.normalHeight;
+	player.facingRight = true;
+	player.offsetX = 0;
+	player.prevInput = ControllerState();
+	player.currInput = ControllerState();
+	player.ground = NULL;
+	player.grindEdge = NULL;
+	player.dead = false;
+	powerBar.points = 100;
+	powerBar.layer = 0;
 }
 
 PowerBar::PowerBar()

@@ -43,6 +43,7 @@ struct Actor : QuadTreeCollider,
 		WIREHOLD,
 		BOUNCEAIR,
 		BOUNCEGROUND,
+		DEATH,
 		Count
 	};
 
@@ -108,6 +109,10 @@ struct Actor : QuadTreeCollider,
 
 	sf::Sprite uairSword1;
 	Tileset *ts_uairSword1;
+
+	Tileset *ts_bounceRun;
+	Tileset *ts_bounceSprint;
+	bool bounceGrounded;
 
 
 	double holdDashAccel;
@@ -230,6 +235,13 @@ struct Actor : QuadTreeCollider,
 	int framesSinceBounce;
 
 	bool touchEdgeWithWire;
+
+	//unstored while working on
+	bool dead;
+
+
+
+	//end unstored
 
 	void SaveState();
 	void LoadState();

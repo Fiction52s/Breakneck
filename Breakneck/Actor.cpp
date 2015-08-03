@@ -10,7 +10,7 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Actor::Actor( GameSession *gs )
-	:owner( gs )
+	:owner( gs ), dead( false )
 	{
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
@@ -147,6 +147,9 @@ Actor::Actor( GameSession *gs )
 		actionLength[BOUNCEGROUND] = 5;
 		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce.png", 96, 96 );
 
+		actionLength[DEATH] = 30;
+		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
+
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
 		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	
@@ -169,6 +172,12 @@ Actor::Actor( GameSession *gs )
 
 		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 205, 128 );
 		dairSword1.setTexture( *ts_dairSword1->texture );
+
+		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 205, 128 );
+		uairSword1.setTexture( *ts_uairSword1->texture );
+
+		ts_bounceRun = owner->GetTileset( "bouncerun.png", 128, 64 );
+		ts_bounceSprint = owner->GetTileset( "bouncesprint.png", 128, 64 );
 
 		grindActionLength = 32;
 
@@ -269,7 +278,7 @@ Actor::Actor( GameSession *gs )
 		currHitboxInfo->damage = 10;
 		currHitboxInfo->drain = 0;
 		currHitboxInfo->hitlagFrames = 0;
-		currHitboxInfo->hitstunFrames = 10;
+		currHitboxInfo->hitstunFrames = 30;
 		currHitboxInfo->knockback = 0;
 
 		receivedHit = NULL;
@@ -286,6 +295,8 @@ Actor::Actor( GameSession *gs )
 		wire = new Wire( this );
 
 		bounceEdge = NULL;
+		bounceGrounded = false;
+
 
 		record = false;
 		blah = false;
@@ -383,6 +394,10 @@ void Actor::ActionEnded()
 		case BOUNCEGROUND:
 			frame = 0;
 			break;
+		case DEATH:
+			dead = true;
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -453,16 +468,30 @@ void Actor::UpdatePrePhysics()
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
-		if( ground == NULL )
+		
+		//cout << "damaging player with: " << receivedHit->damage << endl;
+		if( owner->powerBar.Damage( receivedHit->damage ) )
 		{
-			action = AIRHITSTUN;
-			frame = 0;
+			if( ground == NULL )
+			{
+				action = AIRHITSTUN;
+				frame = 0;
+			}
+			else
+			{
+				action = GROUNDHITSTUN;
+				frame = 0;
+			}
 		}
 		else
 		{
-			action = GROUNDHITSTUN;
+			action = DEATH;
 			frame = 0;
 		}
+
+
+
+		
 		receivedHit = NULL;
 	}
 
@@ -585,6 +614,19 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
+			if( currInput.back )
+			{
+				bounceGrounded = true;
+			}
+			else
+			{
+				bounceGrounded = false;
+			}
+			//else if( !currInput.back && prevInput.back )
+		//	{
+		//		bounceGrounded = false;
+		//	}
+
 			if( currInput.back && !prevInput.back )
 			{
 				//action = BOUNCEGROUND;
@@ -1830,6 +1872,11 @@ void Actor::UpdatePrePhysics()
 			
 			break;
 		}
+	case DEATH:
+		{
+
+			break;
+		}
 	}
 	
 	currHitboxes = NULL;
@@ -2571,6 +2618,13 @@ void Actor::UpdatePrePhysics()
 			groundSpeed = 0;
 			break;
 		}
+	case DEATH:
+		{
+			velocity.x = 0;
+			velocity.y = 0;
+			groundSpeed = 0;
+			break;
+		}
 	}
 
 	if( blah )
@@ -2769,7 +2823,7 @@ void Actor::UpdatePrePhysics()
 		slowMultiple = 1;
 	}
 
-	if( ground == NULL && bounceEdge == NULL )
+	if( ground == NULL && bounceEdge == NULL && action != DEATH )
 	{
 		if( velocity.x > maxAirXSpeed )
 			velocity.x = maxAirXSpeed;
@@ -4603,14 +4657,39 @@ void Actor::UpdatePostPhysics()
 	case RUN:
 		{	
 			
-		sprite->setTexture( *(tileset[RUN]->texture));
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		if( bounceGrounded )
 		{
-			sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
+			sprite->setTexture( *(ts_bounceRun->texture));
 		}
 		else
 		{
-			sf::IntRect ir = tileset[RUN]->GetSubRect( frame / 4 );
+			sprite->setTexture( *(tileset[RUN]->texture));
+		}
+		
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			if( bounceGrounded )
+			{
+				sprite->setTextureRect( ts_bounceRun->GetSubRect( frame / 4 ) );
+			}
+			else
+			{
+				sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
+			}
+			
+		}
+		else
+		{
+			sf::IntRect ir;                                              
+			if( bounceGrounded )
+			{
+				ir = ts_bounceRun->GetSubRect( frame / 4 );
+			}
+			else
+			{
+				ir = tileset[RUN]->GetSubRect( frame / 4 );
+			}
+			 
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -4650,16 +4729,41 @@ void Actor::UpdatePostPhysics()
 		}
 	case SPRINT:
 		{	
-			
-		sprite->setTexture( *(tileset[SPRINT]->texture));
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		
+		if( bounceGrounded )
 		{
-			sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 3 ) );
+			sprite->setTexture( *(ts_bounceSprint->texture));
 		}
 		else
 		{
-			sf::IntRect ir = tileset[SPRINT]->GetSubRect( frame / 3 );
-				
+			sprite->setTexture( *(tileset[SPRINT]->texture));
+		}
+		
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+
+			if( bounceGrounded )
+			{
+				sprite->setTextureRect( ts_bounceSprint->GetSubRect( frame / 3 ) );
+			}
+			else
+			{
+				sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 3 ) );
+			}
+			
+		}
+		else
+		{
+			sf::IntRect ir;                                              
+			if( bounceGrounded )
+			{
+				ir = ts_bounceSprint->GetSubRect( frame / 3 );
+			}
+			else
+			{
+				tileset[SPRINT]->GetSubRect( frame / 3 );
+			}
+
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 			
@@ -5060,17 +5164,40 @@ void Actor::UpdatePostPhysics()
 		}
 	case UAIR:
 		{
-	
+			int startFrame = 2;
+			showSword1 = frame / 3 >= startFrame && frame / 3 <= startFrame + 5;
 			sprite->setTexture( *(tileset[UAIR]->texture));
+
+			Vector2i offset( -32, -32 );
+
 			if( facingRight )
 			{
 				sprite->setTextureRect( tileset[UAIR]->GetSubRect( frame / 3 ) );
+
+				if( showSword1 )
+					uairSword1.setTextureRect( ts_uairSword1->GetSubRect( frame / 3 - startFrame ) );
 			}
 			else
 			{
 				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1 )
+				{
+					//offset.x = -offset.x;
+
+					sf::IntRect irSword = ts_uairSword1->GetSubRect( frame / 3 - startFrame );
+					uairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
 			}
+
+			if( showSword1 )
+			{
+				uairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+				uairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
@@ -5579,6 +5706,23 @@ void Actor::UpdatePostPhysics()
 
 			break;
 		}
+	case DEATH:
+		{
+			sprite->setTexture( *(tileset[DEATH]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[DEATH]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[DEATH]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
 	}
 
 	if( record > 0 )
@@ -5599,6 +5743,9 @@ void Actor::UpdatePostPhysics()
 	{
 		++frame;
 		slowCounter = 1;
+
+		if( invincibleFrames > 0 )
+			--invincibleFrames;
 	}
 	else
 		slowCounter++;
@@ -5677,9 +5824,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 void Actor::ApplyHit( HitboxInfo *info )
 {
-	if( receivedHit == NULL || info->damage > receivedHit->damage )
+	if( invincibleFrames == 0 )
 	{
-		receivedHit = info;
+		if( receivedHit == NULL || info->damage > receivedHit->damage )
+		{
+			receivedHit = info;
+		}
 	}
 }
 
@@ -5695,11 +5845,26 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		target->draw( *sprite );
 
-		if( action == FAIR && showSword1 )
-			target->draw( fairSword1 );
-		else if( action == DAIR && showSword1 )
+		if( showSword1 )
 		{
-			target->draw( dairSword1 );
+			switch( action )
+			{
+			case FAIR:
+				{
+					target->draw( fairSword1 );
+					break;
+				}
+			case DAIR:
+				{
+					target->draw( dairSword1 );
+					break;
+				}
+			case UAIR:
+				{
+					target->draw( uairSword1 );
+					break;
+				}
+			}
 		}
 	}
 	else

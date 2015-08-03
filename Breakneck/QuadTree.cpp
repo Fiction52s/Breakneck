@@ -70,7 +70,7 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 		//shouldn't this check for box touching box right here??
 		ParentNode *n = (ParentNode*)node;
 
-		//if( IsBoxTouchingBox( r, nodeBox ) )
+		if( IsBoxTouchingBox( r, nodeBox ) )
 		{
 			for( int i = 0; i < 4; ++i )
 			{
