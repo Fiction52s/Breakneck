@@ -153,6 +153,9 @@ void Camera::Update( Actor *player )
 	{
 		ideal.x += right * zoomFactor;
 	}
+
+
+	//zoomFactor = 1;
 	
 }
 

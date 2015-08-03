@@ -1004,6 +1004,7 @@ void Crawler::UpdatePhysics()
 							offset.x = -physBody.rw;
 						else
 						{
+							offset.x = position.x + minContact.resolution.x - minContact.position.x;
 							//offsetX = position.x + minContact.resolution.x - minContact.position.x;
 						}
 
@@ -1013,6 +1014,7 @@ void Crawler::UpdatePhysics()
 							offset.y = -physBody.rh;
 						else
 						{
+							offset.y = position.y + minContact.resolution.y - minContact.position.y;
 						}
 
 						position = ground->GetPoint( edgeQuantity ) + offset;
@@ -1067,13 +1069,18 @@ void Crawler::UpdatePostPhysics()
 	}
 	else if( !approxEquals( abs( offset.y ), physBody.rh ) )
 	{
+		cout << "gn: " << gn.x << ", " << gn.y << endl;
 		if( gn.x > 0 )
 		{
 			angle = PI / 2;
 		}
-		else 
+		else if( gn.x < 0 )
 		{
 			angle = -PI / 2;
+		}
+		else
+		{
+			angle = atan2( gn.x, -gn.y );
 		}
 	}
 	else
@@ -1086,7 +1093,8 @@ void Crawler::UpdatePostPhysics()
 
 	V2d pp = ground->GetPoint( edgeQuantity );
 
-	if( angle == 0 || angle == PI )
+	cout << "angle: " << angle << endl;
+	if( angle == 0 || approxEquals( angle, PI ) )
 	{
 		cout << "one" << endl;
 		sprite.setPosition( pp.x + offset.x, pp.y );
@@ -1098,7 +1106,7 @@ void Crawler::UpdatePostPhysics()
 	}
 	else
 	{
-		cout << "three" << endl;
+		cout << "three: " << angle << endl;
 		sprite.setPosition( pp.x, pp.y );
 
 	}
@@ -1109,7 +1117,7 @@ void Crawler::UpdatePostPhysics()
 
 void Crawler::Draw(sf::RenderTarget *target )
 {
-//	target->draw( sprite );
+	target->draw( sprite );
 
 
 }

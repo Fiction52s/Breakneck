@@ -1052,10 +1052,10 @@ int GameSession::Run( string fileName )
 		rs.setFillColor( Color::Blue );
 		//window->draw( circle );
 		//window->draw(line, numPoints * 2, sf::Lines);
-		polyShader.setParameter( "resolution", view.getSize().x, view.getSize().y );
-		//polyShader.setParameter( "random", rand() % 100 );
-		//polyShader.setParameter( "topLeft", player.velocity.x, player.velocity.y );
-		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
+		
+		polyShader.setParameter( "resolution", window->getSize().x, window->getSize().y );
+		polyShader.setParameter( "zoom", cam.GetZoom() );
+		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2 );
 		polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
@@ -1243,6 +1243,7 @@ PowerBar::PowerBar()
 
 void PowerBar::Draw( sf::RenderTarget *target )
 {
+	//0x99a9b9
 	Color c;
 	switch( layer )
 	{
