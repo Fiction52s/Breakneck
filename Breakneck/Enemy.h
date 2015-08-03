@@ -43,6 +43,7 @@ struct Patroller : Enemy
 	void UpdateSprite();
 	void UpdateHitboxes();
 
+	void AdvanceTargetNode();
 
 
 	//std::list<sf::Vector2i> path;
@@ -52,10 +53,11 @@ struct Patroller : Enemy
 
 	int targetNode;
 	bool forward;
-
+	//sf::Vector2<double>
+	int frame;
 
 	double acceleration;
-	double maxSpeed;
+	double speed;
 	int nodeWaitFrames;
 	sf::Vector2<double> position;
 	sf::Sprite sprite;
@@ -66,6 +68,7 @@ struct Patroller : Enemy
 
 	int hitlagFrames;
 	int hitstunFrames;
+	int animationFactor;
 };
 
 struct Crawler : Enemy

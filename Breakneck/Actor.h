@@ -103,6 +103,13 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fairSword1;
 	bool showSword1;
 
+	sf::Sprite dairSword1;
+	Tileset *ts_dairSword1;
+
+	sf::Sprite uairSword1;
+	Tileset *ts_uairSword1;
+
+
 	double holdDashAccel;
 	double wallThresh;
 
@@ -113,8 +120,8 @@ struct Actor : QuadTreeCollider,
 	std::list<CollisionBox> *currHitboxes;
 	//int numCurrHitboxes;
 	HitboxInfo *currHitboxInfo;
-
 	std::map<int, std::list<CollisionBox>*> fairHitboxes;
+
 
 	double steepThresh;
 

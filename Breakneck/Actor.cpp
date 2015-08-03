@@ -167,6 +167,9 @@ Actor::Actor( GameSession *gs )
 		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 192, 128 );
 		fairSword1.setTexture( *ts_fairSword1->texture );
 
+		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 205, 128 );
+		dairSword1.setTexture( *ts_dairSword1->texture );
+
 		grindActionLength = 32;
 
 		action = JUMP;
@@ -261,6 +264,14 @@ Actor::Actor( GameSession *gs )
 
 		currHitboxes = NULL;
 		currHitboxInfo = NULL;
+
+		currHitboxInfo = new HitboxInfo();
+		currHitboxInfo->damage = 10;
+		currHitboxInfo->drain = 0;
+		currHitboxInfo->hitlagFrames = 0;
+		currHitboxInfo->hitstunFrames = 10;
+		currHitboxInfo->knockback = 0;
+
 		receivedHit = NULL;
 		hitlagFrames = 0;
 		hitstunFrames = 0;
@@ -4966,7 +4977,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				offset.x = -offset.x;
+				//offset.x = -offset.x;
 				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
@@ -4974,7 +4985,7 @@ void Actor::UpdatePostPhysics()
 
 				if( showSword1  )
 				{
-					offset.x = -offset.x;
+				//	offset.x = -offset.x;
 					//xoffset = -xoffset;
 					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 );
 					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
@@ -4983,8 +4994,11 @@ void Actor::UpdatePostPhysics()
 					
 			}
 
-			fairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			if( showSword1 )
+			{
+				fairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+				fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
@@ -5001,17 +5015,44 @@ void Actor::UpdatePostPhysics()
 		}
 	case DAIR:
 		{
-	
+			int startFrame = 2;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= startFrame + 6;
+
+
+
+			Vector2i offset( -32, -32 );
+
 			sprite->setTexture( *(tileset[DAIR]->texture));
 			if( facingRight )
 			{
 				sprite->setTextureRect( tileset[DAIR]->GetSubRect( frame / 2 ) );
+
+				if( showSword1 )
+					dairSword1.setTextureRect( ts_dairSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
+				//offset.x = -offset.x;
+
 				sf::IntRect ir = tileset[DAIR]->GetSubRect( frame / 2 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1  )
+				{
+					//offset.x = -offset.x;
+
+					sf::IntRect irSword = ts_dairSword1->GetSubRect( frame / 2 - startFrame );
+					dairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
 			}
+
+			if( showSword1 )
+			{
+				dairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+				dairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
@@ -5656,6 +5697,10 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		if( action == FAIR && showSword1 )
 			target->draw( fairSword1 );
+		else if( action == DAIR && showSword1 )
+		{
+			target->draw( dairSword1 );
+		}
 	}
 	else
 	{

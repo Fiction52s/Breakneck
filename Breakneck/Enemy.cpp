@@ -26,7 +26,7 @@ bool Enemy::IsTouchingBox( sf::Rect<double> &r )
 	return IsBoxTouchingBox( spawnRect, r );
 }
 
-Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float speed )
+Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner )
 {
 	position.x = pos.x;
@@ -47,13 +47,20 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 	}
 	loop = loopP;
-	maxSpeed = speed;
+	
+	speed = pspeed;
+	speed = 2;
+	frame = 0;
 
-	ts = owner->GetTileset( "patroller.png", 32, 32 );
+	animationFactor = 3;
+
+	ts = owner->GetTileset( "patroller.png", 64, 64 );
 	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	position.x = 0;
-	position.y = 0;
+	sprite.setPosition( pos.x, pos.y );
+	//position.x = 0;
+	//position.y = 0;
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -74,11 +81,13 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	hitboxInfo->damage = 10;
 	hitboxInfo->drain = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 60;
+	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 0;
 
 	targetNode = 1;
 	forward = true;
+
+	UpdateHitboxes();
 }
 
 void Patroller::HandleEntrant( QuadTreeEntrant *qte )
@@ -87,13 +96,39 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 
 void Patroller::UpdatePrePhysics()
 {
+	//cout << "updatepre" << endl;
+	//position = V2d( path[0].x, path[0].y );
 }
 
 void Patroller::UpdatePhysics()
 {
 	//cout << "setting to targetnode: " << targetNode << endl;
-	position = V2d( path[targetNode].x, path[targetNode].y );
+	//position = V2d( path[targetNode].x, path[targetNode].y );
 
+	double movement = speed;
+	while( movement != 0 )
+	{
+		V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
+		V2d diff = targetPoint - position;
+		double len = length( diff );
+		if( len >= abs( movement ) )
+		{
+			position += normalize( diff ) * movement;
+			movement = 0;
+		}
+		else
+		{
+			position += diff;
+			movement -= length( diff );
+			AdvanceTargetNode();	
+		}
+	}
+
+
+}
+
+void Patroller::AdvanceTargetNode()
+{
 	if( loop )
 	{
 		++targetNode;
@@ -139,10 +174,17 @@ void Patroller::UpdatePostPhysics()
 	}
 
 	UpdateSprite();
+
+	frame++;
+	if( frame == 12 * animationFactor )
+	{
+		frame = 0;
+	}
 }
 
 void Patroller::UpdateSprite()
 {
+	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 }
 
@@ -154,8 +196,11 @@ void Patroller::Draw( sf::RenderTarget *target )
 bool Patroller::IHitPlayer()
 {
 	Actor &player = owner->player;
+	
 	if( hitBody.Intersects( player.hurtBody ) )
 	{
+		//cout << "hitbodypos: " << hitBody.globalPosition.x << ", " << hitBody.globalPosition.y << endl;
+		//cout << "hurtbodypos: " << player.hurtBody.globalPosition.x << ", " << player.hurtBody.globalPosition.y << endl;
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}

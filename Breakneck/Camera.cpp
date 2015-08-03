@@ -100,7 +100,7 @@ void Camera::Update( Actor *player )
 	pos.x = player->position.x;
 	pos.y = player->position.y;
 	
-	offset.x += pVel.x * 1.05;
+	offset.x += pVel.x * 1.005;
 	offset.y += pVel.y * .3;
 
 	if( pVel.x == 0 )
