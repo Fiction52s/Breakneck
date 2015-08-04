@@ -49,7 +49,14 @@ struct Patroller : Enemy
 
 	void AdvanceTargetNode();
 
-
+	bool dead;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_bottom;
+	Tileset * ts_top;
 	//std::list<sf::Vector2i> path;
 	sf::Vector2i *path; //global
 	int pathLength;

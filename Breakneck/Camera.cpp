@@ -60,6 +60,9 @@ void Camera::Update( Actor *player )
 	{
 		pVel = player->velocity;
 	}
+
+	pVel.x /= player->slowMultiple;
+	pVel.y /= player->slowMultiple;
 		
 
 		

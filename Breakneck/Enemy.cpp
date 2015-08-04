@@ -27,7 +27,7 @@ bool Enemy::IsTouchingBox( sf::Rect<double> &r )
 }
 
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
-	:Enemy( owner )
+	:Enemy( owner ), dead( false ), deathFrame( 0 )
 {
 	position.x = pos.x;
 	position.y = pos.y;
@@ -87,6 +87,12 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	targetNode = 1;
 	forward = true;
 
+	ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
+	ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
+
+	deathPartingSpeed = .3;
+	deathVector = V2d( 1, -1 );
+
 	UpdateHitboxes();
 }
 
@@ -96,14 +102,14 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 
 void Patroller::UpdatePrePhysics()
 {
-	//cout << "updatepre" << endl;
-	//position = V2d( path[0].x, path[0].y );
+	
 }
 
 void Patroller::UpdatePhysics()
 {
 	//cout << "setting to targetnode: " << targetNode << endl;
 	//position = V2d( path[targetNode].x, path[targetNode].y );
+
 
 	double movement = speed;
 	
@@ -120,6 +126,10 @@ void Patroller::UpdatePhysics()
 		slowMultiple = 1;
 		slowCounter = 1;
 	}
+
+	if( dead )
+		return;
+
 
 	movement /= (double)slowMultiple;
 
@@ -182,6 +192,7 @@ void Patroller::UpdatePostPhysics()
 	if( PlayerHitMe() )
 	{
 		cout << "patroller received damage of: " << receivedHit->damage;
+		dead = true;
 		receivedHit = NULL;
 	}
 
@@ -196,6 +207,12 @@ void Patroller::UpdatePostPhysics()
 	{
 		++frame;
 		slowCounter = 1;
+	
+		if( dead )
+		{
+			deathFrame++;
+		}
+
 	}
 	else
 	{
@@ -206,17 +223,43 @@ void Patroller::UpdatePostPhysics()
 	{
 		frame = 0;
 	}
+
+	if( deathFrame == 60 )
+	{
+		owner->RemoveEnemy( this );
+	}
 }
 
 void Patroller::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
+
+	botDeathSprite.setTexture( *ts_bottom->texture );
+	botDeathSprite.setTextureRect( ts_bottom->GetSubRect( 0 ) );
+	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
+	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+		position.y + deathVector.y * deathPartingSpeed * deathFrame );
+
+	topDeathSprite.setTexture( *ts_top->texture );
+	topDeathSprite.setTextureRect( ts_top->GetSubRect( 0 ) );
+	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 }
 
 void Patroller::Draw( sf::RenderTarget *target )
 {
-	target->draw( sprite );
+	if( !dead )
+	{
+		target->draw( sprite );
+	}
+	else
+	{
+		target->draw( botDeathSprite );
+		target->draw( topDeathSprite );
+	}
+
 }
 
 bool Patroller::IHitPlayer()

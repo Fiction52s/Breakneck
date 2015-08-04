@@ -4471,7 +4471,9 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( bn.y < 0 )
 			{
-			
+				hasGravReverse = true;
+				hasDoubleJump = true;
+				hasAirDash = true;
 			}
 			else if( bn.y > 0 )
 			{

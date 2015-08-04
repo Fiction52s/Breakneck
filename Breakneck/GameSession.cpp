@@ -168,18 +168,28 @@ void GameSession::AddEnemy( Enemy *e )
 
 void GameSession::RemoveEnemy( Enemy *e )
 {
+	cout << "blah blah remove" << endl;
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;
 
-	if( prev != NULL )
+	if( prev == NULL && next == NULL )
 	{
-		prev->next = next;
+		activeEnemyList = NULL;
+	}
+	else
+	{
+		if( prev != NULL )
+		{
+			prev->next = next;
+		}
+
+		if( next != NULL )
+		{
+			next->prev = prev;
+		}
 	}
 
-	if( next != NULL )
-	{
-		next->prev = prev;
-	}
+
 
 	/*if( inactiveEnemyList != NULL )
 	{
