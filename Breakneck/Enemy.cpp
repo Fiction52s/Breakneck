@@ -10,7 +10,7 @@ using namespace sf;
 #define V2d sf::Vector2<double>
 
 Enemy::Enemy( GameSession *own )
-	:owner( own ), prev( NULL ), next( NULL ), spawned( false )
+	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 )
 {
 
 }
@@ -106,6 +106,23 @@ void Patroller::UpdatePhysics()
 	//position = V2d( path[targetNode].x, path[targetNode].y );
 
 	double movement = speed;
+	
+	if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}
+
+	movement /= (double)slowMultiple;
+
 	while( movement != 0 )
 	{
 		V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
@@ -175,7 +192,16 @@ void Patroller::UpdatePostPhysics()
 
 	UpdateSprite();
 
-	frame++;
+	if( slowCounter == slowMultiple )
+	{
+		++frame;
+		slowCounter = 1;
+	}
+	else
+	{
+		slowCounter++;
+	}
+
 	if( frame == 12 * animationFactor )
 	{
 		frame = 0;
@@ -238,6 +264,22 @@ bool Patroller::PlayerHitMe()
 			return true;
 		}
 		
+	}
+	return false;
+}
+
+bool Patroller::PlayerSlowingMe()
+{
+	Actor &player = owner->player;
+	for( int i = 0; i < player.maxBubbles; ++i )
+	{
+		if( player.bubbleFramesToLive[i] > 0 )
+		{
+			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			{
+				return true;
+			}
+		}
 	}
 	return false;
 }
@@ -1158,6 +1200,11 @@ void Crawler::UpdatePostPhysics()
 
 	//sprite.setPosition( position );
 	UpdateHitboxes();
+}
+
+bool Crawler::PlayerSlowingMe()
+{
+	return false;
 }
 
 void Crawler::Draw(sf::RenderTarget *target )

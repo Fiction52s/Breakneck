@@ -2906,7 +2906,7 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 	//cout << "position: " << position.x << ", " << position.y << endl;
-//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;m
 	collision = false;
 	
 	oldVelocity.x = velocity.x;
@@ -6077,6 +6077,14 @@ void Actor::SaveState()
 	stored.framesSinceBounce = framesSinceBounce;
 
 	stored.touchEdgeWithWire = touchEdgeWithWire;
+
+	for( int i = 0; i < maxBubbles; ++i )
+	{
+		stored.bubblePos[i] = bubblePos[i];
+		stored.bubbleFramesToLive[i] = bubbleFramesToLive[i];
+	}
+	stored.currBubble = currBubble;
+	
 }
 
 void Actor::LoadState()
@@ -6140,6 +6148,14 @@ void Actor::LoadState()
 	framesSinceBounce = stored.framesSinceBounce;
 
 	touchEdgeWithWire = stored.touchEdgeWithWire;
+
+	for( int i = 0; i < maxBubbles; ++i )
+	{
+		bubblePos[i] = stored.bubblePos[i];
+		bubbleFramesToLive[i] = stored.bubbleFramesToLive[i];
+	}
+	currBubble = stored.currBubble;
+
 }
 
 PlayerGhost::PlayerGhost()

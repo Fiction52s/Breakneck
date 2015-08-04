@@ -59,6 +59,8 @@ struct ActorParams
 		std::list<sf::Vector2i> &globalPath, float speed, bool loop );
 	std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
+	std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, int framesBetweenFiring ); 
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;

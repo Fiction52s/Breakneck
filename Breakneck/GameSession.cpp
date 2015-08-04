@@ -551,6 +551,28 @@ bool GameSession::OpenFile( string fileName )
 					//enemyTree = Insert( enemyTree, enemy );
 					enemyTree->Insert( enemy );
 				}
+				else if( typeName == "basicturret" )
+				{
+					//always grounded
+					string airStr;
+					is >> airStr;
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int framesBetweenFiring;
+					is >> framesBetweenFiring;
+
+					BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, framesBetweenFiring );
+					//enemyTree = Insert( enemyTree, enemy );
+					enemyTree->Insert( enemy );
+				}
 				else
 				{
 					assert( false && "not a valid type name" );

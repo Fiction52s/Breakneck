@@ -16,6 +16,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual bool IHitPlayer() = 0;
 	virtual void UpdateHitboxes() = 0;
 	virtual bool PlayerHitMe() = 0;
+	virtual bool PlayerSlowingMe() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target) = 0;
 	Enemy *prev;
 	Enemy *next;
@@ -23,6 +24,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool spawned;
 	sf::Rect<double> spawnRect;
 	HitboxInfo *receivedHit;
+	int slowMultiple;
+	int slowCounter;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( sf::Rect<double> &r );
@@ -42,6 +45,7 @@ struct Patroller : Enemy
 	bool PlayerHitMe();
 	void UpdateSprite();
 	void UpdateHitboxes();
+	bool PlayerSlowingMe();
 
 	void AdvanceTargetNode();
 
@@ -82,6 +86,7 @@ struct Crawler : Enemy
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
 	bool PlayerHitMe();
+	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -101,6 +106,44 @@ struct Crawler : Enemy
 	CollisionBox physBody;
 	sf::Vector2<double> position;
 	sf::Vector2<double> tempVel;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+};
+
+struct BasicTurret : Enemy
+{
+	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
+		int framesBetweenFiring );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+
+	sf::Sprite sprite;
+	Tileset *ts;
+
+	int framesBetweenFiring;
+	int firingCounter;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	
+	sf::Vector2<double> position;
+	double angle;
 
 	Contact minContact;
 	bool col;

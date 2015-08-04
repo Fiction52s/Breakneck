@@ -563,6 +563,46 @@ bool EditSession::OpenFile( string fileName )
 
 					a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
 				}
+				else if( typeName == "basicturret" )
+				{
+					//always grounded
+					string airStr;
+					is >> airStr;
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int framesBetweenFiring;
+					is >> framesBetweenFiring;
+
+					int testIndex = 0;
+					TerrainPolygon *terrain = NULL;
+					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing" );
+
+					if( edgeIndex == terrain->points.size() - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, framesBetweenFiring );
+				}
 
 			}
 		}
@@ -911,16 +951,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
+	Panel *basicTurretPanel = CreateOptionsPanel( "basicturret" );
+	ActorType *basicTurretType = new ActorType( "basicturret", crawlerPanel );
+
 	types["patroller"] = patrollerType;
 	types["crawler"] = crawlerType;
+	types["basicturret"] = basicTurretType;
 
 	GridSelector gs( 2, 2, 32, 32, this );
 	gs.active = false;
 
 	sf::Sprite s0( patrollerType->iconTexture );
 	sf::Sprite s1( crawlerType->iconTexture );
+	sf::Sprite s2( basicTurretType->iconTexture );
 	gs.Set( 0, 0, s0, "patroller" );
 	gs.Set( 1, 0, s1, "crawler" );
+	gs.Set( 0, 1, s2, "basicturret" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -1272,23 +1318,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												enemyEdgeQuantity, true, 10 );
 											
 											groups["--"]->actors.push_back( actor);
-											//groups["--"]->a
-
-											
 										}
-										
-										//int enemyEdgeIndex;
-										//TerrainPolygon *enemyEdgePolygon;
-										//double enemyEdgeQuantity;
-										
-										//showPanel = trackingEnemy->panel;
-										//trackingEnemy = NULL;
-										
-									/*	showPanel = trackingEnemy->panel;
-										trackingEnemy = NULL;
-										ActorParams *actor = new ActorParams;
-										actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
-										groups["--"]->actors.push_back( actor);*/
+									}
+									else if( trackingEnemy->name == "basicturret" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											trackingEnemy = NULL;
+											ActorParams *actor = new ActorParams;
+											actor->SetAsBasicTurret( basicTurretType, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity, 30 );
+											groups["--"]->actors.push_back( actor);
+										}
 									}
 								}
 
@@ -2087,7 +2129,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					
 				}
 
-				if( trackingEnemy != NULL && trackingEnemy->name == "crawler" )
+				if( trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
+					|| trackingEnemy->name == "basicturret" ) )
 				{
 					enemyEdgePolygon = NULL;
 					//actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
@@ -2108,7 +2151,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
 							{
 								//prev is starting at 0. start normally at 1
-								//cout << "contains" << endl;
 								int edgeIndex = 0;
 								double minDistance = 10000000;
 								int storedIndex;
@@ -2139,7 +2181,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(testQuantity / length( cu - pr ) ) );
 
-									if( dist < 100 && testQuantity >= 16 && testQuantity <= length( cu - pr ) - 16 && length( newPoint - te ) < length( closestPoint - te ) )
+									if( dist < 100 && testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2 && length( newPoint - te ) < length( closestPoint - te ) )
 									{
 										minDistance = dist;
 										storedIndex = edgeIndex;
@@ -2789,6 +2831,63 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 	ss.precision( 5 );
 	ss << fixed << speed;
 	params.push_back( ss.str() );	
+
+	return "success";
+}
+
+std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
+		int eIndex, double edgeQuantity, int framesBetweenFiring )
+{
+	type = t;
+	ground = edgePolygon;
+	edgeIndex = eIndex;
+	groundQuantity = edgeQuantity;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+	
+	//	image.setPosition( pos.x, pos.y );
+	int testIndex = 0;
+
+	Vector2i point;
+
+	list<Vector2i>::iterator prev = ground->points.end();
+	prev--;
+	list<Vector2i>::iterator curr = ground->points.begin();
+
+	for( ; curr != ground->points.end(); ++curr )
+	{
+		if( edgeIndex == testIndex )
+		{
+			V2d pr( (*prev).x, (*prev).y );
+			V2d cu( (*curr).x, (*curr).y );
+
+			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(groundQuantity / length( cu - pr ) ) );
+
+			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+
+			image.setPosition( newPoint.x, newPoint.y );
+			image.setRotation( angle );
+
+			break;
+		}
+		prev = curr;
+		++testIndex;
+	}
+	//adjust for ordery
+	if( edgeIndex == 0 )
+		edgeIndex = ground->points.size() - 1;
+	else
+		edgeIndex--;
+
+	params.clear();
+
+	stringstream ss; 
+
+	ss << framesBetweenFiring;
+
+	params.push_back( ss.str() ); 
 
 	return "success";
 }
