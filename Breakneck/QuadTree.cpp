@@ -85,11 +85,7 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 	if( node->leaf )
 	{
 		LeafNode *n = (LeafNode*)node;
-		//assert( n );
-		//cout << "- " << endl;
-		//ParentNode *n2 = (ParentNode*)node;
-		//cout << n2->children[0]->pos.x << endl;
-	//	cout << "count" << n->objCount << endl;
+	
 		if( n->objCount == 4 ) //full
 		{
 		//	cout << "splitting" << endl;	

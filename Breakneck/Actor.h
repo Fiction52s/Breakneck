@@ -237,8 +237,18 @@ struct Actor : QuadTreeCollider,
 	bool touchEdgeWithWire;
 
 	//unstored while working on
-	bool dead;
+	const static int maxBubbles = 6;
+	bool dead;	
+	sf::Vector2<double> bubblePos[maxBubbles];
+	Tileset * ts_bubble;
+	sf::Sprite bubbleSprite;
+	int bubbleFramesToLive[maxBubbles];
+	int numBubbles;
+	int bubbleRadius;
+	struct TimeBubble
+	{
 
+	};
 
 
 	//end unstored

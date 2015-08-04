@@ -306,6 +306,22 @@ Actor::Actor( GameSession *gs )
 		ghostFrame = 0;
 
 		recordedGhosts = 0;
+
+		ts_bubble = owner->GetTileset( "timemiddle.png", 160, 160 );
+		bubbleSprite.setTexture( *ts_bubble->texture );
+
+		numBubbles = 0;
+		bubbleRadius = 160;
+
+		for( int i = 0; i < maxBubbles; ++i )
+		{
+			bubbleFramesToLive[i] = 0;
+			//bubblePos[i]
+		}
+		
+		
+
+		
 	}
 
 void Actor::ActionEnded()
@@ -2807,17 +2823,43 @@ void Actor::UpdatePrePhysics()
 
 
 
-
-
-
-	if( currInput.leftTrigger > 200 )
+	for( int i = 0; i < maxBubbles; ++i )
 	{
-		if( prevInput.leftTrigger <= 200 )
-			slowCounter = 1;
+		if( bubbleFramesToLive[i] > 0 )
+		{
+			bubbleFramesToLive[i]--;
+		}
+
+		//if( bubbleFramesToLive[i] == 0 )
+		//{
+		//	numBubbles
+		//}
+		
+	}
+	/*if( bubbleFramesToLive > 0 )
+	{
+
+		bubbleFramesToLive--;
+	}
+	else
+	{
+		slowCounter = 1;
+		slowMultiple = 1;
+	}*/
+
+	if( currInput.leftTrigger > 200 && prevInput.leftTrigger <= 200 )
+	{
+		//if( prevInput.leftTrigger <= 200 )
+		slowCounter = 1;
+
+		//bubblePos = position;
+		//bubbleFramesToLive = 300;
+		bubbleRadius = 160;
+
 
 		slowMultiple = timeSlowStrength;
 	}
-	else
+	else if( currInput.leftTrigger <= 200 && bubbleFramesToLive > 0 )
 	{
 		slowCounter = 1;
 		slowMultiple = 1;
@@ -3810,14 +3852,14 @@ void Actor::UpdatePhysics()
 				}
 				
 
-				if( m == 0 )
+				if( approxEquals( m, 0 ) )
 				{
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					groundSpeed = 0;
 					break;
 				}
 
-			//	if(m != 0 )//!approxEquals( m, 0 ) )
+				if( !approxEquals( m, 0 ) )
 				{	
 					bool down = true;
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
@@ -3935,6 +3977,7 @@ void Actor::UpdatePhysics()
 				}*/
 					
 			}
+
 			if( movement == extra )
 				movement += steal;
 			else
@@ -5898,6 +5941,16 @@ void Actor::Draw( sf::RenderTarget *target )
 		//PlayerGhost *g = ghosts[record-1];
 		
 	}
+
+	/*if( bubb l eFramesToLive > 0 )
+	{
+		bubbleSprite.setTextureRect( ts_bubble->GetSubRect( bubbleFramesToLive % 11 ) );
+		bubbleSprite.setScale( 2, 2 );
+		bubbleSprite.setOrigin( bubbleSprite.getLocalBounds().width / 2, bubbleSprite.getLocalBounds().height / 2 );
+		bubbleSprite.setPosition( bubblePos.x, bubblePos.y );
+		bubbleSprite.setColor( Color( 255, 255, 255, 100 ) );
+		target->draw( bubbleSprite );
+	}*/
 }
 
 void Actor::DebugDraw( RenderTarget *target )
