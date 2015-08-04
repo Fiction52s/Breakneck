@@ -310,8 +310,9 @@ Actor::Actor( GameSession *gs )
 		ts_bubble = owner->GetTileset( "timemiddle.png", 160, 160 );
 		bubbleSprite.setTexture( *ts_bubble->texture );
 
-		numBubbles = 0;
+		currBubble = 0;
 		bubbleRadius = 160;
+		bubbleLifeSpan = 240;
 
 		for( int i = 0; i < maxBubbles; ++i )
 		{
@@ -2829,37 +2830,56 @@ void Actor::UpdatePrePhysics()
 		{
 			bubbleFramesToLive[i]--;
 		}
-
-		//if( bubbleFramesToLive[i] == 0 )
-		//{
-		//	numBubbles
-		//}
-		
 	}
-	/*if( bubbleFramesToLive > 0 )
-	{
 
-		bubbleFramesToLive--;
+	if( currInput.leftTrigger > 200 )
+	{
+		bool inBubble = false;
+		for( int i = 0; i < maxBubbles; ++i )
+		{
+			if( bubbleFramesToLive[i] > 0 )
+			{
+				if( length( position - bubblePos[i] ) < bubbleRadius )
+				{
+					inBubble = true;
+					break;
+					//slowCounter = 1;
+					//slowMultiple = timeSlowStrength;
+				}
+			}
+		}
+
+		if( prevInput.leftTrigger <= 200 && !inBubble )
+		{
+			if( bubbleFramesToLive[currBubble] == 0 )
+			{
+				inBubble = true;
+				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
+				bubblePos[currBubble] = position;
+
+				++currBubble;
+				if( currBubble == maxBubbles )
+				{
+					currBubble = 0;
+				}
+			}			
+		}
+
+		if( inBubble )
+		{
+			if( slowMultiple == 1 )
+			{
+				slowCounter = 1;
+				slowMultiple = timeSlowStrength;
+			}
+		}
+		else
+		{
+			slowCounter = 1;
+			slowMultiple = 1;
+		}
 	}
 	else
-	{
-		slowCounter = 1;
-		slowMultiple = 1;
-	}*/
-
-	if( currInput.leftTrigger > 200 && prevInput.leftTrigger <= 200 )
-	{
-		//if( prevInput.leftTrigger <= 200 )
-		slowCounter = 1;
-
-		//bubblePos = position;
-		//bubbleFramesToLive = 300;
-		bubbleRadius = 160;
-
-
-		slowMultiple = timeSlowStrength;
-	}
-	else if( currInput.leftTrigger <= 200 && bubbleFramesToLive > 0 )
 	{
 		slowCounter = 1;
 		slowMultiple = 1;
@@ -5942,15 +5962,18 @@ void Actor::Draw( sf::RenderTarget *target )
 		
 	}
 
-	/*if( bubb l eFramesToLive > 0 )
+	for( int i = 0; i < maxBubbles; ++i )
 	{
-		bubbleSprite.setTextureRect( ts_bubble->GetSubRect( bubbleFramesToLive % 11 ) );
-		bubbleSprite.setScale( 2, 2 );
-		bubbleSprite.setOrigin( bubbleSprite.getLocalBounds().width / 2, bubbleSprite.getLocalBounds().height / 2 );
-		bubbleSprite.setPosition( bubblePos.x, bubblePos.y );
-		bubbleSprite.setColor( Color( 255, 255, 255, 100 ) );
-		target->draw( bubbleSprite );
-	}*/
+		if( bubbleFramesToLive[i] > 0 )
+		{
+			bubbleSprite.setTextureRect( ts_bubble->GetSubRect( bubbleFramesToLive[i] % 11 ) );
+			bubbleSprite.setScale( 2, 2 );
+			bubbleSprite.setOrigin( bubbleSprite.getLocalBounds().width / 2, bubbleSprite.getLocalBounds().height / 2 );
+			bubbleSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
+			bubbleSprite.setColor( Color( 255, 255, 255, 100 ) );
+			target->draw( bubbleSprite );
+		}
+	}
 }
 
 void Actor::DebugDraw( RenderTarget *target )

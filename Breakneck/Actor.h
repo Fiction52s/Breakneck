@@ -243,7 +243,8 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	int bubbleFramesToLive[maxBubbles];
-	int numBubbles;
+	int bubbleLifeSpan;
+	int currBubble;
 	int bubbleRadius;
 	struct TimeBubble
 	{
