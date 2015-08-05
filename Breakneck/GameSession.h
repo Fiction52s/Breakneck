@@ -52,6 +52,7 @@ struct GameSession : QuadTreeCollider
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
 	void RespawnPlayer();
+	int CountActiveEnemies();
 
 	void DebugDrawActors();
 

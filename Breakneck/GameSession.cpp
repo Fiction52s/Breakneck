@@ -177,17 +177,25 @@ void GameSession::RemoveEnemy( Enemy *e )
 	}
 	else
 	{
-		if( prev != NULL )
+		if( e == activeEnemyList )
 		{
-			prev->next = next;
+			next->prev = NULL;
+			activeEnemyList = next;
 		}
+		else
+		{
+			if( prev != NULL )
+			{
+				prev->next = next;
+			}
 
-		if( next != NULL )
-		{
-			next->prev = prev;
+			if( next != NULL )
+			{
+				next->prev = prev;
+			}
 		}
+		
 	}
-
 
 
 	/*if( inactiveEnemyList != NULL )
@@ -200,6 +208,19 @@ void GameSession::RemoveEnemy( Enemy *e )
 	}*/
 	
 	
+}
+
+int GameSession::CountActiveEnemies()
+{
+	Enemy *currEnemy = activeEnemyList;
+	int counter = 0;
+	while( currEnemy != NULL )
+	{
+		counter++;	
+		currEnemy = currEnemy->next;
+	}
+
+	return counter;
 }
 
 bool GameSession::OpenFile( string fileName )
