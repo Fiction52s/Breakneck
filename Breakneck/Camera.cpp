@@ -33,6 +33,7 @@ Camera::Camera()
 	top = 150;
 	bottom = -150;
 
+	zoomLevel = 0;
 	
 }
 
@@ -41,6 +42,23 @@ void Camera::Update( Actor *player )
 	V2d ideal;// = player->position;
 	//pos.x = player->position.x;
 	//pos.y = player->position.y;
+
+	ControllerState & con = player->currInput;
+	ControllerState & prevcon = player->prevInput;
+
+	if( con.PUp() && !prevcon.PUp() )
+	{
+		
+		zoomLevel -= .5;
+		if( zoomLevel < 1 )
+			zoomLevel = 1;
+	}
+	else if( con.PDown() && !prevcon.PDown() )
+	{
+		zoomLevel += .5;
+		if( zoomLevel > 3 )
+			zoomLevel = 3;
+	}
 
 
 	V2d pVel;
@@ -97,7 +115,6 @@ void Camera::Update( Actor *player )
 		zoomFactor = 1;
 	else if( zoomFactor > maxZoom )
 		zoomFactor = maxZoom;
-
 
 	//cout << "zoomFactor: " << zoomFactor << endl;
 	pos.x = player->position.x;

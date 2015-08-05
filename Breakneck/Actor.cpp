@@ -2832,7 +2832,33 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
-	if( currInput.leftTrigger > 200 )
+
+	bool cloneBubbleCreated = false;
+	V2d cloneBubbleCreatedPos;
+
+
+
+	if( blah )
+	{
+		for( int i = 0; i < recordedGhosts; ++i )
+		{
+			if( ghostFrame < ghosts[i]->totalRecorded )
+			{
+				if( ghosts[i]->states[ghostFrame].createBubble )
+				{
+					cloneBubbleCreated = true;
+					cloneBubbleCreatedPos = ghosts[i]->states[ghostFrame].position;
+					cout << "creating bubble: " << ghostFrame << endl;
+					break;
+				}
+			}
+		}
+		
+	}
+
+	bool bubbleCreated = false;
+
+	if( currInput.leftTrigger > 200 || cloneBubbleCreated )
 	{
 		bool inBubble = false;
 		for( int i = 0; i < maxBubbles; ++i )
@@ -2849,19 +2875,32 @@ void Actor::UpdatePrePhysics()
 			}
 		}
 
-		if( prevInput.leftTrigger <= 200 && !inBubble )
+		
+
+		if( (prevInput.leftTrigger <= 200 && !inBubble) || cloneBubbleCreated )
 		{
 			if( bubbleFramesToLive[currBubble] == 0 )
 			{
 				inBubble = true;
 				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
-				bubblePos[currBubble] = position;
+
+				if( !cloneBubbleCreated )
+				{
+					bubblePos[currBubble] = position;
+				}
+				else
+				{
+					bubblePos[currBubble] = cloneBubbleCreatedPos;
+				}
+				
 
 				++currBubble;
 				if( currBubble == maxBubbles )
 				{
 					currBubble = 0;
 				}
+
+				bubbleCreated = true;
 			}			
 		}
 
@@ -2883,6 +2922,16 @@ void Actor::UpdatePrePhysics()
 	{
 		slowCounter = 1;
 		slowMultiple = 1;
+	}
+
+	if( record > 0 )
+	{
+		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+		p.createBubble = bubbleCreated;
+		if( p.createBubble )
+		{
+			cout << "recording clone bubble: " << ghosts[record-1]->currFrame << endl;
+		}
 	}
 
 	if( ground == NULL && bounceEdge == NULL && action != DEATH )

@@ -390,6 +390,7 @@ struct PlayerGhost
 		bool showSword1;
 		sf::Sprite swordSprite1;
 		double angle;
+		bool createBubble;
 	};
 	
 	void Draw( sf::RenderTarget *target );
