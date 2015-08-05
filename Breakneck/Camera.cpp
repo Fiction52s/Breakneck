@@ -103,8 +103,15 @@ void Camera::Update( Actor *player )
 	pos.x = player->position.x;
 	pos.y = player->position.y;
 	
-	offset.x += pVel.x * 1.005;
-	offset.y += pVel.y * .3;
+	offset.x += //pVel.x * 1.001;
+		pVel.x;
+	//offset.y += pVel.y * .3;
+	if( pVel.y > 0 )
+		offset.y += pVel.y;
+	else if( pVel.y < 0 && player->ground != NULL )
+	{
+		offset.y += pVel.y;
+	}
 
 	if( pVel.x == 0 )
 	{
@@ -123,8 +130,8 @@ void Camera::Update( Actor *player )
 
 	if( offset.y < -150 * zoomFactor )
 		offset.y = -150 * zoomFactor;
-	else if( offset.y > 150 * zoomFactor )
-		offset.y = 150 * zoomFactor;
+	else if( offset.y > 100 * zoomFactor )
+		offset.y = 100 * zoomFactor;
 
 	pos.x += offset.x;
 	pos.y += offset.y;

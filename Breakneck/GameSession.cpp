@@ -168,7 +168,6 @@ void GameSession::AddEnemy( Enemy *e )
 
 void GameSession::RemoveEnemy( Enemy *e )
 {
-	cout << "blah blah remove" << endl;
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;
 
