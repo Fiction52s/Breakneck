@@ -4855,7 +4855,6 @@ void Actor::UpdatePostPhysics()
 		
 		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
-
 			if( bounceGrounded )
 			{
 				sprite->setTextureRect( ts_bounceSprint->GetSubRect( frame / 3 ) );
@@ -4875,7 +4874,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else
 			{
-				tileset[SPRINT]->GetSubRect( frame / 3 );
+				ir = tileset[SPRINT]->GetSubRect( frame / 3 );
 			}
 
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
