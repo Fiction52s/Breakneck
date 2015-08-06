@@ -1167,7 +1167,7 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
@@ -1280,6 +1280,31 @@ void GameSession::RespawnPlayer()
 	player.dead = false;
 	powerBar.points = 100;
 	powerBar.layer = 0;
+}
+
+void GameSession::SaveState()
+{
+	stored.activeEnemyList = activeEnemyList;
+
+	Enemy *currEnemy = activeEnemyList;
+	while( currEnemy != NULL )
+	{
+		currEnemy->SaveState();
+		currEnemy = currEnemy->next;
+	}
+}
+
+
+void GameSession::LoadState()
+{
+	activeEnemyList = stored.activeEnemyList;
+
+	Enemy *currEnemy = activeEnemyList;
+	while( currEnemy != NULL )
+	{
+		currEnemy->LoadState();
+		currEnemy = currEnemy->next;
+	}
 }
 
 PowerBar::PowerBar()

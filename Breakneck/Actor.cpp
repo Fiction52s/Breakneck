@@ -427,6 +427,7 @@ void Actor::UpdatePrePhysics()
 		if( record == 0 )
 		{
 			SaveState();
+			owner->SaveState();
 			recordedGhosts = 1;
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
@@ -435,6 +436,7 @@ void Actor::UpdatePrePhysics()
 		else
 		{
 			LoadState();
+			owner->LoadState();
 			recordedGhosts++;
 			ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 			ghosts[record]->currFrame = 0;
@@ -456,6 +458,7 @@ void Actor::UpdatePrePhysics()
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 		record = 0;
 		LoadState();
+		owner->LoadState(); 
 		blah = true;
 		ghostFrame = 0;
 		//cout << "recordedGhosts: " << recordedGhosts << endl;

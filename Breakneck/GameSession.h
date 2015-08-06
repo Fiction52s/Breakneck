@@ -58,6 +58,9 @@ struct GameSession : QuadTreeCollider
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 
+	void SaveState();
+	void LoadState();
+
 	Actor player;
 	sf::Shader polyShader;
 	Edge **edges;
@@ -104,6 +107,12 @@ struct GameSession : QuadTreeCollider
 	QuadTree * enemyTree;
 
 	PowerBar powerBar;
+
+	struct Stored
+	{
+		Enemy *activeEnemyList;
+	};
+	Stored stored;
 
 	//sf::Sprite healthSprite;
 

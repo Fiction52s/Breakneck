@@ -18,6 +18,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual bool PlayerHitMe() = 0;
 	virtual bool PlayerSlowingMe() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target) = 0;
+	void SaveState();
+	void LoadState();
+	virtual void SaveEnemyState() = 0;
+	virtual void LoadEnemyState() = 0;
 	Enemy *prev;
 	Enemy *next;
 	GameSession *owner;
@@ -29,6 +33,17 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( sf::Rect<double> &r );
+
+	struct Stored
+	{
+		Enemy *prev;
+		Enemy *next;
+		bool spawned;		
+		HitboxInfo *receivedHit;
+		int slowMultiple;
+		int slowCounter;
+	};
+	Stored stored;
 };
 
 struct Patroller : Enemy
@@ -48,6 +63,9 @@ struct Patroller : Enemy
 	bool PlayerSlowingMe();
 
 	void AdvanceTargetNode();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
 
 	bool dead;
 	int deathFrame;
@@ -80,6 +98,22 @@ struct Patroller : Enemy
 	int hitlagFrames;
 	int hitstunFrames;
 	int animationFactor;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
 };
 
 struct Crawler : Enemy
@@ -98,6 +132,10 @@ struct Crawler : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
+
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -137,7 +175,8 @@ struct BasicTurret : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
-
+	void SaveEnemyState();
+	void LoadEnemyState();
 	sf::Sprite sprite;
 	Tileset *ts;
 

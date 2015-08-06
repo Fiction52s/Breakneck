@@ -26,5 +26,30 @@ bool Enemy::IsTouchingBox( sf::Rect<double> &r )
 	return IsBoxTouchingBox( spawnRect, r );//r.intersects( spawnRect );// 
 }
 
+void Enemy::SaveState()
+{
+	stored.next = next;
+	stored.prev = prev;
+	stored.receivedHit = receivedHit;
+	stored.slowCounter = slowCounter;
+	stored.slowMultiple = slowMultiple;
+	stored.spawned = spawned;
+
+	SaveEnemyState();
+}
+
+void Enemy::LoadState()
+{
+	next = stored.next;
+	prev = stored.prev;
+	receivedHit = stored.receivedHit;
+	slowCounter = stored.slowCounter;
+	slowMultiple = stored.slowMultiple;
+	spawned = stored.spawned;
+
+	LoadEnemyState();
+}
+
+
 
 

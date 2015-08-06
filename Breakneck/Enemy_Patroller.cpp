@@ -295,6 +295,35 @@ bool Patroller::PlayerHitMe()
 		}
 		
 	}
+
+	for( int i = 0; i < player.recordedGhosts; ++i )
+	{
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		{
+			if( player.ghosts[i]->currHitboxes != NULL )
+			{
+				bool hit = false;
+
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				{
+					if( hurtBody.Intersects( (*it) ) )
+					{
+						hit = true;
+						break;
+					}
+				}
+		
+
+				if( hit )
+				{
+					receivedHit = player.currHitboxInfo;
+					return true;
+				}
+			}
+			//player.ghosts[i]->curhi
+		}
+	}
+
 	return false;
 }
 
@@ -321,4 +350,28 @@ void Patroller::DebugDraw( RenderTarget *target )
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
 	}
+}
+
+void Patroller::SaveEnemyState()
+{
+	stored.dead = dead;
+	stored.deathFrame = deathFrame;
+	stored.forward = forward;
+	stored.frame = frame;
+	stored.hitlagFrames = hitlagFrames;
+	stored.hitstunFrames = hitstunFrames;
+	stored.position = position;
+	stored.targetNode = targetNode;
+}
+
+void Patroller::LoadEnemyState()
+{
+	dead = stored.dead;
+	deathFrame = stored.deathFrame;
+	forward = stored.forward;
+	frame = stored.frame;
+	hitlagFrames = stored.hitlagFrames;
+	hitstunFrames = stored.hitstunFrames;
+	position = stored.position;
+	targetNode = stored.targetNode;
 }

@@ -88,3 +88,11 @@ bool BasicTurret::ResolvePhysics( sf::Vector2<double> vel )
 {
 	return false;
 }
+
+void BasicTurret::SaveEnemyState()
+{
+}
+
+void BasicTurret::LoadEnemyState()
+{
+}
