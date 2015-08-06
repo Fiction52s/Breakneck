@@ -121,7 +121,7 @@ void Camera::Update( Actor *player )
 	pos.y = player->position.y;
 	
 	double offX = pVel.x;
-	double offXMax = 10;
+	double offXMax = 5;
 	if( offX > offXMax  )
 	{
 		offX = offXMax ;
@@ -134,7 +134,7 @@ void Camera::Update( Actor *player )
 	//offset.y += pVel.y * .3;
 
 	double offY = pVel.y;
-	double offYMax = 5;
+	double offYMax = 3;
 	if( offY > offYMax  )
 	{
 		offY = offYMax ;

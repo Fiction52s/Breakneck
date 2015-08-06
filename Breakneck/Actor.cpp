@@ -6018,7 +6018,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			
 		}
 
-		if( ghostFrame < 240 )
+		if( ghostFrame < PlayerGhost::maxFrames )
 				ghostFrame++;
 		//PlayerGhost *g = ghosts[record-1];
 		
