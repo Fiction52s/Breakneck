@@ -333,7 +333,7 @@ struct Actor : QuadTreeCollider,
 
 
 	PlayerGhost *testGhost;
-	PlayerGhost *ghosts[4];
+	PlayerGhost *ghosts[8];
 	int recordedGhosts;
 	int record;
 	//bool record;

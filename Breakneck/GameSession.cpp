@@ -1167,11 +1167,11 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		DebugDrawActors();
+	//	DebugDrawActors();
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
-		enemyTree->DebugDraw( window );
+	//	enemyTree->DebugDraw( window );
 
 		window->display();
 
