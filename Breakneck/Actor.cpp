@@ -440,7 +440,7 @@ void Actor::UpdatePrePhysics()
 			recordedGhosts++;
 			ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 			ghosts[record]->currFrame = 0;
-			ghostFrame = 0;
+			ghostFrame = 1;
 			
 		}
 
@@ -452,7 +452,7 @@ void Actor::UpdatePrePhysics()
 		blah = false;
 	}
 
-	if( currInput.RRight() && !prevInput.RRight() )
+	if( record > 0 && currInput.RRight() && !prevInput.RRight() )
 	{
 		//record = false;
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
@@ -460,7 +460,7 @@ void Actor::UpdatePrePhysics()
 		LoadState();
 		owner->LoadState(); 
 		blah = true;
-		ghostFrame = 0;
+		ghostFrame = 1;
 		//cout << "recordedGhosts: " << recordedGhosts << endl;
 		owner->powerBar.Charge( 20 );
 	}

@@ -831,7 +831,7 @@ bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 
 		&& r0.left + r0.width >= r1.left 
 		&& r0.top <= r1.top + r1.height
 		&& r0.top + r0.height >= r1.top;
-	if( test != test2 )
+	/*if( test != test2 )
 	{
 		if( test )
 			cout << "test is true" << endl;
@@ -841,7 +841,7 @@ bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 
 		cout << "r1: left: " << r1.left  << ", top: " << r1.top << ", w: " << r1.width << ", h: " << r1.height << endl;
 		cout << "wtf" << endl;
 	}
-	assert( test == test2 );
+	assert( test == test2 );*/
 	return test2;
 }
 

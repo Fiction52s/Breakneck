@@ -99,6 +99,11 @@ struct Patroller : Enemy
 	int hitstunFrames;
 	int animationFactor;
 
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+
 	struct Stored
 	{
 		bool dead;

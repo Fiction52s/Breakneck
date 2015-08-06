@@ -77,6 +77,9 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	deathPartingSpeed = .3;
 	deathVector = V2d( 1, -1 );
 
+	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	bloodSprite.setTexture( *ts_testBlood->texture );
+
 	UpdateHitboxes();
 }
 
@@ -244,8 +247,20 @@ void Patroller::Draw( sf::RenderTarget *target )
 	else
 	{
 		target->draw( botDeathSprite );
+
+		if( deathFrame / 3 < 6 )
+		{
+			
+			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
+			bloodSprite.setPosition( position.x, position.y );
+			target->draw( bloodSprite );
+		}
+		
 		target->draw( topDeathSprite );
 	}
+
+
 
 }
 
