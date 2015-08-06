@@ -16,7 +16,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.x = pos.x;
 	position.y = pos.y;
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, pos.x + 16, pos.y + 16 );
+	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	pathLength = pathParam.size() + 1;
 	path = new Vector2i[pathLength];
@@ -171,18 +171,21 @@ void Patroller::AdvanceTargetNode()
 
 void Patroller::UpdatePostPhysics()
 {
-	UpdateHitboxes();
-
-	if( PlayerHitMe() )
+	if( !dead )
 	{
-		cout << "patroller received damage of: " << receivedHit->damage << endl;
-		dead = true;
-		receivedHit = NULL;
-	}
+		UpdateHitboxes();
 
-	if( IHitPlayer() )
-	{
-		cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		if( PlayerHitMe() )
+		{
+			cout << "patroller received damage of: " << receivedHit->damage << endl;
+			dead = true;
+			receivedHit = NULL;
+		}
+
+		if( IHitPlayer() )
+		{
+			cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		}
 	}
 
 	UpdateSprite();
@@ -313,6 +316,9 @@ bool Patroller::PlayerSlowingMe()
 
 void Patroller::DebugDraw( RenderTarget *target )
 {
-	hurtBody.DebugDraw( target );
-	hitBody.DebugDraw( target );
+	if( !dead )
+	{
+		hurtBody.DebugDraw( target );
+		hitBody.DebugDraw( target );
+	}
 }

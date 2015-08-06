@@ -491,6 +491,7 @@ bool GameSession::OpenFile( string fileName )
 				string typeName;
 				is >> typeName;
 
+			
 				if( typeName == "patroller" )
 				{
 					string airStr;
@@ -1094,7 +1095,8 @@ int GameSession::Run( string fileName )
 		
 		polyShader.setParameter( "resolution", window->getSize().x, window->getSize().y );
 		polyShader.setParameter( "zoom", cam.GetZoom() );
-		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2 );
+		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
+			view.getCenter().y - view.getSize().y / 2 );
 		polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
@@ -1165,10 +1167,11 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
+		enemyTree->DebugDraw( window );
 
 		window->display();
 

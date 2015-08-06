@@ -2,6 +2,7 @@
 #include "Physics.h"
 #include <assert.h>
 #include <iostream>
+#include "Enemy.h"
 
 #define V2d sf::Vector2<double>
 
@@ -112,10 +113,16 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 	else
 	{
 		ParentNode *n = (ParentNode*)node;
-		sf::Rect<double> nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
-		sf::Rect<double> ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
-		sf::Rect<double> sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
-		sf::Rect<double> se( node->pos.x, node->pos.y, node->rw, node->rh );
+
+		double error = 0;
+
+		sf::Rect<double> nw( node->pos.x - node->rw - error, node->pos.y - node->rh - error, 
+			node->rw + error, node->rh + error);
+		sf::Rect<double> ne( node->pos.x - error, node->pos.y - node->rh - error, node->rw + error, node->rh + error );
+		sf::Rect<double> sw( node->pos.x - node->rw - error, node->pos.y - error, node->rw + error, node->rh + error );
+		sf::Rect<double> se( node->pos.x - error, node->pos.y - error, node->rw + error, node->rh + error );
+
+		
 
 		if( qte->IsTouchingBox( nw ) )
 		{
@@ -136,6 +143,16 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 		{
 		//	cout << "calling southeast insert" << endl;
 			n->children[3] = rInsert( n->children[3], qte );
+		}
+
+		if( !qte->IsTouchingBox( nw )
+			&& !qte->IsTouchingBox( ne )
+			&& !qte->IsTouchingBox( sw )
+			&& !qte->IsTouchingBox( se ) )
+		{
+		//	cout << "node pos: " << node->pos.x << ", " << node->pos.y << endl;
+		//	cout << "enemy: " << ((Enemy*)qte)->spawnRect.left << ", " << ((Enemy*)qte)->spawnRect.top << endl; 
+			assert( false && "didnt insert anywhere" );
 		}
 	}
 	return node;
@@ -182,6 +199,7 @@ void QuadTree::rDebugDraw( sf::RenderTarget *target, QNode *node )
 	}
 	else
 	{
+		//cout << "parent node draw" << endl;
 		ParentNode *n = (ParentNode*)node;
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		//rs.setOutlineColor( Color::Red );

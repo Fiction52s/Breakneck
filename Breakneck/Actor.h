@@ -397,9 +397,9 @@ struct PlayerGhost
 	void UpdatePrePhysics( int ghostFrame );
 	void DebugDraw( sf::RenderTarget *target );
 
-	P states[240];
+	const static int maxFrames = 2000;
+	P states[maxFrames];//[240];
 	int totalRecorded;
-	int maxFrames;
 	int currFrame;
 
 	std::list<CollisionBox> *currHitboxes;

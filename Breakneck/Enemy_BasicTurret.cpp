@@ -31,7 +31,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q,
 
 
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, gPoint.x + 24, gPoint.y + 24 );
+	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
 }
 
 void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )

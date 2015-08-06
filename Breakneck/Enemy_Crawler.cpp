@@ -20,7 +20,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 
-	spawnRect = sf::Rect<double>( gPoint.x - 16, gPoint.y - 16, gPoint.x + 16, gPoint.y + 16 );
+	spawnRect = sf::Rect<double>( gPoint.x - 16, gPoint.y - 16, 16 * 2, 16 * 2 );
 
 	physBody.isCircle = false;
 	physBody.offset.x = 0;

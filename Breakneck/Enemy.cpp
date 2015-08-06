@@ -23,7 +23,7 @@ void Enemy::HandleQuery( QuadTreeCollider * qtc )
 
 bool Enemy::IsTouchingBox( sf::Rect<double> &r )
 {
-	return IsBoxTouchingBox( spawnRect, r );
+	return IsBoxTouchingBox( spawnRect, r );//r.intersects( spawnRect );// 
 }
 
 

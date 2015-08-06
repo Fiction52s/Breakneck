@@ -132,20 +132,40 @@ void Camera::Update( Actor *player )
 	}
 	offset.x += offX;//pVel.x * 1.001;
 	//offset.y += pVel.y * .3;
+
+	double offY = pVel.y;
+	double offYMax = 5;
+	if( offY > offYMax  )
+	{
+		offY = offYMax ;
+	}
+	else if( offY < -offYMax  )
+	{
+		offY = -offYMax;
+	}
+
 	if( pVel.y > 0 )
-		offset.y += pVel.y;
+		offset.y += offY;
+		//offset.y += pVel.y;
+	
 	else if( pVel.y < 0 && player->ground != NULL )
 	{
-		offset.y += pVel.y;
+		offset.y += offY;//pVel.y;
+	}
+	else if( pVel.y < 0 )
+	{
+		if( offY < -1 )
+			offY = -1;
+		offset.y += offY; 
 	}
 
 	if( pVel.x == 0 )
 	{
-		offset.x += (-offset.x) / 100;
+		offset.x += (-offset.x) / 40;
 	}
 	if( pVel.y == 0 )
 	{
-		offset.y += (-offset.y) / 100;
+		offset.y += (-offset.y) / 20;
 	}
 	//cout << "pVel.y: " << pVel.y << endl;
 	//cout << "offset.y << " << offset.y << " add: " << pVel.y * 1.0000001  << "what: " << pVel.y << endl;
@@ -154,10 +174,10 @@ void Camera::Update( Actor *player )
 	else if( offset.x > 300 * zoomFactor )
 		offset.x = 300 * zoomFactor;
 
-	if( offset.y < -150 * zoomFactor )
-		offset.y = -150 * zoomFactor;
-	else if( offset.y > 100 * zoomFactor )
-		offset.y = 100 * zoomFactor;
+	if( offset.y < -100 * zoomFactor )
+		offset.y = -100 * zoomFactor;
+	else if( offset.y > 150 * zoomFactor )
+		offset.y = 150 * zoomFactor;
 
 	pos.x += offset.x;
 	pos.y += offset.y;

@@ -826,10 +826,23 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 
 bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 )
 {
-	return r0.left <= r1.left + r1.width 
+	bool test = r0.intersects( r1 );
+	bool test2 =r0.left <= r1.left + r1.width 
 		&& r0.left + r0.width >= r1.left 
 		&& r0.top <= r1.top + r1.height
 		&& r0.top + r0.height >= r1.top;
+	if( test != test2 )
+	{
+		if( test )
+			cout << "test is true" << endl;
+		else
+			cout << "test is false" << endl;
+		cout << "r0: left: " << r0.left  << ", top: " << r0.top << ", w: " << r0.width << ", h: " << r0.height << endl;
+		cout << "r1: left: " << r1.left  << ", top: " << r1.top << ", w: " << r1.width << ", h: " << r1.height << endl;
+		cout << "wtf" << endl;
+	}
+	assert( test == test2 );
+	return test2;
 }
 
 bool IsCircleTouchingCircle( V2d pos0, double rad0, V2d pos1, double rad1 )

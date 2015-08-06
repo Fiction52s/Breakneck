@@ -205,7 +205,7 @@ Actor::Actor( GameSession *gs )
 		wallJumpStrength.y = 25;
 		clingSpeed = 3;
 
-		dashSpeed = 17;
+		dashSpeed = 14;
 		steepClimbSpeedThresh = 15;
 
 		jumpStrength = 27.5;
@@ -216,7 +216,7 @@ Actor::Actor( GameSession *gs )
 		ground = NULL;
 		groundSpeed = 0;
 		maxNormalRun = 100;
-		runAccel = 1;
+	
 		facingRight = true;
 		collision = false;
 	
@@ -237,7 +237,8 @@ Actor::Actor( GameSession *gs )
 		maxAirXControl = maxRunInit;
 
 		maxGroundSpeed = 100;
-		runAccelInit = 1;
+		runAccelInit = .5;
+		
 		runAccel = .01;
 		sprintAccel = 1;
 
@@ -2041,11 +2042,19 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity.x -= airSlow;
 					if( velocity.x < 0 ) velocity.x = 0;
+					else if( velocity.x <= dashSpeed )
+					{
+					//	velocity.x = 0;
+					}
 				}
 				else if( velocity.x < 0 )
 				{
 					velocity.x += airSlow;
 					if( velocity.x > 0 ) velocity.x = 0;
+					else if( velocity.x >= -dashSpeed )
+					{
+					//	velocity.x = 0;
+					}
 				}
 			}
 			//cout << PhantomResolve( owner->edges, owner->numPoints, V2d( 10, 0 ) ) << endl;
@@ -2928,10 +2937,10 @@ void Actor::UpdatePrePhysics()
 	{
 		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
 		p.createBubble = bubbleCreated;
-		if( p.createBubble )
+		/*if( p.createBubble )
 		{
 			cout << "recording clone bubble: " << ghosts[record-1]->currFrame << endl;
-		}
+		}*/
 	}
 
 	if( ground == NULL && bounceEdge == NULL && action != DEATH )
@@ -6209,7 +6218,7 @@ void Actor::LoadState()
 }
 
 PlayerGhost::PlayerGhost()
-	:currFrame( 0 ), maxFrames( 240 ), currHitboxes( NULL )
+	:currFrame( 0 ), currHitboxes( NULL )
 {
 
 }
