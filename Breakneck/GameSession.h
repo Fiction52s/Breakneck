@@ -57,6 +57,9 @@ struct GameSession : QuadTreeCollider
 	void DebugDrawActors();
 
 	void HandleEntrant( QuadTreeEntrant *qte );
+	void Pause( int frames );
+
+
 
 	void SaveState();
 	void LoadState();
@@ -107,6 +110,8 @@ struct GameSession : QuadTreeCollider
 	QuadTree * enemyTree;
 
 	PowerBar powerBar;
+
+	int pauseFrames;
 
 	struct Stored
 	{

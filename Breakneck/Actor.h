@@ -70,7 +70,7 @@ struct Actor : QuadTreeCollider,
 	void DebugDraw( sf::RenderTarget *target );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
-
+	void AirMovement();
 
 	//unsaved vars
 	int possibleEdgeCount;

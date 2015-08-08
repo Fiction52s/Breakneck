@@ -16,7 +16,7 @@ using namespace std;
 using namespace sf;
 
 GameSession::GameSession( GameController &c, RenderWindow *rw)
-	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL )
+	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 {
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -740,6 +740,7 @@ int GameSession::Run( string fileName )
 		while ( accumulator >= TIMESTEP  )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
+			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 			if( oneFrameMode )
 			{
 				//controller.UpdateState();
@@ -747,6 +748,8 @@ int GameSession::Run( string fileName )
 
 				ControllerState con;
 				//con = controller.GetState();
+				
+				
 
 				while( true )
 				{
@@ -755,8 +758,11 @@ int GameSession::Run( string fileName )
 					controller.UpdateState();
 					con = controller.GetState();
 					//player.currInput = currInput;
+					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
+					
+					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
 
-					if( !skipped && con.leftShoulder )//sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
+					if( !skipped && skipInput )//sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
 					{
 						skipped = true;
 						accumulator = 0;//TIMESTEP;
@@ -765,7 +771,7 @@ int GameSession::Run( string fileName )
 
 						break;
 					}
-					if( skipped && !con.leftShoulder )//!sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
+					if( skipped && !skipInput )//!sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
 					{
 						skipped = false;
 						//break;
@@ -777,7 +783,7 @@ int GameSession::Run( string fileName )
 						break;
 					}
 					//if( sf::Keyboard::isKeyPressed( sf::Keyboard::M ) )
-					if( con.rightShoulder )
+					if( stopSkippingInput )
 					{
 
 						oneFrameMode = false;
@@ -788,7 +794,7 @@ int GameSession::Run( string fileName )
 				}
 			}
 
-			if( currInput.leftShoulder )
+			if( skipInput )
 				oneFrameMode = true;
 
 
@@ -827,12 +833,13 @@ int GameSession::Run( string fileName )
 		}
 
 		if( goalPlayerCollision )
-			{
-				quit = true;
-				returnVal = 1;
-				break;
-			}
+		{
+			quit = true;
+			returnVal = 1;
+			break;
+		}
 
+		
 
 
 			prevInput = currInput;
@@ -902,15 +909,29 @@ int GameSession::Run( string fileName )
 
 				currInput = keyboardInput;
 			}
-			
 			else
 			{
-			controller.UpdateState();
-			currInput = controller.GetState();
+				controller.UpdateState();
+				currInput = controller.GetState();
+				currInput.X |= currInput.rightShoulder;
 			//currInput.B;//|= currInput.rightTrigger > 200;
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
+
+
+
+
 			player.currInput = currInput;
+
+
+
+			if( pauseFrames > 0 )
+			{
+				pauseFrames--;
+				accumulator -= TIMESTEP;
+				break;
+			}
+
 			player.UpdatePrePhysics();
 
 			//cout << "player updated" << endl;
@@ -1305,6 +1326,11 @@ void GameSession::LoadState()
 		currEnemy->LoadState();
 		currEnemy = currEnemy->next;
 	}
+}
+
+void GameSession::Pause( int frames )
+{
+	pauseFrames = frames;
 }
 
 PowerBar::PowerBar()

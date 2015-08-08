@@ -50,8 +50,8 @@ void Camera::Update( Actor *player )
 	{
 		
 		zoomLevel -= .5;
-		if( zoomLevel < 1 )
-			zoomLevel = 1;
+		if( zoomLevel < 0 )
+			zoomLevel = 0;
 	}
 	else if( con.PDown() && !prevcon.PDown() )
 	{
