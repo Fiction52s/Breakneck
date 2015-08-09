@@ -181,7 +181,7 @@ void Patroller::UpdatePostPhysics()
 		if( PlayerHitMe() )
 		{
 			cout << "patroller received damage of: " << receivedHit->damage << endl;
-			owner->Pause( 20 );
+			//owner->Pause( 20 );
 			dead = true;
 			receivedHit = NULL;
 		}
@@ -271,8 +271,6 @@ bool Patroller::IHitPlayer()
 	
 	if( hitBody.Intersects( player.hurtBody ) )
 	{
-		//cout << "hitbodypos: " << hitBody.globalPosition.x << ", " << hitBody.globalPosition.y << endl;
-		//cout << "hurtbodypos: " << player.hurtBody.globalPosition.x << ", " << player.hurtBody.globalPosition.y << endl;
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}

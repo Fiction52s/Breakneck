@@ -182,8 +182,39 @@ struct BasicTurret : Enemy
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
+
+	
+
 	sf::Sprite sprite;
 	Tileset *ts;
+
+	const static int maxBullets = 16;
+	sf::Vector2<double> bulletPositions[maxBullets];
+
+	sf::VertexArray bulletVA;
+	CollisionBox bulletHurtBody[maxBullets];
+	CollisionBox bulletHitBody[maxBullets];
+	struct Bullet
+	{
+		Bullet();
+		Bullet *prev;
+		Bullet *next;
+		sf::Vector2<double> position;
+		CollisionBox hurtBody;
+		CollisionBox hitBody;
+		int frame;
+		int slowCounter;
+		int slowMultiple;
+	};
+
+	void AddBullet();
+	void DeactivateBullet( Bullet *bullet );
+	Bullet * ActivateBullet();
+	Tileset * ts_bullet;
+
+	Bullet *activeBullets;
+	Bullet *inactiveBullets;
+	HitboxInfo *bulletHitboxInfo;
 
 	int framesBetweenFiring;
 	int firingCounter;
@@ -200,6 +231,16 @@ struct BasicTurret : Enemy
 	bool col;
 	std::string queryMode;
 	int possibleEdgeCount;
+
+	int slowCounter;
+	int slowMultiple;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	bool dead;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
 };
 
 struct EnemyParentNode;

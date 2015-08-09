@@ -52,7 +52,7 @@ Actor::Actor( GameSession *gs )
 
 		//testGhost = new PlayerGhost;
 
-		fairHitboxes[4] = new list<CollisionBox>;
+		
 
 		CollisionBox cb;
 		cb.type = CollisionBox::Hit;
@@ -63,13 +63,17 @@ Actor::Actor( GameSession *gs )
 		cb.rw = 64;
 		cb.rh = 64;
 
-		fairHitboxes[4]->push_back( cb );
-
-		for( int i = 0; i < 4; ++i )
+		for( int j = 4; j < 10; ++j )
 		{
-			ghosts[i] = new PlayerGhost;
-			ghosts[i]->fairHitboxes[4] = new list<CollisionBox>;
-			ghosts[i]->fairHitboxes[4]->push_back( cb );
+			fairHitboxes[j] = new list<CollisionBox>;
+			fairHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < 4; ++i )
+			{
+				ghosts[i] = new PlayerGhost;
+				ghosts[i]->fairHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->fairHitboxes[j]->push_back( cb );			
+			}
 		}
 
 		//testGhost->fairHitboxes[4] = new list<CollisionBox>;
@@ -490,7 +494,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
 		
-		owner->Pause( 10 );
+		//owner->Pause( 10 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
 		{
@@ -2396,7 +2400,8 @@ void Actor::UpdatePrePhysics()
 				
 			}
 			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-			cout << "grindspeedin update: " << grindSpeed << endl;
+			//cout << "grindspeedin update: " << grindSpeed << endl;
+			
 			//else
 			//grindSpeed =  ;
 			break;
