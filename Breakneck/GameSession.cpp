@@ -604,6 +604,25 @@ bool GameSession::OpenFile( string fileName )
 					//enemyTree = Insert( enemyTree, enemy );
 					enemyTree->Insert( enemy );
 				}
+				else if( typeName == "foottrap" )
+				{
+					//always grounded
+					string airStr;
+					is >> airStr;
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					FootTrap *enemy = new FootTrap( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+					enemyTree->Insert( enemy );
+				}
 				else
 				{
 					assert( false && "not a valid type name" );

@@ -61,6 +61,8 @@ struct ActorParams
 		int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
 	std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, int framesBetweenFiring ); 
+	std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity ); 
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;

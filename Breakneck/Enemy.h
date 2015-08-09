@@ -243,6 +243,54 @@ struct BasicTurret : Enemy
 	double bulletSpeed;
 };
 
+struct FootTrap : Enemy
+{
+	FootTrap( GameSession *owner, Edge *ground, double quantity );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	
+
+	sf::Sprite sprite;
+	Tileset *ts;
+
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	sf::Vector2<double> position;
+	double angle;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int slowCounter;
+	int slowMultiple;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	bool dead;
+	sf::Vector2<double> gn;
+};
+
 struct EnemyParentNode;
 
 struct EnemyQNode
