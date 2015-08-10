@@ -18,9 +18,10 @@ BasicEffect::BasicEffect ( GameSession *owner )
 	ts = NULL;
 	//ts = //owner->GetTileset( "double.png", 64, 64 ); //what
 	activated = false;
+	animationFactor = 1;
 }
 
-void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc )
+void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af )
 {
 	//cout << "init: " << this << ", " << t->sourceName << endl;
 	s.setTexture( *t->texture );
@@ -29,6 +30,7 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	s.setPosition( pos.x, pos.y );
 	s.setRotation( angle / PI * 180 );
 
+	animationFactor = af;
 	ts = t;
 	frameCount = fc;
 	//position = pos;
@@ -54,7 +56,7 @@ void BasicEffect::UpdatePostPhysics()
 	//{
 	//	cout << "problem with: " << this << endl;
 	//}
-	s.setTextureRect( ts->GetSubRect( frame ) );
+	s.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	//s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
 	//s.setPosition( pos.x, pos.y );
 	//s.setRotation( angle / PI * 180 );
@@ -62,7 +64,7 @@ void BasicEffect::UpdatePostPhysics()
 
 
 	frame++;
-	if( frame == frameCount )
+	if( frame / animationFactor == frameCount )
 	{
 		owner->DeactivateEffect( this );
 	}

@@ -325,6 +325,7 @@ Actor::Actor( GameSession *gs )
 			//bubblePos[i]
 		}
 		
+		ts_dashStart = owner->GetTileset( "double.png", 64, 64 );
 		
 
 		
@@ -2206,8 +2207,8 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
-				owner->ActivateEffect( owner->GetTileset( "double.png", 64, 64 ), 
-					position, 0, 20 );
+				owner->ActivateEffect( ts_dashStart, 
+					position, 0, 20, 5 );
 			}
 
 			b.rh = dashHeight;

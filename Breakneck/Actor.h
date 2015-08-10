@@ -112,6 +112,8 @@ struct Actor : QuadTreeCollider,
 
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
+
+	Tileset *ts_dashStart;
 	bool bounceGrounded;
 
 

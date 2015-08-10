@@ -45,7 +45,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 
 	inactiveEffects = NULL;
 
-	for( int i = 0; i < 5; ++i )
+	for( int i = 0; i < MAX_EFFECTS; ++i )
 	{
 		AddEffect();
 	}
@@ -75,6 +75,8 @@ GameSession::~GameSession()
 	}
 }
 
+
+//should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
@@ -753,6 +755,10 @@ int GameSession::Run( string fileName )
 	t = false;
 	bool goalPlayerCollision = false;
 	int returnVal = 0;
+
+	polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
+	Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1150,7 +1156,7 @@ int GameSession::Run( string fileName )
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y - view.getSize().y / 2 );
-		polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
+		
 		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
 
@@ -1162,7 +1168,7 @@ int GameSession::Run( string fileName )
 			window->draw( *(*it ), &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
 		
-		Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
+		
 
 		sf::Rect<double> testRect( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2,
 			view.getSize().x, view.getSize().y );
@@ -1382,7 +1388,8 @@ void GameSession::AddEffect()
 	}
 }
 
-BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, int frameCount )
+BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, int frameCount,
+	int animationFactor )
 {
 	if( inactiveEffects == NULL )
 	{
@@ -1403,7 +1410,7 @@ BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, i
 		}
 
 		//assert( ts != NULL );
-		b->Init( ts, pos, angle, frameCount );
+		b->Init( ts, pos, angle, frameCount, animationFactor );
 		b->prev = NULL;
 		b->next = NULL;
 

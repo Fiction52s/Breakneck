@@ -64,13 +64,16 @@ struct GameSession : QuadTreeCollider
 		Tileset *ts, 
 		sf::Vector2<double> pos, 
 		double angle, 
-		int frameCount );
+		int frameCount,
+		int animationFactor );
 
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;
 
 	void SaveState();
 	void LoadState();
+
+	const static int MAX_EFFECTS = 100;
 
 	Actor player;
 	sf::Shader polyShader;
