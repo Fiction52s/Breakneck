@@ -43,6 +43,12 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 
 	listVA = NULL;
 
+	inactiveEffects = NULL;
+
+	for( int i = 0; i < 5; ++i )
+	{
+		AddEffect();
+	}
 
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
@@ -100,7 +106,6 @@ void GameSession::UpdateEnemiesPrePhysics()
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
-	//	cout << "update enemy: " << (unsigned)current << endl;
 		current->UpdatePrePhysics();
 		current = current->next;
 	}
@@ -121,8 +126,11 @@ void GameSession::UpdateEnemiesPostPhysics()
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
+		Enemy *temp = current->next; //need this in case enemy is removed during its update
+
 		current->UpdatePostPhysics();
-		current = current->next;
+		
+		current = temp;
 	}
 }
 
@@ -153,6 +161,7 @@ void GameSession::Test( Edge *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
+//	cout << "adding enemy: " << e << endl;
 	if( activeEnemyList != NULL )
 	{
 		activeEnemyList->prev = e;
@@ -196,6 +205,8 @@ void GameSession::RemoveEnemy( Enemy *e )
 		}
 		
 	}
+
+//	cout << "number of enemies is now: " << CountActiveEnemies() << endl;
 
 
 	/*if( inactiveEnemyList != NULL )
@@ -953,7 +964,7 @@ int GameSession::Run( string fileName )
 
 			player.UpdatePrePhysics();
 
-			//cout << "player updated" << endl;
+			
 
 			UpdateEnemiesPrePhysics();
 			
@@ -970,6 +981,8 @@ int GameSession::Run( string fileName )
 			player.UpdatePhysics( );
 
 			UpdateEnemiesPhysics();
+
+			
 
 			//temporary for goal collision
 			double gLeft = goalSprite.getPosition().x - goalSprite.getLocalBounds().width / 2.0;
@@ -1350,6 +1363,73 @@ void GameSession::LoadState()
 void GameSession::Pause( int frames )
 {
 	pauseFrames = frames;
+}
+
+void GameSession::AddEffect()
+{
+	if( inactiveEffects == NULL )
+	{
+		inactiveEffects = new BasicEffect( this );
+		inactiveEffects->prev = NULL;
+		inactiveEffects->next = NULL;
+	}
+	else
+	{
+		BasicEffect *b = new BasicEffect( this ) ;
+		b->next = inactiveEffects;
+		inactiveEffects->prev = b;
+		inactiveEffects = b;
+	}
+}
+
+BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, int frameCount )
+{
+	if( inactiveEffects == NULL )
+	{
+		return NULL;
+	}
+	else
+	{
+		BasicEffect *b = inactiveEffects;
+
+		if( inactiveEffects->next == NULL )
+		{
+			inactiveEffects = NULL;
+		}
+		else
+		{
+			inactiveEffects = (BasicEffect*)(inactiveEffects->next);
+			inactiveEffects->prev = NULL;
+		}
+
+		//assert( ts != NULL );
+		b->Init( ts, pos, angle, frameCount );
+		b->prev = NULL;
+		b->next = NULL;
+
+		AddEnemy( b );
+		
+		cout << "activating: " << b << " blah: " << b->prev << endl;
+		return b;
+	}
+}
+
+void GameSession::DeactivateEffect( BasicEffect *b )
+{
+	//cout << "deactivate " << b << endl;
+	RemoveEnemy( b );
+	if( inactiveEffects == NULL )
+	{
+		inactiveEffects = b;
+		b->next = NULL;
+		b->prev = NULL;
+	}
+	else
+	{
+		b->next = inactiveEffects;
+		inactiveEffects->prev = b;
+		inactiveEffects = b;
+	}
 }
 
 PowerBar::PowerBar()

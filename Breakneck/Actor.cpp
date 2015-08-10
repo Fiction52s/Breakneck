@@ -2204,6 +2204,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			if( frame == 0 )
+			{
+				owner->ActivateEffect( owner->GetTileset( "double.png", 64, 64 ), 
+					position, 0, 20 );
+			}
+
 			b.rh = dashHeight;
 			b.offset.y = (normalHeight - dashHeight);
 			if( reversed )
@@ -2725,8 +2731,6 @@ void Actor::UpdatePrePhysics()
 		}
 		cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
 	}
-
-
 
 
 	for( int i = 0; i < maxBubbles; ++i )

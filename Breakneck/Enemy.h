@@ -46,6 +46,35 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Stored stored;
 };
 
+struct BasicEffect : Enemy
+{
+	BasicEffect ( GameSession *owner );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	void Init( Tileset *ts, 
+		sf::Vector2<double> position, 
+		double angle, int frameCount );
+	int frameCount;
+	sf::Sprite s;
+	Tileset *ts;
+	int frame;
+	bool activated;
+	//sf::Vector2<double> position;
+};
+
 struct Patroller : Enemy
 {
 	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );

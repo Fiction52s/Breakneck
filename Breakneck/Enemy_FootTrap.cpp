@@ -36,7 +36,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 
 	frame = 0;
 	deathFrame = 0;
-	animationFactor = 5;
+	animationFactor = 7;
 	slowCounter = 1;
 	slowMultiple = 1;
 

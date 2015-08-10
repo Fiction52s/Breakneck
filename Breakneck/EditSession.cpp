@@ -2196,7 +2196,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					
 					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
-
 						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
 							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
 						{
@@ -2231,7 +2230,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(testQuantity / length( cu - pr ) ) );
 
-									if( dist < 100 && testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2 && length( newPoint - te ) < length( closestPoint - te ) )
+									//int testA = dist < 100;
+									//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
+									//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
+									//int testD = length( newPoint - te ) < length( closestPoint - te );
+									
+									//cout << testA << " " << testB << " " << testC << " " << testD << endl;
+
+									if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2 
+										&& length( newPoint - te ) < length( closestPoint - te ) )
 									{
 										minDistance = dist;
 										storedIndex = edgeIndex;
@@ -2244,6 +2251,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
 										enemySprite.setPosition( closestPoint.x, closestPoint.y );
 										enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+									}
+									else
+									{
+										
+										//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
 									}
 
 									prevIt = currIt;
