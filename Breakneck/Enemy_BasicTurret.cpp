@@ -114,7 +114,7 @@ void BasicTurret::UpdatePostPhysics()
 		if( PlayerHitMe() )
 		{
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-		//	owner->Pause( 20 );
+			owner->Pause( 10 );
 		//	dead = true;
 		//	receivedHit = NULL;
 		}

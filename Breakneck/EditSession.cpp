@@ -135,9 +135,8 @@ void TerrainPolygon::Finalize()
 	}*/
 }
 
-void TerrainPolygon::Draw( RenderTarget *rt )
+void TerrainPolygon::Draw( double zoomMultiple, RenderTarget *rt )
 {
-//	rt->draw(lines, points.size()*2, sf::Lines );
 	if( va != NULL )
 	rt->draw( *va );
 
@@ -146,7 +145,7 @@ void TerrainPolygon::Draw( RenderTarget *rt )
 		for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
 		{
 			CircleShape cs;
-			cs.setRadius( 10 );
+			cs.setRadius( 5 * zoomMultiple );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setFillColor( Color::Green );
 			cs.setPosition( (*it).x, (*it).y );
@@ -363,7 +362,7 @@ void EditSession::Draw()
 {
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->Draw( w );
+		(*it)->Draw( zoomMultiple, w );
 	}
 
 	int psize = polygonInProgress->points.size();
@@ -1267,12 +1266,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 					case Event::MouseButtonPressed:
 						{
-							/*bool emptySpace = true;
-							if( polygonInProgress->points.size() == 0 )
+							if( ev.mouseButton.button == Mouse::Left )
 							{
-								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+
+
+
+
+
+								bool emptySpace = true;
+								for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
+									it != polygons.end(); ++it )
 								{
-						
 										if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
 										{
 											emptySpace = false;
@@ -1280,16 +1284,24 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											break;
 										}
 								}
-							}
 
-							if( emptySpace )
-							{
+								bool empty = true;
+								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
+								{
+									list<ActorParams*> &actors = it->second->actors;
+									for( list<ActorParams*>::iterator it2 = actors.begin(); it2 != actors.end() && empty; ++it2 )
+									{
+										sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
+										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
+										{
+											selectedActor = (*it2);
+											empty = false;
+											cout << "enemy selected" << endl;
+										}
+									}
+								}
 
 							}
-							else
-							{
-								polygonInProgress->points.clear();
-							}*/
 							break;
 						}
 					case Event::MouseButtonReleased:
@@ -1302,6 +1314,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( ev.key.code == Keyboard::V )
+							{
+								list<TerrainPolygon*>::iterator it = polygons.begin();
+								while( it != polygons.end() )
+								{
+									if( (*it)->selected )
+									{
+										delete (*it);
+										polygons.erase( it++ );
+									}
+									else
+										++it;
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
@@ -1448,8 +1474,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							V2d releasePos(uiMouse.x, uiMouse.y);
 							if( length( releasePos - menuDownPos ) > 100 )
 							{
-								//mode = EDIT;
-								mode = CREATE_ENEMY;
+								mode = EDIT;
+								//mode = CREATE_ENEMY;
 								//cout << "blah: " << length( releasePos - menuDownPos ) << endl;
 							}
 							else

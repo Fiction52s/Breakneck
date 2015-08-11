@@ -47,7 +47,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 
 	for( int i = 0; i < MAX_EFFECTS; ++i )
 	{
-		AddEffect();
+		AllocateEffect();
 	}
 
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
@@ -1371,7 +1371,7 @@ void GameSession::Pause( int frames )
 	pauseFrames = frames;
 }
 
-void GameSession::AddEffect()
+void GameSession::AllocateEffect()
 {
 	if( inactiveEffects == NULL )
 	{
@@ -1416,7 +1416,7 @@ BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, i
 
 		AddEnemy( b );
 		
-		cout << "activating: " << b << " blah: " << b->prev << endl;
+		//cout << "activating: " << b << " blah: " << b->prev << endl;
 		return b;
 	}
 }

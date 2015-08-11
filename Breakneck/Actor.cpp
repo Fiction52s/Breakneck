@@ -427,7 +427,7 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
-	if( currInput.RLeft() && !prevInput.RLeft() )
+	if( currInput.RUp() && !prevInput.RUp() )
 	{
 		if( record == 0 )
 		{
@@ -457,7 +457,7 @@ void Actor::UpdatePrePhysics()
 		blah = false;
 	}
 
-	if( record > 0 && currInput.RRight() && !prevInput.RRight() )
+	if( record > 0 && currInput.RDown() && !prevInput.RDown() )
 	{
 		//record = false;
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
@@ -495,7 +495,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
 		
-		//owner->Pause( 10 );
+		owner->Pause( 10 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
 		{

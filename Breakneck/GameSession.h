@@ -59,7 +59,7 @@ struct GameSession : QuadTreeCollider
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Pause( int frames );
 
-	void AddEffect();
+	void AllocateEffect();
 	BasicEffect * ActivateEffect( 
 		Tileset *ts, 
 		sf::Vector2<double> pos, 

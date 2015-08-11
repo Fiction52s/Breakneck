@@ -19,7 +19,7 @@ struct TerrainPolygon
 	std::string material;
 	void Finalize();
 	void Reset();
-	void Draw( sf::RenderTarget * rt);
+	void Draw( double zoomMultiple, sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
 	bool ContainsPoint( sf::Vector2f p );
@@ -107,6 +107,7 @@ struct EditSession : GUIHandler
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
+	ActorParams *selectedActor;
 
 	//CREATE_TERRAIN mode
 	void Add( TerrainPolygon *brush, TerrainPolygon *poly);	
@@ -127,7 +128,7 @@ struct EditSession : GUIHandler
 
 	//static void TestButton();
 
-	
+	std::list<TerrainPolygon*> selectedPolygons;
 
 	sf::Sprite enemySprite;
 	ActorType *trackingEnemy;//bool trackingEnemy;
