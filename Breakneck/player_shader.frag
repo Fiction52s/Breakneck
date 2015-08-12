@@ -1,3 +1,5 @@
+#version 150
+
 //attributes from vertex shader
 varying vec4 vColor;
 varying vec2 vTexCoord;

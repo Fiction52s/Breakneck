@@ -2015,7 +2015,8 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			AirMovement();
+			if( framesInAir > 1 || velocity.y < 0 )
+				AirMovement();
 			/*if( currInput.LLeft() )
 			{
 				if( velocity.x > dashSpeed )
