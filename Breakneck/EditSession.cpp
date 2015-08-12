@@ -12,6 +12,15 @@ using namespace std;
 using namespace sf;
 
 #define V2d sf::Vector2<double>
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 
 TerrainPolygon::TerrainPolygon()
 {
@@ -1111,6 +1120,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	TerrainPolygon *enemyEdgePolygon;
 	double enemyEdgeQuantity;
 
+
+	double circleDist = 100;
+	double circleRadius = 50;
+
+	V2d topPos =  V2d( 0, -1 ) * circleDist;
+	V2d upperRightPos = V2d( sqrt( 3.0 ) / 2, -.5 ) * circleDist;
+	V2d lowerRightPos = V2d( sqrt( 3.0 ) / 2, .5 ) * circleDist;
+
+	V2d upperLeftPos = V2d( -sqrt( 3.0 ) / 2, -.5 ) * circleDist;
+	V2d lowerLeftPos = V2d( -sqrt( 3.0 ) / 2, .5 ) * circleDist;
+
+	V2d bottomPos = V2d( 0, 1 ) * circleDist;
+
+	string menuSelection = "";
+
 	while( !quit )
 	{
 		w->clear();
@@ -1472,14 +1496,68 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					case Event::MouseButtonReleased:
 						{
 							V2d releasePos(uiMouse.x, uiMouse.y);
-							if( length( releasePos - menuDownPos ) > 100 )
+							
+							V2d worldTop = menuDownPos + topPos;
+							V2d worldUpperLeft = menuDownPos + upperLeftPos;
+							V2d worldUpperRight = menuDownPos + upperRightPos;
+							V2d worldLowerRight = menuDownPos + lowerRightPos;
+							V2d worldLowerLeft = menuDownPos + lowerLeftPos;
+							V2d worldBottom = menuDownPos + bottomPos;
+
+
+							if( length( releasePos - worldTop ) < circleRadius )
 							{
-								mode = EDIT;
-								//mode = CREATE_ENEMY;
-								//cout << "blah: " << length( releasePos - menuDownPos ) << endl;
+								menuSelection = "top";
+							}
+							else if( length( releasePos - worldUpperLeft ) < circleRadius )
+							{
+								menuSelection = "upperleft";
+							}
+							else if( length( releasePos - worldUpperRight ) < circleRadius )
+							{
+								menuSelection = "upperright";
+							}
+							else if( length( releasePos - worldLowerLeft ) < circleRadius )
+							{
+								menuSelection = "lowerleft";
+							}
+							else if( length( releasePos - worldLowerRight ) < circleRadius )
+							{
+								menuSelection = "lowerright";
+							}
+							else if( length( releasePos - worldBottom ) < circleRadius )
+							{
+								menuSelection = "bottom";
 							}
 							else
+							{
 								mode = menuDownStored;
+								menuSelection = "none";
+							}
+
+							cout << "menu: " << menuSelection << endl;
+							if( menuSelection == "top" )
+							{
+								mode = EDIT;
+							}
+							else if( menuSelection == "upperleft" )
+							{
+								mode = CREATE_ENEMY;
+							}
+							else if( menuSelection == "upperright" )
+							{
+								mode = CREATE_TERRAIN;
+							}
+							else if( menuSelection == "lowerleft" )
+							{
+							}
+							else if( menuSelection == "lowerright" )
+							{
+							}
+							else if( menuSelection == "bottom" )
+							{
+							}
+							
 
 							break;
 						}
@@ -2472,6 +2550,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				break;
 			}
+		case SELECT_MODE:
+			{
+				
+
+			
+
+				break;
+			}
 		}
 		
 
@@ -2511,6 +2597,40 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			case SELECT_MODE:
 				{
 					w->draw( guiMenuSprite );
+
+
+					Color c;
+
+
+					CircleShape cs;
+					cs.setRadius( circleRadius );
+					cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+
+					cs.setFillColor( COLOR_BLUE );
+					cs.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
+					w->draw( cs );
+
+					cs.setFillColor( COLOR_GREEN );
+					cs.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
+					w->draw( cs );
+
+					cs.setFillColor( COLOR_YELLOW );
+					cs.setPosition( (menuDownPos + bottomPos).x, (menuDownPos + bottomPos).y );
+					w->draw( cs );
+
+					cs.setFillColor( COLOR_ORANGE );
+					cs.setPosition( (menuDownPos + lowerLeftPos).x, (menuDownPos + lowerLeftPos).y );
+					w->draw( cs );
+
+					cs.setFillColor( COLOR_RED );
+					cs.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
+					w->draw( cs );
+
+					cs.setFillColor( COLOR_MAGENTA );
+					cs.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
+					w->draw( cs );
+
 					break;
 				}
 		}
