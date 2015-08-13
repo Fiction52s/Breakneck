@@ -772,8 +772,6 @@ int GameSession::Run( string fileName )
 
 		window->clear();
 
-		
-		coll.ClearDebug();		
 
 		while ( accumulator >= TIMESTEP  )
         {
@@ -1231,8 +1229,6 @@ int GameSession::Run( string fileName )
 		window->setView( view );
 
 		DebugDrawActors();
-
-		coll.DebugDraw( window );
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
