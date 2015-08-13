@@ -311,11 +311,10 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 
 
-		cout << "res: " << res << endl;
+	//	cout << "res: " << res << endl;
 		double measureNormal = dot( edgeNormal, normalize(-vel) );
-		if( res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
+		if( res < 0 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
-			
 			//cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 			Vector2<double> invVel = normalize(-vel);
 
@@ -382,9 +381,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 					
 						resolveLeft = ( edgeRight - left ) / abs( vel.x );//dot( V2d(edgeRight - left, 0), normalize( -vel ) );// / abs(normalize(vel).x);
 						if( resolveLeft  > 1.1  )
-							resolveLeft  = 10000;
+						resolveLeft  = 10000;
 
-						//	cout << "temp resolveleft: " << resolveLeft << endl;
+							//cout << "temp resolveleft: " << resolveLeft << endl;
 				}
 				else if( right >= edgeLeft && vel.x > 0 )
 				{
@@ -392,12 +391,10 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//		resolveRight = 0;
 					resolveRight = (right - edgeLeft) / abs(vel.x );
 					
-
-					//cout << "temp resolveright: " << resolveRight << ", normal: " << e->Normal().x << ", " << e->Normal().y << endl;
 					if( resolveRight > 1.1 )
 						resolveRight = 10000;
 
-					
+					//cout << "temp resolveright: " << resolveRight << endl;
 					//dot( V2d((right - edgeLeft),0), normalize( -vel ) );//
 				}
 				else
@@ -452,8 +449,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 
 				
-				currentContact->resolution = normalize(-vel) * resolveDist;
-				//currentContact->resolution = normalize(-vel) * resolveDist;
+
+				currentContact->resolution = -vel * resolveDist;
 				//cout << "resolution toooo: " << currentContact->resolution.x  << ", " << currentContact->resolution.y << endl;
 			//	cout << "dist: " << resolveDist << endl;
 
