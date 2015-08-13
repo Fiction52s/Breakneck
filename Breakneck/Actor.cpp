@@ -209,7 +209,7 @@ Actor::Actor( GameSession *gs )
 		wallJumpStrength.y = 25;
 		clingSpeed = 3;
 
-		dashSpeed = 14;
+		dashSpeed = 12;
 		steepClimbSpeedThresh = 15;
 
 		jumpStrength = 27.5;
@@ -227,7 +227,7 @@ Actor::Actor( GameSession *gs )
 		airAccel = 1.5;
 		maxAirXSpeed = 100;
 		
-		airDashSpeed = 14;
+		airDashSpeed = 12;
 
 		airSlow = 1;//.3;
 
@@ -3874,6 +3874,14 @@ void Actor::UpdatePhysics()
 				if( approxEquals( m, 0 ) )
 				{
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+				/*	if( groundSpeed > 0 )
+					{
+						m = 10;
+					}
+					else if( groundSpeed < 0 )
+					{
+						m = -10;
+					}*/
 					groundSpeed = 0;
 					break;
 				}
@@ -3929,6 +3937,7 @@ void Actor::UpdatePhysics()
 								owner->window->draw( cs );*/
 								bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
 									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
+
 								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5  && !speedTransfer)
 								{
 									double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;

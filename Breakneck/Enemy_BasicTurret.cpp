@@ -56,7 +56,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q,
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	bulletSpeed = 1;
+	bulletSpeed = 5;
 
 	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
 }
@@ -164,10 +164,6 @@ void BasicTurret::UpdatePostPhysics()
 			if( currBullet->slowCounter == currBullet->slowMultiple )
 			{
 				currBullet->frame++;
-				if( currBullet->slowMultiple > 1 )
-				{
-					cout << "slowMultiple: " << slowMultiple << endl;
-				}
 				currBullet->slowCounter = 1;
 			}
 			else
