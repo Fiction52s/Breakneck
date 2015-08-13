@@ -268,10 +268,10 @@ Actor::Actor( GameSession *gs )
 		
 		b.type = b.Physics;
 
-		hurtBody.isCircle = false;
-		//hurtBody.offsetAngle = 0;
+		
 		hurtBody.offset.x = 0;
 		hurtBody.offset.y = 0;
+		hurtBody.isCircle = false;
 		hurtBody.rw = 10;
 		hurtBody.rh = normalHeight;
 		hurtBody.type = CollisionBox::BoxType::Hurt;
@@ -1900,6 +1900,10 @@ void Actor::UpdatePrePhysics()
 	
 	currHitboxes = NULL;
 
+//	hurtBody.isCircle = false;
+//	hurtBody.rw = 10;
+//	hurtBody.rh = normalHeight;
+
 	//react to action
 	switch( action )
 	{
@@ -2445,6 +2449,10 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
+		//	hurtBody.isCircle = true;
+		//	hurtBody.rw = 10;
+		//	hurtBody.rh = 10;
+
 			if( frame == 0 )
 			{
 				hasAirDash = false;
@@ -4387,12 +4395,28 @@ void Actor::UpdateHitboxes()
 	}
 	
 	
-	hurtBody.rw = b.rw;
-	hurtBody.rh = b.rh;
-	hurtBody.offset = b.offset;
+	if( action == AIRDASH )
+	{
+		hurtBody.isCircle = true;
+		hurtBody.rw = b.rw;
+		hurtBody.rh = b.rw;
+		//hurtBody.offset = 
+	}
+	else
+	{
+		hurtBody.isCircle = false;
+		hurtBody.rw = b.rw;
+		hurtBody.rh = b.rh;
+		
+		hurtBody.offset = b.offset;
+	}
+
+	
+	
 	//cout << "hurtbody offset: " << hurtBody.offset.x << ", " << hurtBody.offset.y << endl;
-	hurtBody.globalAngle = angle;
+	
 	hurtBody.globalPosition = position + hurtBody.offset;
+	hurtBody.globalAngle = angle;
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
 	//			hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 	//hurtBody.globalPosition = position;
@@ -5788,7 +5812,11 @@ void Actor::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
-		++frame;
+		bool longAirdash = slowMultiple > 1 && action == AIRDASH;
+		
+		if( !longAirdash )
+			++frame;
+
 		slowCounter = 1;
 
 		if( invincibleFrames > 0 )

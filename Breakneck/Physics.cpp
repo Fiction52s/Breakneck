@@ -129,7 +129,20 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 	if( isCircle )
 	{
 		CircleShape cs;
-		cs.setFillColor( Color( 100, 100, 100, 100 ) );
+		//cs.setFillColor( Color( 255, 0, 0, 255 ) );
+
+		if( type == Physics )
+		{
+			cs.setFillColor( Color( 255, 0, 0, 100 ) );
+		}
+		else if( type == Hit )
+		{
+			cs.setFillColor( Color( 0, 255, 0, 100 ) );
+		}
+		else if( type == Hurt )
+		{
+			cs.setFillColor( Color( 0, 0, 255, 100 ) );
+		}
 
 		cs.setRadius( rw );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
@@ -153,7 +166,7 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 		}
 		else if( type == Hurt )
 		{
-			r.setFillColor( Color( 0, 0, 255, 255 ) );
+			r.setFillColor( Color( 0, 0, 255, 100 ) );
 		}
 		
 		r.setSize( sf::Vector2f( rw * 2, rh * 2 ) );
