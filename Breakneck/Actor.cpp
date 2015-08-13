@@ -396,8 +396,16 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case AIRDASH:
-			action = JUMP;
-			frame = 1;
+			if( slowMultiple > 1 )
+			{
+				frame = actionLength[AIRDASH] - 1;
+			}
+			else
+			{
+				action = JUMP;
+				frame = 1;
+			}
+			
 			break;
 		case STEEPCLIMB:
 			frame = 0;
@@ -5812,9 +5820,9 @@ void Actor::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
-		bool longAirdash = slowMultiple > 1 && action == AIRDASH;
+	//	bool longAirdash = slowMultiple > 1 && action == AIRDASH;
 		
-		if( !longAirdash )
+		//if( !longAirdash )
 			++frame;
 
 		slowCounter = 1;
