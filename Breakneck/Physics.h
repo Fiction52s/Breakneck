@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "VectorMath.h"
 #include "QuadTree.h"
+#include <list>
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
@@ -65,6 +66,7 @@ struct Contact
 	sf::Vector2<double> position;
 	sf::Vector2<double> resolution;
 	Edge *edge;
+	sf::Vector2<double> normal;
 };
 
 struct Collider
@@ -77,6 +79,16 @@ struct Collider
 		const CollisionBox &b, Edge *e, 
 		const sf::Vector2<double> &vel,
 		sf::RenderWindow *w);
+		
+	Contact *collideEdge2( 
+		sf::Vector2<double> position, 
+		const CollisionBox &b, Edge *e, 
+		const sf::Vector2<double> &vel,
+		sf::RenderWindow *w);
+	void DebugDraw( sf::RenderTarget *target );
+	void ClearDebug();
+	std::list<sf::Drawable*> progressDraw;
+
 };
 
 struct EdgeParentNode;

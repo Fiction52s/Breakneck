@@ -4187,6 +4187,9 @@ void Actor::UpdatePhysics()
 
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+				
+				
+				//extraVel = V2d( 0, 0 );
 				//cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
 				if( length( stealVec ) > 0 )
 				{
@@ -5860,13 +5863,41 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		if( e == ground )
 			return;
+
+		/*if( ground != NULL )
+		{
+			if( groundSpeed > 0 )
+			{
+				if( e == ground->edge0 )
+				{
+					cout << "this case" << endl;
+			//		return;
+				}
+			}
+			else if( groundSpeed < 0 )
+			{
+				//if( e == ground->edge1 )
+				//	return;
+			}
+		}*/
+
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
+		/*
 		if( c != NULL )
 		{
+			if( c->collisionPriority > 0 &&  (!col || c->collisionPriority < minContact.collisionPriority ) )
+			{
+				minContact.collisionPriority = c->collisionPriority;
+				minContact.edge = c->edge;
+				minContact.position = c->position;
+				minContact.resolution = c->resolution;
+				col = true;
+			}
+		}*/
 		//	cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
 		//	collisionNumber++;
 			//if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
-			//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
@@ -5894,7 +5925,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					
 				}
 			}
-		}
+		
 	}
 	else if( queryMode == "check" )
 	{
