@@ -101,12 +101,16 @@ void BasicTurret::UpdatePrePhysics()
 		{
 			//cout << "firing bullet" << endl;
 			b->position = position;
+			b->slowCounter = 1;
+			b->slowMultiple = 1;
 		}
 		else
 		{
 			//cout << "unable to make bullet" << endl;
 		}
 	}
+
+
 }
 
 void BasicTurret::UpdatePhysics()
@@ -119,7 +123,8 @@ void BasicTurret::UpdatePhysics()
 		Bullet *next = currBullet->next;
 		//cout << "moving bullet" << endl;
 
-		double movement = bulletSpeed;
+		double movement = bulletSpeed / (double)currBullet->slowMultiple;
+
 		double speed;
 		while( movement > 0 )
 		{
@@ -148,6 +153,7 @@ void BasicTurret::UpdatePhysics()
 
 void BasicTurret::UpdatePostPhysics()
 {
+	PlayerSlowingMe();
 	if( !dead )
 	{
 		UpdateHitboxes();
@@ -155,10 +161,25 @@ void BasicTurret::UpdatePostPhysics()
 		Bullet *currBullet = activeBullets;
 		while( currBullet != NULL )
 		{
+			if( currBullet->slowCounter == currBullet->slowMultiple )
+			{
+				currBullet->frame++;
+				if( currBullet->slowMultiple > 1 )
+				{
+					cout << "slowMultiple: " << slowMultiple << endl;
+				}
+				currBullet->slowCounter = 1;
+			}
+			else
+			{
+				currBullet->slowCounter++;
+			}
+
+			
 			//++frame;
-			currBullet->frame++;
 			if( currBullet->frame == 11 )
 				currBullet->frame = 0;
+
 			currBullet = currBullet->next;
 		}
 
@@ -241,6 +262,48 @@ bool BasicTurret::PlayerHitMe()
 
 bool BasicTurret::PlayerSlowingMe()
 {
+	Actor &player = owner->player;
+
+	Bullet *currBullet = activeBullets;
+	while( currBullet != NULL )
+	{
+		bool slowed = false;
+		for( int i = 0; i < player.maxBubbles; ++i )
+		{
+			if( player.bubbleFramesToLive[i] > 0 )
+			{
+				if( length( currBullet->position - player.bubblePos[i] ) 
+					<= player.bubbleRadius + currBullet->hurtBody.rw )
+				{
+					if( currBullet->slowMultiple == 1 )
+					{
+						currBullet->slowCounter = 1;
+						currBullet->slowMultiple = 5;
+					}
+
+					slowed = true;
+					break;
+				}
+			}
+		}
+		if( !slowed )
+		{
+			currBullet->slowCounter = 1;
+			currBullet->slowMultiple = 1;
+		}
+		currBullet = currBullet->next;
+	}	
+
+	/*for( int i = 0; i < player.maxBubbles; ++i )
+		{
+			if( player.bubbleFramesToLive[i] > 0 )
+			{
+				if( length( currBullet->position - player.bubblePos[i] ) 
+					<= player.bubbleRadius + currBullet->hurtBody.rw )
+				{*/
+
+	
+	
 	return false;
 }
 
@@ -478,7 +541,7 @@ BasicTurret::Bullet * BasicTurret::ActivateBullet()
 			activeBullets = oldStart;
 		}
 
-
+		
 		return oldStart;
 	}
 }
