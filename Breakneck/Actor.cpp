@@ -495,7 +495,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
 		
-		owner->Pause( 10 );
+		owner->Pause( 6 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
 		{
@@ -1990,7 +1990,22 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 					if( velocity.y > 0 )
+					{
+						if( abs(velocity.x) < dashSpeed && length( velocity ) >= dashSpeed )
+						{
+					//		cout << "here: " << velocity.x << endl;
+							if( velocity.x > 0 )
+							{
+								velocity.x = dashSpeed;
+							}
+							else
+							{
+								velocity.x = -dashSpeed;
+							}
+						}
+
 						velocity.y = 0;
+					}
 					velocity.y -= jumpStrength;
 					ground = NULL;
 					holdJump = true;
@@ -2852,7 +2867,15 @@ void Actor::UpdatePrePhysics()
 		else if( velocity.x < -maxAirXSpeed )
 			velocity.x = -maxAirXSpeed;
 
-		velocity += V2d( 0, gravity / slowMultiple );
+		if( velocity.y > 0 && velocity.y < 10 )
+		{
+			velocity += V2d( 0, gravity / slowMultiple * .6 );
+		}
+		else
+		{
+			velocity += V2d( 0, gravity / slowMultiple );
+		}
+
 		if( velocity.y > maxFallSpeed )
 			velocity.y = maxFallSpeed;
 	}

@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "VectorMath.h"
 #include <iostream>
+#include "GameSession.h"
 
 using namespace std;
 
@@ -39,9 +40,25 @@ Camera::Camera()
 
 void Camera::Update( Actor *player )
 {
+	GameSession *owner = player->owner;
 	V2d ideal;// = player->position;
 	//pos.x = player->position.x;
 	//pos.y = player->position.y;
+
+	if( owner->pauseFrames > 0 )
+	{
+		if( owner->pauseFrames % 2 == 0 )
+		{
+			offset.y -= 3;
+		}
+		else
+		{
+			offset.y += 3;
+		}
+		
+		pos.x = player->position.x + offset.x;
+		pos.y = player->position.y + offset.y;
+	}
 
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;

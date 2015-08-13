@@ -181,7 +181,7 @@ void Patroller::UpdatePostPhysics()
 		if( PlayerHitMe() )
 		{
 			cout << "patroller received damage of: " << receivedHit->damage << endl;
-			owner->Pause( 10 );
+			owner->Pause( 6 );
 			dead = true;
 			receivedHit = NULL;
 		}

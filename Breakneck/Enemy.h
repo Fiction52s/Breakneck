@@ -210,17 +210,19 @@ struct BasicTurret : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	
 	void SaveEnemyState();
 	void LoadEnemyState();
-
-	
 
 	sf::Sprite sprite;
 	Tileset *ts;
 
 	const static int maxBullets = 16;
 	sf::Vector2<double> bulletPositions[maxBullets];
+	sf::Vector2<double> tempVel;
+	
+
+
 
 	sf::VertexArray bulletVA;
 	CollisionBox bulletHurtBody[maxBullets];
@@ -233,10 +235,13 @@ struct BasicTurret : Enemy
 		sf::Vector2<double> position;
 		CollisionBox hurtBody;
 		CollisionBox hitBody;
+		CollisionBox physBody;
 		int frame;
 		int slowCounter;
 		int slowMultiple;
 	};
+	Bullet *queryBullet;
+	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
 
 	void AddBullet();
 	void DeactivateBullet( Bullet *bullet );

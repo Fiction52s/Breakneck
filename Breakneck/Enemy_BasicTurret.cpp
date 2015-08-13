@@ -63,6 +63,33 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q,
 
 void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 {
+	//cout << "handling entrant" << endl;
+	Edge *e = (Edge*)qte;
+
+	if( e == ground )
+		return;
+
+	V2d v0 = e->v0;
+	V2d v1 = e->v1;
+
+	double result = cross( queryBullet->position - v0, normalize( v1 - v0 ) );
+	double d = dot( queryBullet->position - v0, normalize( v1 - v0 ) );
+
+	bool a = d >= -queryBullet->physBody.rw && d <= length( v1 - v0 ) + queryBullet->physBody.rw;
+	bool b = result >= 0 && result <= queryBullet->physBody.rw;
+	//cout << "rw: " << queryBullet->physBody.rw << endl;
+
+	//cout << "D: " << d << ", " << "result: "  << result << ", length: " << length( v1 - v0 ) << " : a,b: " <<
+	//	a << ", " << b << endl;
+	
+
+	if( a && b ) 
+	{
+		//cout << "bullet hit edge" << endl;
+		col = true;
+	}
+	//Contact *c = owner->coll.collideEdge( queryBullet->position, queryBullet->physBody, e, tempVel, owner->window );
+
 }
 
 void BasicTurret::UpdatePrePhysics()
@@ -85,12 +112,37 @@ void BasicTurret::UpdatePrePhysics()
 void BasicTurret::UpdatePhysics()
 {
 	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{	
-		//cout << "moving bullet" << endl;
-		currBullet->position += gn * bulletSpeed;
 
-		currBullet = currBullet->next;
+	while( currBullet != NULL )
+	{
+
+		Bullet *next = currBullet->next;
+		//cout << "moving bullet" << endl;
+
+		double movement = bulletSpeed;
+		double speed;
+		while( movement > 0 )
+		{
+			if( movement > 8 )
+			{
+				movement -= 8;
+				speed = 8;
+			}
+			else
+			{
+				speed = movement;
+				movement = 0;
+			}
+
+			if( ResolvePhysics( currBullet, gn * speed ) )
+			{
+				DeactivateBullet( currBullet );
+			}
+		}
+
+		//currBullet->position += gn * bulletSpeed;
+
+		currBullet = next;
 	}
 }
 
@@ -215,6 +267,24 @@ void BasicTurret::UpdateSprite()
 		currBullet = currBullet->next;
 		++i;
 	}
+
+	Bullet *notBullet = inactiveBullets;
+	//i = 0;
+	while( notBullet != NULL )
+	{
+		bulletVA[i*4].position = Vector2f( 0,0 );
+		bulletVA[i*4+1].position = Vector2f( 0,0 );
+		bulletVA[i*4+2].position = Vector2f( 0,0 );
+		bulletVA[i*4+3].position = Vector2f( 0,0 );
+
+		bulletVA[i*4].texCoords = Vector2f( 0,0 );
+		bulletVA[i*4+1].texCoords = Vector2f( 0,0 );
+		bulletVA[i*4+2].texCoords = Vector2f( 0,0 );
+		bulletVA[i*4+3].texCoords = Vector2f( 0,0 );
+
+		++i;
+		notBullet = notBullet->next;
+	}
 }
 
 void BasicTurret::DebugDraw(sf::RenderTarget *target)
@@ -251,9 +321,26 @@ void BasicTurret::UpdateHitboxes()
 	}
 }
 
-bool BasicTurret::ResolvePhysics( sf::Vector2<double> vel )
+bool BasicTurret::ResolvePhysics( BasicTurret::Bullet * bullet, sf::Vector2<double> vel )
 {
-	return false;
+	possibleEdgeCount = 0;
+	bullet->position += vel;
+	
+	Rect<double> r( bullet->position.x - 8, bullet->position.y - 8, 
+		2 * 8, 2 * 8 );
+	minContact.collisionPriority = 1000000;
+
+	col = false;
+
+	tempVel = vel;
+	minContact.edge = NULL;
+
+	//queryMode = "resolve";
+//	Query( this, owner->testTree, r );
+	queryBullet = bullet;
+	owner->terrainTree->Query( this, r );
+
+	return col;
 }
 
 void BasicTurret::SaveEnemyState()
@@ -296,10 +383,19 @@ void BasicTurret::AddBullet()
 	inactiveBullets->hitBody.offset.y = 0;
 	inactiveBullets->hitBody.rw = 8;
 	inactiveBullets->hitBody.rh = 8;
+
+	inactiveBullets->physBody.type = CollisionBox::Physics;
+	inactiveBullets->physBody.isCircle = true;
+	inactiveBullets->physBody.globalAngle = 0;
+	inactiveBullets->physBody.offset.x = 0;
+	inactiveBullets->physBody.offset.y = 0;
+	inactiveBullets->physBody.rw = 8;
+	inactiveBullets->physBody.rh = 8;
 }
 
 void BasicTurret::DeactivateBullet( Bullet *b )
 {
+	//cout << "deactivating" << endl;
 	Bullet *prev = b->prev;
 	Bullet *next = b->next;
 
@@ -311,7 +407,11 @@ void BasicTurret::DeactivateBullet( Bullet *b )
 	{
 		if( b == activeBullets )
 		{
-			next->prev = NULL;
+			if( next != NULL )
+			{
+				next->prev = NULL;
+			}
+			
 			activeBullets = next;
 		}
 		else
@@ -327,6 +427,21 @@ void BasicTurret::DeactivateBullet( Bullet *b )
 			}
 		}
 		
+	}
+
+
+	if( inactiveBullets == NULL )
+	{
+		b->next = NULL;
+		b->prev = NULL;
+		inactiveBullets = b;
+	}
+	else
+	{
+		b->prev = NULL;
+		b->next = inactiveBullets;
+		inactiveBullets->prev = b;
+		inactiveBullets = b;
 	}
 }
 
