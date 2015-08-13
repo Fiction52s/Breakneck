@@ -199,6 +199,233 @@ Collider::~Collider()
 	delete currentContact;
 }
 
+Contact *Collider::collideEdge2( sf::Vector2<double> position, const CollisionBox &b, Edge *e, 
+		const sf::Vector2<double> &vel, sf::RenderWindow *w)
+{
+	Vector2<double> oldPosition = position - vel;
+	double left = position.x - b.rw;
+	double right = position.x + b.rw;
+	double top = position.y - b.rh;
+	double bottom = position.y + b.rh;
+
+	
+
+	double oldLeft = oldPosition.x - b.rw;
+	double oldRight = oldPosition.x + b.rw;
+	double oldTop = oldPosition.y - b.rh;
+	double oldBottom = oldPosition.y + b.rh;
+
+
+	double edgeLeft = min( e->v0.x, e->v1.x );
+	double edgeRight = max( e->v0.x, e->v1.x ); 
+	double edgeTop = min( e->v0.y, e->v1.y ); 
+	double edgeBottom = max( e->v0.y, e->v1.y ); 
+
+	bool aabbCollision = false;
+
+	if( left <= edgeRight && right >= edgeLeft && top <= edgeBottom && bottom >= edgeTop )
+	{	
+		aabbCollision = true;
+	}
+
+	V2d opp;
+	if( aabbCollision )
+	{
+		Vector2<double> corner(0,0);
+		Vector2<double> edgeNormal = e->Normal();
+
+		if( edgeNormal.x > 0 )
+		{
+			corner.x = left;
+			opp.x = right;
+		}
+		else if( edgeNormal.x < 0 )
+		{
+			corner.x = right;
+			opp.x = left;
+		}
+		else
+		{
+			/*if( edgeLeft <= left )
+			{
+				corner.x = left;
+				opp.x = right;
+			}
+			else if ( edgeRight >= right )
+			{
+				corner.x = right;
+				opp.x = left;
+			}
+			else
+			{
+			//	cout << "DAFHGSAIOHGEIWHGIWEHG" << endl;
+				corner.x = (edgeLeft + edgeRight) / 2;
+				opp.x = corner.x;
+			}*/
+		}
+
+		if( edgeNormal.y > 0 )
+		{
+			corner.y = top;
+			opp.y = bottom;
+		}
+		else if( edgeNormal.y < 0 )
+		{
+			corner.y = bottom;
+			opp.y = top;
+		}
+		else
+		{
+			//aabb
+			/*if( edgeTop <= top )
+			{
+				corner.y = top;
+				opp.y = bottom;
+			}
+			else if ( edgeBottom >= bottom )
+			{
+				corner.y = bottom;
+				opp.y = top;
+			}
+			else
+			{
+				corner.y = (edgeTop+ edgeBottom) / 2;
+			//	cout << "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz" << endl;
+				opp.y = corner.y;
+			}*/
+		}
+
+		if( corner.x == 0 && corner.y == 0 )
+		{
+			return NULL;
+		}
+
+		double distIntersected = -cross( corner - e->v0, normalize( e->v1 - e->v0 ) ); //distance corner is inside solid
+		//double resOpp = cross( opp - e->v0, e->v1 - e->v0 );
+		double measureNormal = dot( edgeNormal, normalize(-vel) ); //make sure you are traveling at the edge
+
+		bool isMovingAtAll = ( vel.x != 0 || vel.y != 0 );
+		//cout << "res: " << res << endl;
+		//&& resOpp > 0 
+		
+		if( distIntersected > 0 && measureNormal > 0 && isMovingAtAll )	
+		{
+
+			Vector2<double> revDir = normalize(-vel);
+			
+			Vector2<double> intersect = corner + revDir * distIntersected;
+
+			double intersectQuantity = dot( corner - e->v0, normalize( e->v1 - e->v0 ) );
+			
+			
+
+	
+
+			
+			bool borderPre = intersectQuantity <= 0;
+			bool borderPost = intersectQuantity >= length( e->v1 - e->v0 );
+			double resolveTop = 10000; //push up
+			double resolveBottom = 10000; //push down
+			double resolveRight = 10000;
+			double resolveLeft = 10000;
+
+			if( borderPre || borderPost ) //hit the intersection of more than 1 edge
+			{
+				if( corner.x >= edgeLeft && vel.x > 0 )
+				{
+					double distX = corner.x - edgeLeft;
+					resolveLeft = distX / vel.x;
+				}
+				else if( corner.x <= edgeRight && vel.x < 0 )
+				{
+					double distX = edgeRight - corner.x;
+					resolveRight = distX / -vel.x;
+				}
+
+				if( corner.y >= edgeTop && vel.y > 0 )
+				{
+					double distY = corner.y - edgeTop;
+					resolveTop = distY / vel.y;
+				}
+				else if( corner.y <= edgeBottom && vel.y < 0 )
+				{
+					double distY = edgeBottom - corner.y;
+					resolveBottom = distY / -vel.y;
+				}
+
+				double resolveDist = min( resolveTop, min( resolveBottom, min( resolveLeft, resolveRight ) ) );
+
+				assert( resolveDist != 10000 );
+
+				currentContact->resolution = resolveDist * revDir;
+				currentContact->edge = e;
+
+				if( borderPre )
+				{
+					currentContact->position = e->v0;
+				}
+				else //borderPost
+				{
+					currentContact->position = e->v1;
+				}
+
+				if( resolveDist == resolveTop )
+				{
+					currentContact->normal = V2d( 0, -1 );
+				}
+				else if( resolveDist == resolveBottom )
+				{
+					currentContact->normal = V2d( 0, 1 );
+				}
+				else if( resolveDist == resolveLeft )
+				{
+					currentContact->normal = V2d( -1, 0 );
+				}
+				else if( resolveDist == resolveRight )
+				{
+					currentContact->normal = V2d( 1, 0 );
+				}
+
+
+				CircleShape *cs = new CircleShape;
+				cs->setFillColor( Color::Cyan );
+				cs->setRadius( 10 );
+				cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+				cs->setPosition( currentContact->position.x, currentContact->position.y );
+				progressDraw.push_back( cs );
+
+				currentContact->collisionPriority = length( vel ) - distIntersected;
+				cout << "dist int: " << distIntersected << ", " << length( vel ) << endl;
+				cout << "rev dir: " << revDir.x << ", " << revDir.y << endl;
+				cout << "contact: " << currentContact->resolution.x << ", " << currentContact->resolution.y << 
+					", normal: " << currentContact->edge->Normal().x << ", " 
+					<< currentContact->edge->Normal().y << ", pri: " << currentContact->collisionPriority << endl;
+				return currentContact;
+			}
+			else //hit only a single edge
+			{
+				currentContact->resolution = intersect - corner;
+				currentContact->collisionPriority = 1;
+				currentContact->edge = e;
+				currentContact->position = intersect;
+
+				CircleShape *cs = new CircleShape;
+				cs->setFillColor( Color::Red );
+				cs->setRadius( 10 );
+				cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+				cs->setPosition( currentContact->position.x, currentContact->position.y );
+				progressDraw.push_back( cs );
+
+				return currentContact;
+			}
+		}
+
+	
+
+	}
+	return NULL;
+}
+
 Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel, RenderWindow *w )
 {
 	Vector2<double> oldPosition = position - vel;
@@ -225,10 +452,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	{	
 		
 		aabbCollision = true;
-		
 	}
 
-	Vector2<double> half = (oldPosition + position ) / 2.0;
+	/*Vector2<double> half = (oldPosition + position ) / 2.0;
 		double halfLeft = half.x - b.rw;
 		double halfRight = half.x + b.rw;
 		double halfTop = half.y - b.rh;
@@ -237,7 +463,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	if( halfLeft <= edgeRight && halfRight >= edgeLeft && halfTop <= edgeBottom && halfBottom >= edgeTop )
 		{
 			aabbCollision = true;
-		}
+		}*/
 
 	V2d opp;
 	if( aabbCollision )
@@ -316,28 +542,33 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 		if( res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
 		{
 			
-			//cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
+			cout << "vezzzzz: " << vel.x << ", " << vel.y << " .. norm: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 			Vector2<double> invVel = normalize(-vel);
 
 
 
 			LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
 
+
+			//sf::Vertex activePreview[4] =
+			//{
+			//	sf::Vertex(sf::Vector2<float>((cvdiff.x * le + (corner - vel).x), (cvdiff.y * le + (corner - vel).y)), Color::Yellow ),
+			//	sf::Vertex(sf::Vector2<float>((-cvdiff.x * le + (corner - vel).x), (-cvdiff.y * le + (corner - vel).y)), Color::Yellow),
+			//	sf::Vertex(sf::Vector2<float>((ediff.x * le + e->v1.x), (ediff.y * le + e->v1.y)), Color::Red ),
+			//	sf::Vertex(sf::Vector2<float>((-ediff.x * le + e->v1.x), (-ediff.y * le + e->v1.y)), Color::Red)
+				//sf::Vertex(sf::Vector2<float>((e->v0 + e->Normal() * 10.0).x, (e->v0 + e->Normal() * 10.0).y), Color::Red ),
+				//sf::Vertex(sf::Vector2<float>((e->v1 + e->Normal() * 10.0).x, (e->v1 + e->Normal() * 10.0).y), Color::Red )
+			//}; 
+
+	//		w->draw( activePreview, 4, sf::Lines );
+
+
 			/*V2d cvdiff = normalize(corner - (corner - vel));
 			V2d ediff = normalize(e->v1 - e->v0);
 			double le = 200;
-			sf::Vertex activePreview[4] =
-			{
-				sf::Vertex(sf::Vector2<float>((cvdiff.x * le + (corner - vel).x), (cvdiff.y * le + (corner - vel).y)), Color::Yellow ),
-				sf::Vertex(sf::Vector2<float>((-cvdiff.x * le + (corner - vel).x), (-cvdiff.y * le + (corner - vel).y)), Color::Yellow),
-				sf::Vertex(sf::Vector2<float>((ediff.x * le + e->v1.x), (ediff.y * le + e->v1.y)), Color::Red ),
-				sf::Vertex(sf::Vector2<float>((-ediff.x * le + e->v1.x), (-ediff.y * le + e->v1.y)), Color::Red)
-				//sf::Vertex(sf::Vector2<float>((e->v0 + e->Normal() * 10.0).x, (e->v0 + e->Normal() * 10.0).y), Color::Red ),
-				//sf::Vertex(sf::Vector2<float>((e->v1 + e->Normal() * 10.0).x, (e->v1 + e->Normal() * 10.0).y), Color::Red )
-			}; 
-			w->draw( activePreview, 4, sf::Lines );*/
+			
 			//cout << "active preview: " << vel.x << ", " << vel.y << endl;
-
+			*/
 			double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 			if( li.parallel || abs( testing ) == 1 )
 			{
@@ -348,13 +579,15 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			double intersectQuantity = e->GetQuantity( intersect );
 
-			/*CircleShape cs;
-			cs.setFillColor( Color::Cyan );
-			cs.setRadius( 10 );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( intersect.x, intersect.y );
+			CircleShape *cs = new CircleShape;
+			cs->setFillColor( Color::Cyan );
+			cs->setRadius( 10 );
+			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+			cs->setPosition( intersect.x, intersect.y );
 
-			w->draw( cs );*/
+			progressDraw.push_back( cs );
+			//w->draw( cs );
+			//w->display();
 
 			Vector2<double> collisionPosition = intersect;
 			//cout << "testing: " << dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ))  << endl;
@@ -734,6 +967,24 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	}
 
 	return NULL;
+}
+
+void Collider::DebugDraw( RenderTarget *target )
+{
+	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
+	{
+		target->draw( *(*it) );
+	}
+	//progressDraw.clear();
+}
+
+void Collider::ClearDebug()
+{
+	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
+	{
+		delete (*it);
+	}
+	progressDraw.clear();
 }
 
 EdgeParentNode::EdgeParentNode( const V2d &poss, double rww, double rhh )
