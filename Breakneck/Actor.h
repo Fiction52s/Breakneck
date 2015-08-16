@@ -114,6 +114,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceSprint;
 
 	Tileset *ts_dashStart;
+	Tileset * ts_fx_airdash;
+	Tileset * ts_fx_double;
 	bool bounceGrounded;
 
 
@@ -335,7 +337,8 @@ struct Actor : QuadTreeCollider,
 
 
 	PlayerGhost *testGhost;
-	PlayerGhost *ghosts[8];
+	const static int MAX_GHOSTS = 4;
+	PlayerGhost *ghosts[MAX_GHOSTS];
 	int recordedGhosts;
 	int record;
 	//bool record;
@@ -399,7 +402,7 @@ struct PlayerGhost
 	void UpdatePrePhysics( int ghostFrame );
 	void DebugDraw( sf::RenderTarget *target );
 
-	const static int maxFrames = 2000;
+	const static int maxFrames = 300;
 	P states[maxFrames];//[240];
 	int totalRecorded;
 	int currFrame;

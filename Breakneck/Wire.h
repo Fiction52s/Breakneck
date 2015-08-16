@@ -26,6 +26,8 @@ struct Wire : RayCastHandler
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateState();
 	void Draw( sf::RenderTarget *target );
+	void DebugDraw( sf::RenderTarget *target );
+	void ClearDebug();
 
 	WireState state;
 
@@ -63,6 +65,8 @@ struct Wire : RayCastHandler
 
 	Edge *rcEdge;
 	double rcQuant;
+
+	std::list<sf::Drawable*> progressDraw;
 };
 
 #endif

@@ -1232,7 +1232,7 @@ int GameSession::Run( string fileName )
 
 		DebugDrawActors();
 
-		coll.DebugDraw( window );
+		//coll.DebugDraw( window );
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
@@ -1395,7 +1395,7 @@ void GameSession::AllocateEffect()
 }
 
 BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, int frameCount,
-	int animationFactor )
+	int animationFactor, bool right )
 {
 	if( inactiveEffects == NULL )
 	{
@@ -1416,7 +1416,7 @@ BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, i
 		}
 
 		//assert( ts != NULL );
-		b->Init( ts, pos, angle, frameCount, animationFactor );
+		b->Init( ts, pos, angle, frameCount, animationFactor, right );
 		b->prev = NULL;
 		b->next = NULL;
 

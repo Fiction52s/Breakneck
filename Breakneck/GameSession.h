@@ -65,7 +65,8 @@ struct GameSession : QuadTreeCollider
 		sf::Vector2<double> pos, 
 		double angle, 
 		int frameCount,
-		int animationFactor );
+		int animationFactor,
+		bool right );
 
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;

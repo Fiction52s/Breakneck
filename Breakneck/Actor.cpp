@@ -326,9 +326,8 @@ Actor::Actor( GameSession *gs )
 		}
 		
 		ts_dashStart = owner->GetTileset( "double.png", 64, 64 );
-		
-
-		
+		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 16, 32 );
+		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 	}
 
 void Actor::ActionEnded()
@@ -445,27 +444,36 @@ void Actor::UpdatePrePhysics()
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
 			owner->powerBar.Use( 20 );
+			record++;
 		}
 		else
 		{
-			LoadState();
-			owner->LoadState();
-			recordedGhosts++;
-			ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
-			ghosts[record]->currFrame = 0;
-			ghostFrame = 1;
+			if( recordedGhosts < MAX_GHOSTS )
+			{
+				cout << "creating ghost: " << recordedGhosts + 1 << ", of " << MAX_GHOSTS << endl;
+				LoadState();
+				owner->LoadState();
+				recordedGhosts++;
+				ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
+				ghosts[record]->currFrame = 0;
+				ghostFrame = 1;
+				record++;
+			}
+			
 			
 		}
 
-		record++;
+		
 		
 		//testGhost->currFrame = 0;
 
 		//record = true;
 		blah = false;
 	}
+		
 
-	if( record > 0 && currInput.RDown() && !prevInput.RDown() )
+		
+	if( record > 0 && ( ( currInput.RDown() && !prevInput.RDown() ) || ghosts[record-1]->currFrame == ghosts[record-1]->maxFrames ) )
 	{
 		//record = false;
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
@@ -507,7 +515,13 @@ void Actor::UpdatePrePhysics()
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
 		{
-			if( ground == NULL )
+			if( grindEdge != NULL )
+			{
+				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
+				owner->powerBar.Damage( receivedHit->damage ); //double damage for now
+				grindSpeed *= .8;
+			}
+			else if( ground == NULL )
 			{
 				action = AIRHITSTUN;
 				frame = 0;
@@ -2236,7 +2250,7 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 )
 			{
 				owner->ActivateEffect( ts_dashStart, 
-					position, 0, 20, 5 );
+					position, 0, 20, 5, facingRight );
 			}
 
 			b.rh = dashHeight;
@@ -2308,6 +2322,12 @@ void Actor::UpdatePrePhysics()
 		//	b.offset.y = -5;
 			if( frame == 0 )
 			{
+
+			
+			
+				owner->ActivateEffect( ts_fx_double, 
+					V2d( position.x, position.y - 60), 0, 12, 2, facingRight );
+			
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 				if( velocity.y > 0 )
 					velocity.y = 0;
@@ -2461,8 +2481,16 @@ void Actor::UpdatePrePhysics()
 		//	hurtBody.rw = 10;
 		//	hurtBody.rh = 10;
 
+			if( frame % 1 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_airdash, position, 0, 10, 6, facingRight );
+			}
+
 			if( frame == 0 )
 			{
+				
+
+
 				hasAirDash = false;
 				startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 			}
@@ -2534,6 +2562,7 @@ void Actor::UpdatePrePhysics()
 			{
 				startAirDashVel = V2d( 0, 0 );
 			}
+
 			velocity.y -= gravity / slowMultiple;
 
 
@@ -2598,128 +2627,9 @@ void Actor::UpdatePrePhysics()
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
+	wire->ClearDebug();
 	wire->UpdateState();
 	wire->UpdateAnchors();
-
-	/*if( wireState >0 )
-	{
-		if( framesFiring == 0 )
-		{
-			//wireState = 1;
-			fireDir = V2d( 0, 0 );
-			if( currInput.LLeft() )
-			{
-				fireDir.x -= 1;
-			}
-			else if( currInput.LRight() )
-			{
-				fireDir.x += 1;
-			}
-			
-			if( currInput.LUp() )
-			{
-				fireDir.y -= 1;
-			}
-			else if( currInput.LDown() )
-			{
-				fireDir.y += 1;
-			}
-
-			fireDir = normalize( fireDir );
-			cout << "firedir: " << fireDir.x << ", " << fireDir.y << endl;
-		}
-		
-
-
-		if( wireState == 1 )
-		{
-			cout << "firing" << endl;
-			double dist = 40;
-			
-
-			rcEdge = NULL;
-			//rcQuantity = 0;
-			rayCastMode = "edge";
-			RayCast( this, owner->testTree, position, position + fireDir * dist * (double)(framesFiring + 1 ) );
-			framesFiring++;
-
-			if( rcEdge != NULL )
-			{
-				maxLength = length( rcEdge->GetPoint( rcQuantity ) - position );
-				wireEdge = rcEdge;
-				wireQuant = rcQuantity;
-				wireState = 2;
-				pointNum = 0;
-			}
-		}
-		else if( wireState == 2 )
-		{
-			V2d wirePoint = wireEdge->GetPoint( wireQuant );
-			double pullStrength = 20;
-			if( currInput.rightTrigger > 200 )
-			{
-				//if( pointNum == 0 )
-				//	velocity += normalize( wirePoint - position ) * pullStrength;
-				//else
-				//	velocity += normalize( wirePoints[pointNum - 1].pos - position ) * pullStrength;
-				maxLength -= pullStrength;
-				if( maxLength < minLength )
-					maxLength = minLength;
-			}
-
-			rayCastMode = "check";
-			rcEdge = NULL;
-
-			if( pointNum == 0 )
-			{
-				RayCast( this, owner->testTree, wireEdge->GetPoint( wireQuant ), position );
-			}
-			else
-			{
-				RayCast( this, owner->testTree, wirePoints[pointNum - 1].pos, position  );
-			}
-
-			if( rcEdge != NULL )
-			{
-				if( pointNum > 0 )
-				cout << "accumulating: " << wirePoints[pointNum-1].pos.x << ", " << wirePoints[pointNum -1].pos.y << endl;
-				if( rcQuantity > length( rcEdge->v1 - rcEdge->v0 ) - rcQuantity )
-				{
-					wirePoints[pointNum].pos = rcEdge->v1;
-					//wirePoints[pointNum].e = rcEdge;
-					wirePoints[pointNum].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
-					cout << "over" << endl;
-
-					pointNum++;
-				}
-				else
-				{
-					cout << "under" << endl;
-					wirePoints[pointNum].pos = rcEdge->v0;
-					wirePoints[pointNum].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
-					pointNum++;
-				}
-			}
-
-			for( int i = pointNum - 1; i >= 0; --i )
-			{
-				double result = cross( position - wirePoints[pointNum-1].pos, wirePoints[i].test );
-				if( result > 0 )
-				{
-					cout << "removing point " << result << endl;
-					pointNum--;
-				}
-				else
-				{
-					break;
-				}
-			}
-
-		
-
-		}
-
-	}*/
 	
 	if( wire->state == wire->PULLING  )
 	{
@@ -4029,59 +3939,7 @@ void Actor::UpdatePhysics()
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
 			bool tempCollision = ResolvePhysics( movementVec );
 
-			wire->UpdateAnchors();
-			/*if( wireEdge != NULL && wireState == 2 )
-			{
-				rayCastMode = "check";
-				rcEdge = NULL;
-
-				if( pointNum == 0 )
-				{
-					RayCast( this, owner->testTree, wireEdge->GetPoint( wireQuant ), position );
-				}
-				else
-				{
-					RayCast( this, owner->testTree, wirePoints[pointNum - 1].pos, position  );
-				}
-
-				if( rcEdge != NULL )
-				{
-					if( pointNum > 0 )
-					//cout << "accumulating: " << wirePoints[pointNum-1].pos.x << ", " << wirePoints[pointNum -1].pos.y << endl;
-					if( rcQuantity > length( rcEdge->v1 - rcEdge->v0 ) - rcQuantity )
-					{
-						wirePoints[pointNum].pos = rcEdge->v1;
-						//wirePoints[pointNum].e = rcEdge;
-						wirePoints[pointNum].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
-						//cout << "over" << endl;
-
-						pointNum++;
-					}
-					else
-					{
-						//cout << "under" << endl;
-						wirePoints[pointNum].pos = rcEdge->v0;
-						wirePoints[pointNum].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
-						pointNum++;
-					}
-				}
-
-				for( int i = pointNum - 1; i >= 0; --i )
-				{
-					double result = cross( position - wirePoints[pointNum-1].pos, wirePoints[i].test );
-					if( result > 0 )
-					{
-						//cout << "removing point " << result << endl;
-						pointNum--;
-					}
-					else
-					{
-						break;
-					}
-				}
-			}*/
-
-
+			//wire->UpdateAnchors();
 
 
 			V2d extraVel(0, 0);
@@ -4448,35 +4306,28 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-	//if( slowMultiple > 1 )
-	//{
-		velocity *= (double)slowMultiple;
-		groundSpeed *= slowMultiple;
-		grindSpeed *= slowMultiple;
-
-	//	cout << "post vel: " << velocity.x << ", " << velocity.y << endl;
-	//}
-	//if( collision )
-	//	cout << "collision" << endl;
-	//else
-	//	cout << "no collision" << endl;
+	velocity *= (double)slowMultiple;
+	groundSpeed *= slowMultiple;
+	grindSpeed *= slowMultiple;
 
 	V2d gn;
 
-	
-
-	//cout << "frame: " << frame << endl;
 	if( grindEdge != NULL )
 	{
 		framesInAir = 0;
 		V2d grindPoint = grindEdge->GetPoint( grindQuantity );
 		position = grindPoint;
+	//	assert( action != AIRHITSTUN );
 	}
 	else if( bounceEdge != NULL )
 	{
 		if( action == BOUNCEAIR )
 		{
 			storedBounceVel = velocity;
+
+
+			
+
 			action = BOUNCEGROUND;
 			frame = 0;
 
@@ -4484,23 +4335,29 @@ void Actor::UpdatePostPhysics()
 
 			
 
-			if( bn.y <= 0 && bn.y > -steepThresh )
+			if( bn.y <= 0 && bn.y > -steepThresh
+				|| bn.y >= 0 && -bn.y > -steepThresh
+				|| bn.y == 0 )
 			{
 				facingRight = !facingRight;
-			}
-			else if( bn.y >= 0 && -bn.y > -steepThresh )
-			{
-				facingRight = !facingRight;
-			}
-			else if( bn.y == 0 )
-			{	
-				facingRight = !facingRight;
+
+				
 			}
 			else if( bn.y < 0 )
 			{
 				hasGravReverse = true;
 				hasDoubleJump = true;
 				hasAirDash = true;
+
+				if( abs( storedBounceVel.y ) < 10 )
+				{
+					action = LAND;
+					frame = 0;
+					//bounceEdge = NULL;
+					ground = bounceEdge;
+					bounceEdge = NULL;
+					
+				}
 			}
 			else if( bn.y > 0 )
 			{
@@ -4510,7 +4367,14 @@ void Actor::UpdatePostPhysics()
 
 			if( bn.y != 0 )
 			{
-				position = bounceEdge->GetPoint( bounceQuant );
+				if( bounceEdge != NULL )
+				{
+					position = bounceEdge->GetPoint( bounceQuant );
+				}
+				else
+				{
+					position = ground->GetPoint( bounceQuant );
+				}
 		
 				position.x += offsetX + b.offset.x;
 
@@ -4565,13 +4429,7 @@ void Actor::UpdatePostPhysics()
 			}
 		}
 
-		if( action == WALLCLING && abs( gn.x ) <= wallThresh ) //length( wallNormal ) == 0 )
-		{
-		//	action = STAND;
-		//	frame = 1;
-		//	action = JUMP;
-		//	frame = 1;
-		}
+
 		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
 		position = groundPoint;
 		
@@ -4582,7 +4440,6 @@ void Actor::UpdatePostPhysics()
 			if( gn.y > 0 )
 			{
 				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-				//cout << "offset: " << b.offset.y << endl;
 			}
 		}
 		else
@@ -6063,7 +5920,9 @@ void Actor::DebugDraw( RenderTarget *target )
 	{
 		ghosts[i]->DebugDraw( target );
 	}
-	
+
+	wire->DebugDraw( target );
+
 }
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
@@ -6220,57 +6079,63 @@ void Actor::LoadState()
 
 void Actor::AirMovement()
 {
-	if( currInput.LLeft() )
+	if( wire->state == Wire::PULLING )
 	{
-		if( velocity.x > dashSpeed )
-		{
-			velocity.x -= airAccel;
-		}
-		else if( velocity.x > -maxAirXControl )
-		{
-			velocity.x = -maxAirXControl;
-		}
 	}
-	else if( currInput.LRight() )
+	else
 	{
-		if( velocity.x < -dashSpeed )
+		if( currInput.LLeft() )
 		{
-			velocity.x += airAccel;
-		}
-		else if( velocity.x < maxAirXControl )
-		{
-			velocity.x = maxAirXControl;
-		}
-	}
-	else if( !currInput.LUp() && !currInput.LDown() )
-	{
-		if( velocity.x > dashSpeed )
-		{
-			velocity.x -= airSlow;
-			if( velocity.x < dashSpeed ) 
+			if( velocity.x > dashSpeed )
 			{
-				velocity.x = dashSpeed;
+				velocity.x -= airAccel;
+			}
+			else if( velocity.x > -maxAirXControl )
+			{
+				velocity.x = -maxAirXControl;
 			}
 		}
-		else if( velocity.x > 0 )
+		else if( currInput.LRight() )
 		{
-			velocity.x = 0;
-		}
-		else if( velocity.x < -dashSpeed )
-		{
-			velocity.x += airSlow;
-			if( velocity.x > -dashSpeed ) 
+			if( velocity.x < -dashSpeed )
 			{
-				velocity.x = -dashSpeed;
+				velocity.x += airAccel;
+			}
+			else if( velocity.x < maxAirXControl )
+			{
+				velocity.x = maxAirXControl;
 			}
 		}
-		else if( velocity.x < 0 )
+		else if( !currInput.LUp() && !currInput.LDown() )
 		{
-			velocity.x += airSlow;
-			if( velocity.x > 0 ) velocity.x = 0;
-			else if( velocity.x >= -dashSpeed )
+			if( velocity.x > dashSpeed )
+			{
+				velocity.x -= airSlow;
+				if( velocity.x < dashSpeed ) 
+				{
+					velocity.x = dashSpeed;
+				}
+			}
+			else if( velocity.x > 0 )
 			{
 				velocity.x = 0;
+			}
+			else if( velocity.x < -dashSpeed )
+			{
+				velocity.x += airSlow;
+				if( velocity.x > -dashSpeed ) 
+				{
+					velocity.x = -dashSpeed;
+				}
+			}
+			else if( velocity.x < 0 )
+			{
+				velocity.x += airSlow;
+				if( velocity.x > 0 ) velocity.x = 0;
+				else if( velocity.x >= -dashSpeed )
+				{
+					velocity.x = 0;
+				}
 			}
 		}
 	}

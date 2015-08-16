@@ -10,7 +10,7 @@ using namespace std;
 
 Wire::Wire( Actor *p )
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 1000 ), minSegmentLength( 50 )
-	, player( p ), triggerThresh( 200 ), hitStallFrames( 30 ), hitStallCounter( 0 ), pullStrength( 10 )
+	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 )
 {
 }
 
@@ -72,22 +72,26 @@ void Wire::UpdateState()
 		}
 	case HIT:
 		{
+			double total = 0;
+			total += length( anchor.pos - player->position );
+			if( numPoints > 0 )
+			{
+				total += length( points[0].pos - anchor.pos );
+				for( int i = 1; i < numPoints; ++i )
+				{
+					total += length( points[i].pos - points[i-1].pos );
+				}
+			}
+			totalLength = total;
+
+			if( totalLength > maxTotalLength )
+			{
+				state = IDLE;
+			}
+
 			if( hitStallCounter == hitStallFrames && currInput.rightTrigger >= triggerThresh )
 			{
 				state = PULLING;
-
-				double total = 0;
-				total += length( anchor.pos - player->position );
-				if( numPoints > 0 )
-				{
-					total += length( points[0].pos - anchor.pos );
-					for( int i = 1; i < numPoints; ++i )
-					{
-						total += length( points[i].pos - points[i-1].pos );
-					}
-				}
-				totalLength = total;
-				//totalLength = length( anchor.pos - player->position );
 			}
 			break;
 		}
@@ -122,7 +126,7 @@ void Wire::UpdateState()
 		{
 			rcEdge = NULL;
 			//rcQuantity = 0;
-
+			
 			RayCast( this, player->owner->terrainTree->startNode, player->position, player->position + fireDir * fireRate * (double)(framesFiring + 1 ) );
 			
 			++framesFiring;
@@ -219,14 +223,26 @@ void Wire::UpdateAnchors()
 	//	rayCastMode = "check";
 		rcEdge = NULL;
 
+
+		sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
+		line->append( sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Magenta ) );
+		
+		
+
+		//target->draw(line, 2, sf::Lines);
+
 		if( numPoints == 0 )
 		{
+			line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
 			RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
 		}
 		else
 		{
-			RayCast( this, player->owner->terrainTree->startNode, points[numPoints - 1].pos, player->position  );
+			line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
+			RayCast( this, player->owner->terrainTree->startNode, points[numPoints - 1].pos, player->position );
 		}
+
+		progressDraw.push_back( line );
 
 		if( rcEdge != NULL )
 		{
@@ -355,4 +371,22 @@ void Wire::Draw( RenderTarget *target )
 			target->draw( cs );
 		}
 	}
+}
+
+void Wire::DebugDraw( RenderTarget *target )
+{
+	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
+	{
+		target->draw( *(*it) );
+	}
+	//progressDraw.clear();
+}
+
+void Wire::ClearDebug()
+{
+	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
+	{
+		delete (*it);
+	}
+	progressDraw.clear();
 }

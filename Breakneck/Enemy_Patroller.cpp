@@ -317,7 +317,7 @@ bool Patroller::PlayerHitMe()
 			if( player.ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
-
+				
 				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )

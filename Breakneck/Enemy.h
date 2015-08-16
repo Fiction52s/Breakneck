@@ -67,13 +67,14 @@ struct BasicEffect : Enemy
 	void Init( Tileset *ts, 
 		sf::Vector2<double> position, 
 		double angle, int frameCount,
-		int animationFactor );
+		int animationFactor, bool right );
 	int frameCount;
 	sf::Sprite s;
 	Tileset *ts;
 	int frame;
 	bool activated;
 	int animationFactor;
+	bool facingRight;
 	//sf::Vector2<double> position;
 };
 

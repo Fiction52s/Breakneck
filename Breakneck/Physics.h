@@ -85,6 +85,11 @@ struct Collider
 		const CollisionBox &b, Edge *e, 
 		const sf::Vector2<double> &vel,
 		sf::RenderWindow *w);
+	Contact *collideEdge3( 
+		sf::Vector2<double> position, 
+		const CollisionBox &b, Edge *e, 
+		const sf::Vector2<double> &vel,
+		sf::RenderWindow *w);
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
 	std::list<sf::Drawable*> progressDraw;

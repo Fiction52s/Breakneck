@@ -21,11 +21,25 @@ BasicEffect::BasicEffect ( GameSession *owner )
 	animationFactor = 1;
 }
 
-void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af )
+void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right )
 {
 	//cout << "init: " << this << ", " << t->sourceName << endl;
 	s.setTexture( *t->texture );
-	s.setTextureRect( t->GetSubRect( 0 ) );
+	facingRight = right;
+
+	sf::IntRect ir = t->GetSubRect( 0 );		
+
+	if( facingRight )
+	{
+		s.setTextureRect( ir );
+	}
+	else
+	{
+		s.setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+	}
+
+	
+
 	s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
 	s.setPosition( pos.x, pos.y );
 	s.setRotation( angle / PI * 180 );
@@ -56,7 +70,16 @@ void BasicEffect::UpdatePostPhysics()
 	//{
 	//	cout << "problem with: " << this << endl;
 	//}
-	s.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	sf::IntRect ir = ts->GetSubRect( frame / animationFactor );
+
+	if( facingRight )
+	{
+		s.setTextureRect( ir );
+	}
+	else
+	{
+		s.setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+	}
 	//s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
 	//s.setPosition( pos.x, pos.y );
 	//s.setRotation( angle / PI * 180 );
