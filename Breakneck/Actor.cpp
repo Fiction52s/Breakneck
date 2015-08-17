@@ -1817,17 +1817,18 @@ void Actor::UpdatePrePhysics()
 				V2d bounceNorm;
 				if( bn.y < 0 )
 				{
-					cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
+					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
 					if( bn.y > -steepThresh )
 					{
-						if( bn.x > 0 && storedBounceVel.x < 0 )
+						if( bn.x > 0 )// && storedBounceVel.x < 0 )
 						{
-							velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
+							//cout << "A" << endl;
+							velocity = V2d( abs(storedBounceVel.x), storedBounceVel.y );
 						}
-						else if( bn.x < 0 && storedBounceVel.x > 0 )
+						else if( bn.x < 0 )
 						{
-							
-							velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
+						//	cout << "B" << endl;
+							velocity = V2d( -abs(storedBounceVel.x), storedBounceVel.y );
 						}
 						
 						//if( 
@@ -1835,20 +1836,23 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						velocity = V2d( storedBounceVel.x, -storedBounceVel.y );//length( storedBounceVel ) * bounceEdge->Normal();
+						//cout << "DD" << endl;
+						velocity = V2d( storedBounceVel.x, -abs(storedBounceVel.y) );//length( storedBounceVel ) * bounceEdge->Normal();
 					}
 				}
 				else if( bn.y > 0 )
 				{
 					if( -bn.y > -steepThresh )
 					{
-						if( bn.x > 0 && storedBounceVel.x < 0 )
+						if( bn.x > 0 )//&& storedBounceVel.x < 0 )
 						{
-							velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
+						//	cout << "C" << endl;
+							velocity = V2d( abs(storedBounceVel.x), storedBounceVel.y );
 						}
-						else if( bn.x < 0 && storedBounceVel.x > 0 )
+						else if( bn.x < 0 )// && storedBounceVel.x > 0 )
 						{
-							velocity = V2d( -storedBounceVel.x, -storedBounceVel.y );
+						//	cout << "D" << endl;
+							velocity = V2d( -abs(storedBounceVel.x), storedBounceVel.y );
 						}
 						
 						//if( 
@@ -1856,11 +1860,14 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						velocity = V2d( storedBounceVel.x, -storedBounceVel.y );//length( storedBounceVel ) * bounceEdge->Normal();
+						velocity = V2d( storedBounceVel.x, abs(storedBounceVel.y) );//length( storedBounceVel ) * bounceEdge->Normal();
+					//	cout << "E: " << velocity.x << ", " << velocity.y << endl;
+						
 					}
 				}
 				else
 				{
+				//	cout << "F" << endl;
 					velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
 				}
 
@@ -3424,7 +3431,7 @@ void Actor::UpdateReversePhysics()
 						}
 						else
 						{
-							cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+							//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 							groundSpeed = 0;
 							offsetX = -offsetX;
@@ -3883,7 +3890,7 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+							//	cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								groundSpeed = 0;
 								edgeQuantity = q;
@@ -4086,8 +4093,45 @@ void Actor::UpdatePhysics()
 				touchEdgeWithWire = true;
 			}
 
-			if( action == BOUNCEAIR && tempCollision )
+			bool bounceOkay = true;
+			if( tempCollision )
 			{
+				V2d en = minContact.edge->Normal();
+				
+				if( en.y <= 0 && en.y > -steepThresh )
+				{
+					if( en.x < 0 && velocity.x < 0 
+			  		|| en.x > 0 && velocity.x > 0 )
+						bounceOkay = false;
+				}
+				else if( en.y >= 0 && -en.y > -steepThresh )
+				{
+					if( en.x < 0 && velocity.x < 0 
+			  		|| en.x > 0 && velocity.x > 0 )
+						bounceOkay = false;
+				}
+				else if( en.y == 0  )
+				{
+					if( en.x < 0 && velocity.x < 0 
+			  		|| en.x > 0 && velocity.x > 0 )
+						bounceOkay = false;
+				}
+				else if( en.y < 0 )
+				{
+					if( velocity.y < 0 )
+						bounceOkay = false;
+				}
+				else if( en.y > 0 )
+				{
+					if( velocity.y > 0 )
+						bounceOkay = false;
+				}
+			}
+
+			if( action == BOUNCEAIR && tempCollision && bounceOkay )
+			{
+				
+				
 				bounceEdge = minContact.edge;
 				bounceQuant = minContact.edge->GetQuantity( minContact.position );
 				movement = 0;
@@ -4343,13 +4387,23 @@ void Actor::UpdatePostPhysics()
 
 			
 
-			if( bn.y <= 0 && bn.y > -steepThresh
-				|| bn.y >= 0 && -bn.y > -steepThresh
-				|| bn.y == 0 )
+			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
+				if( storedBounceVel.x > 0 )
+				{
+
+				}
 				facingRight = !facingRight;
 
 				
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+				facingRight = !facingRight;
+			}
+			else if( bn.y == 0  )
+			{
+				facingRight = !facingRight;
 			}
 			else if( bn.y < 0 )
 			{
@@ -4363,6 +4417,7 @@ void Actor::UpdatePostPhysics()
 					frame = 0;
 					//bounceEdge = NULL;
 					ground = bounceEdge;
+					edgeQuantity = bounceQuant;
 					bounceEdge = NULL;
 					
 				}
