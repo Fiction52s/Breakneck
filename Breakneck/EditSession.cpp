@@ -974,6 +974,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
+	selectedActor = NULL;
+
 	trackingEnemy = NULL;
 	showPanel = NULL;
 
@@ -1292,11 +1294,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-
-
-
-
-
 								bool emptySpace = true;
 								for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
 									it != polygons.end(); ++it )
@@ -1319,6 +1316,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
 										{
 											selectedActor = (*it2);
+											selectedGroup = (*it).second;
 											empty = false;
 											cout << "enemy selected" << endl;
 										}
@@ -1340,16 +1338,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.key.code == Keyboard::V )
 							{
-								list<TerrainPolygon*>::iterator it = polygons.begin();
-								while( it != polygons.end() )
+								if( selectedActor != NULL )
 								{
-									if( (*it)->selected )
+									selectedGroup->actors.remove( selectedActor );
+									delete selectedActor;
+									selectedGroup = NULL;
+									selectedActor = NULL;
+								}
+								else
+								{
+									list<TerrainPolygon*>::iterator it = polygons.begin();
+									while( it != polygons.end() )
 									{
-										delete (*it);
-										polygons.erase( it++ );
+										if( (*it)->selected )
+										{
+											delete (*it);
+											polygons.erase( it++ );
+										}
+										else
+											++it;
 									}
-									else
-										++it;
 								}
 							}
 							break;
@@ -2576,6 +2584,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
 			w->draw( alphaTextSprite );
 		}
+
+		if( mode == EDIT )
+		{
+			if( selectedActor != NULL )
+			{
+				
+				sf::FloatRect bounds = selectedActor->image.getGlobalBounds();
+				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
+				
+				
+				
+				rs.setOutlineColor( Color::Cyan );				
+				rs.setFillColor( Color::Transparent );
+				rs.setOutlineThickness( 5 );
+				rs.setPosition( bounds.left, bounds.top );
+				//rs.setFillColor( Color::Magenta );
+				w->draw( rs );
+				//cout << "draw rectangle"  << endl;
+			}
+		}
 		
 		w->setView( uiView );
 
@@ -2631,6 +2659,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
 					w->draw( cs );
 
+					break;
+				}
+			case EDIT:
+				{
+					
 					break;
 				}
 		}
