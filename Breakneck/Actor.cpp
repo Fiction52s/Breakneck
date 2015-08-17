@@ -2383,6 +2383,15 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
+			double fac = gravity * 2.0 / 3;
+			if( reversed )
+			{
+				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+			else
+			{
+				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
 			//groundSpeed = 
 			break;
 		}

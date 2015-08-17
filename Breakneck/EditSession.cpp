@@ -1338,7 +1338,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											selectedActor = (*it2);
 											selectedGroup = (*it).second;
 											empty = false;
-											cout << "enemy selected" << endl;
+											//cout << "enemy selected" << endl;
 
 											for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 												it != selectedPolygons.end(); ++it )
