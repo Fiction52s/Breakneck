@@ -36,6 +36,11 @@ TerrainPolygon::~TerrainPolygon()
 		delete [] lines;
 	if( va != NULL )
 		delete va;
+	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	{
+		(*it)->group->actors.remove( (*it ) );
+		delete (*it);
+	}
 }
 
 void TerrainPolygon::Finalize()
@@ -451,6 +456,7 @@ bool EditSession::OpenFile( string fileName )
 
 				ActorParams *a = new ActorParams;
 				gr->actors.push_back( a );
+				a->group = gr;
 
 
 				ActorType *at;
@@ -1325,7 +1331,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									selectedPolygons.clear();
 								}
-
+								
+							//	cout << "here before loop" << endl;
 								bool empty = true;
 								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
 								{
@@ -1336,24 +1343,24 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
 										{
 											selectedActor = (*it2);
-											selectedGroup = (*it).second;
 											empty = false;
 											//cout << "enemy selected" << endl;
 
-											for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
-												it != selectedPolygons.end(); ++it )
+											for( list<TerrainPolygon*>::iterator it3 = selectedPolygons.begin(); 
+												it3 != selectedPolygons.end(); ++it3 )
 											{
-												(*it)->SetSelected( false );
+												(*it3)->SetSelected( false );
 											}
 											selectedPolygons.clear();
 										}
 									}
 								}
 
+
+							//	cout << "made it!!!" << endl;
 								if( empty )
 								{
 									selectedActor = NULL;
-									selectedGroup = NULL;
 								}
 
 							}
@@ -1373,9 +1380,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( selectedActor != NULL )
 								{
-									selectedGroup->actors.remove( selectedActor );
+									if( selectedActor->ground != NULL )
+									{
+										selectedActor->ground->enemies.remove( selectedActor );
+									}
+									selectedActor->group->actors.remove( selectedActor );
 									delete selectedActor;
-									selectedGroup = NULL;
+									
 									selectedActor = NULL;
 								}
 								else
@@ -1391,6 +1402,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										else
 											++it;
 									}
+
+									cout << "destroying terrain. eney: " << selectedActor << endl;
 								}
 							}
 							break;
@@ -1452,6 +1465,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											cout << "blah" << endl;
 											actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity, true, 10 );
+											actor->group = groups["--"];
 											
 											groups["--"]->actors.push_back( actor);
 										}
@@ -1463,6 +1477,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new ActorParams;
+											actor->group = groups["--"];
 											actor->SetAsBasicTurret( basicTurretType, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity, 30 );
 											groups["--"]->actors.push_back( actor);
@@ -1475,6 +1490,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new ActorParams;
+											actor->group = groups["--"];
 											actor->SetAsFootTrap( footTrapType, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity );
 											groups["--"]->actors.push_back( actor);
@@ -1579,13 +1595,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( menuDownStored == EDIT && menuSelection != "none" )
 							{
 								selectedActor = NULL;
-								selectedGroup = NULL;
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
 								{
 									(*it)->SetSelected( false );
 								}
 								selectedPolygons.clear();
+							}
+							else if( menuDownStored == CREATE_TERRAIN && menuSelection != "none" )
+							{
+								polygonInProgress->points.clear();
 							}
 
 							cout << "menu: " << menuSelection << endl;
@@ -1668,6 +1687,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								ActorParams *actor = new ActorParams;
 								actor->SetAsPatroller( patrollerType, patrolPath.front(), patrolPath, 10, false );
 								groups["--"]->actors.push_back( actor);
+								actor->group = groups["--"];
 								patrolPath.clear();
 								mode = CREATE_ENEMY;
 							}
@@ -2304,21 +2324,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( emptySpace )
 					{
-						if( length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
+						Vector2i worldi( testPoint.x, testPoint.y );
+						if( !polygonInProgress->points.empty() && length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
 							polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 						{
-							Vector2i worldi( testPoint.x, testPoint.y );
-						
-						
-							if( polygonInProgress->points.size() > 0 )
+							
+					
+							if( PointValid( polygonInProgress->points.back(), worldi ) )
 							{
-								if( PointValid( polygonInProgress->points.back(), worldi ) )
-								{
-									polygonInProgress->points.push_back( worldi );
-								}
-							}
-							else
 								polygonInProgress->points.push_back( worldi );
+							}
+						}
+						else if( polygonInProgress->points.empty() )
+						{
+							polygonInProgress->points.push_back( worldi );
 						}
 					}
 					else
@@ -2460,7 +2479,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		}
 
-
+		//cout << "here before crash" << endl;
 		
 
 		if( panning )
@@ -3057,6 +3076,7 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 {
 	type = t;
 	ground = edgePolygon;
+	edgePolygon->enemies.push_back( this );
 	edgeIndex = eIndex;
 	groundQuantity = edgeQuantity;
 
@@ -3120,6 +3140,7 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 {
 	type = t;
 	ground = edgePolygon;
+	edgePolygon->enemies.push_back( this );
 	edgeIndex = eIndex;
 	groundQuantity = edgeQuantity;
 
@@ -3177,6 +3198,7 @@ std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygo
 {
 	type = t;
 	ground = edgePolygon;
+	edgePolygon->enemies.push_back( this );
 	edgeIndex = eIndex;
 	groundQuantity = edgeQuantity;
 

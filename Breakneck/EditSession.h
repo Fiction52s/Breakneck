@@ -50,6 +50,7 @@ struct ActorType
 	Panel *panel;
 };
 
+struct ActorGroup;
 struct ActorParams
 {
 	ActorParams();
@@ -66,7 +67,7 @@ struct ActorParams
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;
-	
+	ActorGroup *group;
 	ActorType *type;
 	sf::Vector2i position;
 	double groundQuantity;
@@ -109,7 +110,6 @@ struct EditSession : GUIHandler
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
 	ActorParams *selectedActor;
-	ActorGroup *selectedGroup;
 
 
 	//CREATE_TERRAIN mode
