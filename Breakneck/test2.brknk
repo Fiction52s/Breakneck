@@ -1069,7 +1069,7 @@ mat 7
 2326 -2502
 1804 -2462
 1
--- 7
+-- 6
 patroller +air -638 -1878
 3
 67 -9
@@ -1102,8 +1102,6 @@ patroller +air -8 -1668
 8 170
 -loop
 10.00000
-basicturret -air 6 193 25.625
-30
 patroller +air 818 -1693
 16
 189 4

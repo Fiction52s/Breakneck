@@ -1302,8 +1302,28 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											emptySpace = false;
 											(*it)->SetSelected( !((*it)->selected ) );
+											if( (*it)->selected )
+											{
+												selectedPolygons.push_back( (*it) );
+
+											}
+											else
+											{
+												selectedPolygons.remove( (*it ) );
+											}
 											break;
 										}
+								}
+
+								if( emptySpace )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										it != selectedPolygons.end(); ++it )
+									{
+										(*it)->SetSelected( false );
+
+									}
+									selectedPolygons.clear();
 								}
 
 								bool empty = true;
@@ -1319,8 +1339,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											selectedGroup = (*it).second;
 											empty = false;
 											cout << "enemy selected" << endl;
+
+											for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+												it != selectedPolygons.end(); ++it )
+											{
+												(*it)->SetSelected( false );
+											}
+											selectedPolygons.clear();
 										}
 									}
+								}
+
+								if( empty )
+								{
+									selectedActor = NULL;
+									selectedGroup = NULL;
 								}
 
 							}
@@ -1541,6 +1574,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								mode = menuDownStored;
 								menuSelection = "none";
+							}
+
+							if( mode == EDIT && menuSelection != "none" )
+							{
+								selectedActor = NULL;
+								selectedGroup = NULL;
+								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+									it != selectedPolygons.end(); ++it )
+								{
+									(*it)->SetSelected( false );
+								}
+								selectedPolygons.clear();
 							}
 
 							cout << "menu: " << menuSelection << endl;
