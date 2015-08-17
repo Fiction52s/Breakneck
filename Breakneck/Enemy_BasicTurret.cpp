@@ -69,7 +69,7 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 	if( e == ground )
 		return;
 
-	V2d v0 = e->v0;
+	/*V2d v0 = e->v0;
 	V2d v1 = e->v1;
 
 	double result = cross( queryBullet->position - v0, normalize( v1 - v0 ) );
@@ -87,6 +87,22 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		//cout << "bullet hit edge" << endl;
 		col = true;
+	}*/
+
+	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel );
+	
+
+	if( c != NULL )
+	{
+		if( !col )
+		{
+			minContact = *c;
+			col = true;
+		}
+		else if( c->collisionPriority < minContact.collisionPriority )
+		{
+			minContact = *c;
+		}
 	}
 	//Contact *c = owner->coll.collideEdge( queryBullet->position, queryBullet->physBody, e, tempVel, owner->window );
 

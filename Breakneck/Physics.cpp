@@ -199,9 +199,8 @@ Collider::~Collider()
 	delete currentContact;
 }
 
-
 Contact *Collider::collideEdge3( sf::Vector2<double> position, const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel, sf::RenderWindow *w)
+		const sf::Vector2<double> &vel )
 {
 	Vector2<double> oldPosition = position - vel;
 	double left = position.x - b.rw;
@@ -735,7 +734,7 @@ Contact *Collider::collideEdge3( sf::Vector2<double> position, const CollisionBo
 }
 
 Contact *Collider::collideEdge2( sf::Vector2<double> position, const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel, sf::RenderWindow *w)
+		const sf::Vector2<double> &vel )
 {
 	Vector2<double> oldPosition = position - vel;
 	double left = position.x - b.rw;
@@ -955,8 +954,73 @@ Contact *Collider::collideEdge2( sf::Vector2<double> position, const CollisionBo
 	return NULL;
 }
 
-Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel, RenderWindow *w )
+Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel )
 {
+	if( b.isCircle )
+	{
+		V2d oldPosition = position - vel;
+
+		V2d v0 = e->v0;
+		V2d v1 = e->v1;
+
+		double edgeLength = length( v1 - v0 );
+		double radius = b.rw;
+		V2d edgeNormal = e->Normal();
+
+		double lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
+		double dist = cross( position - v0, normalize( v1 - v0 ) );
+		
+		
+		if( dot( -vel, edgeNormal ) > 0 && dist >= 0 && dist <= radius )
+		{
+		if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
+		{
+			LineIntersection li = lineIntersection( oldPosition + radius * -edgeNormal, position
+				+ radius * -edgeNormal, e->v0, e->v1 );
+
+
+			//double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
+			if( li.parallel )//|| abs( testing ) == 1 )
+			{
+				cout << "returning circle null1" << endl;
+				return NULL;
+			}
+
+
+			Vector2<double> intersect = li.position;
+
+
+			//double intersectQuantity = e->GetQuantity( intersect );
+
+
+			V2d newPosition = intersect + radius * edgeNormal;
+
+			currentContact->resolution = newPosition - position;
+			currentContact->edge = e;
+			currentContact->normal= edgeNormal;
+			currentContact->position = e->GetPoint( lineQuantity );
+			currentContact->collisionPriority = length( intersect - ( oldPosition + radius * -edgeNormal ) );
+
+			CircleShape *cs = new CircleShape;
+			cs->setFillColor( Color::Cyan );
+			cs->setRadius( 10 );
+			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+			cs->setPosition( intersect.x, intersect.y );
+
+			progressDraw.push_back( cs );
+
+			return currentContact;
+		}
+		else //special side/hit case for colliding with points
+		{
+			return NULL;
+		}
+		}
+
+		return NULL;
+	}
+	else
+	{
 	Vector2<double> oldPosition = position - vel;
 	double left = position.x - b.rw;
 	double right = position.x + b.rw;
@@ -1496,6 +1560,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	}
 
 	return NULL;
+	}
 }
 
 void Collider::DebugDraw( RenderTarget *target )

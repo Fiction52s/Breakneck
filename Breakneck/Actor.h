@@ -116,6 +116,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_dashStart;
 	Tileset * ts_fx_airdash;
 	Tileset * ts_fx_double;
+	Tileset * ts_fx_gravReverse;
 	bool bounceGrounded;
 
 

@@ -56,7 +56,7 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( queryMode == "resolve" )
 	{
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, owner->window );
+		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel );
 		if( c != NULL )
 		{
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )

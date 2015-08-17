@@ -328,6 +328,7 @@ Actor::Actor( GameSession *gs )
 		ts_dashStart = owner->GetTileset( "double.png", 64, 64 );
 		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 16, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
+		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 	}
 
 void Actor::ActionEnded()
@@ -2853,7 +2854,7 @@ bool Actor::CheckWall( bool right )
 
 	for( int i = 0; i < owner->numPoints; ++i )
 	{
-		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel, owner->window );
+		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel );
 		if( c != NULL )
 		{
 			if( (c->collisionPriority < test.collisionPriority ))//&& c->collisionPriority >= 0 )
@@ -4151,6 +4152,9 @@ void Actor::UpdatePhysics()
 			}
 			else if( hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
+				
+
+
 				hasGravReverse = false;
 				hasAirDash = true;
 				hasDoubleJump = true;
@@ -4164,6 +4168,10 @@ void Actor::UpdatePhysics()
 				groundSpeed = 0;
 				//groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				V2d gno = ground->Normal();
+
+
+				double angle = atan2( gno.x, -gno.y );
+				owner->ActivateEffect( ts_fx_gravReverse, position, angle, 36, 1, facingRight );
 				//cout << "gno: " << gno.x << ", " << gno.y << endl;
 				if( -gno.y > -steepThresh )
 				{
@@ -5738,7 +5746,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}*/
 
-		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, owner->window );
+		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		/*
 		if( c != NULL )
 		{

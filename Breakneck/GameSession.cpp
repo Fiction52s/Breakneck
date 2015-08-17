@@ -1232,7 +1232,7 @@ int GameSession::Run( string fileName )
 
 		DebugDrawActors();
 
-		//coll.DebugDraw( window );
+		coll.DebugDraw( window );
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
