@@ -1391,7 +1391,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else
 								{
-									list<TerrainPolygon*>::iterator it = polygons.begin();
+									
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+										it != selectedPolygons.end(); ++it )
+									{
+										polygons.remove( (*it) );
+										delete (*it);
+									}
+									selectedPolygons.clear();
+
+									/*list<TerrainPolygon*>::iterator it = polygons.begin();
 									while( it != polygons.end() )
 									{
 										if( (*it)->selected )
@@ -1401,7 +1410,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 										else
 											++it;
-									}
+									}*/
 
 									cout << "destroying terrain. eney: " << selectedActor << endl;
 								}
@@ -2328,8 +2337,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						if( !polygonInProgress->points.empty() && length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
 							polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 						{
-							
-					
 							if( PointValid( polygonInProgress->points.back(), worldi ) )
 							{
 								polygonInProgress->points.push_back( worldi );
@@ -2338,6 +2345,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						else if( polygonInProgress->points.empty() )
 						{
 							polygonInProgress->points.push_back( worldi );
+							
 						}
 					}
 					else
