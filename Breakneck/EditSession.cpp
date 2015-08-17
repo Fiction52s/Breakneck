@@ -1576,7 +1576,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								menuSelection = "none";
 							}
 
-							if( mode == EDIT && menuSelection != "none" )
+							if( menuDownStored == EDIT && menuSelection != "none" )
 							{
 								selectedActor = NULL;
 								selectedGroup = NULL;

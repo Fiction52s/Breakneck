@@ -2201,7 +2201,6 @@ void Actor::UpdatePrePhysics()
 					velocity.x += airAccel;
 				//}
 			}
-
 			
 			break;
 		}

@@ -1201,7 +1201,7 @@ int GameSession::Run( string fileName )
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
-			//window->draw( *listVAIter->va, &borderTex );
+			window->draw( *listVAIter->va, &borderTex );
 			listVAIter = listVAIter->next;
 			//timesDraw++; 
 		}
@@ -1230,9 +1230,9 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
-		coll.DebugDraw( window );
+		//coll.DebugDraw( window );
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
