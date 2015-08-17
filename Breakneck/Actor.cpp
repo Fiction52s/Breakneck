@@ -426,7 +426,7 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case DEATH:
-			dead = true;
+		
 			frame = 0;
 			break;
 		}
@@ -435,6 +435,16 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	if( action == DEATH )
+	{
+		if( frame >= actionLength[action] ) 
+		{
+			dead = true;
+			frame = 0;
+		}
+		return;
+	}
+
 	if( currInput.RUp() && !prevInput.RUp() )
 	{
 		if( record == 0 )
@@ -3056,6 +3066,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 void Actor::UpdateReversePhysics()
 {
+
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
@@ -3470,6 +3481,12 @@ void Actor::UpdateReversePhysics()
 
 void Actor::UpdatePhysics()
 {
+	if( action == DEATH )
+	{
+		return;
+	}
+
+
 	if( reversed )
 	{
 		UpdateReversePhysics();
@@ -4358,6 +4375,32 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
+	if( action == DEATH )
+	{
+		sprite->setTexture( *(tileset[DEATH]->texture));
+		if( facingRight )
+		{
+			sprite->setTextureRect( tileset[DEATH]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[DEATH]->GetSubRect( 0 );
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		sprite->setRotation( 0 );
+
+		if( slowCounter == slowMultiple )
+		{
+			++frame;
+			slowCounter = 1;
+		}
+		else
+			slowCounter++;
+		return;
+	}
+
 	velocity *= (double)slowMultiple;
 	groundSpeed *= slowMultiple;
 	grindSpeed *= slowMultiple;
@@ -5719,19 +5762,6 @@ void Actor::UpdatePostPhysics()
 		}
 	case DEATH:
 		{
-			sprite->setTexture( *(tileset[DEATH]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[DEATH]->GetSubRect( 0 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[DEATH]->GetSubRect( 0 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
 			break;
 		}
 	}
