@@ -710,6 +710,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			
+
 			if( reversed )
 			{
 				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
@@ -746,6 +748,22 @@ void Actor::UpdatePrePhysics()
 					}
 				}
 			}
+
+			if( currInput.X && !prevInput.X )
+			{
+				if( currInput.LDown() )
+				{
+					action = STANDD;
+					frame = 0;
+				}
+				else
+				{
+					action = STANDN;
+					frame = 0;
+				}
+				break;
+			}
+
 
 			bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
 			if(!( currInput.LLeft() || currInput.LRight() ) )//&& t )
@@ -912,7 +930,7 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
-		case DOUBLE:
+	case DOUBLE:
 		{
 
 			if( currInput.leftShoulder && !prevInput.leftShoulder )
@@ -1164,8 +1182,8 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 				}
 			}
+			break;
 		}
-		break;
 	case FAIR:
 		{
 			break;
@@ -1240,6 +1258,22 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				break;
 			}
+
+			if( currInput.X && !prevInput.X )
+			{
+				if( currInput.LDown() )
+				{
+					action = STANDD;
+					frame = 0;
+				}
+				else
+				{
+					action = STANDN;
+					frame = 0;
+				}
+				break;
+			}
+
 			if( canStandUp )
 			{
 				if( !currInput.B )
@@ -1386,6 +1420,21 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			if( currInput.X && !prevInput.X )
+			{
+				if( currInput.LDown() )
+				{
+					action = STANDD;
+					frame = 0;
+				}
+				else
+				{
+					action = STANDN;
+					frame = 0;
+				}
+				break;
+			}
+
 			if(!( currInput.LLeft() || currInput.LRight() ))
 			{
 				if( currInput.LDown())
@@ -1474,6 +1523,14 @@ void Actor::UpdatePrePhysics()
 					action = DASH;
 					frame = 0;
 			}
+			break;
+		}
+	case STANDN:
+		{
+			break;
+		}
+	case STANDD:
+		{
 			break;
 		}
 	case GRINDBALL:
@@ -2472,6 +2529,26 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
+	case STANDN:
+		{
+			if( currInput.LLeft() )
+			{
+			}
+			else if( currInput.LRight() )
+			{
+			}
+			else
+			{
+
+			}
+
+			break;
+
+		}
+	case STANDD:
+		{
+			break;
+		}
 	case GRINDBALL:
 		{
 			if( reversed )
@@ -3277,7 +3354,7 @@ void Actor::UpdateReversePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				//cout << "slide: " << q << ", " << offsetX << endl;
+				cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -3305,90 +3382,9 @@ void Actor::UpdateReversePhysics()
 					offsetX += m;
 				}
 
-				if(!approxEquals( m, 0 ) )
+				/*if( approxEquals( m, 0 ) )
 				{
-					bool hit = ResolvePhysics( V2d( -m, 0 ));
-					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-					{
-					
-						V2d eNorm = minContact.edge->Normal();
-						if( eNorm.y > 0 )
-						{
-							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
-									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
-							if( minContact.position.y <= position.y - b.rh + 5 && !speedTransfer )
-							{
-								if( m > 0 && eNorm.x < 0 )
-								{
-									ground = minContact.edge;
-									q = ground->GetQuantity( minContact.position );
-									edgeQuantity = q;
-									offsetX = -b.rw;
-									continue;
-								}
-								else if( m < 0 && eNorm.x > 0 )
-								{
-									ground = minContact.edge;
-									q = ground->GetQuantity( minContact.position );
-									edgeQuantity = q;
-									offsetX = b.rw;
-									continue;
-								}
-								
-
-							}
-							else
-							{
-								offsetX -= minContact.resolution.x;
-								groundSpeed = 0;
-								offsetX = -offsetX;
-								break;
-							}
-						}
-						else
-						{
-								offsetX -= minContact.resolution.x;
-								groundSpeed = 0;
-								offsetX = -offsetX;
-								break;
-						}
-					}
-				}
-			}
-			else
-			{
-				if( movement > 0 )
-				{	
-					extra = (q + movement) - groundLength;
-				}
-				else 
-				{
-					extra = (q + movement);
-				}
-					
-				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
-				{
-					if( movement > 0 )
-					{
-						q = groundLength;
-					}
-					else
-					{
-						q = 0;
-					}
-					movement = extra;
-					m -= extra;
-						
-				}
-				else
-				{
-					movement = 0;
-					q += m;
-				}
-				
-
-				if( approxEquals( m, 0 ) )
-				{
+					cout << "reverse blahh: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;	
 					if( groundSpeed > 0 )
 					{
 						//cout << "transfer left "<< endl;
@@ -3457,7 +3453,177 @@ void Actor::UpdateReversePhysics()
 						}
 
 					}
+					
+				}*/
+
+
+				if(!approxEquals( m, 0 ) )
+				{
+				
+					bool hit = ResolvePhysics( V2d( -m, 0 ));
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					{
+					
+						V2d eNorm = minContact.edge->Normal();
+						if( eNorm.y > 0 )
+						{
+
+							//this could be a problem later hopefully i solved it!
+							bool speedTransfer = (eNorm.x < 0 && eNorm.y < steepThresh 
+								&& groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y < steepThresh 
+									&& groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
+
+							//bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
+							//		|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh)
+
+							if( minContact.position.y <= position.y - b.rh + 5 && !speedTransfer )
+							{
+								if( m > 0 && eNorm.x < 0 )
+								{
+									cout << "a" << endl;
+									ground = minContact.edge;
+									q = ground->GetQuantity( minContact.position );
+									edgeQuantity = q;
+									offsetX = -b.rw;
+									continue;
+								}
+								else if( m < 0 && eNorm.x > 0 )
+								{
+									cout << "b" << endl;
+									ground = minContact.edge;
+									q = ground->GetQuantity( minContact.position );
+									edgeQuantity = q;
+									offsetX = b.rw;
+									continue;
+								}
+								
+
+							}
+							else
+							{
+								cout << "c:" << speedTransfer << endl;
+								offsetX -= minContact.resolution.x;
+								groundSpeed = 0;
+								offsetX = -offsetX;
+								break;
+							}
+						}
+						else
+						{
+							cout << "d" << endl;
+								offsetX -= minContact.resolution.x;
+								groundSpeed = 0;
+								offsetX = -offsetX;
+								break;
+						}
+					}
+				}
+			}
+			else
+			{
+				if( movement > 0 )
+				{	
+					extra = (q + movement) - groundLength;
+				}
+				else 
+				{
+					extra = (q + movement);
+				}
+					
+				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+				{
+					if( movement > 0 )
+					{
+						q = groundLength;
+					}
+					else
+					{
+						q = 0;
+					}
+					movement = extra;
+					m -= extra;
+						
+				}
+				else
+				{
+					movement = 0;
+					q += m;
+				}
+				
+
+				if( approxEquals( m, 0 ) )
+				{
 					cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+					if( groundSpeed > 0 )
+					{
+						//cout << "transfer left "<< endl;
+						Edge *next = ground->edge0;
+						V2d nextNorm = e0n;
+						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						{
+							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+							{
+								groundSpeed = 0;
+								offsetX = -offsetX;
+								break;
+							}
+							else
+							{
+								ground = next;
+								q = length( ground->v1 - ground->v0 );	
+							}
+						}
+						else if( abs( e0n.x ) >= wallThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
+						{
+							reversed = false;
+							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+							leftGround = true;
+
+							ground = NULL;
+						}
+					}
+					else if( groundSpeed < 0 )
+					{
+						Edge *next = ground->edge1;
+						V2d nextNorm = e1n;
+						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						{
+
+							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+							{
+								groundSpeed = 0;
+								offsetX = -offsetX;
+								break;
+							}
+							ground = next;
+							q = 0;
+						}
+						else if( abs( e1n.x ) >= wallThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
+						{
+							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+						
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						
+							leftGround = true;
+							reversed = false;
+							ground = NULL;
+							//cout << "leaving ground RIGHT!!!!!!!!" << endl;
+						}
+
+					}
+					
 					//groundSpeed = 0;
 					//offsetX = -offsetX;
 					//break;
@@ -3493,6 +3659,7 @@ void Actor::UpdateReversePhysics()
 							}
 						}
 						
+						//cout<< "blah" << endl;
 						if( eNorm.y < 0 )
 						{
 							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
