@@ -1359,14 +1359,14 @@ void GameSession::SaveState()
 	}
 }
 
-
 void GameSession::LoadState()
 {
 	activeEnemyList = stored.activeEnemyList;
 
 	Enemy *currEnemy = activeEnemyList;
+
 	while( currEnemy != NULL )
-	{
+	{		
 		currEnemy->LoadState();
 		currEnemy = currEnemy->next;
 	}

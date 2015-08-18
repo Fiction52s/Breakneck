@@ -2533,13 +2533,51 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currInput.LLeft() )
 			{
+				if( groundSpeed < 0 )
+				{
+					//
+					if( currInput.B && groundSpeed > -dashSpeed )
+					{
+						groundSpeed = -dashSpeed;
+					}
+				}
+				else
+				{
+					if( currInput.B )
+					{
+						groundSpeed = -dashSpeed;
+					}
+					else
+					{
+						groundSpeed = -maxRunInit;
+					}
+				}
 			}
 			else if( currInput.LRight() )
 			{
+				if( groundSpeed > 0 )
+				{
+					//
+					if( currInput.B && groundSpeed < dashSpeed )
+					{
+						groundSpeed = dashSpeed;
+					}
+				}
+				else
+				{
+					if( currInput.B )
+					{
+						groundSpeed = dashSpeed;
+					}
+					else
+					{
+						groundSpeed = maxRunInit;
+					}
+				}
 			}
 			else
 			{
-
+				groundSpeed = 0;
 			}
 
 			break;
