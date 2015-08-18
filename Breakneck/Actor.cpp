@@ -5987,7 +5987,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 
-		if( c != NULL )
+		/*if( c != NULL )
 		{
 			if( !col || c->collisionPriority < minContact.collisionPriority )
 			{
@@ -5998,7 +5998,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				minContact.normal = c->normal;
 				col = true;
 			}
-		}
+		}*/
 		/*
 		if( c != NULL )
 		{
@@ -6018,7 +6018,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		
 		
 		
-		/*if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
@@ -6045,7 +6045,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					col = true;
 					
 				}
-			}*/
+			}
 		
 	}
 	else if( queryMode == "check" )
