@@ -3066,6 +3066,15 @@ bool Actor::ResolvePhysics( V2d vel )
 //	Query( this, owner->testTree, r );
 	owner->terrainTree->Query( this, r );
 
+	if( col )
+	{
+		cout << "performing: " << endl 
+			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
+			<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
+			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+	}
+
+
 	//if( minContact.edge != NULL )
 	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 
@@ -3378,15 +3387,83 @@ void Actor::UpdateReversePhysics()
 				}
 				
 
-				if( m == 0 )
+				if( approxEquals( m, 0 ) )
 				{
+					if( groundSpeed > 0 )
+					{
+						//cout << "transfer left "<< endl;
+						Edge *next = ground->edge0;
+						V2d nextNorm = e0n;
+						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						{
+							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+							{
+								groundSpeed = 0;
+								offsetX = -offsetX;
+								break;
+							}
+							else
+							{
+								ground = next;
+								q = length( ground->v1 - ground->v0 );	
+							}
+						}
+						else if( abs( e0n.x ) >= wallThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
+						{
+							reversed = false;
+							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+							leftGround = true;
+
+							ground = NULL;
+						}
+					}
+					else if( groundSpeed < 0 )
+					{
+						Edge *next = ground->edge1;
+						V2d nextNorm = e1n;
+						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						{
+
+							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+							{
+								groundSpeed = 0;
+								offsetX = -offsetX;
+								break;
+							}
+							ground = next;
+							q = 0;
+						}
+						else if( abs( e1n.x ) >= wallThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
+						{
+							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+						
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						
+							leftGround = true;
+							reversed = false;
+							ground = NULL;
+							//cout << "leaving ground RIGHT!!!!!!!!" << endl;
+						}
+
+					}
 					cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
-					groundSpeed = 0;
-					offsetX = -offsetX;
-					break;
+					//groundSpeed = 0;
+					//offsetX = -offsetX;
+					//break;
 				}
 
-			//	if(m != 0 )//!approxEquals( m, 0 ) )
+				if( !approxEquals( m, 0 ) )
 				{	
 					
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
@@ -3460,19 +3537,7 @@ void Actor::UpdateReversePhysics()
 					}
 						
 				}
-
-				
-			/*	else
-				{
-					edgeQuantity = q;
-					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
-				//	assert( false && "secret!" );
-					break;
-					//offsetX = -offsetX;
-			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
-					//break;
-				}*/
-					
+			
 			}
 
 			offsetX = -offsetX;
@@ -3817,6 +3882,76 @@ void Actor::UpdatePhysics()
 				if( approxEquals( m, 0 ) )
 				{
 					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+
+					if( groundSpeed > 0 )
+					{
+						
+						Edge *next = ground->edge1;
+
+						if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
+						{
+							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+							{
+								groundSpeed = 0;
+								break;
+							}
+							else
+							{
+								ground = next;
+								q = 0;
+							}
+					
+						}
+						else if( abs( e1n.x ) >= wallThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
+						{
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						
+							leftGround = true;
+							ground = NULL;
+							//cout << "leaving ground RIGHT!!!!!!!!" << endl;
+						}
+					}
+					else if( groundSpeed < 0 )
+					{
+						Edge *next = ground->edge0;
+						if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+						{
+							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+							{
+							//	cout << "success?: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
+							//		", scst: " << steepClimbSpeedThresh  << endl;
+								groundSpeed = 0;
+								break;
+							}
+							else
+							{
+							//	cout << "e0ny: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
+							//		", scst: " << steepClimbSpeedThresh  << endl;
+								ground = next;
+								q = length( ground->v1 - ground->v0 );	
+							}
+						}
+						else if( abs( e0n.x ) >= wallThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
+						{
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+							leftGround = true;
+
+							ground = NULL;
+						}
+					}
 				/*	if( groundSpeed > 0 )
 					{
 						m = 10;
@@ -3825,8 +3960,8 @@ void Actor::UpdatePhysics()
 					{
 						m = -10;
 					}*/
-					groundSpeed = 0;
-					break;
+					//groundSpeed = 0;
+					//break;
 				}
 
 				if( !approxEquals( m, 0 ) )
@@ -3980,7 +4115,7 @@ void Actor::UpdatePhysics()
 			{
 				collision = true;
 			//	if( length( minContact.resolution ) <= length(movementVec) )
-					position += minContact.resolution;
+				position += minContact.resolution;
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;
@@ -3989,6 +4124,12 @@ void Actor::UpdatePhysics()
 				V2d e1n = e1->Normal();
 
 				
+
+				//if( abs(minContact.edge->Normal().x) > wallThresh )//approxEquals(minContact.edge->Normal().x,1) || approxEquals(minContact.edge->Normal().x,-1) )
+				//{
+
+				//	wallNormal = minContact.normal;//minContact.edge->Normal();
+				//}
 
 				if( abs(minContact.edge->Normal().x) > wallThresh )//approxEquals(minContact.edge->Normal().x,1) || approxEquals(minContact.edge->Normal().x,-1) )
 				{
@@ -4076,9 +4217,14 @@ void Actor::UpdatePhysics()
 					}
 				}
 
+
+
+				//V2d extraDir =  V2d( -minContact.normal.y, minContact.normal.x );//normalize( minContact.edge->v1 - minContact.edge->v0 );
+
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-				
+			//	newVel = V2d( 0, 0 );
+			//	extraVel = V2d( 0, 0 );
 				
 				//extraVel = V2d( 0, 0 );
 				//cout << "extra vel: " << extraVel.x << ", " << extraVel.y << endl;
@@ -4287,7 +4433,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
-					velocity = newVel;
+				velocity = newVel;
 			}
 
 			if( length( extraVel ) > 0 )
@@ -5840,6 +5986,19 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}*/
 
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
+
+		if( c != NULL )
+		{
+			if( !col || c->collisionPriority < minContact.collisionPriority )
+			{
+				minContact.collisionPriority = c->collisionPriority;
+				minContact.edge = e;
+				minContact.resolution = c->resolution;
+				minContact.position = c->position;
+				minContact.normal = c->normal;
+				col = true;
+			}
+		}
 		/*
 		if( c != NULL )
 		{
@@ -5855,7 +6014,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		//	cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
 		//	collisionNumber++;
 			//if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
-		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+		
+		
+		
+		
+		/*if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
@@ -5882,7 +6045,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					col = true;
 					
 				}
-			}
+			}*/
 		
 	}
 	else if( queryMode == "check" )
