@@ -117,6 +117,7 @@ struct GameSession : QuadTreeCollider
 
 	sf::Vector2<double> originalPos;
 	sf::Rect<double> screenRect;
+	sf::Rect<double> tempSpawnRect;
 
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;

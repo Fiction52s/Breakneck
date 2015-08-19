@@ -6390,6 +6390,26 @@ void Actor::DebugDraw( RenderTarget *target )
 		ghosts[i]->DebugDraw( target );
 	}
 
+	/*if( blah )
+	{
+		for( int i = 0; i < recordedGhosts; ++i )
+		{
+			if( ghostFrame < ghosts[i]->totalRecorded )
+			{
+				sf::Rect<double> rd = ghosts[i]->states[ghostFrame].screenRect;
+				sf::RectangleShape rs;
+				rs.setPosition( rd.left, rd.top );
+				rs.setSize( sf::Vector2f( rd.width, rd.height ) );
+				rs.setFillColor( Color::Transparent );
+				rs.setOutlineColor( Color::Red );
+				rs.setOutlineThickness( 10 );
+				target->draw( rs );
+			}
+				//ghosts[i]->UpdatePrePhysics( ghostFrame );
+		}
+		//testGhost->UpdatePrePhysics( ghostFrame );
+	}*/
+
 	wire->DebugDraw( target );
 
 }
@@ -6625,6 +6645,7 @@ void PlayerGhost::DebugDraw( sf::RenderTarget *target )
 			(*it).DebugDraw( target );
 		}
 	}
+	sf::RectangleShape rs;
 }
 
 void PlayerGhost::UpdatePrePhysics( int ghostFrame )

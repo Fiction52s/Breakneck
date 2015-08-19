@@ -1066,8 +1066,31 @@ int GameSession::Run( string fileName )
 			//rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
 			rs.setFillColor( sf::Color( 0, 0, 255, 100 ) );
 			window->draw( rs );*/
+
 			queryMode = "enemy";
+
+			tempSpawnRect = screenRect;
 			enemyTree->Query( this, screenRect );
+
+			if( player.blah )
+			{
+				for( int i = 0; i < player.recordedGhosts; ++i )
+				{
+					PlayerGhost *g = player.ghosts[i];
+					if( player.ghostFrame < g->totalRecorded )
+					{
+						//cout << "querying! " << player.ghostFrame << endl;
+						tempSpawnRect = g->states[player.ghostFrame].screenRect;
+						enemyTree->Query( this, g->states[player.ghostFrame].screenRect );
+					}
+				}
+			}
+			else if( player.record > 0 )
+			{
+				player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
+					screenRect;
+			}
+			
 
 
 		
@@ -1264,7 +1287,7 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 	//	coll.DebugDraw( window );
 
@@ -1291,7 +1314,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Enemy *e = (Enemy*)qte;
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-		if( e->spawnRect.intersects( screenRect ) )
+		if( e->spawnRect.intersects( tempSpawnRect ) )
 		{
 			cout << "spawning enemy!" << endl;
 			assert( e->spawned == false );
