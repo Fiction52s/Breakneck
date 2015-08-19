@@ -53,12 +53,22 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q,
 	frame = 0;
 	deathFrame = 0;
 	animationFactor = 5;
-	slowCounter = 1;
-	slowMultiple = 1;
+	//slowCounter = 1;
+	//slowMultiple = 1;
 
 	bulletSpeed = 5;
 
+	dead = false;
+
 	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+}
+
+void BasicTurret::ResetEnemy()
+{
+	frame = 0;
+	deathFrame = 0;
+
+
 }
 
 void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )

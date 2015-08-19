@@ -71,6 +71,8 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	targetNode = 1;
 	forward = true;
 
+	dead = false;
+
 	ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
 
@@ -85,6 +87,16 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 {
+}
+
+void Patroller::ResetEnemy()
+{
+	targetNode = 1;
+	forward = true;
+	dead = false;
+	deathFrame = 0;
+	position.x = path[0].x;
+	position.y = path[0].y;
 }
 
 void Patroller::UpdatePrePhysics()

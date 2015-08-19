@@ -174,6 +174,11 @@ void GameSession::AddEnemy( Enemy *e )
 	{
 		activeEnemyList = e;
 	}
+
+	if( player.record > 0 )
+	{
+		e->spawnedByClone = true;
+	}
 	
 }
 
@@ -207,6 +212,35 @@ void GameSession::RemoveEnemy( Enemy *e )
 		}
 		
 	}
+
+	if( player.record > 0 )
+	{
+		if( cloneInactiveEnemyList == NULL )
+		{
+			cloneInactiveEnemyList = e;
+			e->next = NULL;
+			e->prev = NULL;
+			//cout << "creating first dead clone enemy" << endl;
+
+			/*int listSize = 0;
+			Enemy *ba = cloneInactiveEnemyList;
+			while( ba != NULL )
+			{
+				listSize++;
+				ba = ba->next;
+			}
+
+			cout << "size of dead list after first add: " << listSize << endl;*/
+		}
+		else
+		{
+			//cout << "creating more dead clone enemies" << endl;
+			e->next = cloneInactiveEnemyList;
+			cloneInactiveEnemyList->prev = e;
+			cloneInactiveEnemyList = e;
+		}
+	}
+	
 
 //	cout << "number of enemies is now: " << CountActiveEnemies() << endl;
 
@@ -1201,7 +1235,7 @@ int GameSession::Run( string fileName )
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
-			//window->draw( *listVAIter->va, &borderTex );
+			window->draw( *listVAIter->va, &borderTex );
 			listVAIter = listVAIter->next;
 			//timesDraw++; 
 		}
@@ -1230,9 +1264,9 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		DebugDrawActors();
+	//	DebugDrawActors();
 
-		coll.DebugDraw( window );
+	//	coll.DebugDraw( window );
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
@@ -1262,6 +1296,9 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			cout << "spawning enemy!" << endl;
 			assert( e->spawned == false );
 			e->spawned = true;
+
+			
+
 			AddEnemy( e );
 		}
 	}
@@ -1347,9 +1384,11 @@ void GameSession::RespawnPlayer()
 	powerBar.layer = 0;
 }
 
+//save state to enter clone world
 void GameSession::SaveState()
 {
 	stored.activeEnemyList = activeEnemyList;
+	cloneInactiveEnemyList = NULL;
 
 	Enemy *currEnemy = activeEnemyList;
 	while( currEnemy != NULL )
@@ -1359,17 +1398,62 @@ void GameSession::SaveState()
 	}
 }
 
+//reset from clone world
 void GameSession::LoadState()
 {
-	activeEnemyList = stored.activeEnemyList;
+	Enemy *test = cloneInactiveEnemyList;
+	int listSize = 0;
+	while( test != NULL )
+	{
+		listSize++;
+		test = test->next;
+	}
 
+	cout << "there are " << listSize << " enemies killed during the last clone process" << endl;
+
+
+	//enemies killed while in the clone world
+	Enemy *deadEnemy = cloneInactiveEnemyList;
+	while( deadEnemy != NULL )
+	{
+		
+		Enemy *next = deadEnemy->next;
+		if( deadEnemy->spawnedByClone )
+		{
+			deadEnemy->Reset();
+			//cout << "resetting dead enemy: " << deadEnemy << endl;
+		}
+		else
+		{
+			deadEnemy->LoadState();
+			//cout << "loading dead enemy: " << deadEnemy << endl;
+		}
+		deadEnemy = next;
+	}
+
+	//enemies that are still alive
 	Enemy *currEnemy = activeEnemyList;
-
 	while( currEnemy != NULL )
 	{		
-		currEnemy->LoadState();
-		currEnemy = currEnemy->next;
+		Enemy *next = currEnemy->next;
+		if( currEnemy->spawnedByClone )
+		{
+			//cout << "resetting enemy: " << currEnemy << endl;
+			currEnemy->Reset();
+		}
+		else
+		{
+			currEnemy->LoadState();
+			//cout << "loading enemy: " << currEnemy << endl;
+		}
+
+		currEnemy = next;
 	}
+
+	//restore them all to their original state and then reset the list pointer
+
+	//cloneInactiveEnemyList = NULL;
+	activeEnemyList = stored.activeEnemyList;
 }
 
 void GameSession::Pause( int frames )
@@ -1431,19 +1515,27 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 {
 	//cout << "deactivate " << b << endl;
 	RemoveEnemy( b );
-	if( inactiveEffects == NULL )
+
+	if( player.record == 0 )
 	{
-		inactiveEffects = b;
-		b->next = NULL;
-		b->prev = NULL;
-	}
-	else
-	{
-		b->next = inactiveEffects;
-		inactiveEffects->prev = b;
-		inactiveEffects = b;
+		if( inactiveEffects == NULL )
+		{
+			inactiveEffects = b;
+			b->next = NULL;
+			b->prev = NULL;
+		}
+		else
+		{
+			b->next = inactiveEffects;
+			inactiveEffects->prev = b;
+			inactiveEffects = b;
+		}
 	}
 }
+
+
+
+
 
 PowerBar::PowerBar()
 {

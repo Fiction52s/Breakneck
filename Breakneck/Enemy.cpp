@@ -10,9 +10,22 @@ using namespace sf;
 #define V2d sf::Vector2<double>
 
 Enemy::Enemy( GameSession *own )
-	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 )
+	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
+	spawnedByClone( false )
 {
 
+}
+
+void Enemy::Reset()
+{
+	slowMultiple = 1;
+	slowCounter = 1;
+	spawned = false;
+	prev = NULL;
+	next = NULL;
+	spawnedByClone = false;
+
+	ResetEnemy();
 }
 
 void Enemy::HandleQuery( QuadTreeCollider * qtc )

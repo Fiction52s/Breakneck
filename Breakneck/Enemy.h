@@ -22,6 +22,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	void LoadState();
 	virtual void SaveEnemyState() = 0;
 	virtual void LoadEnemyState() = 0;
+	void Reset();
+	virtual void ResetEnemy() = 0;
 	Enemy *prev;
 	Enemy *next;
 	GameSession *owner;
@@ -30,6 +32,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	HitboxInfo *receivedHit;
 	int slowMultiple;
 	int slowCounter;
+
+	bool spawnedByClone;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( sf::Rect<double> &r );
@@ -63,6 +67,7 @@ struct BasicEffect : Enemy
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
+	void ResetEnemy();
 
 	void Init( Tileset *ts, 
 		sf::Vector2<double> position, 
@@ -75,6 +80,8 @@ struct BasicEffect : Enemy
 	bool activated;
 	int animationFactor;
 	bool facingRight;
+
+	int stored_frame;
 	//sf::Vector2<double> position;
 };
 
@@ -93,6 +100,7 @@ struct Patroller : Enemy
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
+	void ResetEnemy();
 
 	void AdvanceTargetNode();
 
@@ -169,7 +177,7 @@ struct Crawler : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
-
+	void ResetEnemy();
 	
 	void SaveEnemyState();
 	void LoadEnemyState();
@@ -193,6 +201,9 @@ struct Crawler : Enemy
 	bool col;
 	std::string queryMode;
 	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
 };
 
 struct BasicTurret : Enemy
@@ -214,6 +225,7 @@ struct BasicTurret : Enemy
 	
 	void SaveEnemyState();
 	void LoadEnemyState();
+	void ResetEnemy();
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -297,7 +309,7 @@ struct FootTrap : Enemy
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
-
+	void ResetEnemy();
 	
 
 	sf::Sprite sprite;

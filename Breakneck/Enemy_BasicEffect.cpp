@@ -19,6 +19,12 @@ BasicEffect::BasicEffect ( GameSession *owner )
 	//ts = //owner->GetTileset( "double.png", 64, 64 ); //what
 	activated = false;
 	animationFactor = 1;
+	stored_frame = 0;
+}
+
+void BasicEffect::ResetEnemy()
+{
+	frame = 0;
 }
 
 void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right )
@@ -137,8 +143,10 @@ bool BasicEffect::ResolvePhysics( sf::Vector2<double> vel )
 
 void BasicEffect::SaveEnemyState()
 {
+	stored_frame = frame;
 }
 
 void BasicEffect::LoadEnemyState()
 {
+	frame = stored_frame;
 }

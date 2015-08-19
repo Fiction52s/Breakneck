@@ -29,7 +29,8 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	physBody.rh = 16;
 	physBody.type = CollisionBox::BoxType::Physics;
 
-	
+	startGround = ground;
+	startQuant = edgeQuantity;
 
 	V2d gn = g->Normal();
 	if( gn.x > 0 )
@@ -43,6 +44,27 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 
 	position = gPoint + offset;
 }
+
+void Crawler::ResetEnemy()
+{
+	ground = startGround;
+	edgeQuantity = startQuant;
+	V2d gPoint = ground->GetPoint( edgeQuantity );
+	sprite.setPosition( gPoint.x, gPoint.y );
+
+	V2d gn = ground->Normal();
+	if( gn.x > 0 )
+		offset.x = physBody.rw;
+	else if( gn.x < 0 )
+		offset.x = -physBody.rw;
+	if( gn.y > 0 )
+		offset.y = physBody.rh;
+	else if( gn.y < 0 )
+		offset.y = -physBody.rh;
+
+	position = gPoint + offset;
+}
+
 
 void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 {

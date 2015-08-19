@@ -43,6 +43,12 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
 }
 
+void FootTrap::ResetEnemy()
+{
+	frame = 0;
+	deathFrame = 0;
+}
+
 void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 {
 }
