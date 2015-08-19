@@ -2758,9 +2758,13 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
-	if( blah )
+	if( blah || record > 1 )
 	{
-		for( int i = 0; i < recordedGhosts; ++i )
+		int playback = recordedGhosts;
+		if( record > 1 )
+			playback--;
+
+		for( int i = 0; i < playback; ++i )
 		{
 			if( ghostFrame < ghosts[i]->totalRecorded )
 				ghosts[i]->UpdatePrePhysics( ghostFrame );
@@ -2831,9 +2835,13 @@ void Actor::UpdatePrePhysics()
 
 
 
-	if( blah )
+	if( blah || record > 1 )
 	{
-		for( int i = 0; i < recordedGhosts; ++i )
+		int playback = recordedGhosts;
+		if( record > 1 )
+			playback--;
+
+		for( int i = 0; i < playback; ++i )
 		{
 			if( ghostFrame < ghosts[i]->totalRecorded )
 			{
@@ -6328,9 +6336,13 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( gstrirgb );
 	}
 
-	if( blah )
+	if( blah || record > 1 )
 	{
-		for( int i = 0; i < recordedGhosts; ++i )
+		int playback = recordedGhosts;
+		if( record > 1 )
+			playback--;
+			
+		for( int i = 0; i < playback; ++i )
 		{
 			PlayerGhost *g = ghosts[i];
 			if( ghostFrame < g->totalRecorded )

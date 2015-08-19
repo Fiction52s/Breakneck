@@ -1072,9 +1072,13 @@ int GameSession::Run( string fileName )
 			tempSpawnRect = screenRect;
 			enemyTree->Query( this, screenRect );
 
-			if( player.blah )
+			if( player.blah || player.record > 1 )
 			{
-				for( int i = 0; i < player.recordedGhosts; ++i )
+				int playback = player.recordedGhosts;
+				if( player.record > 1 )
+					playback--;
+
+				for( int i = 0; i < playback; ++i )
 				{
 					PlayerGhost *g = player.ghosts[i];
 					if( player.ghostFrame < g->totalRecorded )
@@ -1085,7 +1089,8 @@ int GameSession::Run( string fileName )
 					}
 				}
 			}
-			else if( player.record > 0 )
+			
+			if( player.record > 0 )
 			{
 				player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
 					screenRect;
