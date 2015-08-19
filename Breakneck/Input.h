@@ -32,6 +32,8 @@ struct ControllerState
 	bool B;
 	bool X;
 	bool Y;
+	bool leftPress;
+	bool rightPress;
 	unsigned char pad;
 	unsigned char leftStickPad;
 	unsigned char rightStickPad;
@@ -39,11 +41,13 @@ struct ControllerState
 	bool LDown();
 	bool LLeft();
 	bool LRight();
+	bool LPress();
 
 	bool RUp();
 	bool RDown();
 	bool RLeft();
 	bool RRight();
+	bool RPress();
 
 	bool PUp();
 	bool PDown();

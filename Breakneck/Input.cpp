@@ -11,7 +11,8 @@ ControllerState::ControllerState()
 	:leftStickMagnitude( 0 ), leftStickRadians( 0 ), rightStickMagnitude( 0 ), 
 	rightStickRadians( 0 ), leftTrigger( 0 ), rightTrigger( 0 ), start( false ), 
 	back( false ), leftShoulder( false ), rightShoulder( false ), A( false ), B( false ), 
-	X( false ), Y( false ), pad( 0 ), leftStickPad( 0 ), rightStickPad( 0 )
+	X( false ), Y( false ), pad( 0 ), leftStickPad( 0 ), rightStickPad( 0 ), 
+	leftPress( false ), rightPress( false )
 {
 
 	
@@ -36,6 +37,8 @@ void ControllerState::Set( const ControllerState &state )
 	pad = state.pad;
 	leftStickPad = state.leftStickPad;
 	rightStickPad = state.rightStickPad;
+	leftPress = state.leftPress;
+	rightPress = state.rightPress;
 //	altPad = state.altPad;
 }
 
@@ -79,6 +82,11 @@ bool ControllerState::LRight()
 	return leftStickPad & 8;
 }
 
+bool ControllerState::LPress()
+{
+	return leftPress;
+}
+
 bool ControllerState::RUp()
 {
 	return rightStickPad & 1;
@@ -99,6 +107,10 @@ bool ControllerState::RRight()
 	return rightStickPad & 8;
 }
 
+bool ControllerState::RPress()
+{
+	return rightPress;
+}
 
 bool GameController::UpdateState()
 {
@@ -177,7 +189,8 @@ bool GameController::UpdateState()
 		m_state.B = (b & 0x2000) > 0;
 		m_state.X = (b & 0x4000) > 0;
 		m_state.Y = (b & 0x8000) > 0;
-
+		m_state.leftPress = b & XINPUT_GAMEPAD_LEFT_THUMB;
+		m_state.rightPress = b & XINPUT_GAMEPAD_RIGHT_THUMB;
 		m_state.pad = ( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 ); 
 
 		m_state.leftStickPad = 0;

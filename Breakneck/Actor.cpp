@@ -63,6 +63,11 @@ Actor::Actor( GameSession *gs )
 		cb.rw = 64;
 		cb.rh = 64;
 
+		for( int i = 0; i < 4; ++i )
+		{
+			ghosts[i] = new PlayerGhost;
+		}
+
 		for( int j = 4; j < 10; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
@@ -70,7 +75,7 @@ Actor::Actor( GameSession *gs )
 
 			for( int i = 0; i < 4; ++i )
 			{
-				ghosts[i] = new PlayerGhost;
+				//ghosts[i] = new PlayerGhost;
 				ghosts[i]->fairHitboxes[j] = new list<CollisionBox>;
 				ghosts[i]->fairHitboxes[j]->push_back( cb );			
 			}
@@ -445,7 +450,7 @@ void Actor::UpdatePrePhysics()
 		return;
 	}
 
-	if( currInput.RUp() && !prevInput.RUp() )
+	if( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) )
 	{
 		if( record == 0 )
 		{
@@ -6145,7 +6150,8 @@ void Actor::UpdatePostPhysics()
 		ghosts[record-1]->currFrame++;
 	}
 
-
+	if( ghostFrame < PlayerGhost::maxFrames )
+				ghostFrame++;
 
 	if( slowCounter == slowMultiple )
 	{
@@ -6345,17 +6351,16 @@ void Actor::Draw( sf::RenderTarget *target )
 		for( int i = 0; i < playback; ++i )
 		{
 			PlayerGhost *g = ghosts[i];
-			if( ghostFrame < g->totalRecorded )
+			if( ghostFrame-1 < g->totalRecorded )
 			{
-				target->draw( g->states[ghostFrame].s );
-				if( g->states[ghostFrame].showSword1 )
-					target->draw( g->states[ghostFrame].swordSprite1 );
+				target->draw( g->states[ghostFrame-1].s );
+				if( g->states[ghostFrame-1].showSword1 )
+					target->draw( g->states[ghostFrame-1].swordSprite1 );
 			}
 			
 		}
 
-		if( ghostFrame < PlayerGhost::maxFrames )
-				ghostFrame++;
+		
 		//PlayerGhost *g = ghosts[record-1];
 		
 	}
