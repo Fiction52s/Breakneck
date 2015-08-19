@@ -176,7 +176,7 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
-		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 192, 128 );
+		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 256, 256 );
 		fairSword1.setTexture( *ts_fairSword1->texture );
 
 		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 205, 128 );
@@ -5492,10 +5492,10 @@ void Actor::UpdatePostPhysics()
 		}
 	case FAIR:
 		{
-			showSword1 = frame / 2 >= 2 && frame / 2 <= 10;
+			showSword1 = frame / 2 >= 1 && frame / 2 <= 9;
 			sprite->setTexture( *(tileset[FAIR]->texture));
 
-			Vector2i offset( -32, -32 );
+			Vector2i offset( -64, -96 );
 
 			if( facingRight )
 			{
@@ -5503,7 +5503,7 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
 				//2 - 10
 				if( showSword1 )
-					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 ) );
+					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - 1 ) );
 			}
 			else
 			{
@@ -5517,7 +5517,7 @@ void Actor::UpdatePostPhysics()
 				{
 				//	offset.x = -offset.x;
 					//xoffset = -xoffset;
-					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 );
+					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - 1 );
 					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}

@@ -1292,7 +1292,7 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 	//	coll.DebugDraw( window );
 
