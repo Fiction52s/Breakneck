@@ -116,7 +116,6 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
 
-	Tileset *ts_dashStart;
 	Tileset * ts_fx_airdash;
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
@@ -252,7 +251,10 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	//--
-	Tileset * ts_hurtSpack;
+	Tileset *ts_fx_hurtSpack;
+	Tileset *ts_fx_dashStart;
+	Tileset *ts_fx_dashRepeat;
+	Tileset *ts_fx_land;
 	
 	sf::Vector2<double> bubblePos[maxBubbles];
 	int bubbleFramesToLive[maxBubbles];

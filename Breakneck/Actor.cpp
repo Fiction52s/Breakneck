@@ -185,7 +185,12 @@ Actor::Actor( GameSession *gs )
 		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 160, 128 );
 		uairSword1.setTexture( *ts_uairSword1->texture );
 
-		ts_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
+		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
+
+		ts_fx_dashStart = owner->GetTileset( "fx_dashstart.png", 96, 32 );
+		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat.png", 96, 16 );
+		ts_fx_land = owner->GetTileset( "fx_land.png", 80, 32 );
+
 
 	//	ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 0, 0 );
 	//	standingNSword1.setTexture( *ts_standingNSword1->texture );
@@ -335,8 +340,6 @@ Actor::Actor( GameSession *gs )
 			bubbleFramesToLive[i] = 0;
 			//bubblePos[i]
 		}
-		
-		ts_dashStart = owner->GetTileset( "double.png", 64, 64 );
 		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 16, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
@@ -533,7 +536,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
 		
-		owner->ActivateEffect( ts_hurtSpack, position, true, 0, 12, 1, facingRight );
+		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
@@ -2333,12 +2336,6 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
-			if( frame == 0 )
-			{
-				owner->ActivateEffect( ts_dashStart, 
-					position, false, 0, 20, 5, facingRight );
-			}
-
 			b.rh = dashHeight;
 			b.offset.y = (normalHeight - dashHeight);
 			if( reversed )
@@ -2634,10 +2631,7 @@ void Actor::UpdatePrePhysics()
 		//	hurtBody.rw = 10;
 		//	hurtBody.rh = 10;
 
-			if( frame % 1 == 0 )
-			{
-				owner->ActivateEffect( ts_fx_airdash, position, false, 0, 10, 6, facingRight );
-			}
+			
 
 			if( frame == 0 )
 			{
@@ -5290,6 +5284,9 @@ void Actor::UpdatePostPhysics()
 		}
 	case LAND: 
 		{
+
+		
+
 		sprite->setTexture( *(tileset[LAND]->texture));
 		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
@@ -5317,12 +5314,26 @@ void Actor::UpdatePostPhysics()
 		
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			V2d pp = ground->GetPoint( edgeQuantity );
+		sprite->setRotation( angle / PI * 180 );
+		V2d pp = ground->GetPoint( edgeQuantity );
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			sprite->setPosition( pp.x + offsetX, pp.y );
+		else
+			sprite->setPosition( pp.x, pp.y );
+
+		if( frame == 0 )
+		{
+			V2d fxPos;
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
+				fxPos = V2d( pp.x + offsetX, pp.y );
 			else
-				sprite->setPosition( pp.x, pp.y );
+				fxPos = pp;
+
+			fxPos += gn * 8.0;
+
+			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 14, 1, facingRight );
+		}
+
 
 		break;
 		}
@@ -5733,6 +5744,18 @@ void Actor::UpdatePostPhysics()
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
+
+			if( frame == 0 )
+			{
+				owner->ActivateEffect( ts_fx_dashStart, 
+					pp + gn * 16.0, false, angle, 7, 3, facingRight );
+			}
+			else if( frame % 5 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_dashRepeat, 
+					pp + gn * 8.0, false, angle, 12, 3, facingRight );
+			}
+
 			break;
 		}
 	case GRINDBALL:
@@ -5854,6 +5877,12 @@ void Actor::UpdatePostPhysics()
 		}
 	case AIRDASH:
 		{
+			if( frame % 1 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_airdash, position, false, 0, 10, 6, facingRight );
+			}
+
+
 			sprite->setTexture( *(tileset[AIRDASH]->texture));
 
 			int f = 0;
