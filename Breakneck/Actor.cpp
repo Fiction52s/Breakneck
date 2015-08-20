@@ -120,8 +120,8 @@ Actor::Actor( GameSession *gs )
 		actionLength[STANDN] = 5 * 2;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
 
-		actionLength[UAIR] = 9 * 3;
-		tileset[UAIR] = owner->GetTileset( "uair.png", 128, 128 );
+		actionLength[UAIR] = 6 * 3;
+		tileset[UAIR] = owner->GetTileset( "uair.png", 80, 80 );
 
 		actionLength[WALLCLING] = 1;
 		tileset[WALLCLING] = owner->GetTileset( "wallcling.png", 64, 64 );
@@ -182,10 +182,10 @@ Actor::Actor( GameSession *gs )
 		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 128, 160 );
 		dairSword1.setTexture( *ts_dairSword1->texture );
 
-		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 205, 128 );
+		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 160, 128 );
 		uairSword1.setTexture( *ts_uairSword1->texture );
 
-		ts_playerWasHit = owner->GetTileset( "fairsword1.png", 144, 128 );
+		ts_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
 
 	//	ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 0, 0 );
 	//	standingNSword1.setTexture( *ts_standingNSword1->texture );
@@ -533,7 +533,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
 		
-		owner->ActivateEffect( ts_playerWasHit, position, true, 0, 9, 1, facingRight );
+		owner->ActivateEffect( ts_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
@@ -5625,11 +5625,11 @@ void Actor::UpdatePostPhysics()
 		}
 	case UAIR:
 		{
-			int startFrame = 2;
-			showSword1 = frame / 3 >= startFrame && frame / 3 <= startFrame + 5;
+			int startFrame = 0;
+			showSword1 = frame / 3 >= startFrame && frame / 3 <= 5;
 			sprite->setTexture( *(tileset[UAIR]->texture));
 
-			Vector2i offset( -32, -32 );
+			Vector2i offset( -32, -48 );
 
 			if( facingRight )
 			{
