@@ -11,7 +11,7 @@ using namespace sf;
 
 
 Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
-:Enemy( owner ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
 	ts = owner->GetTileset( "crawler.png", 32, 32 );
 	sprite.setTexture( *ts->texture );

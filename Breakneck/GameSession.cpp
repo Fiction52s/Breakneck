@@ -44,11 +44,15 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	listVA = NULL;
 
 	inactiveEffects = NULL;
+	pauseImmuneEffects = NULL;
 
+
+	//sets up fx so that they can be used
 	for( int i = 0; i < MAX_EFFECTS; ++i )
 	{
 		AllocateEffect();
 	}
+	
 
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
@@ -872,7 +876,18 @@ int GameSession::Run( string fileName )
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead )
 			{
+				if( player.record > 1 )
+				{
+					player.LoadState();
+					LoadState();
+				}
+
 				RespawnPlayer();
+				ResetEnemies();
+				activeEnemyList = NULL;
+				//inactiveEffects = originalInactiveEffects;
+				pauseImmuneEffects = NULL;
+				cloneInactiveEnemyList = NULL;
 			}
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) || currInput.start )
@@ -1001,6 +1016,16 @@ int GameSession::Run( string fileName )
 			{
 				//cam.offset.y += 10;
 				cam.Update( &player );
+				
+				
+				Enemy *currFX = pauseImmuneEffects;
+				while( currFX != NULL )
+				{
+					currFX->UpdatePostPhysics();
+					currFX = currFX->next;
+				}
+
+
 				pauseFrames--;
 				accumulator -= TIMESTEP;
 				break;
@@ -1410,6 +1435,9 @@ void GameSession::RespawnPlayer()
 	player.dead = false;
 	powerBar.points = 100;
 	powerBar.layer = 0;
+	player.record = 0;
+	player.recordedGhosts = 0;
+	player.blah = false;
 }
 
 //save state to enter clone world
@@ -1561,9 +1589,50 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 	}
 }
 
+void GameSession::ResetEnemies()
+{
+	Enemy *curr = activeEnemyList;
+	while( curr != NULL )
+	{
+		Enemy *temp = curr->next;
+		if( curr->type == Enemy::BASICEFFECT )
+		{
+			DeactivateEffect( (BasicEffect*)curr );
+		}
 
+		curr = temp;
+	}
 
+	rReset( enemyTree->startNode );
+}
 
+void GameSession::rReset( QNode *node )
+{
+	if( node->leaf )
+	{
+		LeafNode *n = (LeafNode*)node;
+
+		for( int i = 0; i < n->objCount; ++i )
+		{			
+			Enemy * e = (Enemy*)(n->entrants[i]);
+			e->Reset();
+			//cout << e->type << endl;
+			
+			//((Enemy*)node)->Reset();		
+		}
+	}
+	else
+	{
+		//shouldn't this check for box touching box right here??
+		ParentNode *n = (ParentNode*)node;
+
+		for( int i = 0; i < 4; ++i )
+		{
+			rReset( n->children[i] );
+		}
+		
+	}
+}
 
 PowerBar::PowerBar()
 {

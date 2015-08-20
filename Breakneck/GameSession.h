@@ -52,6 +52,8 @@ struct GameSession : QuadTreeCollider
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
 	void RespawnPlayer();
+	void ResetEnemies();
+	void rReset( QNode *node );
 	int CountActiveEnemies();
 
 	void DebugDrawActors();
@@ -70,6 +72,7 @@ struct GameSession : QuadTreeCollider
 
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;
+
 
 	void SaveState();
 	void LoadState();
@@ -113,6 +116,7 @@ struct GameSession : QuadTreeCollider
 
 
 	Enemy *activeEnemyList;
+	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;
 
 	sf::Vector2<double> originalPos;

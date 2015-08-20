@@ -11,7 +11,7 @@ using namespace sf;
 
 
 BasicEffect::BasicEffect ( GameSession *owner )
-		:Enemy( owner )
+	:Enemy( owner, EnemyType::BASICEFFECT )
 {
 	spawned = true;
 	frame = 0;
@@ -25,6 +25,8 @@ BasicEffect::BasicEffect ( GameSession *owner )
 void BasicEffect::ResetEnemy()
 {
 	frame = 0;
+	activated = false;
+	//owner->DeactivateEffect( this );
 }
 
 void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right )

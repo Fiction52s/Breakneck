@@ -4,9 +4,21 @@
 #include "Actor.h"
 #include <list>
 
+
+
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {
-	Enemy( GameSession *owner );
+	enum EnemyType
+	{
+		BASICEFFECT,
+		PATROLLER,
+		CRAWLER,
+		BASICTURRET,
+		FOOTTRAP,
+		Count
+	};
+
+	Enemy( GameSession *owner, EnemyType t );
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
 	virtual void UpdatePrePhysics() = 0;
@@ -32,7 +44,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	HitboxInfo *receivedHit;
 	int slowMultiple;
 	int slowCounter;
-
+	EnemyType type;
 	bool spawnedByClone;
 
 	void HandleQuery( QuadTreeCollider * qtc );

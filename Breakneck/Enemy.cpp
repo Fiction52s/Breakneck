@@ -9,9 +9,9 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Enemy::Enemy( GameSession *own )
+Enemy::Enemy( GameSession *own, EnemyType t )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
-	spawnedByClone( false )
+	spawnedByClone( false ), type( t )
 {
 
 }

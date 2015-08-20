@@ -110,6 +110,9 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite uairSword1;
 	Tileset *ts_uairSword1;
 
+	sf::Sprite standingNSword1;
+	Tileset *ts_standingNSword1;
+
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
 

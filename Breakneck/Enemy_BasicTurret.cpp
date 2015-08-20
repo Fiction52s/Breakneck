@@ -11,7 +11,7 @@ using namespace sf;
 
 BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, 
 		int betweenFiring )
-		:Enemy( owner ), framesBetweenFiring( betweenFiring ), firingCounter( 0 ), ground( g ),
+		:Enemy( owner, EnemyType::BASICTURRET ), framesBetweenFiring( betweenFiring ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 ), dead( false )
 {
 	ts = owner->GetTileset( "basicturret.png", 48, 48 );

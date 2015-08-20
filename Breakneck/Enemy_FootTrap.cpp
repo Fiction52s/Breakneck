@@ -10,7 +10,7 @@ using namespace sf;
 #define V2d sf::Vector2<double>
 
 FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
-		:Enemy( owner ), ground( g ), edgeQuantity( q ), dead( false )
+		:Enemy( owner, EnemyType::FOOTTRAP ), ground( g ), edgeQuantity( q ), dead( false )
 {
 	ts = owner->GetTileset( "foottrap.png", 48, 32 );
 	sprite.setTexture( *ts->texture );

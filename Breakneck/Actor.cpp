@@ -40,7 +40,7 @@ Actor::Actor( GameSession *gs )
 		//tileset setup
 		{
 		actionLength[DAIR] = 10 * 2;
-		tileset[DAIR] = owner->GetTileset( "dair.png", 128, 64 );
+		tileset[DAIR] = owner->GetTileset( "dair.png", 96, 64 );
 
 		actionLength[DASH] = 45;
 		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
@@ -91,7 +91,7 @@ Actor::Actor( GameSession *gs )
 		//CollisionBox &cb = fairHit[4].back();
 		
 			
-		tileset[FAIR] = owner->GetTileset( "fair.png", 128, 64 );
+		tileset[FAIR] = owner->GetTileset( "fair.png", 80, 64 );
 
 		actionLength[JUMP] = 2;
 		tileset[JUMP] = owner->GetTileset( "jump.png", 64, 64 );
@@ -176,14 +176,18 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
-		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 256, 256 );
+		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 144, 128 );
 		fairSword1.setTexture( *ts_fairSword1->texture );
 
-		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 205, 128 );
+		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 128, 160 );
 		dairSword1.setTexture( *ts_dairSword1->texture );
 
 		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 205, 128 );
 		uairSword1.setTexture( *ts_uairSword1->texture );
+
+	//	ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 0, 0 );
+	//	standingNSword1.setTexture( *ts_standingNSword1->texture );
+
 
 		ts_bounceRun = owner->GetTileset( "bouncerun.png", 128, 64 );
 		ts_bounceSprint = owner->GetTileset( "bouncesprint.png", 128, 64 );
@@ -5424,16 +5428,39 @@ void Actor::UpdatePostPhysics()
 		}
 	case STANDN:
 		{
+			int startFrame = 0;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
+
 			sprite->setTexture( *(tileset[STANDN]->texture));
+
+			Vector2i offset( -64, -96 );
+
+
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 2 ) );
+
+				//if( showSword1 )
+				//	standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
 				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 2 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+				
+				if( showSword1  )
+				{
+				//	sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 2 - startFrame );
+				//	standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+				//		irSword.top, -irSword.width, irSword.height ) );
+				}
+			}
+
+			if( showSword1 )
+			{
+		//		standingNSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		//		standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 			
 			double angle = 0;
@@ -5454,6 +5481,14 @@ void Actor::UpdatePostPhysics()
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
+
+			/*if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword1 = showSword1;
+				p.swordSprite1 = standingNSword1;
+			}*/
+
 			break;
 		}
 	case STANDD:
@@ -5462,6 +5497,7 @@ void Actor::UpdatePostPhysics()
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
+
 			}
 			else
 			{
@@ -5492,32 +5528,30 @@ void Actor::UpdatePostPhysics()
 		}
 	case FAIR:
 		{
-			showSword1 = frame / 2 >= 1 && frame / 2 <= 9;
+			int startFrame = 1;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
 			sprite->setTexture( *(tileset[FAIR]->texture));
 
-			Vector2i offset( -64, -96 );
+			Vector2i offset( 32, -16 );
 
 			if( facingRight )
 			{
 				
 				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
-				//2 - 10
 				if( showSword1 )
-					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - 1 ) );
+					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
-				//offset.x = -offset.x;
 				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
 				
-
 				if( showSword1  )
 				{
-				//	offset.x = -offset.x;
-					//xoffset = -xoffset;
-					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - 1 );
+					offset.x = -offset.x;
+
+					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
 					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
@@ -5526,7 +5560,7 @@ void Actor::UpdatePostPhysics()
 
 			if( showSword1 )
 			{
-				fairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+				fairSword1.setOrigin( fairSword1.getLocalBounds().width / 2, fairSword1.getLocalBounds().height / 2 );
 				fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
@@ -5545,12 +5579,10 @@ void Actor::UpdatePostPhysics()
 		}
 	case DAIR:
 		{
-			int startFrame = 2;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= startFrame + 6;
+			int startFrame = 0;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
 
-
-
-			Vector2i offset( -32, -32 );
+			Vector2i offset( -16, -48 );
 
 			sprite->setTexture( *(tileset[DAIR]->texture));
 			if( facingRight )
@@ -5579,7 +5611,7 @@ void Actor::UpdatePostPhysics()
 
 			if( showSword1 )
 			{
-				dairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+				dairSword1.setOrigin( dairSword1.getLocalBounds().width / 2, dairSword1.getLocalBounds().height / 2 );
 				dairSword1.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
