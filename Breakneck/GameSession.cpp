@@ -59,7 +59,6 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 	//enemyTree->debug = rw;
 }
 
-
 GameSession::~GameSession()
 {
 	for( int i = 0; i < numPoints; ++i )
@@ -78,7 +77,6 @@ GameSession::~GameSession()
 		delete (*it);
 	}
 }
-
 
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
@@ -884,8 +882,8 @@ int GameSession::Run( string fileName )
 
 				RespawnPlayer();
 				ResetEnemies();
+
 				activeEnemyList = NULL;
-				//inactiveEffects = originalInactiveEffects;
 				pauseImmuneEffects = NULL;
 				cloneInactiveEnemyList = NULL;
 			}
@@ -1017,11 +1015,19 @@ int GameSession::Run( string fileName )
 				//cam.offset.y += 10;
 				cam.Update( &player );
 				
-				
-				Enemy *currFX = pauseImmuneEffects;
+				//view fx that are outside of hitlag pausing
+				Enemy *currFX = activeEnemyList;
 				while( currFX != NULL )
 				{
-					currFX->UpdatePostPhysics();
+					if( currFX->type == Enemy::BASICEFFECT )
+					{
+						BasicEffect * be = (BasicEffect*)currFX;
+						if( be->pauseImmune )
+						{
+							currFX->UpdatePostPhysics();
+						}
+					}
+					
 					currFX = currFX->next;
 				}
 
@@ -1311,6 +1317,14 @@ int GameSession::Run( string fileName )
 			window->draw( alphaTextSprite );
 		}
 
+		/*Enemy *currFX = active;
+		while( currFX != NULL )
+		{
+			currFX->Draw( window );
+			currFX = currFX->next;
+		}*/
+
+
 		window->setView( uiView );
 	//	window->draw( healthSprite );
 		powerBar.Draw( window );
@@ -1534,7 +1548,7 @@ void GameSession::AllocateEffect()
 	}
 }
 
-BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, int frameCount,
+BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
 	int animationFactor, bool right )
 {
 	if( inactiveEffects == NULL )
@@ -1559,6 +1573,7 @@ BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, double angle, i
 		b->Init( ts, pos, angle, frameCount, animationFactor, right );
 		b->prev = NULL;
 		b->next = NULL;
+		b->pauseImmune = pauseImmune;
 
 		AddEnemy( b );
 		

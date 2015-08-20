@@ -65,6 +65,7 @@ struct GameSession : QuadTreeCollider
 	BasicEffect * ActivateEffect( 
 		Tileset *ts, 
 		sf::Vector2<double> pos, 
+		bool pauseImmune,
 		double angle, 
 		int frameCount,
 		int animationFactor,

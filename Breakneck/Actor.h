@@ -252,7 +252,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	//--
-
+	Tileset * ts_playerWasHit;
 	
 	sf::Vector2<double> bubblePos[maxBubbles];
 	int bubbleFramesToLive[maxBubbles];

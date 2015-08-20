@@ -89,6 +89,7 @@ struct BasicEffect : Enemy
 	sf::Sprite s;
 	Tileset *ts;
 	int frame;
+	bool pauseImmune;
 	bool activated;
 	int animationFactor;
 	bool facingRight;
@@ -241,7 +242,7 @@ struct BasicTurret : Enemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
-
+	
 	const static int maxBullets = 16;
 	sf::Vector2<double> bulletPositions[maxBullets];
 	sf::Vector2<double> tempVel;

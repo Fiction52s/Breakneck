@@ -185,6 +185,8 @@ Actor::Actor( GameSession *gs )
 		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 205, 128 );
 		uairSword1.setTexture( *ts_uairSword1->texture );
 
+		ts_playerWasHit = owner->GetTileset( "fairsword1.png", 144, 128 );
+
 	//	ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 0, 0 );
 	//	standingNSword1.setTexture( *ts_standingNSword1->texture );
 
@@ -531,6 +533,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->damage;
 		
+		owner->ActivateEffect( ts_playerWasHit, position, true, 0, 9, 1, facingRight );
 		owner->Pause( 6 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		if( owner->powerBar.Damage( receivedHit->damage ) )
@@ -2333,7 +2336,7 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 )
 			{
 				owner->ActivateEffect( ts_dashStart, 
-					position, 0, 20, 5, facingRight );
+					position, false, 0, 20, 5, facingRight );
 			}
 
 			b.rh = dashHeight;
@@ -2409,7 +2412,7 @@ void Actor::UpdatePrePhysics()
 			
 			
 				owner->ActivateEffect( ts_fx_double, 
-					V2d( position.x, position.y - 60), 0, 12, 2, facingRight );
+					V2d( position.x, position.y - 60), false, 0, 12, 2, facingRight );
 			
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 				if( velocity.y > 0 )
@@ -2633,7 +2636,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame % 1 == 0 )
 			{
-				owner->ActivateEffect( ts_fx_airdash, position, 0, 10, 6, facingRight );
+				owner->ActivateEffect( ts_fx_airdash, position, false, 0, 10, 6, facingRight );
 			}
 
 			if( frame == 0 )
@@ -4608,7 +4611,7 @@ void Actor::UpdatePhysics()
 
 
 				double angle = atan2( gno.x, -gno.y );
-				owner->ActivateEffect( ts_fx_gravReverse, position, angle, 36, 1, facingRight );
+				owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 36, 1, facingRight );
 				//cout << "gno: " << gno.x << ", " << gno.y << endl;
 				if( -gno.y > -steepThresh )
 				{

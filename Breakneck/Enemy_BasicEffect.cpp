@@ -14,6 +14,7 @@ BasicEffect::BasicEffect ( GameSession *owner )
 	:Enemy( owner, EnemyType::BASICEFFECT )
 {
 	spawned = true;
+	pauseImmune = false;
 	frame = 0;
 	ts = NULL;
 	//ts = //owner->GetTileset( "double.png", 64, 64 ); //what
