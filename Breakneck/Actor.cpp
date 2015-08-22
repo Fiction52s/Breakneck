@@ -3595,11 +3595,18 @@ void Actor::UpdateReversePhysics()
 						}
 						else
 						{
-							cout << "d" << endl;
-								offsetX -= minContact.resolution.x;
-								groundSpeed = 0;
-								offsetX = -offsetX;
-								break;
+
+							if( bounceGrounded && abs( groundSpeed ) > 1 )
+							{
+								storedBounceGroundSpeed = groundSpeed;
+								groundedWallBounce = true;
+							}
+
+							//cout << "d" << endl;
+							offsetX -= minContact.resolution.x;
+							groundSpeed = 0;
+							offsetX = -offsetX;
+							break;
 						}
 					}
 				}
@@ -3641,7 +3648,6 @@ void Actor::UpdateReversePhysics()
 					cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					if( groundSpeed > 0 )
 					{
-						//cout << "transfer left "<< endl;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
 						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
@@ -3660,7 +3666,14 @@ void Actor::UpdateReversePhysics()
 						}
 						else if( abs( e0n.x ) >= wallThresh )
 						{
+							if( bounceGrounded && abs( groundSpeed ) > 1 )
+							{
+								storedBounceGroundSpeed = groundSpeed;
+								groundedWallBounce = true;
+							}
+
 							groundSpeed = 0;
+							offsetX = -offsetX;
 							break;
 						}
 						else
@@ -3675,6 +3688,7 @@ void Actor::UpdateReversePhysics()
 					}
 					else if( groundSpeed < 0 )
 					{
+						cout << "right"<< endl;
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
@@ -3691,6 +3705,12 @@ void Actor::UpdateReversePhysics()
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
+							if( bounceGrounded && abs( groundSpeed ) > 1 )
+							{
+								storedBounceGroundSpeed = groundSpeed;
+								groundedWallBounce = true;
+							}
+
 							groundSpeed = 0;
 							break;
 						}
@@ -3778,6 +3798,13 @@ void Actor::UpdateReversePhysics()
 						}
 						else
 						{
+							if( bounceGrounded && abs( groundSpeed ) > 1 )
+							{
+								storedBounceGroundSpeed = groundSpeed;
+								groundedWallBounce = true;
+							}
+
+
 							//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 							groundSpeed = 0;
@@ -4155,6 +4182,12 @@ void Actor::UpdatePhysics()
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
+							if( bounceGrounded && abs( groundSpeed ) > 1 )
+							{
+								storedBounceGroundSpeed = groundSpeed;
+								groundedWallBounce = true;
+							}
+
 							groundSpeed = 0;
 							break;
 						}
