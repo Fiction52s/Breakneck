@@ -41,13 +41,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\Shephard\Libraries\SFML-2.0_2\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Shephard\Libraries\SFML-2.3\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Shephard\Libraries\SFML-2.0_2\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-s-d.lib;sfml-main.lib;sfml-system-s-d.lib;sfml-window-s-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Shephard\Libraries\SFML-2.3\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -56,15 +56,15 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>C:\Users\Shephard\Libraries\SFML-2.0_2\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Shephard\Libraries\SFML-2.3\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SFML_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\Shephard\Libraries\SFML-2.0_2\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-s.lib;sfml-main.lib;sfml-system-s.lib;sfml-window-s.lib;sfml-audio-s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Shephard\Libraries\SFML-2.3\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-s.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>NotSet</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -72,8 +72,17 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EditSession.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="EnemyQuadTree.cpp" />
+    <ClCompile Include="Enemy_BasicEffect.cpp" />
+    <ClCompile Include="Enemy_BasicTurret.cpp" />
+    <ClCompile Include="Enemy_Crawler.cpp" />
+    <ClCompile Include="Enemy_FootTrap.cpp" />
+    <ClCompile Include="Enemy_Patroller.cpp" />
     <ClCompile Include="GameSession.cpp" />
+    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="MacInput.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="PlayerChar.cpp" />
@@ -82,16 +91,21 @@
     <ClCompile Include="poly2tri\sweep\cdt.cc" />
     <ClCompile Include="poly2tri\sweep\sweep.cc" />
     <ClCompile Include="poly2tri\sweep\sweep_context.cc" />
+    <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="SurfaceMover.cpp" />
     <ClCompile Include="Tileset.cpp" />
     <ClCompile Include="VectorMath.cpp" />
+    <ClCompile Include="Wire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="EditSession.h" />
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameSession.h" />
+    <ClInclude Include="GUI.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="MacInput.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="PlayerChar.h" />
     <ClInclude Include="poly2tri\common\shapes.h" />
@@ -100,9 +114,11 @@
     <ClInclude Include="poly2tri\sweep\cdt.h" />
     <ClInclude Include="poly2tri\sweep\sweep.h" />
     <ClInclude Include="poly2tri\sweep\sweep_context.h" />
+    <ClInclude Include="QuadTree.h" />
     <ClInclude Include="SurfaceMover.h" />
     <ClInclude Include="Tileset.h" />
     <ClInclude Include="VectorMath.h" />
+    <ClInclude Include="Wire.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
