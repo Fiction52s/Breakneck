@@ -179,6 +179,7 @@ void BasicTurret::UpdatePhysics()
 
 void BasicTurret::UpdatePostPhysics()
 {
+	cout << "physics" << endl;
 	PlayerSlowingMe();
 	if( !dead )
 	{
@@ -221,10 +222,11 @@ void BasicTurret::UpdatePostPhysics()
 	}
 
 	
-
+	cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
+		cout << "frame" << endl;
 		slowCounter = 1;
 	
 		if( dead )

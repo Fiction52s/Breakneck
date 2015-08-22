@@ -295,9 +295,6 @@ struct BasicTurret : Enemy
 	std::string queryMode;
 	int possibleEdgeCount;
 
-	int slowCounter;
-	int slowMultiple;
-
 	int frame;
 	int deathFrame;
 	int animationFactor;
