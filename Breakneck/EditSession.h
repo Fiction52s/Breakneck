@@ -61,7 +61,7 @@ struct ActorParams
 	std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
 	std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity, int framesBetweenFiring ); 
+		int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
 	std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity ); 
 	//sf::Sprite icon;

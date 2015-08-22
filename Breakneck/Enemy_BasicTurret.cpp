@@ -9,9 +9,8 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, 
-		int betweenFiring )
-		:Enemy( owner, EnemyType::BASICTURRET ), framesBetweenFiring( betweenFiring ), firingCounter( 0 ), ground( g ),
+BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
+		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 ), dead( false )
 {
 	ts = owner->GetTileset( "basicturret.png", 48, 48 );
@@ -56,7 +55,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q,
 	//slowCounter = 1;
 	//slowMultiple = 1;
 
-	bulletSpeed = 5;
+	//bulletSpeed = 5;
 
 	dead = false;
 
@@ -122,6 +121,7 @@ void BasicTurret::UpdatePrePhysics()
 {
 	if( frame == 0 )
 	{
+		//cout << "firing" << endl;
 		Bullet *b = ActivateBullet();
 		if( b != NULL )
 		{

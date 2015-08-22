@@ -592,8 +592,11 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int framesBetweenFiring;
-					is >> framesBetweenFiring;
+					double bulletSpeed;
+					is >> bulletSpeed;
+
+					int framesWait;
+					is >> framesWait;
 
 					int testIndex = 0;
 					TerrainPolygon *terrain = NULL;
@@ -615,7 +618,7 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, framesBetweenFiring );
+					a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 				}
 				else if( typeName == "foottrap" )
 				{
@@ -1005,7 +1008,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
 	Panel *basicTurretPanel = CreateOptionsPanel( "basicturret" );
-	ActorType *basicTurretType = new ActorType( "basicturret", crawlerPanel );
+	ActorType *basicTurretType = new ActorType( "basicturret", basicTurretPanel );
 
 	Panel *footTrapPanel = CreateOptionsPanel( "foottrap" );
 	ActorType *footTrapType = new ActorType( "foottrap", footTrapPanel );
@@ -1475,12 +1478,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
-											trackingEnemy = NULL;
-											ActorParams *actor = new ActorParams;
-											actor->group = groups["--"];
-											actor->SetAsBasicTurret( basicTurretType, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity, 30 );
-											groups["--"]->actors.push_back( actor);
 										}
 									}
 									else if( trackingEnemy->name == "foottrap" )
@@ -2979,6 +2976,50 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "basicturret_options" )
+	{	
+		if( b->name == "ok" )
+		{
+			stringstream ss;
+			string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+			string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
+			ss << bulletSpeedString;
+			
+
+			double bulletSpeed;
+			ss >> bulletSpeed;
+
+			if( ss.fail() )
+			{
+				assert( false );
+			}
+
+			ss.clear();
+
+			ss << framesWaitString;
+
+			int framesWait;
+			ss >> framesWait;
+
+			if( ss.fail() )
+			{
+				assert( false );
+			}
+
+			ActorParams *actor = new ActorParams;
+			actor->group = groups["--"];
+			actor->SetAsBasicTurret( types["basicturret"], enemyEdgePolygon, enemyEdgeIndex, 
+				enemyEdgeQuantity, bulletSpeed, framesWait );
+			groups["--"]->actors.push_back( actor);
+
+			showPanel = NULL;
+			trackingEnemy = NULL;
+
+		}
+
+
+		
+	}
 	
 	cout <<"button" << endl;
 }
@@ -3034,6 +3075,17 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
 		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "basicturret" )
+	{
+		Panel *p = new Panel( "basicturret_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
+		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -3167,7 +3219,7 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 }
 
 std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity, int framesBetweenFiring )
+		int eIndex, double edgeQuantity, double bulletSpeed, int framesWait )
 {
 	type = t;
 	ground = edgePolygon;
@@ -3217,9 +3269,16 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 
 	stringstream ss; 
 
-	ss << framesBetweenFiring;
+	ss << bulletSpeed;
 
 	params.push_back( ss.str() ); 
+
+	ss.str("");
+
+	ss << framesWait;
+
+	params.push_back( ss.str() );
+
 
 	return "success";
 }

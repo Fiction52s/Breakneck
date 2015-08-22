@@ -646,10 +646,13 @@ bool GameSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int framesBetweenFiring;
-					is >> framesBetweenFiring;
+					double bulletSpeed;
+					is >> bulletSpeed;
 
-					BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, framesBetweenFiring );
+					int framesWait;
+					is >> framesWait;
+
+					BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
 					//enemyTree = Insert( enemyTree, enemy );
 					enemyTree->Insert( enemy );
 				}

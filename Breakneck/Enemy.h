@@ -222,7 +222,8 @@ struct Crawler : Enemy
 struct BasicTurret : Enemy
 {
 	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
-		int framesBetweenFiring );
+		double bulletSpeed,
+		int framesWait );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -278,7 +279,7 @@ struct BasicTurret : Enemy
 	Bullet *inactiveBullets;
 	HitboxInfo *bulletHitboxInfo;
 
-	int framesBetweenFiring;
+	int framesWait;
 	int firingCounter;
 	Edge *ground;
 	double edgeQuantity;
