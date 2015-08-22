@@ -179,7 +179,6 @@ void BasicTurret::UpdatePhysics()
 
 void BasicTurret::UpdatePostPhysics()
 {
-	cout << "physics" << endl;
 	PlayerSlowingMe();
 	if( !dead )
 	{

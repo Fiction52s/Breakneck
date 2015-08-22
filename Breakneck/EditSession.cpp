@@ -3034,6 +3034,9 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 	{
 		trackingEnemy = types[name];
 		enemySprite.setTexture( trackingEnemy->imageTexture );
+		enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
+			trackingEnemy->imageTexture.getSize().y ) );
+
 		enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
 	//	trackingEnemy = true;
 		
