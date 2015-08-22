@@ -1513,7 +1513,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseWheelMoved:
 						{
-							
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							if( showPanel != NULL )
+							{
+								showPanel->SendKey( ev.key.code, ev.key.shift );
+							}
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
 						}
 					}
 					break;
@@ -3034,13 +3046,12 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 	{
 		trackingEnemy = types[name];
 		enemySprite.setTexture( trackingEnemy->imageTexture );
+
 		enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
 			trackingEnemy->imageTexture.getSize().y ) );
 
 		enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
-	//	trackingEnemy = true;
-		
-//		enemySprite.setPosition
+	
 		cout << "set your cursor as the image" << endl;
 	}
 	else

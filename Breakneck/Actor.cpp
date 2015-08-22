@@ -156,8 +156,13 @@ Actor::Actor( GameSession *gs )
 		actionLength[BOUNCEGROUND] = 5;
 		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce.png", 96, 96 );
 
+		actionLength[BOUNCEGROUNDEDWALL] = 30;
+		tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall.png", 80, 48 );
+
 		actionLength[DEATH] = 30;
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
+
+		
 
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
@@ -410,6 +415,7 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case AIRDASH:
+			{
 			if( slowMultiple > 1 )
 			{
 				frame = actionLength[AIRDASH] - 1;
@@ -421,6 +427,7 @@ void Actor::ActionEnded()
 			}
 			
 			break;
+			}
 		case STEEPCLIMB:
 			frame = 0;
 			break;
@@ -439,6 +446,9 @@ void Actor::ActionEnded()
 		case BOUNCEGROUND:
 			frame = 0;
 			break;
+		case BOUNCEGROUNDEDWALL:
+			action = STAND;
+			frame = 0;
 		case DEATH:
 		
 			frame = 0;
@@ -2003,6 +2013,12 @@ void Actor::UpdatePrePhysics()
 			
 			break;
 		}
+	case BOUNCEGROUNDEDWALL:
+		{
+			
+			break;
+		}
+
 	case DEATH:
 		{
 
@@ -2755,6 +2771,20 @@ void Actor::UpdatePrePhysics()
 			groundSpeed = 0;
 			break;
 		}
+	case BOUNCEGROUNDEDWALL:
+		{
+			if( frame == 0 )
+			{
+				storedBounceGroundSpeed = groundSpeed;
+				groundSpeed = 0;
+			}
+			else if( frame == 6 )
+			{
+				groundSpeed = -storedBounceGroundSpeed;
+				
+			}
+			break;
+		}
 	case DEATH:
 		{
 			velocity.x = 0;
@@ -2979,6 +3009,8 @@ void Actor::UpdatePrePhysics()
 	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 
 	//cout << "groundspeed: " << groundSpeed << endl;
+
+	groundedWallBounce = false;
 
 
 	groundSpeed /= slowMultiple;
@@ -4144,21 +4176,23 @@ void Actor::UpdatePhysics()
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
-							//	cout << "success?: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
-							//		", scst: " << steepClimbSpeedThresh  << endl;
 								groundSpeed = 0;
 								break;
 							}
 							else
 							{
-							//	cout << "e0ny: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
-							//		", scst: " << steepClimbSpeedThresh  << endl;
 								ground = next;
 								q = length( ground->v1 - ground->v0 );	
 							}
 						}
 						else if( abs( e0n.x ) >= wallThresh )
 						{
+							if( bounceGrounded && abs( groundSpeed ) > 1 )
+							{
+								storedBounceGroundSpeed = groundSpeed;
+								groundedWallBounce = true;
+							}
+
 							groundSpeed = 0;
 							break;
 						}
@@ -4171,16 +4205,6 @@ void Actor::UpdatePhysics()
 							ground = NULL;
 						}
 					}
-				/*	if( groundSpeed > 0 )
-					{
-						m = 10;
-					}
-					else if( groundSpeed < 0 )
-					{
-						m = -10;
-					}*/
-					//groundSpeed = 0;
-					//break;
 				}
 
 				if( !approxEquals( m, 0 ) )
@@ -4269,7 +4293,12 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-							//	cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+								if( bounceGrounded && abs( groundSpeed ) > 1)
+								{
+									storedBounceGroundSpeed = groundSpeed;
+									groundedWallBounce = true;
+								}
+								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								groundSpeed = 0;
 								edgeQuantity = q;
@@ -4532,8 +4561,6 @@ void Actor::UpdatePhysics()
 			}
 			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
-
-
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
@@ -4888,6 +4915,7 @@ void Actor::UpdatePostPhysics()
 		gn = ground->Normal();
 		if( collision )
 		{
+			//cout << "collision!" << endl;
 			if( action == AIRHITSTUN )
 			{
 				action = GROUNDHITSTUN;
@@ -5020,6 +5048,12 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
+	if( groundedWallBounce )
+	{
+		//cout << "bounce" << endl;
+		action = BOUNCEGROUNDEDWALL;
+		frame = 0;
+	}
 	//display action
 
 	if( record > 0 )
@@ -6193,6 +6227,82 @@ void Actor::UpdatePostPhysics()
 				//	sprite->setPosition( pp.x + offsetX, pp.y );
 				//else
 				//	sprite->setPosition( pp.x, pp.y );
+
+			break;
+		}
+	case BOUNCEGROUNDEDWALL:
+		{
+			if( frame == 0 )
+			{
+				facingRight = !facingRight;
+			}
+
+			sprite->setTexture( *(tileset[BOUNCEGROUNDEDWALL]->texture));
+
+			sf::IntRect ir;
+			if( frame < 6 )
+			{
+				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 0 );
+			}
+			else if( frame < 20 )
+			{
+				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 1 );
+			}
+			else
+			{
+				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 2 );
+			}
+			
+
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+					angle = PI;
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+			if( frame < 6 )
+			{
+				if( ( facingRight && !reversed ) || (!facingRight && reversed ) )
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width / 2 - 3, sprite->getLocalBounds().height);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width / 2 + 3, sprite->getLocalBounds().height);
+				}
+				
+
+				angle = 0;
+				if( reversed )
+					angle = PI;
+			}
+			else
+			{
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			}
+			
+			sprite->setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
 
 			break;
 		}

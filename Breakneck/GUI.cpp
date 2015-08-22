@@ -248,8 +248,7 @@ void Panel::Draw( RenderTarget *target )
 }
 
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
-{
-	
+{	
 	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
 		if( (*it).second->focused )

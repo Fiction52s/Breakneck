@@ -43,6 +43,7 @@ struct Actor : QuadTreeCollider,
 		WIREHOLD,
 		BOUNCEAIR,
 		BOUNCEGROUND,
+		BOUNCEGROUNDEDWALL,
 		DEATH,
 		Count
 	};
@@ -235,11 +236,13 @@ struct Actor : QuadTreeCollider,
 	HitboxInfo *receivedHit;
 
 	sf::Vector2<double> storedBounceVel;
+	double storedBounceGroundSpeed;
 	Wire *wire;
 	Edge *bounceEdge;
 	double bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
+	bool groundedWallBounce;
 
 	bool touchEdgeWithWire;
 
