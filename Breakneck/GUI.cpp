@@ -148,23 +148,18 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 			(*it).second->focused = true;
 		}
 	}
-	/*if( t.Update( mouseDown, posx, posy ) )
-	{
-		t.focused = true;
-		t2.focused = false;
-	}
-
-	if( t2.Update( mouseDown, posx, posy ) )
-	{
-		t.focused = false;
-		t2.focused = true;
-	}*/
 
 	for( map<string,Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
 	{
 		//(*it).SendKey( k, shift );
 		bool temp = (*it).second->Update( mouseDown, posx, posy );
 
+	}
+
+	for( map<string,CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it )
+	{
+		//(*it).SendKey( k, shift );
+		bool temp = (*it).second->Update( mouseDown, posx, posy );
 	}
 
 	//if( b.Update( mouseDown, posx, posy ) )
@@ -187,12 +182,21 @@ void Panel::SendEvent( TextBox *tb, const std::string & e )
 	handler->TextBoxCallback( tb, e );
 }
 
+void Panel::SendEvent( CheckBox *cb, const std::string & e )
+{
+	handler->CheckBoxCallback( cb, e );
+}
+
 void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
 {
 	assert( buttons.count( name ) == 0 );
 	buttons[name] = new Button( name, pos.x, pos.y, size.x, size.y, arial, text, this );
-	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
-	//buttons.push_back( new Button( pos.x, pos.y, size.x, size.y, arial, text, this ) );
+}
+
+void Panel::AddCheckBox( const string &name, sf::Vector2i pos )
+{
+	assert( checkBoxes.count( name ) == 0 );
+	checkBoxes[name] = new CheckBox( name, pos.x, pos.y, this );
 }
 
 void Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText )
@@ -232,6 +236,11 @@ void Panel::Draw( RenderTarget *target )
 	}
 	
 	for( map<string,Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
+	{
+		(*it).second->Draw( target );
+	}
+
+	for( map<string,CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it )
 	{
 		(*it).second->Draw( target );
 	}
@@ -587,5 +596,76 @@ void Button::Draw( RenderTarget *target )
 	target->draw( rs );
 
 	target->draw( text );
+}
+
+CheckBox::CheckBox( const std::string &n, int posx, int posy, Panel *own )
+	:pos( posx, posy ), clickedDown( false ), owner( own ), name( n ), checked( false )
+{
+
+}
+
+bool CheckBox::Update( bool mouseDown, int posx, int posy )
+{
+	sf::Rect<int> r( pos.x, pos.y, SIZE, SIZE );
+	if( mouseDown )
+	{	
+		if( r.contains( sf::Vector2i( posx, posy ) ) )
+		{
+			clickedDown = true;
+		}
+		else
+		{
+			clickedDown = false;
+		}
+	}
+	else
+	{
+		if( r.contains( sf::Vector2i( posx, posy ) ) && clickedDown )
+		{
+			clickedDown = false;
+			checked = !checked;
+			if( checked )
+			{
+				owner->SendEvent( this, "checked" );
+			}
+			else
+			{
+				owner->SendEvent( this, "unchecked" );
+			}
+			
+			return true;
+		}
+		else
+		{
+			clickedDown = false;
+		}
+	}
+
+	return false;
+}
+
+void CheckBox::Draw( RenderTarget *target )
+{
+	sf::RectangleShape rs;
+	rs.setSize( sf::Vector2f( SIZE, SIZE ) );
+	rs.setPosition( pos.x, pos.y );
+
+	if( clickedDown )
+	{
+		rs.setFillColor( Color::Cyan );
+	}
+	else
+	{
+		if( checked )
+		{
+			rs.setFillColor( Color::Magenta );
+		}
+		else
+		{
+			rs.setFillColor( Color::Black );
+		}
+	}
+
+	target->draw( rs );
 }
 

@@ -99,6 +99,7 @@ struct EditSession : GUIHandler
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
+	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
 	std::string mode;
 	sf::RenderWindow *w;
@@ -110,6 +111,7 @@ struct EditSession : GUIHandler
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
 	ActorParams *selectedActor;
+	ActorParams *editActor;
 
 
 	//CREATE_TERRAIN mode
@@ -131,12 +133,19 @@ struct EditSession : GUIHandler
 
 	//static void TestButton();
 
+
+	int enemyEdgeIndex;
+	TerrainPolygon *enemyEdgePolygon;
+	double enemyEdgeQuantity;
+
+
 	std::list<TerrainPolygon*> selectedPolygons;
 
 	sf::Sprite enemySprite;
 	ActorType *trackingEnemy;//bool trackingEnemy;
 	Panel *showPanel;
 	bool trackingEnemyDown;
+
 	Panel *CreateOptionsPanel( const std::string &name );
 
 	std::list<sf::Vector2i> patrolPath;

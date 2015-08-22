@@ -1124,9 +1124,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	bool canCreatePoint = true;
 	gs.active = true;
 
-	int enemyEdgeIndex;
-	TerrainPolygon *enemyEdgePolygon;
-	double enemyEdgeQuantity;
+	
 
 
 	double circleDist = 100;
@@ -1455,7 +1453,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( trackingEnemy != NULL )
+								if( showPanel == NULL && trackingEnemy != NULL )
 								{
 									if( trackingEnemy->name == "patroller" )
 									{
@@ -1469,14 +1467,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
-											trackingEnemy = NULL;
-											ActorParams *actor = new ActorParams;
-											cout << "blah" << endl;
-											actor->SetAsCrawler( crawlerType, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity, true, 10 );
-											actor->group = groups["--"];
-											
-											groups["--"]->actors.push_back( actor);
+											//trackingEnemy = NULL;
 										}
 									}
 									else if( trackingEnemy->name == "basicturret" )
@@ -2362,7 +2353,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case CREATE_ENEMY:
 			{
-				if( trackingEnemy != NULL )
+				if( trackingEnemy != NULL && showPanel == NULL )
 				{
 					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
 					enemySprite.setRotation( 0 );
@@ -2370,7 +2361,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					
 				}
 
-				if( trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
+				if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
 					|| trackingEnemy->name == "basicturret"
 					|| trackingEnemy->name == "foottrap" ) )
 				{
@@ -2945,11 +2936,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" );
 		{
-			string result;
+			bool loop = p->checkBoxes["loop"]->checked;
 
-			//do checks when switching focus from a text box or pressing ok. 
-			//for now just use pressing ok
-			//do checks? assign variables to the enemy
+
+			
 
 			showPanel = NULL;
 		}
@@ -2958,8 +2948,30 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" );
 		{
-			string result;
+			bool clockwise = p->checkBoxes["clockwise"]->checked;
+			double speed;
 
+			stringstream ss;
+			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
+			ss << s;
+
+			ss >> speed;
+
+			if( ss.fail() )
+			{
+				cout << "stringstream to integer parsing error" << endl;
+				ss.clear();
+				assert( false );
+			}
+
+			ActorParams *actor = new ActorParams;							
+			actor->SetAsCrawler( types["crawler"], enemyEdgePolygon, enemyEdgeIndex, 
+				enemyEdgeQuantity, clockwise, speed );
+			actor->group = groups["--"];
+			groups["--"]->actors.push_back( actor);
+			trackingEnemy = NULL;
+
+			//cout << "clockwise: " << (int)clockwise << ", speed: " << speed << endl;
 			//do checks when switching focus from a text box or pressing ok. 
 			//for now just use pressing ok
 			//do checks? assign variables to the enemy
@@ -2993,6 +3005,11 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 	}
 }
 
+void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
+{
+	cout << cb->name << " was " << e << endl;
+}
+
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
 	if( name == "patroller" )
@@ -3001,6 +3018,9 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -3009,8 +3029,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	{
 		Panel *p = new Panel( "crawler_options", 200, 400, this );
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
