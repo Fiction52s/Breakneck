@@ -107,7 +107,7 @@ struct EditSession : GUIHandler
 	std::string mode;
 	sf::RenderWindow *w;
 	sf::Vector2i playerPosition;
-	sf::Vector2i goalPosition;
+	//sf::Vector2i goalPosition;
 	std::string currentFile;
 	double zoomMultiple;
 	sf::Vector2f testPoint;

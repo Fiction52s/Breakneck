@@ -25,13 +25,6 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 		assert( 0 && "polygon shader not loaded" );
 	}
 
-	if( !goalTex.loadFromFile( "goal.png" ) )
-	{
-		assert( 0 && "goal couldnt load" );
-	}
-	goalSprite.setTexture( goalTex );
-	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
-
 	terrainTree = new QuadTree( 1000000, 1000000 );
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
@@ -289,11 +282,6 @@ bool GameSession::OpenFile( string fileName )
 		originalPos.x = player.position.x;
 		originalPos.y = player.position.y;
 
-		int goalPositionx, goalPositiony;
-		is >> goalPositionx;
-		is >> goalPositiony;  
-		goalSprite.setPosition( goalPositionx, goalPositiony );
-
 		int pointsLeft = numPoints;
 
 		int pointCounter = 0;
@@ -540,8 +528,26 @@ bool GameSession::OpenFile( string fileName )
 				string typeName;
 				is >> typeName;
 
-			
-				if( typeName == "patroller" )
+				if( typeName == "goal" )
+				{
+					//always grounded
+					string airStr;
+					is >> airStr;
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+					enemyTree->Insert( enemy );
+				}
+				else if( typeName == "patroller" )
 				{
 					string airStr;
 					is >> airStr;
@@ -792,11 +798,13 @@ int GameSession::Run( string fileName )
 	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
-	bool goalPlayerCollision = false;
+	//bool goalPlayerCollision = false;
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 	Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
+
+	goalDestroyed = false;
 
 	while( !quit )
 	{
@@ -920,7 +928,7 @@ int GameSession::Run( string fileName )
 			break;
 		}
 
-		if( goalPlayerCollision )
+		if( goalDestroyed )
 		{
 			quit = true;
 			returnVal = 1;
@@ -1060,25 +1068,6 @@ int GameSession::Run( string fileName )
 
 			UpdateEnemiesPhysics();
 
-			
-
-			//temporary for goal collision
-			double gLeft = goalSprite.getPosition().x - goalSprite.getLocalBounds().width / 2.0;
-			double gRight = goalSprite.getPosition().x + goalSprite.getLocalBounds().width / 2.0;
-			double gTop = goalSprite.getPosition().y - goalSprite.getLocalBounds().height / 2.0;
-			double gBottom = goalSprite.getPosition().y + goalSprite.getLocalBounds().height  / 2.0;
-
-			double pLeft = player.position.x - player.b.rw;
-			double pRight = player.position.x + player.b.rw;
-			double pTop = player.position.y - player.b.rh;
-			double pBottom = player.position.y + player.b.rh;
-
-			
-			if( gLeft <= pRight && gRight >= pLeft && gTop <= pBottom && gBottom >= pTop )
-			{
-				goalPlayerCollision = true;
-			}
-
 
 			player.UpdatePostPhysics();
 
@@ -1216,7 +1205,6 @@ int GameSession::Run( string fileName )
 		
 		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .075 );
 
-		window->draw( goalSprite );
 
 		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
 		/*if( false )

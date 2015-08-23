@@ -110,11 +110,10 @@ struct GameSession : QuadTreeCollider
 
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
-	sf::Sprite goalSprite;
-	sf::Texture goalTex;
 	//EdgeQNode *testTree;
 	//EnemyQNode *enemyTree;
 
+	bool goalDestroyed;
 
 	Enemy *activeEnemyList;
 	Enemy *pauseImmuneEffects;

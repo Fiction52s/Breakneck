@@ -411,9 +411,6 @@ bool EditSession::OpenFile( string fileName )
 		is >> playerPosition.x;
 		is >> playerPosition.y;
 
-		is >> goalPosition.x;
-		is >> goalPosition.y;
-
 		while( numPoints > 0 )
 		{
 			TerrainPolygon *poly = new TerrainPolygon;
@@ -472,8 +469,44 @@ bool EditSession::OpenFile( string fileName )
 					at = types[typeName];
 				}
 
+				if( typeName == "goal" )
+				{
+					//always grounded
+					string airStr;
+					is >> airStr;
 
-				if( typeName == "patroller" )
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int testIndex = 0;
+					TerrainPolygon *terrain = NULL;
+					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing" );
+
+					if( edgeIndex == terrain->points.size() - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a->SetAsGoal( at, terrain, edgeIndex, edgeQuantity );
+				}
+				else if( typeName == "patroller" )
 				{
 					Vector2i pos;
 
@@ -680,6 +713,29 @@ bool EditSession::OpenFile( string fileName )
 
 void EditSession::WriteFile(string fileName)
 {
+	bool hasGoal = false;
+	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+	{
+		ActorGroup *group = (*it).second;
+		for( list<ActorParams*>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
+		{
+			if( (*it2)->type == types["goal"] )
+			{
+				hasGoal = true;
+				break;
+			}
+		}
+	}
+
+	if( !hasGoal )
+	{
+		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
+			<< endl;
+		return;
+	}
+
+
+
 	ofstream of;
 	of.open( fileName + ".brknk" );
 
@@ -691,7 +747,6 @@ void EditSession::WriteFile(string fileName)
 
 	of << pointCount << endl;
 	of << playerPosition.x << " " << playerPosition.y << endl;
-	of << goalPosition.x << " " << goalPosition.y << endl;
 
 	int writeIndex = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -707,6 +762,8 @@ void EditSession::WriteFile(string fileName)
 	}
 
 	of << groups.size() << endl;
+	//write the stuff for goals and remove them from the enemy stuff
+
 	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 	{
 		(*it).second->WriteFile( of );
@@ -1052,9 +1109,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	playerTex.loadFromFile( "stand.png" );
 	sf::Sprite playerSprite( playerTex );
 
-	Texture goalTex;
-	goalTex.loadFromFile( "goal.png" );
-	Sprite goalSprite( goalTex );
+	//Texture goalTex;
+	//goalTex.loadFromFile( "goal.png" );
+	//Sprite goalSprite( goalTex );
 
 	sf::Texture iconsTex;
 	iconsTex.loadFromFile( "editoricons.png" );
@@ -1070,7 +1127,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 	//sf::View uiView( Vector2f( wSize.x / 2, wSize.y / 2 ), Vector2f( wSize.x, wSize.y ) );
 
-	goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
+	//goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
 	playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
 	playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
@@ -2670,7 +2727,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 
 		w->draw( playerSprite );
-		w->draw( goalSprite );
+		
 		w->draw( iconSprite );
 
 		if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )

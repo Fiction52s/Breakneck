@@ -78,6 +78,7 @@
     <ClCompile Include="Enemy_BasicTurret.cpp" />
     <ClCompile Include="Enemy_Crawler.cpp" />
     <ClCompile Include="Enemy_FootTrap.cpp" />
+    <ClCompile Include="Enemy_Goal.cpp" />
     <ClCompile Include="Enemy_Patroller.cpp" />
     <ClCompile Include="GameSession.cpp" />
     <ClCompile Include="GUI.cpp" />
