@@ -1,4 +1,4 @@
-﻿Build started 8/23/2015 02:00:53 PM.
+﻿Build started 8/23/2015 03:32:33 PM.
      1>Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\Breakneck.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -96,82 +96,84 @@
      1>EditSession.cpp(1945): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>EditSession.cpp(1950): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>EditSession.cpp(1950): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2451): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2451): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2470): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
-     1>EditSession.cpp(2470): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>EditSession.cpp(2450): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2450): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2469): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>EditSession.cpp(2469): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>EditSession.cpp(2570): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2570): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>EditSession.cpp(2571): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2571): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2572): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2616): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
-     1>EditSession.cpp(2616): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
-     1>EditSession.cpp(2631): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2631): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2685): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2685): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2697): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2697): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2733): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2733): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2745): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2745): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2755): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2762): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2762): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2779): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2779): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2789): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2789): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2846): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2851): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2851): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2857): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2857): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2862): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2862): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2867): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2867): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2871): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2871): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2875): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2875): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2881): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2881): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2885): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2885): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2891): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2891): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2916): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(2917): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(2918): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(2919): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(2982): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2983): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2984): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2985): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(2999): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(2999): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3079): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(3080): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(3081): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(3082): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
-     1>EditSession.cpp(3107): warning C4390: ';' : empty controlled statement found; is this the intent?
-     1>EditSession.cpp(3119): warning C4390: ';' : empty controlled statement found; is this the intent?
-     1>EditSession.cpp(3138): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3308): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(3308): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>EditSession.cpp(3385): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3385): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3386): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3449): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3449): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3450): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3514): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3514): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3515): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3566): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3566): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>EditSession.cpp(3567): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2615): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>EditSession.cpp(2615): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>EditSession.cpp(2630): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2630): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2684): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2684): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2696): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2696): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2732): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2732): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2744): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2744): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2754): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2761): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2761): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2778): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2778): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2788): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2788): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2838): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2838): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(2878): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2883): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2883): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2892): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2892): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2897): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2897): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2902): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2902): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2906): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2906): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2910): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2910): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2919): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2919): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2923): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2923): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2941): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2941): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(2966): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(2967): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(2968): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(2969): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(3032): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(3033): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(3034): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(3035): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(3049): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3049): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3129): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(3130): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(3131): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(3132): warning C4244: 'initializing' : conversion from 'const int' to 'float', possible loss of data
+     1>EditSession.cpp(3157): warning C4390: ';' : empty controlled statement found; is this the intent?
+     1>EditSession.cpp(3169): warning C4390: ';' : empty controlled statement found; is this the intent?
+     1>EditSession.cpp(3188): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3358): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(3358): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>EditSession.cpp(3435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3436): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3499): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3499): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3500): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3564): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3564): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3565): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3616): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3616): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EditSession.cpp(3617): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
        Link:
          c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe" /NOLOGO /LIBPATH:"C:\Users\Shephard\Libraries\SFML-2.3\lib" "sfml-graphics-s.lib" "sfml-window-s.lib" "sfml-audio-s.lib" "sfml-system-s.lib" opengl32.lib freetype.lib jpeg.lib winmm.lib gdi32.lib flac.lib vorbisenc.lib vorbisfile.lib vorbis.lib ogg.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Breakneck.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.lib" /MACHINE:X86 Release\Actor.obj
          Release\Camera.obj

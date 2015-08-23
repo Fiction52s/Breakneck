@@ -1184,7 +1184,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	Color graphColor = Color( 200, 50, 50, 100 );
 	//int max = 1000000;
-	int numLines = 10;
+	int numLines = 30;
 	sf::VertexArray graphLines( sf::Lines, numLines * 8 );
 	int graphSep = 32;
 	int graphMax = graphSep * numLines;
@@ -2429,7 +2429,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( //polygonInProgress->points.size() > 0 && 
 					Keyboard::isKeyPressed( Keyboard::G ) )
 				{
-
 					int adjX, adjY;
 					
 					testPoint.x /= 32;
@@ -2813,7 +2812,40 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		}
 		if( showGraph )
 		{
+			Vector2f adjustment;
+			for( int i = 0; i < numLines * 8; ++i )
+			{
+				int adjX, adjY;
+				float x = view.getCenter().x;
+				float y = view.getCenter().y;
+
+				x /= 32;
+				y /= 32;
+
+				if( x > 0 )
+					x += .5f;
+				else if( y < 0 )
+					y -= .5f;
+
+				if( y > 0 )
+					y += .5f;
+				else if( y < 0 )
+					y -= .5f;
+
+				adjX = ((int)x) * 32;
+				adjY = ((int)y) * 32;
+					
+				adjustment = Vector2f( adjX, adjY );
+				
+				graphLines[i].position += adjustment;
+			}
+			
 			w->draw( graphLines );
+
+			for( int i = 0; i < numLines * 8; ++i )
+			{
+				graphLines[i].position -= adjustment;
+			}
 		}
 
 		
@@ -2851,7 +2883,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
 					w->draw( cs );
 
-					sf::Text textblue( "CREATE\nTERRAIN", arial, 14 );
+					sf::Text textblue;
+					textblue.setCharacterSize( 14 );
+					textblue.setFont( arial );
+					textblue.setString( "CREATE\nTERRAIN" );
 					textblue.setColor( sf::Color::White );
 					textblue.setOrigin( textblue.getLocalBounds().width / 2, textblue.getLocalBounds().height / 2 );
 					textblue.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
@@ -2875,7 +2910,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
 					w->draw( cs );
 
-					sf::Text textred( "CREATE\nENEMIES", arial, 14 );
+					sf::Text textred;
+					textred.setString( "CREATE\nENEMIES" );
+					textred.setFont( arial );
+					textred.setCharacterSize( 14 );
 					textred.setColor( sf::Color::White );
 					textred.setOrigin( textred.getLocalBounds().width / 2, textred.getLocalBounds().height / 2 );
 					textred.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
@@ -2885,7 +2923,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
 					w->draw( cs );
 
-					sf::Text textmag( "EDIT", arial, 14 );
+					sf::Text textmag;
+					if( menuDownStored == EditSession::EDIT && selectedActor != NULL )
+					{
+						textmag.setString( "EDIT\nENEMY" );
+					}
+					else
+					{
+						textmag.setString( "EDIT" );
+					}
+				
+					
+					textmag.setFont( arial );
+					textmag.setCharacterSize( 14 );
 					textmag.setColor( sf::Color::White );
 					textmag.setOrigin( textmag.getLocalBounds().width / 2, textmag.getLocalBounds().height / 2 );
 					textmag.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
