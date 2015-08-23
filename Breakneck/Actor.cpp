@@ -6319,7 +6319,6 @@ void Actor::UpdatePostPhysics()
 					sprite->setOrigin( sprite->getLocalBounds().width / 2 + 3, sprite->getLocalBounds().height);
 				}
 				
-
 				angle = 0;
 				if( reversed )
 					angle = PI;

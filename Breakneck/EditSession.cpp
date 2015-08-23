@@ -2711,9 +2711,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
 					w->draw( cs );
 
+					sf::Text textblue( "CREATE\nTERRAIN", arial, 14 );
+					textblue.setColor( sf::Color::White );
+					textblue.setOrigin( textblue.getLocalBounds().width / 2, textblue.getLocalBounds().height / 2 );
+					textblue.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
+					w->draw( textblue);
+
+
 					cs.setFillColor( COLOR_GREEN );
 					cs.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
 					w->draw( cs );
+
 
 					cs.setFillColor( COLOR_YELLOW );
 					cs.setPosition( (menuDownPos + bottomPos).x, (menuDownPos + bottomPos).y );
@@ -2727,9 +2735,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
 					w->draw( cs );
 
+					sf::Text textred( "CREATE\nENEMIES", arial, 14 );
+					textred.setColor( sf::Color::White );
+					textred.setOrigin( textred.getLocalBounds().width / 2, textred.getLocalBounds().height / 2 );
+					textred.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
+					w->draw( textred );
+
 					cs.setFillColor( COLOR_MAGENTA );
 					cs.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
 					w->draw( cs );
+
+					sf::Text textmag( "EDIT", arial, 14 );
+					textmag.setColor( sf::Color::White );
+					textmag.setOrigin( textmag.getLocalBounds().width / 2, textmag.getLocalBounds().height / 2 );
+					textmag.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
+					w->draw( textmag );
 
 					break;
 				}
