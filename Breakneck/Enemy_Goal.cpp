@@ -124,7 +124,7 @@ void Goal::UpdatePostPhysics()
 
 	//if( frame == 4 * animationFactor )
 	//{
-		frame = 0;
+	frame = 0;
 	//}
 
 	if( deathFrame == 60 )

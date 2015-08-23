@@ -1040,6 +1040,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
+	bool showGraph = false;
+
 	selectedActor = NULL;
 
 	trackingEnemy = NULL;
@@ -1180,6 +1182,30 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	guiMenuSprite.setTexture( guiMenuCubeTexture );
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
+	Color graphColor = Color( 200, 50, 50, 100 );
+	//int max = 1000000;
+	int numLines = 10;
+	sf::VertexArray graphLines( sf::Lines, numLines * 8 );
+	int graphSep = 32;
+	int graphMax = graphSep * numLines;
+	int temp = -graphMax;
+
+	//horiz
+	for( int i = 0; i < numLines * 4; i += 2 )
+	{
+		graphLines[i] = sf::Vertex(sf::Vector2<float>(-graphMax, temp), graphColor );
+		graphLines[i+1] = sf::Vertex(sf::Vector2<float>(graphMax, temp), graphColor );
+		temp += graphSep;
+	}
+
+	//vert
+	temp = -graphMax;
+	for( int i = numLines * 4; i < numLines * 8; i += 2 )
+	{
+		graphLines[i] = sf::Vertex(sf::Vector2<float>(temp, -graphMax), graphColor );
+		graphLines[i+1] = sf::Vertex(sf::Vector2<float>(temp, graphMax), graphColor );
+		temp += graphSep;
+	}
 	
 
 	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
@@ -1321,6 +1347,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == sf::Keyboard::V )
 							{
+								//cout << "PRESSING V: " << polygonInProgress->points.size() << endl;
 								if( polygonInProgress->points.size() > 0 )
 								{
 									polygonInProgress->points.pop_back();
@@ -2330,13 +2357,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		if( quit )
 			break;
 
-		
+		showGraph = false;
 
 		switch( mode )
 		{
 		case CREATE_TERRAIN:
 			{
-				if( polygonInProgress->points.size() > 0 && Keyboard::isKeyPressed( Keyboard::LShift ) ) 
+				/*if( polygonInProgress->points.size() > 0 && Keyboard::isKeyPressed( Keyboard::LShift ) ) 
 				{
 
 					Vector2i last = polygonInProgress->points.back();
@@ -2396,6 +2423,33 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					testPoint = Vector2f(last.x, last.y) + dir * (float)len;
 					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				}*/
+
+
+				if( //polygonInProgress->points.size() > 0 && 
+					Keyboard::isKeyPressed( Keyboard::G ) )
+				{
+
+					int adjX, adjY;
+					
+					testPoint.x /= 32;
+					testPoint.y /= 32;
+
+					if( testPoint.x > 0 )
+						testPoint.x += .5f;
+					else if( testPoint.x < 0 )
+						testPoint.x -= .5f;
+
+					if( testPoint.y > 0 )
+						testPoint.y += .5f;
+					else if( testPoint.y < 0 )
+						testPoint.y -= .5f;
+
+					adjX = ((int)testPoint.x) * 32;
+					adjY = ((int)testPoint.y) * 32;
+					
+					testPoint = Vector2f( adjX, adjY );
+					showGraph = true;
 				}
 
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
@@ -2414,7 +2468,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( emptySpace )
 					{
 						Vector2i worldi( testPoint.x, testPoint.y );
-						if( !polygonInProgress->points.empty() && length( worldPos - Vector2<double>(polygonInProgress->points.back().x, 
+						if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().x, 
 							polygonInProgress->points.back().y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 						{
 							if( PointValid( polygonInProgress->points.back(), worldi ) )
@@ -2757,6 +2811,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				//cout << "draw rectangle"  << endl;
 			}
 		}
+		if( showGraph )
+		{
+			w->draw( graphLines );
+		}
+
 		
 		w->setView( uiView );
 
