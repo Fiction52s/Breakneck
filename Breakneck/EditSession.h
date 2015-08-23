@@ -64,6 +64,9 @@ struct ActorParams
 		int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
 	std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity ); 
+
+	std::string SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity ); 
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;

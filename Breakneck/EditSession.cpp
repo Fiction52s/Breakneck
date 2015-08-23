@@ -1013,24 +1013,32 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *footTrapPanel = CreateOptionsPanel( "foottrap" );
 	ActorType *footTrapType = new ActorType( "foottrap", footTrapPanel );
 
+	Panel *goalPanel = CreateOptionsPanel( "goal" );
+	ActorType *goalType = new ActorType( "goal", goalPanel );
+
+
 	types["patroller"] = patrollerType;
 	types["crawler"] = crawlerType;
 	types["basicturret"] = basicTurretType;
 	types["foottrap"] = footTrapType;
+	types["goal"] = goalType;
 
 
-	GridSelector gs( 2, 2, 32, 32, this );
+	GridSelector gs( 3, 2, 32, 32, this );
 	gs.active = false;
 
 	sf::Sprite s0( patrollerType->iconTexture );
 	sf::Sprite s1( crawlerType->iconTexture );
 	sf::Sprite s2( basicTurretType->iconTexture );
 	sf::Sprite s3( footTrapType->iconTexture );
+	sf::Sprite s4( goalType->iconTexture );
+
 
 	gs.Set( 0, 0, s0, "patroller" );
 	gs.Set( 1, 0, s1, "crawler" );
 	gs.Set( 0, 1, s2, "basicturret" );
 	gs.Set( 1, 1, s3, "foottrap" );
+	gs.Set( 2, 0, s4, "goal" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -1485,12 +1493,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
+
+											/*showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new ActorParams;
 											actor->group = groups["--"];
 											actor->SetAsFootTrap( footTrapType, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity );
-											groups["--"]->actors.push_back( actor);
+											groups["--"]->actors.push_back( actor );*/
+										}
+									}
+									else if( trackingEnemy->name == "goal" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											trackingEnemy = NULL;
+											ActorParams *actor = new ActorParams;
+											actor->group = groups["--"];
+											actor->SetAsGoal( goalType, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity );
+											groups["--"]->actors.push_back( actor );
 										}
 									}
 								}
@@ -2372,7 +2395,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 				if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
 					|| trackingEnemy->name == "basicturret"
-					|| trackingEnemy->name == "foottrap" ) )
+					|| trackingEnemy->name == "foottrap" 
+					|| trackingEnemy->name == "goal" ) )
 				{
 					enemyEdgePolygon = NULL;
 				
@@ -3047,13 +3071,25 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 			trackingEnemy = NULL;
 
-		}
-
-
-		
+		}	
 	}
+	else if( p->name == "foottrap_options" )
+	{
+		if( b->name == "ok" )
+		{
+			ActorParams *actor = new ActorParams;
+			actor->group = groups["--"];
+			actor->SetAsFootTrap( types["foottrap"], enemyEdgePolygon, enemyEdgeIndex, 
+				enemyEdgeQuantity );
+			groups["--"]->actors.push_back( actor );
+
+			showPanel = NULL;
+			trackingEnemy = NULL;
+		}
+	}
+
 	
-	cout <<"button" << endl;
+	//cout <<"button" << endl;
 }
 
 void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
@@ -3120,6 +3156,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "foottrap" )
+	{
+		Panel *p = new Panel( "foottrap_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -3318,6 +3363,58 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 }
 
 std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
+		int eIndex, double edgeQuantity )
+{
+	type = t;
+	ground = edgePolygon;
+	edgePolygon->enemies.push_back( this );
+	edgeIndex = eIndex;
+	groundQuantity = edgeQuantity;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+	
+	//	image.setPosition( pos.x, pos.y );
+	int testIndex = 0;
+
+	Vector2i point;
+
+	list<Vector2i>::iterator prev = ground->points.end();
+	prev--;
+	list<Vector2i>::iterator curr = ground->points.begin();
+
+	for( ; curr != ground->points.end(); ++curr )
+	{
+		if( edgeIndex == testIndex )
+		{
+			V2d pr( (*prev).x, (*prev).y );
+			V2d cu( (*curr).x, (*curr).y );
+
+			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(groundQuantity / length( cu - pr ) ) );
+
+			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+
+			image.setPosition( newPoint.x, newPoint.y );
+			image.setRotation( angle );
+
+			break;
+		}
+		prev = curr;
+		++testIndex;
+	}
+	//adjust for ordery
+	if( edgeIndex == 0 )
+		edgeIndex = ground->points.size() - 1;
+	else
+		edgeIndex--;
+
+	params.clear();
+
+	return "success";
+}
+
+std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
 		int eIndex, double edgeQuantity )
 {
 	type = t;
