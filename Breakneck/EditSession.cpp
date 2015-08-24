@@ -1050,6 +1050,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
 
+	sf::Texture playerZoomIconTex;
+	playerZoomIconTex.loadFromFile( "playerzoomicon.png" );
+	sf::Sprite playerZoomIcon( playerZoomIconTex );
+	
+	playerZoomIcon.setOrigin( playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2 );
+
 //	Panel p( 300, 300, this );
 //	p.active = true;
 //	p.AddButton( Vector2i( 50, 100 ), Vector2f( 50, 50 ), "LOL");
@@ -1345,7 +1351,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									polygonInProgress->points.clear();
 								}
 							}
-							else if( ev.key.code == sf::Keyboard::V )
+							else if( ev.key.code == sf::Keyboard::V || ev.key.code == sf::Keyboard::Delete )
 							{
 								//cout << "PRESSING V: " << polygonInProgress->points.size() << endl;
 								if( polygonInProgress->points.size() > 0 )
@@ -1404,7 +1410,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											if( (*it)->selected )
 											{
 												selectedPolygons.push_back( (*it) );
-
 											}
 											else
 											{
@@ -1469,7 +1474,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( ev.key.code == Keyboard::V )
+							if( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete )
 							{
 								if( selectedActor != NULL )
 								{
@@ -1792,7 +1797,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( ev.key.code == Keyboard::V && patrolPath.size() > 1 )
+							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && patrolPath.size() > 1 )
 							{
 								patrolPath.pop_back();
 							}
@@ -2848,8 +2853,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		}
 
+		if( zoomMultiple > 7 )
+		{
+			playerZoomIcon.setPosition( playerPosition.x, playerPosition.y );
+			playerZoomIcon.setScale( zoomMultiple, zoomMultiple );
+			w->draw( playerZoomIcon );
+		}
 		
 		w->setView( uiView );
+
+		
+		
 
 		switch( mode )
 		{
