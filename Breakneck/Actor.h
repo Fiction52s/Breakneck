@@ -3,7 +3,7 @@
 
 #include <list>
 #include <map>
-//#include <SFML/Audio.hpp>
+#include <SFML/Audio.hpp>
 #include "Tileset.h"
 #include "Physics.h"
 #include "Input.h"
@@ -142,8 +142,8 @@ struct Actor : QuadTreeCollider,
 
 	int wallJumpMovementLimit;
 
-	//sf::SoundBuffer testSound;
-	//sf::Sound fairSound;
+	sf::SoundBuffer fairSoundBuffer;
+	sf::Sound fairSound;
 
 	double dashHeight;
 	double normalHeight;

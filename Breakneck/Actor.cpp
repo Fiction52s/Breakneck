@@ -23,11 +23,11 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
-		/*if( !testSound.loadFromFile( "fair.wav" ) )
+		if( !fairSoundBuffer.loadFromFile( "fair.wav" ) )
 		{
 			assert( 0 && "failed to load test fair noise" );
 		}
-		fairSound.setBuffer( testSound );*/
+		fairSound.setBuffer( fairSoundBuffer );
 		
 		slopeLaunchMinSpeed = 15;
 
@@ -2325,7 +2325,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
-				//fairSound.play();
+				fairSound.play();
 			}
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{

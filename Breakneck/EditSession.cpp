@@ -2459,7 +2459,110 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
-				selectedActor->position = Vector2i( worldPos.x, worldPos.y );
+				/*if(  false && selectedActor != NULL && ( selectedActor->type->name == "crawler" 
+					|| selectedActor->type->name== "basicturret"
+					|| selectedActor->type->name == "foottrap" 
+					|| selectedActor->type->name == "goal" ) )
+				{
+					enemyEdgePolygon = NULL;
+					V2d testPoint = worldPos;
+					double testRadius = 200;
+					
+					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
+						{
+							list<Vector2i>::iterator prevIt = (*it)->points.end();
+							prevIt--;
+							list<Vector2i>::iterator currIt = (*it)->points.begin();
+
+							if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+							{
+								//prev is starting at 0. start normally at 1
+								int edgeIndex = 0;
+								double minDistance = 10000000;
+								int storedIndex;
+								double storedQuantity;
+							
+								V2d closestPoint;
+
+								for( ; currIt != (*it)->points.end(); ++currIt )
+								{
+									double dist = abs(
+										cross( 
+										V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
+										normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) ) );
+									double testQuantity =  dot( 
+											V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
+											normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) );
+
+									V2d pr( (*prevIt).x, (*prevIt).y );
+									V2d cu( (*currIt).x, (*currIt).y );
+									V2d te( testPoint.x, testPoint.y );
+									
+									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(testQuantity / length( cu - pr ) ) );
+
+									//int testA = dist < 100;
+									//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
+									//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
+									//int testD = length( newPoint - te ) < length( closestPoint - te );
+									
+									//cout << testA << " " << testB << " " << testC << " " << testD << endl;
+
+									if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2 
+										&& length( newPoint - te ) < length( closestPoint - te ) )
+									{
+										minDistance = dist;
+										storedIndex = edgeIndex;
+										double l = length( cu - pr );
+										
+										storedQuantity = testQuantity;
+										closestPoint = newPoint ;
+										//minDistance = length( closestPoint - te )  
+										
+										enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
+										enemySprite.setPosition( closestPoint.x, closestPoint.y );
+										enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+									}
+									else
+									{
+										
+										//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
+									}
+
+									prevIt = currIt;
+									++edgeIndex;
+								}
+
+								enemyEdgeIndex = storedIndex;
+
+								enemyEdgeQuantity = storedQuantity;
+								
+								enemyEdgePolygon = (*it);
+								
+								//selectedActor->ground = enemyEdgeIndex;
+								//selectedActor->groundQuantity = enemyEdgeQuantity;
+
+								
+								//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
+								//cout << "minDist: " << minDistance << endl;
+
+								//break;
+							}
+						}
+					}
+				}
+				else*/
+				{
+					if( selectedActor->type->name == "patroller" )
+					{
+						
+						selectedActor->position = Vector2i( worldPos.x, worldPos.y );
+						selectedActor->image.setPosition( worldPos.x, worldPos.y );
+					}
+				}
 				
 			}
 		}
@@ -3347,7 +3450,7 @@ ActorParams::ActorParams()
 
 void ActorParams::Draw( sf::RenderTarget *target )
 {
-	image.setPosition( position.x, position.y );
+	
 	target->draw( image );
 }
 
