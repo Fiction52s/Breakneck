@@ -23,11 +23,34 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
-		if( !fairSoundBuffer.loadFromFile( "fair.wav" ) )
+		if( !fairBuffer.loadFromFile( "fair.ogg" ) )
 		{
 			assert( 0 && "failed to load test fair noise" );
 		}
-		fairSound.setBuffer( fairSoundBuffer );
+		fairSound.setBuffer( fairBuffer);
+
+		if( !runTappingBuffer.loadFromFile( "runtapping.ogg" ) )
+		{
+			assert( 0 && "failed to load test runtapping noise" );
+		}
+		runTappingSound.setBuffer( runTappingBuffer);
+
+		if( !playerHitBuffer.loadFromFile( "playerhit.ogg" ) )
+		{
+			assert( 0 && "failed to load test runtapping noise" );
+		}
+		playerHitSound.setBuffer( playerHitBuffer );
+
+		if( !dashStartBuffer.loadFromFile( "dashstart.ogg" ) )
+		{
+			assert( 0 && "failed to load test dashstart noise" );
+		}
+		dashStartSound.setBuffer( dashStartBuffer);
+
+		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
+		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
+
+		//dashStartSound.setBuffer( testBuffer );
 		
 		slopeLaunchMinSpeed = 15;
 
@@ -361,6 +384,7 @@ void Actor::ActionEnded()
 			break;
 		case RUN:
 			frame = 0;
+			break;
 		case JUMP:
 			frame = 1;
 			break;
@@ -724,6 +748,8 @@ void Actor::UpdatePrePhysics()
 				{
 					grindSpeed = -grindSpeed;
 				}
+
+				runTappingSound.stop();
 				break;
 			}
 
@@ -732,6 +758,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = JUMP;
 				frame = 0;
+				runTappingSound.stop();
 				break;
 			}
 
@@ -745,12 +772,14 @@ void Actor::UpdatePrePhysics()
 					{
 						action = STEEPCLIMB;
 						frame = 0;
+						runTappingSound.stop();
 						break;
 					}
 					else
 					{
 						action = STEEPSLIDE;
 						frame = 0;
+						runTappingSound.stop();
 						break;
 					}
 				}
@@ -763,12 +792,14 @@ void Actor::UpdatePrePhysics()
 					{
 						action = STEEPCLIMB;
 						frame = 0;
+						runTappingSound.stop();
 						break;
 					}
 					else
 					{
 						action = STEEPSLIDE;
 						frame = 0;
+						runTappingSound.stop();
 						break;
 					}
 				}
@@ -786,6 +817,8 @@ void Actor::UpdatePrePhysics()
 					action = STANDN;
 					frame = 0;
 				}
+
+				runTappingSound.stop();
 				break;
 			}
 
@@ -797,6 +830,7 @@ void Actor::UpdatePrePhysics()
 				{
 					action = SLIDE;
 					frame = 0;
+
 				}
 				else if( currInput.LUp() )
 				{
@@ -809,6 +843,7 @@ void Actor::UpdatePrePhysics()
 					action = STAND;
 					frame = 0;
 				}
+				runTappingSound.stop();
 				break;
 				
 			}
@@ -826,6 +861,7 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = 0;
 					facingRight = false;
 					frame = 0;
+					runTappingSound.stop();
 					break;
 				}
 				else if( !facingRight && currInput.LRight() )
@@ -838,6 +874,7 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = 0;
 					facingRight = true;
 					frame = 0;
+					runTappingSound.stop();
 					break;
 				}
 				else if( (currInput.LDown() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
@@ -861,6 +898,8 @@ void Actor::UpdatePrePhysics()
 						frame = 0;
 					}
 					frame = frame * 3;
+
+					runTappingSound.stop();
 					break;
 				}
 
@@ -869,6 +908,7 @@ void Actor::UpdatePrePhysics()
 			{
 					action = DASH;
 					frame = 0;
+					runTappingSound.stop();
 					break;
 			}
 			break;
@@ -2042,6 +2082,8 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
+			//cout << "frame: " << frame << endl;
+			
 		if( currInput.LLeft() )
 		{
 			if( groundSpeed > 0 )
@@ -5150,6 +5192,12 @@ void Actor::UpdatePostPhysics()
 	case RUN:
 		{	
 			
+		if( frame == 0 )
+			{
+				runTappingSound.stop();
+				runTappingSound.play();
+			}
+
 		if( bounceGrounded )
 		{
 			sprite->setTexture( *(ts_bounceRun->texture));
@@ -5607,6 +5655,9 @@ void Actor::UpdatePostPhysics()
 		}
 	case FAIR:
 		{
+			
+
+
 			int startFrame = 1;
 			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
 			sprite->setTexture( *(tileset[FAIR]->texture));
@@ -5765,7 +5816,22 @@ void Actor::UpdatePostPhysics()
 		}
 	case DASH:
 		{
-	
+			
+			if( frame == 0 )
+			{
+				dashStartSound.stop();
+				//if( slowMultiple != 1)
+				//	dashStartSound.setPitch( .2 );
+				//else
+				//	dashStartSound.setPitch( 1 );
+				dashStartSound.play();
+			}
+
+			//if( slowMultiple != 1)
+			//		dashStartSound.setPitch( .2 );
+			//	else
+			//		dashStartSound.setPitch( 1 );
+
 			sprite->setTexture( *(tileset[DASH]->texture));
 
 			sf::IntRect ir;
@@ -6039,6 +6105,12 @@ void Actor::UpdatePostPhysics()
 		}
 	case AIRHITSTUN:
 		{
+			if( frame == 0 )
+			{
+				playerHitSound.stop();
+				playerHitSound.play();
+			}
+
 			sprite->setTexture( *(tileset[AIRHITSTUN]->texture));
 			if( facingRight )
 			{
