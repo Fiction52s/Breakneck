@@ -3380,7 +3380,7 @@ void Actor::UpdateReversePhysics()
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				V2d nextNorm = e0n;
-				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 					{
@@ -3393,9 +3393,6 @@ void Actor::UpdateReversePhysics()
 						ground = next;
 						q = length( ground->v1 - ground->v0 );	
 					}
-
-
-					
 				}
 				else
 				{
@@ -3411,7 +3408,7 @@ void Actor::UpdateReversePhysics()
 			{
 				Edge *next = ground->edge1;
 				V2d nextNorm = e1n;
-				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 				{
 
 					if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
@@ -3711,6 +3708,7 @@ void Actor::UpdateReversePhysics()
 								groundedWallBounce = true;
 							}
 
+							offsetX = -offsetX;
 							groundSpeed = 0;
 							break;
 						}
@@ -3990,7 +3988,7 @@ void Actor::UpdatePhysics()
 			{
 			//	cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
-				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 					{
@@ -4019,7 +4017,7 @@ void Actor::UpdatePhysics()
 			else if( transferRight )
 			{
 				Edge *next = ground->edge1;
-				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
+				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
 				{
 
 					if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
