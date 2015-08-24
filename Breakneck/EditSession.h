@@ -116,6 +116,10 @@ struct EditSession : GUIHandler
 	ActorParams *selectedActor;
 	ActorParams *editActor;
 
+	bool selectedPlayer;
+	bool grabPlayer;
+	sf::Vector2i grabPos;
+	bool selectedActorGrabbed;
 
 	//CREATE_TERRAIN mode
 	void Add( TerrainPolygon *brush, TerrainPolygon *poly);	

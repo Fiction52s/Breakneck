@@ -1241,6 +1241,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	string menuSelection = "";
 
+	selectedPlayer = false;
+	selectedActorGrabbed = false;
+
 	while( !quit )
 	{
 		w->clear();
@@ -1399,6 +1402,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+
+								if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
+								{
+									selectedActor = NULL;
+									selectedPlayer = true;
+									grabPlayer = true;
+									grabPos = Vector2i( worldPos.x, worldPos.y );
+									
+									break;
+								}
+								else
+								{
+									grabPlayer = false;
+									selectedPlayer = false;
+								}
+
 								bool emptySpace = true;
 								for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
 									it != polygons.end(); ++it )
@@ -1441,6 +1460,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
 										{
 											selectedActor = (*it2);
+											selectedActorGrabbed = true;
+											grabPos = Vector2i( worldPos.x, worldPos.y );
+
 											empty = false;
 											//cout << "enemy selected" << endl;
 
@@ -1459,6 +1481,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( empty )
 								{
 									selectedActor = NULL;
+									selectedActorGrabbed = false;
 								}
 
 							}
@@ -1466,6 +1489,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseButtonReleased:
 						{
+							if( ev.mouseButton.button == Mouse::Left )
+							{
+								grabPlayer = false;
+								selectedActorGrabbed = false;
+							}
 							break;
 						}
 					case Event::MouseWheelMoved:
@@ -1497,18 +1525,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										delete (*it);
 									}
 									selectedPolygons.clear();
-
-									/*list<TerrainPolygon*>::iterator it = polygons.begin();
-									while( it != polygons.end() )
-									{
-										if( (*it)->selected )
-										{
-											delete (*it);
-											polygons.erase( it++ );
-										}
-										else
-											++it;
-									}*/
 
 									cout << "destroying terrain. eney: " << selectedActor << endl;
 								}
@@ -1715,6 +1731,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( menuDownStored == EDIT && menuSelection != "none" )
 							{
+								selectedPlayer = false;
 								selectedActor = NULL;
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
@@ -1981,382 +1998,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			}
 			
-			/*switch( ev.type )
-			{
-			case Event::MouseButtonPressed:
-				{
-					if( ev.mouseButton.button == Mouse::Left )
-					{
-						if( showPanel != NULL )
-						{	
-							showPanel->Update( true, uiMouse.x, uiMouse.y );
-							
-						//	p.Update( true, pixelPos.x, pixelPos.y );
-						}
-						else if( mode == CREATE_ENEMY)
-						{
-							if( gs.active )
-							{
-
-								gs.Update( true, uiMouse.x, uiMouse.y );
-							}
-							canCreatePoint = false;
-						}
-						else if( mode == PLACE_PLAYER )
-						{
-							playerPosition.x = (int)worldPos.x;
-							playerPosition.y = (int)worldPos.y;
-							mode = CREATE_POLYGONS;
-							canCreatePoint = false;
-						}
-						else if( mode == PLACE_GOAL )
-						{
-							goalPosition.x = (int)worldPos.x;
-							goalPosition.y = (int)worldPos.y;
-							mode = CREATE_POLYGONS;
-							canCreatePoint = false;
-						}
-					}
-					
-					if( ev.mouseButton.button == Mouse::Button::Middle )
-					{
-						panning = true;
-						panAnchor = worldPos;
-					}
-
-					break;
-				}
-			case Event::MouseButtonReleased:
-				{
-					if( !canCreatePoint )
-						canCreatePoint = true;
-
-					if( ev.mouseButton.button == Mouse::Button::Middle )
-					{
-						panning = false;
-					}
-					else if( ev.mouseButton.button == Mouse::Button::Left )
-					{
-						if( showPanel != NULL )
-						{
-							showPanel->Update( false, uiMouse.x, uiMouse.y );
-						//	p.Update( false, pixelPos.x, pixelPos.y );
-						}
-						else if( mode == CREATE_ENEMY  )
-						{
-
-							if( trackingEnemy != NULL )
-							{
-								showPanel = trackingEnemy->panel;
-								trackingEnemy = NULL;
-								ActorParams *actor = new ActorParams;
-								actor->SetAsPatroller( patrollerType, Vector2i( worldPos.x, worldPos.y ), true, 10 );
-								groups["--"]->actors.push_back( actor);
-							}
-
-							if( gs.active )
-							{
-								if( gs.Update( false, uiMouse.x, uiMouse.y ) )
-								{
-									cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
-								}
-							}
-
-							
-						}
-						else if( mode == SELECT_POLYGONS )
-						{
-							bool emptySpace = true;
-							if( polygonInProgress->points.size() == 0 )
-							{
-								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-								{
-						
-										if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
-										{
-											emptySpace = false;
-											(*it)->SetSelected( !((*it)->selected ) );
-											//if( (*it)->selected == true )
-											//polygonInProgress->points.clear();
-											break;
-										}
-								}
-							}
-
-							if( emptySpace )
-							{
-
-							}
-							else
-							{
-								polygonInProgress->points.clear();
-							}
-
-						}
-					}
-					else if( ev.mouseButton.button == Mouse::Button::Right )
-					{
-						for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						{
-							(*it)->SetSelected( false );					
-						}
-					}
-					break;
-				}
-			case Event::MouseWheelMoved:
-				{
-					if( ev.mouseWheel.delta > 0 )
-					{
-						zoomMultiple /= 2;
-					}
-					else if( ev.mouseWheel.delta < 0 )
-					{
-						zoomMultiple *= 2;
-					}
-
-					if( zoomMultiple < .25 )
-					{
-						zoomMultiple = .25;
-						cout << "min zoom" << endl;
-					}
-					else if( zoomMultiple > 65536 )
-					{
-						zoomMultiple = 65536;
-					}
-					else if( abs(zoomMultiple - 1.0) < .1 )
-					{
-						zoomMultiple = 1;
-					}
-				
-					Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-					view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-					w->setView( view );
-					Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
-					Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-					Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
-					view.setCenter( tempCenter.x, tempCenter.y );
-					w->setView( view );
-
-					break;
-				}
-			case Event::KeyPressed:
-				{
-					if( showPanel != NULL )
-					{
-						showPanel->SendKey( ev.key.code, ev.key.shift );
-					}
-					else if( mode != PAUSED && mode != PLACE_GOAL && mode != PLACE_PLAYER )
-					{
-						Emode oldMode = mode;
-
-
-
-						if( ev.key.code == Keyboard::S && ev.key.control )
-						{
-							polygonInProgress->points.clear();
-							cout << "writing to file: " << currentFile << ".brknk" << endl;
-							WriteFile(currentFile);
-						}
-						if( ev.key.code == Keyboard::B )
-						{
-							mode = PLACE_PLAYER;
-
-						}
-						else if( ev.key.code == Keyboard::G )
-						{
-							mode = PLACE_GOAL;
-						}
-						else if( ev.key.code == Keyboard::Q )
-						{
-							mode = SELECT_POLYGONS;
-						}
-						else if( ev.key.code == Keyboard::C )
-						{
-							mode = CREATE_POLYGONS;
-						}
-						else if( ev.key.code == Keyboard::F )
-						{
-							mode = CREATE_ENEMY;
-							gs.active = true;
-							trackingEnemy = NULL;
-						}
-						else if( ev.key.code == Keyboard::Space )
-						{
-
-							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 2 )
-							{
-								//test final line
-
-								if( !PointValid( polygonInProgress->points.back(), polygonInProgress->points.front() ) )
-									break;
-
-								list<TerrainPolygon*>::iterator it = polygons.begin();
-								bool added = false;
-								polygonInProgress->Finalize();
-								bool recursionDone = false;
-								TerrainPolygon *currentBrush = polygonInProgress;
-
-									while( it != polygons.end() )
-									{
-										TerrainPolygon *temp = (*it);
-										if( temp != currentBrush && currentBrush->IsTouching( temp ) )
-										{
-											cout << "before addi: " << (*it)->points.size() << endl;
-						
-											Add( currentBrush, temp );
-
-											polygonInProgress->Reset();
-						
-											cout << "after adding: " << (*it)->points.size() << endl;
-											polygons.erase( it );
-
-											currentBrush = temp;
-
-											it = polygons.begin();
-
-											added = true;
-							
-											continue;
-										}
-										else
-										{
-											//cout << "not" << endl;
-										}
-										++it;
-									}
-				
-								//add final check for validity here
-				
-								if( !added )
-								{
-									polygonInProgress->Finalize();
-									polygons.push_back( polygonInProgress );
-									polygonInProgress = new TerrainPolygon();
-								}
-								else
-								{
-
-									polygons.push_back( currentBrush );
-									polygonInProgress->Reset();
-								}
-							}
-
-							if( polygonInProgress->points.size() <= 2 && polygonInProgress->points.size() > 0  )
-							{
-								cout << "cant finalize. cant make polygon" << endl;
-								polygonInProgress->points.clear();
-							}
-						}
-						else if( ev.key.code == Keyboard::T )
-						{
-							quit = true;
-						}
-						else if( ev.key.code == Keyboard::Escape )
-						{
-							if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
-							{
-								quit = true;
-								returnVal = 1;
-							}
-						}
-						else if( ev.key.code == sf::Keyboard::V )
-						{
-							if( mode == CREATE_POLYGONS && polygonInProgress->points.size() > 0 )
-							{
-								polygonInProgress->points.pop_back();
-							}
-							else if( mode == SELECT_POLYGONS )
-							{
-								list<TerrainPolygon*>::iterator it = polygons.begin();
-								while( it != polygons.end() )
-								{
-									if( (*it)->selected )
-									{
-										delete (*it);
-										polygons.erase( it++ );
-									}
-									else
-										++it;
-								}
-							}
-						}
-						else if( ev.key.code == sf::Keyboard::Z )
-						{
-							panning = true;
-							panAnchor = worldPos;	
-						}
-						else if( ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash )
-						{
-							if( ev.key.code == sf::Keyboard::Equal )
-							{
-								zoomMultiple /= 2;
-							}
-							else if( ev.key.code == sf::Keyboard::Dash )
-							{
-								zoomMultiple *= 2;
-							}
-
-							if( zoomMultiple < .25 )
-							{
-								zoomMultiple = .25;
-								cout << "min zoom" << endl;
-							}
-							else if( zoomMultiple > 65536 )
-							{
-								zoomMultiple = 65536;
-							}
-							else if( abs(zoomMultiple - 1.0) < .1 )
-							{
-								zoomMultiple = 1;
-							}
-				
-							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-							view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-							w->setView( view );
-							Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
-							Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-							Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
-							view.setCenter( tempCenter.x, tempCenter.y );
-							w->setView( view );
-
-							break;
-						}
-						
-
-						if( oldMode == CREATE_POLYGONS && mode != CREATE_POLYGONS )
-						{
-							polygonInProgress->points.clear();
-						}
-						else if( oldMode == SELECT_POLYGONS && mode != SELECT_POLYGONS )
-						{
-							for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-							{
-								(*it)->SetSelected( false );					
-							}
-						}
-						
-					}
-					break;
-				}
-			case Event::KeyReleased:
-				{
-					if( ev.key.code == sf::Keyboard::Z )
-					{
-						panning = false;
-					}
-					break;
-				}
-			case Event::LostFocus:
-				{
-					stored = mode;
-					mode = PAUSED;
-					break;
-				}
-			case Event::GainedFocus:
-				{
-					mode = stored;
-				}
-			}*/
+		
 		}
 
 		if( quit )
@@ -2612,6 +2254,32 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case CREATE_PATROL_PATH:
 			{
+				/*if( //polygonInProgress->points.size() > 0 && 
+					Keyboard::isKeyPressed( Keyboard::G ) )
+				{
+					int adjX, adjY;
+					
+					testPoint.x /= 32;
+					testPoint.y /= 32;
+
+					if( testPoint.x > 0 )
+						testPoint.x += .5f;
+					else if( testPoint.x < 0 )
+						testPoint.x -= .5f;
+
+					if( testPoint.y > 0 )
+						testPoint.y += .5f;
+					else if( testPoint.y < 0 )
+						testPoint.y -= .5f;
+
+					adjX = ((int)testPoint.x) * 32;
+					adjY = ((int)testPoint.y) * 32;
+					
+					testPoint = Vector2f( adjX, adjY );
+					showGraph = true;
+				}*/
+
+
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
 					if( length( worldPos - Vector2<double>(patrolPath.back().x, 
@@ -2783,6 +2451,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		iconSprite.setScale( view.getSize().x / 960.0, view.getSize().y / 540.0 );
 		iconSprite.setPosition( view.getCenter().x + 200 * iconSprite.getScale().x, view.getCenter().y - 250 * iconSprite.getScale().y );
 		
+		if( mode == EDIT )
+		{
+			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
+			{
+				playerPosition = Vector2i( worldPos.x, worldPos.y );
+			}
+			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
+			{
+				selectedActor->position = Vector2i( worldPos.x, worldPos.y );
+				
+			}
+		}
+
+		playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
 		w->draw( playerSprite );
 		
@@ -2796,6 +2478,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			w->draw( alphaTextSprite );
 		}
 
+		playerSprite.setPosition( playerPosition.x, playerPosition.y );
+
 		if( mode == EDIT )
 		{
 			if( selectedActor != NULL )
@@ -2803,8 +2487,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 				sf::FloatRect bounds = selectedActor->image.getGlobalBounds();
 				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
-				
-				
 				
 				rs.setOutlineColor( Color::Cyan );				
 				rs.setFillColor( Color::Transparent );
@@ -2814,7 +2496,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				w->draw( rs );
 				//cout << "draw rectangle"  << endl;
 			}
+			else if( selectedPlayer )
+			{
+				sf::FloatRect bounds = playerSprite.getGlobalBounds();
+				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
+
+				rs.setOutlineColor( Color::Cyan );				
+				rs.setFillColor( Color::Transparent );
+				rs.setOutlineThickness( 5 );
+				rs.setPosition( bounds.left, bounds.top );				
+
+				w->draw( rs );
+			}
 		}
+
+		//display graph
 		if( showGraph )
 		{
 			Vector2f adjustment;
@@ -2856,14 +2552,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		if( zoomMultiple > 7 )
 		{
 			playerZoomIcon.setPosition( playerPosition.x, playerPosition.y );
-			playerZoomIcon.setScale( zoomMultiple, zoomMultiple );
+			playerZoomIcon.setScale( zoomMultiple * 2, zoomMultiple * 2 );
 			w->draw( playerZoomIcon );
 		}
 		
 		w->setView( uiView );
 
-		
-		
 
 		switch( mode )
 		{
@@ -3653,6 +3347,7 @@ ActorParams::ActorParams()
 
 void ActorParams::Draw( sf::RenderTarget *target )
 {
+	image.setPosition( position.x, position.y );
 	target->draw( image );
 }
 
