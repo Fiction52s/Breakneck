@@ -1066,6 +1066,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	groups[emptyGroup->name] = emptyGroup;
 
 
+	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
+
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
@@ -1273,13 +1275,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( showPanel != NULL )
+								{	
+									showPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}
 							}
 							
 							break;
 						}
 					case Event::MouseButtonReleased:
 						{
-							
+							if( showPanel != NULL )
+							{	
+								showPanel->Update( false, uiMouse.x, uiMouse.y );
+							}
 							break;
 						}
 					case Event::MouseWheelMoved:
@@ -1288,6 +1298,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( showPanel != NULL )
+							{
+								showPanel->SendKey( ev.key.code, ev.key.shift );
+								break;
+							}
+
+
 							if( ev.key.code == Keyboard::Space )
 							{
 								if( polygonInProgress->points.size() > 2 )
@@ -1402,6 +1419,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( showPanel != NULL )
+								{	
+									showPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}
 
 								if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
 								{
@@ -1491,6 +1513,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( showPanel != NULL )
+								{	
+									showPanel->Update( false, uiMouse.x, uiMouse.y );
+								}
+
 								grabPlayer = false;
 								selectedActorGrabbed = false;
 							}
@@ -1502,6 +1529,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( showPanel != NULL )
+							{
+								showPanel->SendKey( ev.key.code, ev.key.shift );
+								break;
+							}
+
+
 							if( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete )
 							{
 								if( selectedActor != NULL )
@@ -1763,6 +1797,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( menuSelection == "lowerright" )
 							{
+								showPanel = mapOptionsPanel;
+								mode = menuDownStored;
 							}
 							else if( menuSelection == "bottom" )
 							{
@@ -2071,7 +2107,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					testPoint = Vector2f(last.x, last.y) + dir * (float)len;
 					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}*/
-
+				if( showPanel != NULL )
+					break;
 
 				if( //polygonInProgress->points.size() > 0 && 
 					Keyboard::isKeyPressed( Keyboard::G ) )
@@ -2278,6 +2315,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					testPoint = Vector2f( adjX, adjY );
 					showGraph = true;
 				}*/
+				if( showPanel != NULL )
+					break;
 
 
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
@@ -2671,10 +2710,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			case CREATE_ENEMY:
 				{
 					gs.Draw( w );
-					if( showPanel != NULL )
-					{
-						showPanel->Draw( w );
-					}
+					//if( showPanel != NULL )
+					//{
+					//	showPanel->Draw( w );
+					//}
 					break;
 				}
 			case SELECT_MODE:
@@ -2707,6 +2746,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setFillColor( COLOR_GREEN );
 					cs.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
 					w->draw( cs );
+
+					sf::Text textgreen;
+					textgreen.setCharacterSize( 14 );
+					textgreen.setFont( arial );
+					textgreen.setString( "MAP\nOPTIONS" );
+					textgreen.setColor( sf::Color::White );
+					textgreen.setOrigin( textgreen.getLocalBounds().width / 2, textgreen.getLocalBounds().height / 2 );
+					textgreen.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
+					w->draw( textgreen );
 
 
 					cs.setFillColor( COLOR_YELLOW );
@@ -2759,6 +2807,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					
 					break;
 				}
+		}
+
+		if( showPanel != NULL )
+		{
+			showPanel->Draw( w );
 		}
 
 		w->setView( view );
@@ -3065,7 +3118,35 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		}
 	}
 
-	
+	else if( p->name == "map_options" )
+	{
+		if( b->name == "ok" );
+		{
+			int minEdgeSize;
+
+			stringstream ss;
+			string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
+			ss << s;
+
+			ss >> minEdgeSize;
+
+			if( ss.fail() )
+			{
+				cout << "stringstream to integer parsing error" << endl;
+				ss.clear();
+				assert( false );
+			}
+
+			if( minEdgeSize < 8 )
+			{
+				assert( false && "made min edge length too small!" );
+			}
+
+
+			minimumEdgeLength = minEdgeSize;
+			showPanel = NULL;
+		}
+	}
 	//cout <<"button" << endl;
 }
 
@@ -3143,6 +3224,14 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "map" )
+	{
+		Panel *p = new Panel( "map_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
+		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		return p;
 	}
 	return NULL;

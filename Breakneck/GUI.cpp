@@ -249,6 +249,17 @@ void Panel::Draw( RenderTarget *target )
 
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 {	
+	if( k == Keyboard::Return )
+	{
+		
+		if( buttons.count( "ok" ) > 0 )
+		{
+			Button *b = buttons["ok"];
+			b->owner->SendEvent( b, "pressed" );
+		}
+		return;
+	}
+
 	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
 		if( (*it).second->focused )
