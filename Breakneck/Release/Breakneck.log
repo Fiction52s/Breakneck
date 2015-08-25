@@ -1,4 +1,4 @@
-﻿Build started 8/25/2015 03:08:23 PM.
+﻿Build started 8/25/2015 03:47:36 PM.
      1>Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\Breakneck.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -21,22 +21,22 @@
      1>Physics.cpp(1160): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(1335): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(1335): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1974): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1974): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1994): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1994): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1976): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1976): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(1996): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(1996): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(2005): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(2005): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(2011): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(2011): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1998): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1998): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2007): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2007): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(2013): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(2013): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(2015): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Physics.cpp(2015): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(2024): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(2024): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2017): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2017): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2026): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2026): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
        Link:
          c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe" /NOLOGO /LIBPATH:"C:\Users\Shephard\Libraries\SFML-2.3\lib" "sfml-graphics-s.lib" "sfml-window-s.lib" "sfml-audio-s.lib" "sfml-system-s.lib" openal32.lib opengl32.lib freetype.lib jpeg.lib winmm.lib gdi32.lib flac.lib vorbisenc.lib vorbisfile.lib vorbis.lib ogg.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Breakneck.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.lib" /MACHINE:X86 Release\Actor.obj
          Release\Camera.obj
@@ -84,4 +84,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:07.32
+Time Elapsed 00:00:07.22

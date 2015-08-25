@@ -1492,7 +1492,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 
 				//cout << "pri 222: " << pri << endl;
-				currentContact->collisionPriority = pri;
+				currentContact->collisionPriority = .5;
+				//currentContact->collisionPriority = pri;
 
 
 				currentContact->edge = e;
@@ -1714,7 +1715,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			
 			currentContact->position = collisionPosition;
 			
-			currentContact->collisionPriority = pri;
+			currentContact->collisionPriority = 1;
+			//currentContact->collisionPriority = pri;
 			currentContact->edge = e;
 
 			return currentContact;
