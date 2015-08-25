@@ -1112,7 +1112,7 @@ void Actor::UpdatePrePhysics()
 						action = RUN;
 						frame = 0;
 					}
-					else if( currInput.LUp() )
+					else if( currInput.LDown() )
 					{
 						action = SLIDE;
 						frame = 0;
@@ -6593,7 +6593,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 	{
-		motionGhosts[i].setColor( Color( 255, 255, 255, 100 ) );
+		motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
 		target->draw( motionGhosts[i] );
 	}
 

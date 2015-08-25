@@ -122,7 +122,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_gravReverse;
 	bool bounceGrounded;
 
-	const static int MAX_MOTION_GHOSTS = 3;
+	const static int MAX_MOTION_GHOSTS = 2;
 	sf::Sprite motionGhosts[MAX_MOTION_GHOSTS];
 	int numMotionGhosts;
 	
