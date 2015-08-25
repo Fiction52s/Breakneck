@@ -3282,13 +3282,13 @@ bool Actor::ResolvePhysics( V2d vel )
 //	Query( this, owner->testTree, r );
 	owner->terrainTree->Query( this, r );
 
-	/*if( col )
+	if( col )
 	{
 		cout << "performing: " << endl 
 			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
 			<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
 			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-	}*/
+	}
 
 
 	//if( minContact.edge != NULL )

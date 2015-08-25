@@ -1330,7 +1330,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			CircleShape *cs = new CircleShape;
 			cs->setFillColor( Color::Cyan );
-			cs->setRadius( 10 );
+			cs->setRadius( 3 );
 			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
 			cs->setPosition( intersect.x, intersect.y );
 
@@ -1381,8 +1381,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 					//cout << "temp resolveright: " << resolveRight << ", normal: " << e->Normal().x << ", " << e->Normal().y << endl;
 					if( resolveRight > 1.1 )
 					{
+						
+						cout << "adjusting right: " << resolveRight  << endl;
 						resolveRight = 10000;
-						cout << "adjusting right" << endl;
 					}
 
 					
@@ -1422,7 +1423,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 					//cout << "top: " << top << ", " << edgeTop << endl;
 				}
 
-
+				//real one for now
 				resolveDist = min( resolveTop, min( resolveBottom, min( resolveLeft, resolveRight) ) );
 				//cout << "resolve dist: " << resolveDist << ", " << resolveBottom << endl;
 				if( approxEquals( resolveDist, 0 ) )

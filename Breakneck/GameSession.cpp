@@ -1322,9 +1322,9 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
-	//	coll.DebugDraw( window );
+		coll.DebugDraw( window );
 
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
