@@ -371,6 +371,11 @@ Actor::Actor( GameSession *gs )
 		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 16, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
+
+		//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
+		//{
+		//	motionGhosts[i] = 
+		//}
 	}
 
 void Actor::ActionEnded()
@@ -483,6 +488,14 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	for( int i = MAX_MOTION_GHOSTS-1; i > 0; --i )
+	{
+		motionGhosts[i] = motionGhosts[i-1];
+	}
+	motionGhosts[0] = *sprite;
+
+
+
 	if( action == DEATH )
 	{
 		if( frame >= actionLength[action] ) 
@@ -6414,6 +6427,9 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
+	
+
+
 	if( record > 0 )
 	{
 		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
@@ -6574,6 +6590,13 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
+
+	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
+	{
+		motionGhosts[i].setColor( Color( 255, 255, 255, 100 ) );
+		target->draw( motionGhosts[i] );
+	}
+
 	if( action != GRINDBALL )
 	{
 
