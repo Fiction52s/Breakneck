@@ -16,8 +16,10 @@ struct TerrainPolygon
 {
 	TerrainPolygon();
 	~TerrainPolygon();
+	
 	PointList points;
 	std::string material;
+	void RemoveSelectedPoints();
 	void Finalize();
 	void Reset();
 	void Draw( double zoomMultiple, sf::RenderTarget * rt);
@@ -36,7 +38,6 @@ struct TerrainPolygon
 	int bottom;
 	
 	std::list<ActorParams*> enemies;
-	std::list<sf::Vector2i*> selectedPoints;
 	int writeIndex;
 };
 
@@ -157,6 +158,8 @@ struct EditSession : GUIHandler
 	bool trackingEnemyDown;
 
 	Panel *CreateOptionsPanel( const std::string &name );
+
+	int CountSelectedPoints();
 
 	std::list<sf::Vector2i> patrolPath;
 	double minimumPathEdgeLength;

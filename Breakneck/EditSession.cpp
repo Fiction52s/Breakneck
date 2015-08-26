@@ -149,6 +149,33 @@ void TerrainPolygon::Finalize()
 	}*/
 }
 
+void TerrainPolygon::RemoveSelectedPoints()
+{
+	PointList temp = points;
+
+	Reset();
+
+	PointList::iterator it = temp.begin();
+	while( it != temp.end() )
+	{
+		if( (*it).second ) //selected
+		{
+			temp.erase( it++ );
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	for( PointList::iterator it2 = temp.begin(); it2 != temp.end(); ++it2 )
+	{
+		points.push_back( (*it2) );
+	}
+	//cout << "before killer finalize. poly size: " << poly->points.size() << endl;
+	Finalize();
+}
+
 void TerrainPolygon::Draw( double zoomMultiple, RenderTarget *rt )
 {
 	if( va != NULL )
@@ -1563,7 +1590,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete )
 							{
-								if( selectedActor != NULL )
+								if( CountSelectedPoints() > 0 )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										it != selectedPolygons.end(); ++it )
+									{
+										(*it)->RemoveSelectedPoints();
+									}
+								}
+								else if( selectedActor != NULL )
 								{
 									if( selectedActor->ground != NULL )
 									{
@@ -3260,6 +3295,22 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 	}
 	return NULL;
+}
+
+int EditSession::CountSelectedPoints()
+{
+	int count = 0;
+	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+	{
+		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+		{
+			if( (*it2).second ) //selected
+			{
+				++count;
+			}
+		}
+	}
+	return count;
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )
