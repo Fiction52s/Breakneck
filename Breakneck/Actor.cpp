@@ -218,7 +218,7 @@ Actor::Actor( GameSession *gs )
 		ts_fx_dashStart = owner->GetTileset( "fx_dashstart.png", 96, 32 );
 		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat.png", 96, 16 );
 		ts_fx_land = owner->GetTileset( "fx_land.png", 80, 32 );
-
+		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
 
 	//	ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 0, 0 );
 	//	standingNSword1.setTexture( *ts_standingNSword1->texture );
@@ -5211,6 +5211,8 @@ void Actor::UpdatePostPhysics()
 				runTappingSound.play();
 			}
 
+		
+
 		if( bounceGrounded )
 		{
 			sprite->setTexture( *(ts_bounceRun->texture));
@@ -5278,6 +5280,11 @@ void Actor::UpdatePostPhysics()
 			
 			//sprite->setPosition( position.x, position.y );
 			//cout << "angle: " << angle / PI * 180  << endl;
+
+			if( frame % 5 == 0 && abs( groundSpeed ) > 0 )
+			{
+				owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
+			}
 		}
 		break;
 		}

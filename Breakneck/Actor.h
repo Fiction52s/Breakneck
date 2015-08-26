@@ -120,6 +120,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_airdash;
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
+	Tileset * ts_fx_bigRunRepeat;
 	bool bounceGrounded;
 
 	const static int MAX_MOTION_GHOSTS = 2;

@@ -10,12 +10,13 @@
 
 
 struct ActorParams;
+typedef std::list<std::pair<sf::Vector2i, bool>> PointList;
 
 struct TerrainPolygon
 {
 	TerrainPolygon();
 	~TerrainPolygon();
-	std::list<sf::Vector2i> points;
+	PointList points;
 	std::string material;
 	void Finalize();
 	void Reset();
@@ -35,7 +36,7 @@ struct TerrainPolygon
 	int bottom;
 	
 	std::list<ActorParams*> enemies;
-
+	std::list<sf::Vector2i*> selectedPoints;
 	int writeIndex;
 };
 
@@ -103,6 +104,8 @@ struct EditSession : GUIHandler
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
+
+	
 
 	std::string mode;
 	sf::RenderWindow *w;
