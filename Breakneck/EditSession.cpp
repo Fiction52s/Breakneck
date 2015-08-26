@@ -1531,14 +1531,33 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
 											{
 												emptySpace = false;
-												(*it)->SetSelected( !((*it)->selected ) );
+												//(*it)->SetSelected( !((*it)->selected ) );
 												if( (*it)->selected )
 												{
-													selectedPolygons.push_back( (*it) );
+													//selectedPolygons.push_back( (*it) );
+													selectedPolygons.remove( (*it ) );
+													(*it)->SetSelected( false );
 												}
 												else
 												{
-													selectedPolygons.remove( (*it ) );
+													if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
+													{
+														selectedPolygons.push_back( (*it) );
+														(*it)->SetSelected( true );
+													}
+													else
+													{
+														for( list<TerrainPolygon*>::iterator selIt = 
+															selectedPolygons.begin(); 
+															selIt != selectedPolygons.end(); ++selIt )
+														{
+															(*selIt)->SetSelected( false );
+														}
+														selectedPolygons.clear();
+														selectedPolygons.push_back( (*it) );
+														(*it)->SetSelected( true );
+													}
+													//selectedPolygons.remove( (*it ) );
 												}
 												break;
 											}
@@ -1675,14 +1694,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.key.code == Keyboard::W )
 							{
-								//if( pointGrab )
-								//{
-									pointGrab = false;
-								//}
-								//else if( polyGrab )
-								//{
-									polyGrab = false;
-								//}
+								pointGrab = false;
+								polyGrab = false;
 							}
 							break;
 						}
