@@ -109,6 +109,9 @@ struct EditSession : GUIHandler
 	bool pointGrab;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
+	bool polyGrab;
+	sf::Vector2i polyGrabPos;
+	sf::Vector2i polyGrabDelta;
 
 	std::string mode;
 	sf::RenderWindow *w;

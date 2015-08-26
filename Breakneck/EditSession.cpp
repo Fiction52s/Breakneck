@@ -1663,6 +1663,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									pointGrab = true;
 									pointGrabPos = Vector2i( worldPos.x, worldPos.y );
 								}
+								else if( selectedPolygons.size() > 0 )
+								{
+									polyGrab = true;
+									polyGrabPos = Vector2i( worldPos.x, worldPos.y );
+								}
 							}
 							break;
 						}
@@ -1670,10 +1675,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.key.code == Keyboard::W )
 							{
-								if( pointGrab )
-								{
+								//if( pointGrab )
+								//{
 									pointGrab = false;
-								}
+								//}
+								//else if( polyGrab )
+								//{
+									polyGrab = false;
+								//}
 							}
 							break;
 						}
@@ -2330,6 +2339,36 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 
 				}
+				else if( polyGrab )
+				{
+					polyGrabDelta = Vector2i( worldPos.x, worldPos.y ) - polyGrabPos;
+					polyGrabPos = Vector2i( worldPos.x, worldPos.y );
+	
+					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						it != selectedPolygons.end(); ++it )
+					{
+						PointList & points = (*it)->points;
+
+						for( PointList::iterator pointIt = points.begin();
+							pointIt != points.end(); ++pointIt )
+						{
+							(*pointIt).first += polyGrabDelta;		
+						}
+
+						PointList temp = (*it)->points;
+
+						(*it)->Reset();
+
+						for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
+							++tempIt )
+						{
+							(*it)->points.push_back( (*tempIt ) );
+						}
+						(*it)->Finalize();
+						(*it)->SetSelected( true );
+					}
+				}
+				
 
 				break;
 			}
