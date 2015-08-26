@@ -1,0 +1,4 @@
+-going from run into bounce run causes a slight frame off adjustment
+-walljump repeatedly problem
+-collision cases where current priority stuff doesnt work perfectly
+-turn finalize into a bool

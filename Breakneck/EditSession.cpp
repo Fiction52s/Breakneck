@@ -1079,6 +1079,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
+	pointGrab = false;
+	polyGrab = false;
+
 	bool showGraph = false;
 
 	selectedActor = NULL;
