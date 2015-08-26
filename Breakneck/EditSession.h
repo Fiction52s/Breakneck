@@ -106,7 +106,9 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
-	
+	bool pointGrab;
+	sf::Vector2i pointGrabPos;
+	sf::Vector2i pointGrabDelta;
 
 	std::string mode;
 	sf::RenderWindow *w;

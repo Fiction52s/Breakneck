@@ -174,6 +174,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	}
 	//cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 	Finalize();
+	SetSelected( true );
 }
 
 void TerrainPolygon::Draw( double zoomMultiple, RenderTarget *rt )
@@ -220,6 +221,11 @@ void TerrainPolygon::SetSelected( bool select )
 		{
 			VertexArray & v = *va;
 			v[i].color = testColor;
+		}
+
+		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+		{
+			(*it).second = false;
 		}
 	}
 }
@@ -1483,8 +1489,35 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( length( worldPos - V2d( (*it2).first.x, (*it2).first.y ) ) < 8 * zoomMultiple )
 										{
-											(*it2).second = !(*it2).second;
-											emptySpace = false;
+											if( (*it2).second ) //selected 
+											{
+												(*it2).second = false;
+												emptySpace = false;
+												break;
+											}
+											else
+											{
+												if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+												{
+													
+												}
+												else
+												{
+													for( PointList::iterator tempIt = (*it)->points.begin();
+														tempIt != (*it)->points.end(); ++tempIt )
+													{
+														(*tempIt).second = false;
+													}
+												}
+
+												(*it2).second = true;
+												emptySpace = false;
+												break;
+
+
+											}
+											
+											
 										}
 									}
 								}
@@ -1623,10 +1656,25 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									cout << "destroying terrain. eney: " << selectedActor << endl;
 								}
 							}
+							else if( ev.key.code == Keyboard::W )
+							{
+								if( CountSelectedPoints() > 0 )
+								{
+									pointGrab = true;
+									pointGrabPos = Vector2i( worldPos.x, worldPos.y );
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
 						{
+							if( ev.key.code == Keyboard::W )
+							{
+								if( pointGrab )
+								{
+									pointGrab = false;
+								}
+							}
 							break;
 						}
 					case Event::LostFocus:
@@ -2235,6 +2283,54 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case EDIT:
 			{
+				if( pointGrab )
+				{
+					
+					pointGrabDelta = Vector2i( worldPos.x, worldPos.y ) - pointGrabPos;
+					pointGrabPos = Vector2i( worldPos.x, worldPos.y );
+
+	
+
+					if( true )
+					{
+						
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+							it != selectedPolygons.end(); ++it )
+						{
+							bool affected = false;
+
+							PointList & points = (*it)->points;
+
+							for( PointList::iterator pointIt = points.begin();
+								pointIt != points.end(); ++pointIt )
+							{
+								if( (*pointIt).second ) //selected
+								{
+									(*pointIt).first += pointGrabDelta;
+									affected = true;
+								}
+							}
+
+							if( affected )
+							{
+								PointList temp = (*it)->points;
+
+								(*it)->Reset();
+
+								for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
+									++tempIt )
+								{
+									(*it)->points.push_back( (*tempIt ) );
+								}
+								(*it)->Finalize();
+								(*it)->SetSelected( true );
+								
+							}
+						}
+					}
+
+				}
+
 				break;
 			}
 		case CREATE_ENEMY:
