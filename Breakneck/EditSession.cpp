@@ -1081,6 +1081,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	pointGrab = false;
 	polyGrab = false;
+	makingRect = false;
 
 	bool showGraph = false;
 
@@ -1691,6 +1692,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									polyGrabPos = Vector2i( worldPos.x, worldPos.y );
 								}
 							}
+							else if( ev.key.code == Keyboard::Q )
+							{
+								if( !makingRect )
+								{
+									makingRect = true;
+									rectStart = Vector2i( worldPos.x, worldPos.y );
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
@@ -1699,6 +1708,219 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								pointGrab = false;
 								polyGrab = false;
+							}
+							else if( ev.key.code == Keyboard::Q )
+							{
+								makingRect = false;
+
+								int xDiff = ((int)worldPos.x) - rectStart.x;
+								int yDiff = ((int)worldPos.y) - rectStart.y;
+
+								if( abs(xDiff) > 10 && abs( yDiff) > 10 )
+								{
+									int left, top, width, height;
+									if( xDiff > 0 )
+									{
+										left = rectStart.x;
+										width = xDiff;
+									}
+									else
+									{
+										left = (int)worldPos.x;
+										width = -xDiff;
+									}
+
+									if( yDiff > 0 )
+									{
+										top = rectStart.y;
+										height = yDiff;
+									}
+									else
+									{
+										top = (int)worldPos.y;
+										height = -yDiff;
+									}
+
+									sf::Rect<float> selectRect = sf::Rect<float>( left, top, width, height );
+
+									/*if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
+									{
+										selectedActor = NULL;
+										selectedPlayer = true;
+										grabPlayer = true;
+										grabPos = Vector2i( worldPos.x, worldPos.y );
+									
+										break;
+									}
+									else
+									{
+										grabPlayer = false;
+										selectedPlayer = false;
+									}*/
+
+									bool emptySpace = true;
+
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										it != selectedPolygons.end(); ++it )
+									{
+										for( PointList::iterator it2 = (*it)->points.begin(); 
+											it2 != (*it)->points.end(); ++it2 )
+										{
+											if( selectRect.contains( Vector2f( (*it2).first.x, (*it2).first.y ) ) )
+											{
+												if( (*it2).second ) //selected 
+												{
+													if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+													{
+													}
+													else
+													{
+														(*it2).second = false;
+														emptySpace = false;
+													}
+													
+													//break;
+												}
+												else
+												{
+													if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+													{
+													
+													}
+													else
+													{
+														//for( PointList::iterator tempIt = (*it)->points.begin();
+														//	tempIt != (*it)->points.end(); ++tempIt )
+														//{
+														//	(*tempIt).second = false;
+														//}
+													}
+
+													(*it2).second = true;
+													emptySpace = false;
+												//	break;
+
+
+												}
+											
+											
+											}
+										}
+									}
+
+									TerrainPolygon tempRectPoly;
+									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left, selectRect.top ), false ) );
+									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left + selectRect.width, selectRect.top ), false ) );
+									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left + selectRect.width, selectRect.top + selectRect.height ), false ) );
+									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left, selectRect.top + selectRect.height ), false ) );
+									tempRectPoly.Finalize();
+
+
+									if( emptySpace )
+									{
+										for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
+											it != polygons.end(); ++it )
+										{
+												
+												if( tempRectPoly.IsTouching( (*it) )
+													|| (
+													(*it)->left >= tempRectPoly.left
+													&& (*it)->right <= tempRectPoly.right
+													&& (*it)->bottom <= tempRectPoly.bottom
+													&& (*it)->top >= tempRectPoly.top
+													)
+													)
+												//if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
+												{
+													emptySpace = false;
+													
+													if( (*it)->selected )
+													{
+														if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
+														{
+														}
+														else
+														{
+														//	selectedPolygons.remove( (*it ) );
+														//	(*it)->SetSelected( false );
+														}
+														//selectedPolygons.push_back( (*it) );
+														
+													}
+													else
+													{
+														if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
+														{
+															
+														}
+														else
+														{
+														/*	for( list<TerrainPolygon*>::iterator selIt = 
+																selectedPolygons.begin(); 
+																selIt != selectedPolygons.end(); ++selIt )
+															{
+																(*selIt)->SetSelected( false );
+															}
+															selectedPolygons.clear();*/
+															//selectedPolygons.push_back( (*it) );
+															//(*it)->SetSelected( true );
+														}
+
+														selectedPolygons.push_back( (*it) );
+														(*it)->SetSelected( true );
+														//selectedPolygons.remove( (*it ) );
+													}
+													//break;
+												}
+										}
+									}
+
+								if( emptySpace )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										it != selectedPolygons.end(); ++it )
+									{
+										(*it)->SetSelected( false );
+
+									}
+									selectedPolygons.clear();
+								}
+								
+							//	cout << "here before loop" << endl;
+							/*	bool empty = true;
+								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
+								{
+									list<ActorParams*> &actors = it->second->actors;
+									for( list<ActorParams*>::iterator it2 = actors.begin(); it2 != actors.end() && empty; ++it2 )
+									{
+										sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
+										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
+										{
+											selectedActor = (*it2);
+											selectedActorGrabbed = true;
+											grabPos = Vector2i( worldPos.x, worldPos.y );
+
+											empty = false;
+											//cout << "enemy selected" << endl;
+
+											for( list<TerrainPolygon*>::iterator it3 = selectedPolygons.begin(); 
+												it3 != selectedPolygons.end(); ++it3 )
+											{
+												(*it3)->SetSelected( false );
+											}
+											selectedPolygons.clear();
+										}
+									}
+								}
+
+
+							//	cout << "made it!!!" << endl;
+								if( empty )
+								{
+									selectedActor = NULL;
+									selectedActorGrabbed = false;
+								}*/
+							}
 							}
 							break;
 						}
@@ -2620,6 +2842,53 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							++i;
 						}
 						w->draw( v );
+					}
+				}
+				break;
+			}
+
+		case EDIT:
+			{
+				if( makingRect )
+				{
+					int xDiff = ((int)worldPos.x) - rectStart.x;
+					int yDiff = ((int)worldPos.y) - rectStart.y;
+
+					if( abs(xDiff) > 10 && abs( yDiff) > 10 )
+					{
+						int left, top, width, height;
+						if( xDiff > 0 )
+						{
+							left = rectStart.x;
+							width = xDiff;
+						}
+						else
+						{
+							left = (int)worldPos.x;
+							width = -xDiff;
+						}
+
+						if( yDiff > 0 )
+						{
+							top = rectStart.y;
+							height = yDiff;
+						}
+						else
+						{
+							top = (int)worldPos.y;
+							height = -yDiff;
+						}
+
+		//				sf::Rect<float> selectRect = sf::Rect<float>( left, top, width, height );
+
+						sf::RectangleShape rs;
+						rs.setSize( Vector2f( width, height ) );
+						rs.setFillColor( Color::Transparent );
+						rs.setOutlineColor( Color::Magenta );
+						rs.setOutlineThickness( 2 );
+						rs.setPosition( left, top );
+
+						w->draw( rs );
 					}
 				}
 				break;

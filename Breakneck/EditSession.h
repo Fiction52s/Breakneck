@@ -113,6 +113,9 @@ struct EditSession : GUIHandler
 	sf::Vector2i polyGrabPos;
 	sf::Vector2i polyGrabDelta;
 
+	bool makingRect;
+	sf::Vector2i rectStart;
+
 	std::string mode;
 	sf::RenderWindow *w;
 	sf::Vector2i playerPosition;
