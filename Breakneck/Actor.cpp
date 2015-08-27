@@ -3280,6 +3280,8 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	queryMode = "resolve";
 //	Query( this, owner->testTree, r );
+
+	//cout << "Start resolve" << endl;
 	owner->terrainTree->Query( this, r );
 
 	if( col )
@@ -4516,7 +4518,7 @@ void Actor::UpdatePhysics()
 					if( te.x < 0 )
 					{
 						extraDir = V2d( 0, 1 );
-						wallNormal = extraDir;
+						wallNormal = V2d( 1, 0 );//extraDir;
 					}
 				}
 				else if( (minContact.position == e->v0 && en.x > 0 && en.y > 0 ) )
@@ -4525,7 +4527,7 @@ void Actor::UpdatePhysics()
 					if( te.x < 0 )
 					{
 						extraDir = V2d( 0, 1 );
-						wallNormal = extraDir;
+						wallNormal = V2d( 1, 0 );
 						//cout << "this thing" << endl;
 					}
 				}
@@ -5096,12 +5098,14 @@ void Actor::UpdatePostPhysics()
 				if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
 				//if( false )
 				{
-				
+					cout << "wallnormal active: " << wallNormal.x << ", " << wallNormal.y << endl;
 					if( wallNormal.x > 0)
 					{
+						
 						//cout << "facing right: " << endl;
 						if( currInput.LLeft() )
 						{
+							
 							facingRight = true;
 							action = WALLCLING;
 							frame = 0;
