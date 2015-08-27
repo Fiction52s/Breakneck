@@ -3492,7 +3492,7 @@ void Actor::UpdateReversePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				cout << "slide: " << q << ", " << offsetX << endl;
+				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -3599,6 +3599,7 @@ void Actor::UpdateReversePhysics()
 				{
 				
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
+					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
@@ -3611,6 +3612,7 @@ void Actor::UpdateReversePhysics()
 								&& groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
 									|| (eNorm.x >0  && eNorm.y < steepThresh 
 									&& groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
+
 
 							//bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
 							//		|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh)
@@ -3640,7 +3642,7 @@ void Actor::UpdateReversePhysics()
 							}
 							else
 							{
-								cout << "c:" << speedTransfer << endl;
+								cout << "c2:" << speedTransfer << endl;
 								offsetX -= minContact.resolution.x;
 								groundSpeed = 0;
 								offsetX = -offsetX;
@@ -3656,13 +3658,20 @@ void Actor::UpdateReversePhysics()
 								groundedWallBounce = true;
 							}
 
-							//cout << "d" << endl;
+							cout << "d" << endl;
 							offsetX -= minContact.resolution.x;
 							groundSpeed = 0;
 							offsetX = -offsetX;
 							break;
 						}
 					}
+				}
+				else
+				{
+					//cout << "yo" << endl;
+					//offsetX = -offsetX;
+					//break;
+					
 				}
 			}
 			else
@@ -3792,6 +3801,7 @@ void Actor::UpdateReversePhysics()
 				{	
 					
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
+					cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
 						V2d eNorm = minContact.edge->Normal();
@@ -3800,6 +3810,9 @@ void Actor::UpdateReversePhysics()
 						{
 							if( minContact.position == minContact.edge->v0 ) 
 							{
+							//	cout << "edit1" << endl;
+								if( minContact.edge->edge0 != ground ) //this line and the other one below are
+									//because of how collision positions work on flat surfaces
 								if( minContact.edge->edge0->Normal().y >= 0 )
 								{
 									minContact.edge = minContact.edge->edge0;
@@ -3809,6 +3822,9 @@ void Actor::UpdateReversePhysics()
 							}
 							else if( minContact.position == minContact.edge->v1 )
 							{
+							//	cout << "edit2" << endl;
+
+								if( minContact.edge->edge1 != ground )//same as above in terms of use
 								if( minContact.edge->edge1->Normal().y >= 0 )
 								{
 									minContact.edge = minContact.edge->edge1;
@@ -3821,8 +3837,16 @@ void Actor::UpdateReversePhysics()
 						//cout<< "blah" << endl;
 						if( eNorm.y < 0 )
 						{
-							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
-									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
+							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh);
+
+							//regular
+						//	bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
+						//			|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
+
+							//bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
+							//		|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
+							cout << "speed transfer: " << speedTransfer << endl;
 							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
 							{
 								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
@@ -3833,12 +3857,20 @@ void Actor::UpdateReversePhysics()
 								}
 								else
 								{	
-								//	cout << "c" << endl;   
+									cout << "c" << endl;   
+									cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
 									ground = minContact.edge;
 									q = ground->GetQuantity( minContact.position );
 									V2d eNorm = minContact.edge->Normal();			
 									offsetX = position.x + minContact.resolution.x - minContact.position.x;
 									offsetX = -offsetX;
+
+
+									//wtf is this doing?
+									//edgeQuantity = 0;
+									//groundSpeed = 0;
+									//break;
+
 								}
 							}
 							else
@@ -3860,7 +3892,7 @@ void Actor::UpdateReversePhysics()
 							}
 
 
-							//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+							cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 							groundSpeed = 0;
 							offsetX = -offsetX;
@@ -4357,7 +4389,8 @@ void Actor::UpdatePhysics()
 									}
 									else
 									{	
-										cout << "c" << endl;
+										
+										cout << "cxxxx" << endl;
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 										V2d eNorm = minContact.edge->Normal();			
@@ -4386,7 +4419,7 @@ void Actor::UpdatePhysics()
 									storedBounceGroundSpeed = groundSpeed;
 									groundedWallBounce = true;
 								}
-								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
 								groundSpeed = 0;
 								edgeQuantity = q;
