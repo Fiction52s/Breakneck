@@ -1479,11 +1479,11 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				double pri;
 				if( resolveDist == resolveLeft || resolveDist == resolveRight )
 				{
-					pri = -vel.x - resolveDist * vel.x;
+					pri = vel.x * resolveDist;//-vel.x - resolveDist * vel.x;
 				}
 				else
 				{
-					pri = -vel.y - resolveDist * vel.y;
+					pri = vel.y * resolveDist; //* vel.y;
 				}
 				
 
@@ -1492,7 +1492,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 
 				//cout << "pri 222: " << pri << endl;
-				currentContact->collisionPriority = .5;
+				currentContact->collisionPriority = 1;//abs(pri);//20 - pri;
+				cout << "pri: " << abs(pri) << " normal: " << edgeNormal.x << ", " << edgeNormal.y << endl;
 				//currentContact->collisionPriority = pri;
 
 
@@ -1715,7 +1716,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			
 			currentContact->position = collisionPosition;
 			
-			currentContact->collisionPriority = 1;
+			currentContact->collisionPriority = 50;
 			//currentContact->collisionPriority = pri;
 			currentContact->edge = e;
 
