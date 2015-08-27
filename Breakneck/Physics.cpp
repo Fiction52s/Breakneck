@@ -1479,12 +1479,17 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				double pri;
 				if( resolveDist == resolveLeft || resolveDist == resolveRight )
 				{
-					pri = vel.x * resolveDist;//-vel.x - resolveDist * vel.x;
+					//pri = vel.x * resolveDist;//-vel.x - resolveDist * vel.x;
+					pri = abs( vel.x ) - abs(vel.x * resolveDist);
 				}
 				else
 				{
-					pri = vel.y * resolveDist; //* vel.y;
+					pri = abs( vel.y ) - abs(vel.y * resolveDist);
+					//pri = length( vel ) - length( vel * resolveDist );
+					//pri = vel.y * resolveDist; //* vel.y;
 				}
+
+
 				
 
 				if( approxEquals( pri, 0 ) )
@@ -1492,12 +1497,15 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 
 				//cout << "pri 222: " << pri << endl;
-				currentContact->collisionPriority = 20 - abs(pri);//20 - abs(pri);// - pri;
+				//currentContact->collisionPriority = 20 - abs(pri);//20 - abs(pri);// - pri;
+
+				currentContact->collisionPriority = pri;//100;
+
 				//cout << "EDGE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
 				//	" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
 				//	" vel: " << vel.x << ", " << vel.y << endl;
 
-				currentContact->collisionPriority = 1;
+	
 				//currentContact->collisionPriority = pri;
 
 
@@ -1520,7 +1528,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				cout << "vel: " << vel.x << ", " << vel.y << endl;
 				
 				cout << "returning null--" << endl;	
-			//	return NULL;
+				//return NULL;
 			}
 			else
 			{
@@ -1548,9 +1556,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			currentContact->edge = e;
 
 
-		//	cout << "SURFACE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
-		//		" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
-		//		" vel: " << vel.x << ", " << vel.y << endl;
+			//cout << "SURFACE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
+			//	" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
+			//	" vel: " << vel.x << ", " << vel.y << endl;
 
 			return currentContact;
 

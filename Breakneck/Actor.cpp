@@ -3801,7 +3801,7 @@ void Actor::UpdateReversePhysics()
 				{	
 					
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
-					cout << "hit: " << hit << endl;
+					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
 						V2d eNorm = minContact.edge->Normal();
@@ -3846,7 +3846,7 @@ void Actor::UpdateReversePhysics()
 
 							//bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
 							//		|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
-							cout << "speed transfer: " << speedTransfer << endl;
+							//cout << "speed transfer: " << speedTransfer << endl;
 							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
 							{
 								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
@@ -3858,7 +3858,7 @@ void Actor::UpdateReversePhysics()
 								else
 								{	
 									cout << "c" << endl;   
-									cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
+									//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
 									ground = minContact.edge;
 									q = ground->GetQuantity( minContact.position );
 									V2d eNorm = minContact.edge->Normal();			
