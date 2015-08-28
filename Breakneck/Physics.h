@@ -50,7 +50,7 @@ struct MovingTerrain
 	sf::Vector2i *path; //global coords
 	int pathLength;
 	bool loop;
-
+	sf::Vector2<double> vel;
 	int slowMultiple;
 	int slowCounter;
 	int targetNode;
@@ -100,6 +100,7 @@ struct Contact
 	sf::Vector2<double> resolution;
 	Edge *edge;
 	sf::Vector2<double> normal;
+	MovingTerrain *movingPlat;
 };
 
 struct Collider

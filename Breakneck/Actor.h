@@ -195,6 +195,10 @@ struct Actor : QuadTreeCollider,
 	bool col;
 	sf::Vector2<double> tempVel;
 	std::string queryMode;
+	MovingTerrain *currMovingTerrain;
+
+	//MovingTerrain *minContactTerrain;
+
 	bool checkValid;
 
 	Edge *rcEdge;
@@ -208,7 +212,10 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
 	sf::Vector2<double> startAirDashVel;
+
 	Edge *ground;
+	MovingTerrain *movingGround;
+
 	bool hasAirDash;
 	bool hasGravReverse;
 

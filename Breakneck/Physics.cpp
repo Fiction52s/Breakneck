@@ -148,6 +148,7 @@ MovingTerrain::MovingTerrain( Vector2i pos, list<Vector2i> &pathParam, list<Vect
 			edgeArray[i]->edge1 = edgeArray[i+1];
 		}
 	}
+	cout << "creating moving terrain with position: " << position.x << ", " << position.y << endl;
 }
 
 MovingTerrain::~MovingTerrain()
@@ -176,6 +177,9 @@ void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
 
 void MovingTerrain::UpdatePhysics()
 {
+	//return;
+	V2d oldPosition = position;
+
 	double movement = speed;
 	
 	/*if( PlayerSlowingMe() )
@@ -215,6 +219,8 @@ void MovingTerrain::UpdatePhysics()
 			AdvanceTargetNode();	
 		}
 	}
+
+	vel = position - oldPosition;
 }
 
 void MovingTerrain::AdvanceTargetNode()
@@ -247,7 +253,7 @@ void MovingTerrain::AdvanceTargetNode()
 		}
 	}
 
-	cout << "new targetNode: " << targetNode << endl;
+//	cout << "new targetNode: " << targetNode << endl;
 }
 
 void MovingTerrain::DebugDraw( sf::RenderTarget *target )
@@ -259,10 +265,21 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 		cs.setRadius( 20 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		V2d realPos = position + edgeArray[i]->v0;
+		V2d realv1 = position + edgeArray[i]->v1;
 		cs.setPosition( realPos.x, realPos.y );
 		//cout << i << ": " << realPos.x << ", " << realPos.y << endl;
 		target->draw( cs );
+
+		sf::Vertex line[] =
+		{
+			sf::Vertex(sf::Vector2f(realPos.x, realPos.y)),
+			sf::Vertex(sf::Vector2f(realv1.x, realv1.y))
+		};
+
+		target->draw(line, 2, sf::Lines);
 	}
+
+
 }
 
 bool CollisionBox::Intersects( CollisionBox &c )
@@ -394,7 +411,7 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 
 //CONTACT FUNCTIONS
 Contact::Contact()
-	:edge( NULL )
+	:edge( NULL ), movingPlat( NULL )
 {
 	collisionPriority = 0;
 }
