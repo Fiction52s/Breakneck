@@ -54,31 +54,35 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
-MovingTerrain::MovingTerrain()
-	:quadTree( NULL )
+//pathparam is local. pointsParam is local
+MovingTerrain::MovingTerrain( Vector2i pos, list<Vector2i> &pathParam, list<Vector2i> &pointsParam,
+	bool loopP, float pspeed )
+	:quadTree( NULL ), numEdges( 0 ), edgeArray( NULL ), loop( loopP ), speed( pspeed ), 
+	position( pos.x, pos.y ), targetNode( 1 ), slowCounter( 1 ), slowMultiple( 1 )
 {
-}
 
-MovingTerrain::~MovingTerrain()
-{
-	delete quadTree;
-}
+	//set up path
+	pathLength = pathParam.size() + 1;
+	path = new Vector2i[pathLength];
+	path[0] = pos;
 
-void MovingTerrain::AddPoint( Vector2i p )
-{
-	tempPoints.push_back( p );
-}
+	int index = 1;
+	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
+	{
+		path[index] = (*it) + pos;
+		++index;
+	}
 
-void MovingTerrain::Finalize()
-{
-	list<Vector2i>::iterator it = tempPoints.begin();
+
+	//finalize edges and stuff
+	list<Vector2i>::iterator it = pointsParam.begin();
 	left = (*it).x;
 	right = (*it).x;
 	top = (*it).y;
 	bottom = (*it).y;
 	++it;
 
-	for( ; it != tempPoints.end(); ++it )
+	for( ; it != pointsParam.end(); ++it )
 	{
 		if( (*it).x < left )
 			left = (*it).x;
@@ -90,24 +94,31 @@ void MovingTerrain::Finalize()
 			bottom = (*it).y;
 	}
 	
+	
+	
 	list<Edge*> edges;
 
+	//could be smaller/more optimized
 	quadTree = new QuadTree( right - left, bottom - top );
-	list<Vector2i>::iterator last = tempPoints.end();
-	for( it = tempPoints.begin(); it != tempPoints.end(); ++it )
+
+	list<Vector2i>::iterator last = pointsParam.end();
+	--last;
+
+	for( it = pointsParam.begin(); it != pointsParam.end(); ++it )
 	{
 		Edge *e = new Edge;
-		e->v0 = V2d( (*last).x, (*last).y );
-		e->v1 = V2d( (*it).x, (*it).y );
+		e->v0 = V2d( (double)(*last).x - position.x, (double)(*last).y - position.y);
+		e->v1 = V2d( (double)(*it).x - position.x, (double)(*it).y - position.y );
 		edges.push_back( e );
 		last = it;
 	}
 
-	tempPoints.clear();
+	//tempPoints.clear();
 
 	//set up the quadtree and array
-	int numEdges = edges.size();
-	Edge **edgeArray = new Edge*[numEdges];
+	numEdges = edges.size();
+	edgeArray = new Edge*[numEdges];
+
 	int i = 0;
 	for( list<Edge*>::iterator eit = edges.begin(); eit != edges.end(); ++eit )
 	{
@@ -137,10 +148,121 @@ void MovingTerrain::Finalize()
 			edgeArray[i]->edge1 = edgeArray[i+1];
 		}
 	}
+}
 
-	
-
+MovingTerrain::~MovingTerrain()
+{
+	delete quadTree;
 	delete [] edgeArray;
+}
+
+void MovingTerrain::AddPoint( Vector2i p )
+{
+//	tempPoints.push_back( p );
+}
+
+void MovingTerrain::Finalize()
+{
+
+}
+
+void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
+{
+	sf::Rect<double> realR = r;
+	realR.left -= position.x;
+	realR.top -= position.y;
+	quadTree->Query( qtc, realR );
+}
+
+void MovingTerrain::UpdatePhysics()
+{
+	double movement = speed;
+	
+	/*if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}*/
+
+	//if( dead )
+	//	return;
+
+
+	movement /= (double)slowMultiple;
+
+	while( movement != 0 )
+	{
+		V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
+		V2d diff = targetPoint - position;
+		double len = length( diff );
+		if( len >= abs( movement ) )
+		{
+			position += normalize( diff ) * movement;
+			movement = 0;
+		}
+		else
+		{
+			position += diff;
+			movement -= length( diff );
+			AdvanceTargetNode();	
+		}
+	}
+}
+
+void MovingTerrain::AdvanceTargetNode()
+{
+	if( loop )
+	{
+		++targetNode;
+		if( targetNode == pathLength )
+			targetNode = 0;
+	}
+	else
+	{
+		if( forward )
+		{
+			++targetNode;
+			if( targetNode == pathLength )
+			{
+				targetNode -= 2;
+				forward = false;
+			}
+		}
+		else
+		{
+			--targetNode;
+			if( targetNode < 0 )
+			{
+				targetNode = 1;
+				forward = true;
+			}
+		}
+	}
+
+	cout << "new targetNode: " << targetNode << endl;
+}
+
+void MovingTerrain::DebugDraw( sf::RenderTarget *target )
+{
+	for( int i = 0; i < numEdges; ++i )
+	{
+		sf::CircleShape cs;
+		cs.setFillColor( Color::Green );
+		cs.setRadius( 20 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		V2d realPos = position + edgeArray[i]->v0;
+		cs.setPosition( realPos.x, realPos.y );
+		//cout << i << ": " << realPos.x << ", " << realPos.y << endl;
+		target->draw( cs );
+	}
 }
 
 bool CollisionBox::Intersects( CollisionBox &c )

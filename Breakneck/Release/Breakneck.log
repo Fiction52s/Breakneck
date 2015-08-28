@@ -1,42 +1,66 @@
-﻿Build started 8/27/2015 02:51:19 PM.
+﻿Build started 8/28/2015 11:47:28 AM.
      1>Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\Breakneck.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Users\Shephard\Libraries\SFML-2.3\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D SFML_STATIC /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Physics.cpp
-         Physics.cpp
-     1>Physics.cpp(147): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(149): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(149): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(172): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(172): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(174): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(176): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(176): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(964): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(964): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(982): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(982): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1160): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1160): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1335): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1335): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1817): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1817): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1837): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1837): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1839): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1839): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1848): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1848): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1854): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1854): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1856): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1856): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1858): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1858): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1867): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Physics.cpp(1867): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Users\Shephard\Libraries\SFML-2.3\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D SFML_STATIC /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GameSession.cpp
+         GameSession.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(146): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>GameSession.cpp(19): warning C4355: 'this' : used in base member initializer list
+     1>GameSession.cpp(371): warning C4018: '<' : signed/unsigned mismatch
+     1>GameSession.cpp(376): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(376): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(377): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(377): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(378): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(378): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(434): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(434): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(436): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(436): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(437): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(437): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(450): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(451): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(451): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(452): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(743): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(744): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(750): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(750): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(751): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(751): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(777): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(777): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(778): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(778): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(779): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(779): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(780): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(780): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(781): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(781): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(782): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(782): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(783): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(783): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(784): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(784): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1211): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1211): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1213): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1213): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1233): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1265): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1265): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1270): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1270): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1330): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1330): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1738): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1739): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
        Link:
          c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe" /NOLOGO /LIBPATH:"C:\Users\Shephard\Libraries\SFML-2.3\lib" "sfml-graphics-s.lib" "sfml-window-s.lib" "sfml-audio-s.lib" "sfml-system-s.lib" openal32.lib opengl32.lib freetype.lib jpeg.lib winmm.lib gdi32.lib flac.lib vorbisenc.lib vorbisfile.lib vorbis.lib ogg.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Breakneck.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.lib" /MACHINE:X86 Release\Actor.obj
          Release\Camera.obj
@@ -84,4 +108,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:08.01
+Time Elapsed 00:00:08.53

@@ -27,16 +27,35 @@ struct Edge : QuadTreeEntrant
 
 struct MovingTerrain
 {
-	MovingTerrain();
+	MovingTerrain(sf::Vector2i pos, 
+		std::list<sf::Vector2i> &pathParam, 
+		std::list<sf::Vector2i> &pointsParam,
+		bool loop, float speed );
 	~MovingTerrain();
 	void AddPoint(sf::Vector2i p);
 	void Finalize();
-	std::list<Vector2i> tempPoints;
+	void Query( QuadTreeCollider *qtc, const sf::Rect<double> &r );
+	void DebugDraw( sf::RenderTarget *target );
+	void UpdatePhysics();
+	void AdvanceTargetNode();
+	//std::list<Vector2i> tempPoints;
 	QuadTree *quadTree;
+	Edge **edgeArray;
+	int numEdges;
 	int left;
 	int right;
 	int top;
 	int bottom;
+	sf::Vector2<double> position;
+	sf::Vector2i *path; //global coords
+	int pathLength;
+	bool loop;
+
+	int slowMultiple;
+	int slowCounter;
+	int targetNode;
+	bool forward;
+	double speed;
 };
 
 struct CollisionBox

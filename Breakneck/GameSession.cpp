@@ -806,6 +806,29 @@ int GameSession::Run( string fileName )
 
 	goalDestroyed = false;
 
+	list<Vector2i> pathTest;
+	list<Vector2i> pointsTest;
+	pathTest.push_back( Vector2i( 100, 0 ) );
+	pathTest.push_back( Vector2i( 0, 100 ) );
+	pathTest.push_back( Vector2i( 100, 100 ) );
+
+	pointsTest.push_back( Vector2i(-100, -100) );
+	pointsTest.push_back( Vector2i(100, -100) );
+	pointsTest.push_back( Vector2i(100, 100) );
+	pointsTest.push_back( Vector2i(-100, 100) );
+	MovingTerrain *mt = new MovingTerrain( Vector2i( 100, 100 ), pathTest, pointsTest, false, 2 );
+
+	//mt->AddPoint( sf::Vector2i( 100, 100 ) );
+	//mt->AddPoint( sf::Vector2i( 300, 100 ) );
+	//mt->AddPoint( sf::Vector2i( 300, 300 ) );
+	//mt->AddPoint( sf::Vector2i( 100, 300 ) );
+	//mt->Finalize();
+	
+	movingPlats.push_back( mt );
+	
+	
+
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1063,6 +1086,10 @@ int GameSession::Run( string fileName )
 			//	player.position.y + player.b.offset.y -player.b.rh, player.b.rw, player.b.rh );
 			//Query( &player, testTree, qrect );
 
+			for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+			{
+				(*it)->UpdatePhysics();
+			}
 
 			player.UpdatePhysics( );
 
@@ -1323,6 +1350,11 @@ int GameSession::Run( string fileName )
 		window->setView( view );
 
 		//DebugDrawActors();
+
+		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+		{
+			(*it)->DebugDraw( window );
+		}
 
 		//coll.DebugDraw( window );
 

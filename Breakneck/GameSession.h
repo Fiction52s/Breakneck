@@ -80,6 +80,8 @@ struct GameSession : QuadTreeCollider
 
 	const static int MAX_EFFECTS = 100;
 
+	std::list<MovingTerrain*> movingPlats;
+
 	Actor player;
 	sf::Shader polyShader;
 	Edge **edges;
