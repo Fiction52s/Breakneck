@@ -25,6 +25,20 @@ struct Edge : QuadTreeEntrant
 	Edge *edge1;
 };
 
+struct MovingTerrain
+{
+	MovingTerrain();
+	~MovingTerrain();
+	void AddPoint(sf::Vector2i p);
+	void Finalize();
+	std::list<Vector2i> tempPoints;
+	QuadTree *quadTree;
+	int left;
+	int right;
+	int top;
+	int bottom;
+};
+
 struct CollisionBox
 {
 	enum BoxType

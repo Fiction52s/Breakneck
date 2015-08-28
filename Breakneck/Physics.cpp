@@ -54,6 +54,95 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
+MovingTerrain::MovingTerrain()
+	:quadTree( NULL )
+{
+}
+
+MovingTerrain::~MovingTerrain()
+{
+	delete quadTree;
+}
+
+void MovingTerrain::AddPoint( Vector2i p )
+{
+	tempPoints.push_back( p );
+}
+
+void MovingTerrain::Finalize()
+{
+	list<Vector2i>::iterator it = tempPoints.begin();
+	left = (*it).x;
+	right = (*it).x;
+	top = (*it).y;
+	bottom = (*it).y;
+	++it;
+
+	for( ; it != tempPoints.end(); ++it )
+	{
+		if( (*it).x < left )
+			left = (*it).x;
+		if( (*it).x > right )
+			right = (*it).x;
+		if( (*it).y < top )
+			top = (*it).y;
+		if( (*it).y > bottom )
+			bottom = (*it).y;
+	}
+	
+	list<Edge*> edges;
+
+	quadTree = new QuadTree( right - left, bottom - top );
+	list<Vector2i>::iterator last = tempPoints.end();
+	for( it = tempPoints.begin(); it != tempPoints.end(); ++it )
+	{
+		Edge *e = new Edge;
+		e->v0 = V2d( (*last).x, (*last).y );
+		e->v1 = V2d( (*it).x, (*it).y );
+		edges.push_back( e );
+		last = it;
+	}
+
+	tempPoints.clear();
+
+	//set up the quadtree and array
+	int numEdges = edges.size();
+	Edge **edgeArray = new Edge*[numEdges];
+	int i = 0;
+	for( list<Edge*>::iterator eit = edges.begin(); eit != edges.end(); ++eit )
+	{
+		quadTree->Insert( (*eit) );
+		edgeArray[i] = (*eit);
+		++i;
+	}
+
+	//give the edges their links
+	for( i = 0; i < numEdges; ++i )
+	{
+		if( i == 0 )
+		{
+			edgeArray[i]->edge0 = edgeArray[numEdges-1];
+		}
+		else
+		{
+			edgeArray[i]->edge0 = edgeArray[i-1];
+		}
+
+		if( i == numEdges - 1 )
+		{
+			edgeArray[i]->edge1 = edgeArray[0];
+		}
+		else
+		{
+			edgeArray[i]->edge1 = edgeArray[i+1];
+		}
+	}
+
+	
+
+	delete [] edgeArray;
+}
+
 bool CollisionBox::Intersects( CollisionBox &c )
 {
 	//first, box with box aabb. can adjust it later
