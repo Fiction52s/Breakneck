@@ -960,10 +960,10 @@ int GameSession::Run( string fileName )
 
 			if( !controller.UpdateState() )
 			{
-				bool up = Keyboard::isKeyPressed( Keyboard::Up ) || Keyboard::isKeyPressed( Keyboard::W );
-				bool down = Keyboard::isKeyPressed( Keyboard::Down ) || Keyboard::isKeyPressed( Keyboard::S );
-				bool left = Keyboard::isKeyPressed( Keyboard::Left ) || Keyboard::isKeyPressed( Keyboard::A );
-				bool right = Keyboard::isKeyPressed( Keyboard::Right ) || Keyboard::isKeyPressed( Keyboard::D );
+				bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+				bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+				bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+				bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
 
 			//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
 			//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
@@ -971,14 +971,31 @@ int GameSession::Run( string fileName )
 			//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
 
 				ControllerState keyboardInput;    
-				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X ) || Keyboard::isKeyPressed( Keyboard::Period );
-				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::C ) || Keyboard::isKeyPressed( Keyboard::Comma );
-				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::V ) || Keyboard::isKeyPressed( Keyboard::M );
-				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space ) || Keyboard::isKeyPressed( Keyboard::Slash );
-				keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
-			
+				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
+				keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
+				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
+				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
+				//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
+				keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
+				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
 				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
 				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
+				keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
+			
+				keyboardInput.rightStickPad = 0;
+				if( Keyboard::isKeyPressed( Keyboard::A ) )
+				{
+					keyboardInput.rightStickPad += 1 << 1;
+				}
+				else if( Keyboard::isKeyPressed( Keyboard::S ) )
+				{
+					keyboardInput.rightStickPad += 1;
+				}
+				
+
+				
+				
+				//keyboardInput.rightStickMagnitude
 				
 
 				/*if( altRight )

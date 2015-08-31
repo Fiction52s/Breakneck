@@ -133,7 +133,7 @@ void Camera::Update( Actor *player )
 	else if( zoomFactor > maxZoom )
 		zoomFactor = maxZoom;
 
-	cout << "zoomFactor: " << zoomFactor << endl;
+	//cout << "zoomFactor: " << zoomFactor << endl;
 	pos.x = player->position.x;
 	pos.y = player->position.y;
 	

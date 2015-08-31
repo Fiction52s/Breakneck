@@ -217,6 +217,16 @@ Actor::Actor( GameSession *gs )
 		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 160, 128 );
 		uairSword1.setTexture( *ts_uairSword1->texture );
 
+		ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 112, 80 );
+		standingNSword1.setTexture( *ts_standingNSword1->texture );
+
+		ts_standingDSword1 = owner->GetTileset( "standdsword1.png", 160, 48 );
+		standingDSword1.setTexture( *ts_standingDSword1->texture );
+
+		ts_standingUSword1 = owner->GetTileset( "standusword1.png", 64, 128 );
+		standingUSword1.setTexture( *ts_standingUSword1->texture );
+
+
 		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
 
 		ts_fx_dashStart = owner->GetTileset( "fx_dashstart.png", 96, 32 );
@@ -224,8 +234,7 @@ Actor::Actor( GameSession *gs )
 		ts_fx_land = owner->GetTileset( "fx_land.png", 80, 32 );
 		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
 
-	//	ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 0, 0 );
-	//	standingNSword1.setTexture( *ts_standingNSword1->texture );
+		
 
 
 		ts_bounceRun = owner->GetTileset( "bouncerun.png", 128, 64 );
@@ -416,6 +425,10 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case STANDD:
+			action = STAND;
+			frame = 0;
+			break;
+		case STANDU:
 			action = STAND;
 			frame = 0;
 			break;
@@ -1616,6 +1629,10 @@ void Actor::UpdatePrePhysics()
 		{
 			break;
 		}
+	case STANDU:
+		{
+			break;
+		}
 	case GRINDBALL:
 		{
 		
@@ -2671,8 +2688,111 @@ void Actor::UpdatePrePhysics()
 			break;
 
 		}
+	case STANDU:
+		{
+			if( currInput.LLeft() )
+			{
+				if( groundSpeed < 0 )
+				{
+					//
+					if( currInput.B && groundSpeed > -dashSpeed )
+					{
+						groundSpeed = -dashSpeed;
+					}
+				}
+				else
+				{
+					if( currInput.B )
+					{
+						groundSpeed = -dashSpeed;
+					}
+					else
+					{
+						groundSpeed = -maxRunInit;
+					}
+				}
+			}
+			else if( currInput.LRight() )
+			{
+				if( groundSpeed > 0 )
+				{
+					//
+					if( currInput.B && groundSpeed < dashSpeed )
+					{
+						groundSpeed = dashSpeed;
+					}
+				}
+				else
+				{
+					if( currInput.B )
+					{
+						groundSpeed = dashSpeed;
+					}
+					else
+					{
+						groundSpeed = maxRunInit;
+					}
+				}
+			}
+			else
+			{
+				groundSpeed = 0;
+			}
+
+			break;
+		}
 	case STANDD:
 		{
+			if( currInput.LLeft() )
+			{
+				if( groundSpeed < 0 )
+				{
+					//
+					if( currInput.B && groundSpeed > -dashSpeed )
+					{
+						groundSpeed = -dashSpeed;
+					}
+				}
+				else
+				{
+					if( currInput.B )
+					{
+						groundSpeed = -dashSpeed;
+					}
+					else
+					{
+						groundSpeed = -maxRunInit;
+					}
+				}
+			}
+			else if( currInput.LRight() )
+			{
+				if( groundSpeed > 0 )
+				{
+					//
+					if( currInput.B && groundSpeed < dashSpeed )
+					{
+						groundSpeed = dashSpeed;
+					}
+				}
+				else
+				{
+					if( currInput.B )
+					{
+						groundSpeed = dashSpeed;
+					}
+					else
+					{
+						groundSpeed = maxRunInit;
+					}
+				}
+			}
+			else
+			{
+				groundSpeed = 0;
+			}
+
+			break;
 			break;
 		}
 	case GRINDBALL:
@@ -5997,20 +6117,21 @@ void Actor::UpdatePostPhysics()
 		}
 	case STANDN:
 		{
-			int startFrame = 0;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
+			int startFrame = 1;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 4;
 
 			sprite->setTexture( *(tileset[STANDN]->texture));
 
-			Vector2i offset( -64, -96 );
+			//Vector2i offset( 24, -16 );
+			Vector2i offset( 24, 0 );
 
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 2 ) );
 
-				//if( showSword1 )
-				//	standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 2 - startFrame ) );
+				if( showSword1 )
+					standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
@@ -6020,17 +6141,17 @@ void Actor::UpdatePostPhysics()
 				
 				if( showSword1  )
 				{
-				//	sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 2 - startFrame );
-				//	standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-				//		irSword.top, -irSword.width, irSword.height ) );
+					sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 2 - startFrame );
+					standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
 				}
+
+				
 			}
 
-			if( showSword1 )
-			{
-		//		standingNSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		//		standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
-			}
+			
 			
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
@@ -6041,6 +6162,15 @@ void Actor::UpdatePostPhysics()
 			else
 			{
 				angle = atan2( gn.x, -gn.y );
+			}
+
+			if( showSword1 )
+			{
+				standingNSword1.setOrigin( standingNSword1.getLocalBounds().width / 2, standingNSword1.getLocalBounds().height);
+				standingNSword1.setRotation( angle / PI * 180 );
+
+			
+				//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -6067,6 +6197,25 @@ void Actor::UpdatePostPhysics()
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
+			offset.x * -sin( angle ) +  offset.y * cos( angle ) );
+
+			//V2d pos = pp + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
+			//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
+
+			//V2d pos( sprite->getPosition().x, sprite->getPosition().y );
+			//V2d tgn = ground->Normal();
+			//V2d ed = normalize( ground->v1 - ground->v0 );
+			//pos += ed * (double)offset.x;
+			//pos += tgn * (double)offset.y;
+
+			//standingNSword1.setPosition( sprite->getPosition().x, sprite->getPosition().y );//pp.x, pp.y );
+			standingNSword1.setPosition( pos.x, pos.y );
+
+			//cout << "pos: " << standingNSword1.getPosition().x << ", " 
+			//	<< standingNSword1.getPosition().y << endl;
+
 
 			/*if( record > 0 )
 			{
@@ -6975,9 +7124,6 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
-	
-
-
 	if( record > 0 )
 	{
 		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
@@ -7207,6 +7353,30 @@ void Actor::Draw( sf::RenderTarget *target )
 			case UAIR:
 				{
 					target->draw( uairSword1 );
+					break;
+				}
+			case STANDN:
+				{
+			/*		sf::RectangleShape rs;
+					rs.setSize( Vector2f( abs(standingNSword1.getTextureRect().width), 
+						abs(standingNSword1.getTextureRect().height )) );
+					rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
+					//rs.setRotation( standingNSword1.getRotation() );
+					rs.setPosition( standingNSword1.getPosition() );
+					rs.setFillColor( Color::Red );
+					target->draw( rs );*/
+					
+					target->draw( standingNSword1 );
+					break;
+				}
+			case STANDD:
+				{
+					target->draw( standingDSword1 );
+					break;
+				}
+			case STANDU:
+				{
+					target->draw( standingUSword1 );
 					break;
 				}
 			}

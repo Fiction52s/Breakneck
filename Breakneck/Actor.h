@@ -31,6 +31,7 @@ struct Actor : QuadTreeCollider,
 		STAND,
 		STANDD,
 		STANDN,
+		STANDU,
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
@@ -113,6 +114,12 @@ struct Actor : QuadTreeCollider,
 
 	sf::Sprite standingNSword1;
 	Tileset *ts_standingNSword1;
+
+	sf::Sprite standingDSword1;
+	Tileset *ts_standingDSword1;
+
+	sf::Sprite standingUSword1;
+	Tileset *ts_standingUSword1;
 
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
