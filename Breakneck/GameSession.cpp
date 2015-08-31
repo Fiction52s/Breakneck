@@ -801,7 +801,7 @@ int GameSession::Run( string fileName )
 	//bool goalPlayerCollision = false;
 	int returnVal = 0;
 
-	polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
+	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
 	Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
 
 	goalDestroyed = false;
@@ -816,15 +816,9 @@ int GameSession::Run( string fileName )
 	pointsTest.push_back( Vector2i(100, -100) );
 	pointsTest.push_back( Vector2i(100, 100) );
 	pointsTest.push_back( Vector2i(-100, 100) );
-	MovingTerrain *mt = new MovingTerrain( Vector2i( 100, 100 ), pathTest, pointsTest, false, 2 );
 
-	//mt->AddPoint( sf::Vector2i( 100, 100 ) );
-	//mt->AddPoint( sf::Vector2i( 300, 100 ) );
-	//mt->AddPoint( sf::Vector2i( 300, 300 ) );
-	//mt->AddPoint( sf::Vector2i( 100, 300 ) );
-	//mt->Finalize();
-	
-	movingPlats.push_back( mt );
+	//MovingTerrain *mt = new MovingTerrain( Vector2i( 100, 100 ), pathTest, pointsTest, false, 2 );
+	//movingPlats.push_back( mt );
 	
 	
 

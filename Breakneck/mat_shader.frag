@@ -8,7 +8,7 @@ layout(origin_upper_left) in vec4 gl_FragCoord;
 
 void main()
 {
-	float size = 32.0;
+	float size = 96.0;
 	vec2 fc = gl_FragCoord.xy;
 	fc = fc * vec2( 960, 540 ) / resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );

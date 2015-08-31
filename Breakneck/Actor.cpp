@@ -28,24 +28,28 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "failed to load test fair noise" );
 		}
 		fairSound.setBuffer( fairBuffer);
+		fairSound.setVolume( 0 );
 
 		if( !runTappingBuffer.loadFromFile( "runtapping.ogg" ) )
 		{
 			assert( 0 && "failed to load test runtapping noise" );
 		}
 		runTappingSound.setBuffer( runTappingBuffer);
+		runTappingSound.setVolume( 0 );
 
 		if( !playerHitBuffer.loadFromFile( "playerhit.ogg" ) )
 		{
 			assert( 0 && "failed to load test runtapping noise" );
 		}
 		playerHitSound.setBuffer( playerHitBuffer );
+		playerHitSound.setVolume( 0 );
 
 		if( !dashStartBuffer.loadFromFile( "dashstart.ogg" ) )
 		{
 			assert( 0 && "failed to load test dashstart noise" );
 		}
 		dashStartSound.setBuffer( dashStartBuffer);
+		dashStartSound.setVolume( 0 );
 
 		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
 		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
@@ -5633,7 +5637,7 @@ void Actor::UpdatePostPhysics()
 
 			if( frame % 5 == 0 && abs( groundSpeed ) > 0 )
 			{
-				owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
+				//owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
 			}
 		}
 		break;
