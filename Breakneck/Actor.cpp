@@ -718,7 +718,7 @@ void Actor::UpdatePrePhysics()
 				break;
 				
 			}
-			else if( currInput.X && !prevInput.X )
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( currInput.LDown() )
 				{
@@ -741,7 +741,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
-			if( currInput.leftShoulder )
+			if( currInput.X )
 			{
 				bounceGrounded = true;
 			}
@@ -823,7 +823,7 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			if( currInput.X && !prevInput.X )
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( currInput.LDown() )
 				{
@@ -942,7 +942,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}*/
 
-			if( currInput.leftShoulder && !prevInput.leftShoulder )
+			if( currInput.X && !prevInput.X )
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
@@ -989,7 +989,7 @@ void Actor::UpdatePrePhysics()
 			}
 
 	
-			if( currInput.X && !prevInput.X )
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( !currInput.LLeft() && !currInput.LRight() )
 				{
@@ -1016,7 +1016,7 @@ void Actor::UpdatePrePhysics()
 	case DOUBLE:
 		{
 
-			if( currInput.leftShoulder && !prevInput.leftShoulder )
+			if( currInput.X && !prevInput.X )
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
@@ -1054,7 +1054,7 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			if( currInput.X && !prevInput.X )
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( !currInput.LLeft() && !currInput.LRight() )
 				{
@@ -1243,7 +1243,7 @@ void Actor::UpdatePrePhysics()
 
 		
 			{
-				if( currInput.X && !prevInput.X )
+				if( currInput.rightShoulder && !prevInput.rightShoulder )
 				{
 					if( !currInput.LLeft() && !currInput.LRight() )
 					{
@@ -1342,7 +1342,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.X && !prevInput.X )
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( currInput.LDown() )
 				{
@@ -1409,7 +1409,7 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 					break;
 			}
-			else if( currInput.X && !prevInput.X )
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				action = STANDD;
 				frame = 0;
@@ -1503,7 +1503,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.X && !prevInput.X )
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( currInput.LDown() )
 				{
@@ -1826,7 +1826,7 @@ void Actor::UpdatePrePhysics()
 				
 				velocity = V2d( 0, 0 );
 			}
-			if( currInput.X && !prevInput.X )
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( !currInput.LLeft() && !currInput.LRight() )
 				{
@@ -1937,7 +1937,7 @@ void Actor::UpdatePrePhysics()
 		break;
 	case BOUNCEAIR:
 		{
-			if( !currInput.leftShoulder )
+			if( !currInput.X )
 			{
 				action = JUMP;
 				frame = 1;
@@ -1946,7 +1946,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case BOUNCEGROUND:
 		{
-			if( !currInput.leftShoulder )
+			if( !currInput.X )
 			{
 
 
@@ -2958,7 +2958,7 @@ void Actor::UpdatePrePhysics()
 
 	bool bubbleCreated = false;
 
-	if( currInput.leftTrigger > 200 || cloneBubbleCreated )
+	if( currInput.leftShoulder|| cloneBubbleCreated )
 	{
 		bool inBubble = false;
 		for( int i = 0; i < maxBubbles; ++i )
@@ -2977,7 +2977,7 @@ void Actor::UpdatePrePhysics()
 
 		
 
-		if( (prevInput.leftTrigger <= 200 && !inBubble) || cloneBubbleCreated )
+		if( (!prevInput.leftShoulder  && !inBubble) || cloneBubbleCreated )
 		{
 			if( bubbleFramesToLive[currBubble] == 0 )
 			{

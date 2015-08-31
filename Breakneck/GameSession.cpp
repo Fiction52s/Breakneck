@@ -1026,7 +1026,9 @@ int GameSession::Run( string fileName )
 			{
 				controller.UpdateState();
 				currInput = controller.GetState();
-				currInput.X |= currInput.rightShoulder;
+
+				//currInput.X |= currInput.rightShoulder;
+
 			//currInput.B;//|= currInput.rightTrigger > 200;
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}

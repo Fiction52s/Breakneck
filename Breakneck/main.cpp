@@ -119,6 +119,13 @@ int main()
 
 	//test.clear();
 
+	//sf::Music titleMusic;
+	//if( !titleMusic.openFromFile( "harrisonmusic.ogg" ))
+	//	assert( false && "no music found" );
+
+	//titleMusic.setLoop( true );
+	//titleMusic.play();
+
 	cout << "opened window" << endl;
 	sf::Texture t;
 	t.loadFromFile( "title.png" );
@@ -149,11 +156,19 @@ int main()
 
 	window->setVerticalSyncEnabled( true );
 
+	window->setView( v );
+	window->draw( titleSprite );
+	window->draw( menu );		
+
+	window->display();
+
 	//cout << "beginning input loop" << endl;
 	while( !quit )
 	{
 		window->clear();
-	
+		
+
+
 		while( window->pollEvent( ev ) )
 		{
 		//	cout << "some input" << endl;
@@ -161,31 +176,55 @@ int main()
 			{
 			case sf::Event::KeyPressed:
 				{
-					if( ev.key.code == Keyboard::Num1 )
+					/*if( ev.key.code == Keyboard::Num1 )
 					{
 						cout << "starting level 1" << endl;
+						titleMusic.stop();
 						GameEditLoop2( "test1" );
 						window->setView( v );
+						titleMusic.play();
 					}
 					else if( ev.key.code == Keyboard::Num2 )
 					{
 						cout << "starting level 2" << endl;
+						titleMusic.stop();
 						GameEditLoop2( "test2" );
 						window->setView( v );
+						titleMusic.play();
 					}
 					else if( ev.key.code == Keyboard::Num3 )
 					{
 						cout << "starting level 3" << endl;
+						titleMusic.stop();
+
 						GameEditLoop2( "test3" );
 						window->setView( v );
-					}
-					else if( ev.key.code == Keyboard::Escape )
+						titleMusic.play();
+					}*/
+					if( ev.key.code == Keyboard::Escape )
 					{
 						quit = true;
+					}
+					else
+					{
+					//	titleMusic.stop();
+						GameEditLoop2( "test3" );
+						window->setView( v );
+					//	titleMusic.play();
 					}
 
 					break;
 				}
+			}
+		}
+
+		if( controller.UpdateState() )
+		{
+			ControllerState cs = controller.GetState();
+			if( cs.A || cs.back || cs.Y || cs.X )
+			{
+				GameEditLoop2( "test3" );
+				window->setView( v );
 			}
 		}
 
