@@ -347,6 +347,15 @@ struct FootTrap : Enemy
 	int animationFactor;
 	bool dead;
 	sf::Vector2<double> gn;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
 };
 
 struct Goal : Enemy

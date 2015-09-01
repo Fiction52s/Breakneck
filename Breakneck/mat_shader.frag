@@ -5,6 +5,7 @@ uniform vec2 topLeft;
 uniform float zoom;
 uniform vec2 resolution;
 layout(origin_upper_left) in vec4 gl_FragCoord;
+//out vec4 colorOut;
 
 void main()
 {

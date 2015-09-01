@@ -128,6 +128,8 @@ struct GameSession : QuadTreeCollider
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 
+	bool usePolyShader;
+
 	PowerBar powerBar;
 
 	int pauseFrames;

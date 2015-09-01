@@ -142,7 +142,7 @@ void BasicTurret::UpdatePrePhysics()
 void BasicTurret::UpdatePhysics()
 {
 	Bullet *currBullet = activeBullets;
-
+	int i = 0;
 	while( currBullet != NULL )
 	{
 
@@ -150,7 +150,7 @@ void BasicTurret::UpdatePhysics()
 		//cout << "moving bullet" << endl;
 
 		double movement = bulletSpeed / (double)currBullet->slowMultiple;
-
+		//cout << "movement at bullet " << i << ": "  << movement << endl;
 		double speed;
 		while( movement > 0 )
 		{
@@ -168,12 +168,14 @@ void BasicTurret::UpdatePhysics()
 			if( ResolvePhysics( currBullet, gn * speed ) )
 			{
 				DeactivateBullet( currBullet );
+				break;
 			}
 		}
 
 		//currBullet->position += gn * bulletSpeed;
 
 		currBullet = next;
+		++i;
 	}
 }
 
@@ -221,11 +223,11 @@ void BasicTurret::UpdatePostPhysics()
 	}
 
 	
-	cout << "slowcounter: " << slowCounter << endl;
+	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
-		cout << "frame" << endl;
+	//	cout << "frame" << endl;
 		slowCounter = 1;
 	
 		if( dead )
@@ -570,6 +572,6 @@ BasicTurret::Bullet * BasicTurret::ActivateBullet()
 }
 
 BasicTurret::Bullet::Bullet()
-	:prev( NULL ), next( NULL ), frame( 0 )
+	:prev( NULL ), next( NULL ), frame( 0 ), slowCounter( 1 ), slowMultiple( 1 )
 {
 }

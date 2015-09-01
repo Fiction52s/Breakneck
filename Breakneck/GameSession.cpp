@@ -18,11 +18,13 @@ using namespace sf;
 GameSession::GameSession( GameController &c, RenderWindow *rw)
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 {
+	usePolyShader = true;
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
-		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "polygon shader not loaded" );
+		cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+		usePolyShader = false;
 	}
 
 	terrainTree = new QuadTree( 1000000, 1000000 );
@@ -38,7 +40,6 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 
 	inactiveEffects = NULL;
 	pauseImmuneEffects = NULL;
-
 
 	//sets up fx so that they can be used
 	for( int i = 0; i < MAX_EFFECTS; ++i )
@@ -1293,7 +1294,15 @@ int GameSession::Run( string fileName )
 
 		for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 		{
-			window->draw( *(*it ), &polyShader);//GetTileset( "testrocks.png", 25, 25 )->texture );
+			if( usePolyShader )
+			{
+				window->draw( *(*it ), &polyShader);
+			}
+			else
+			{
+				window->draw( *(*it ) );
+			}
+			//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
 		
 		

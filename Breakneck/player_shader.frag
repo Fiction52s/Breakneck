@@ -1,4 +1,4 @@
-#version 150
+#version 120
 
 //attributes from vertex shader
 varying vec4 vColor;
