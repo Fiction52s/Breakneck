@@ -1594,7 +1594,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 						if( resolveLeft  > 1.1  )
 						{
 							resolveLeft  = 10000;
-							cout << "adjusting left" << endl;
+				//			cout << "adjusting left" << endl;
 						}
 
 						//	cout << "temp resolveleft: " << resolveLeft << endl;
@@ -1610,7 +1610,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 					if( resolveRight > 1.1 )
 					{
 						
-						cout << "adjusting right: " << resolveRight  << endl;
+			//			cout << "adjusting right: " << resolveRight  << endl;
 						resolveRight = 10000;
 					}
 
@@ -1656,7 +1656,7 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//cout << "resolve dist: " << resolveDist << ", " << resolveBottom << endl;
 				if( approxEquals( resolveDist, 0 ) )
 				{
-					cout << "returning nNULLL heree" << endl;
+				//	cout << "returning nNULLL heree" << endl;
 					//return NULL;
 				}
 
@@ -1680,8 +1680,8 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 				//	if( resolveDist == 10000kmkkkkkkkkkkkkkkkkk )
 				//		cout << "weird case" << endl;
 			//		elsekkkkkkkkk
-					cout << "formally an error: " 
-						<< currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
+				//	cout << "formally an error: " 
+				//		<< currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
 					if( resolveDist != 10000 ) assert( false && "thought I had it" );
 
 					return NULL;
@@ -1752,10 +1752,10 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 			if( length( currentContact->resolution ) > length( vel ) + 1 )
 			{
-				cout << "resolution: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
-				cout << "vel: " << vel.x << ", " << vel.y << endl;
+			//	cout << "resolution: " << currentContact->resolution.x << ", " << currentContact->resolution.y << endl;
+			//	cout << "vel: " << vel.x << ", " << vel.y << endl;
 				
-				cout << "returning null--" << endl;	
+			//	cout << "returning null--" << endl;	
 				//return NULL;
 			}
 			else

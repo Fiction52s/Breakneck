@@ -192,7 +192,7 @@ void Patroller::UpdatePostPhysics()
 
 		if( PlayerHitMe() )
 		{
-			cout << "patroller received damage of: " << receivedHit->damage << endl;
+		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			owner->Pause( 6 );
 			dead = true;
 			receivedHit = NULL;
@@ -200,7 +200,7 @@ void Patroller::UpdatePostPhysics()
 
 		if( IHitPlayer() )
 		{
-			cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 

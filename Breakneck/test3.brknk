@@ -1,12 +1,17 @@
-4
+8
 -228 -146
 mat 4
 -576 -96
 288 -96
 288 64
 -576 64
+mat 4
+-630 -819
+298 -819
+298 -691
+-630 -691
 1
--- 4
+-- 6
 goal -air 0 0 729.998
 foottrap -air 0 0 428.5
 patroller +air -322 -307
@@ -19,3 +24,9 @@ patroller +air -322 -307
 -loop
 10.00000
 foottrap -air 0 3 134.24
+basicturret -air 1 2 477.5
+10
+10
+basicturret -air 0 0 565
+10
+10

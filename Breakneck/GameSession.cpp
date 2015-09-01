@@ -1371,7 +1371,7 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
@@ -1405,7 +1405,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( e->spawnRect.intersects( tempSpawnRect ) )
 		{
-			cout << "spawning enemy!" << endl;
+			//cout << "spawning enemy!" << endl;
 			assert( e->spawned == false );
 			e->spawned = true;
 

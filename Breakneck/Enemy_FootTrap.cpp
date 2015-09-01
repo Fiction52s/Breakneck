@@ -71,6 +71,7 @@ void FootTrap::ResetEnemy()
 {
 	frame = 0;
 	deathFrame = 0;
+	dead = false;
 }
 
 void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
@@ -304,9 +305,19 @@ bool FootTrap::ResolvePhysics( sf::Vector2<double> vel )
 
 void FootTrap::SaveEnemyState()
 {
+	stored.dead = dead;
+	stored.deathFrame = deathFrame;
+	stored.frame = frame;
+//	stored.hitlagFrames = hitlagFrames;
+//	stored.hitstunFrames = hitstunFrames;
 }
 
 void FootTrap::LoadEnemyState()
 {
+	dead = stored.dead;
+	deathFrame = stored.deathFrame;
+	frame = stored.frame;
+//	hitlagFrames = stored.hitlagFrames;
+//	hitstunFrames = stored.hitstunFrames;
 }
 

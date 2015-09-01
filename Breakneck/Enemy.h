@@ -356,6 +356,16 @@ struct FootTrap : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		int frame;
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
 };
 
 struct Goal : Enemy

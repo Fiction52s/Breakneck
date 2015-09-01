@@ -142,14 +142,14 @@ int main()
 	window->setView( v );
 
 	sf::Text menu;
-	menu.setString( "Press 1, 2, or 3 to select a level");
+	menu.setString( "\t\tPress any button to start \nFor help and information check README.txt");
 	menu.setCharacterSize( 20 );
 	menu.setColor( Color::Red );
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
 	menu.setFont( arial );
 	menu.setOrigin( menu.getLocalBounds().width / 2, menu.getLocalBounds().height / 2 );
-	menu.setPosition( 0, 100 );
+	menu.setPosition( 0, 200 );
 
 	sf::Event ev;
 	bool quit = false;
@@ -221,7 +221,7 @@ int main()
 		if( controller.UpdateState() )
 		{
 			ControllerState cs = controller.GetState();
-			if( cs.A || cs.back || cs.Y || cs.X )
+			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
 			{
 				GameEditLoop2( "test3" );
 				window->setView( v );

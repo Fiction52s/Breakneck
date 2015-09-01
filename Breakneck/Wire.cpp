@@ -25,7 +25,7 @@ void Wire::UpdateState()
 			
 			if( currInput.rightTrigger >= triggerThresh && prevInput.rightTrigger < triggerThresh )
 			{
-				cout << "firing" << endl;
+				//cout << "firing" << endl;
 				fireDir = V2d( 0, 0 );
 				if( currInput.LLeft() )
 				{

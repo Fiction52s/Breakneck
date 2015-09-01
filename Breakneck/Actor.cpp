@@ -3550,7 +3550,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		(*it)->Query( this, r );
 	}
 
-	if( col )
+	if( false )//if( col )
 	{
 		cout << "performing: " << endl 
 			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
