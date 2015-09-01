@@ -1362,7 +1362,7 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{

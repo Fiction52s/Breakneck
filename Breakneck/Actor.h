@@ -146,6 +146,11 @@ struct Actor : QuadTreeCollider,
 	//int numCurrHitboxes;
 	HitboxInfo *currHitboxInfo;
 	std::map<int, std::list<CollisionBox>*> fairHitboxes;
+	std::map<int, std::list<CollisionBox>*> uairHitboxes;
+	std::map<int, std::list<CollisionBox>*> dairHitboxes;
+	std::map<int, std::list<CollisionBox>*> standNHitboxes;
+	std::map<int, std::list<CollisionBox>*> standDHitboxes;
+	std::map<int, std::list<CollisionBox>*> standUHitboxes;
 
 
 	double steepThresh;
@@ -408,6 +413,7 @@ struct PlayerGhost
 		STAND,
 		STANDD,
 		STANDN,
+		STANDU,
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
@@ -420,6 +426,8 @@ struct PlayerGhost
 		WIREHOLD,
 		BOUNCEAIR,
 		BOUNCEGROUND,
+		BOUNCEGROUNDEDWALL,
+		DEATH,
 		Count
 	};
 	PlayerGhost();
@@ -449,7 +457,11 @@ struct PlayerGhost
 	std::list<CollisionBox> *currHitboxes;
 
 	std::map<int, std::list<CollisionBox>*> fairHitboxes;
-
+	std::map<int, std::list<CollisionBox>*> uairHitboxes;
+	std::map<int, std::list<CollisionBox>*> dairHitboxes;
+	std::map<int, std::list<CollisionBox>*> standNHitboxes;
+	std::map<int, std::list<CollisionBox>*> standDHitboxes;
+	std::map<int, std::list<CollisionBox>*> standUHitboxes;
 
 
 

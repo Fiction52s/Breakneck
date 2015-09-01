@@ -119,12 +119,12 @@ int main()
 
 	//test.clear();
 
-	//sf::Music titleMusic;
-	//if( !titleMusic.openFromFile( "harrisonmusic.ogg" ))
-	//	assert( false && "no music found" );
+	sf::Music titleMusic;
+	if( !titleMusic.openFromFile( "titletheme.ogg" ))
+		assert( false && "no music found" );
 
-	//titleMusic.setLoop( true );
-	//titleMusic.play();
+	titleMusic.setLoop( true );
+	titleMusic.play();
 
 	cout << "opened window" << endl;
 	sf::Texture t;
@@ -207,10 +207,10 @@ int main()
 					}
 					else
 					{
-					//	titleMusic.stop();
+						titleMusic.stop();
 						GameEditLoop2( "test3" );
 						window->setView( v );
-					//	titleMusic.play();
+						titleMusic.play();
 					}
 
 					break;

@@ -3092,7 +3092,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		w->draw( iconSprite );
 
-		if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )
+		if( false )
+		//if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )
 		{
 			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );

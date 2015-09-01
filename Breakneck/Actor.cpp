@@ -84,13 +84,13 @@ Actor::Actor( GameSession *gs )
 		CollisionBox cb;
 		cb.type = CollisionBox::Hit;
 		cb.isCircle = true;
-		cb.offset.x = 0;
-		cb.offset.y = 0;
+		cb.offset.x = 32;
+		cb.offset.y = -8;
 		//cb.offsetAngle = 0;
 		cb.rw = 64;
 		cb.rh = 64;
 
-		for( int i = 0; i < 4; ++i )
+		for( int i = 0; i < MAX_GHOSTS; ++i )
 		{
 			ghosts[i] = new PlayerGhost;
 		}
@@ -100,11 +100,95 @@ Actor::Actor( GameSession *gs )
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
 
-			for( int i = 0; i < 4; ++i )
+			for( int i = 0; i < MAX_GHOSTS; ++i )
 			{
 				//ghosts[i] = new PlayerGhost;
 				ghosts[i]->fairHitboxes[j] = new list<CollisionBox>;
 				ghosts[i]->fairHitboxes[j]->push_back( cb );			
+			}
+		}
+
+
+		cb.offset.x = 0;
+		cb.offset.y = -8;
+
+		for( int j = 0; j <= 5; ++j )
+		{
+			uairHitboxes[j] = new list<CollisionBox>;
+			uairHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->uairHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->uairHitboxes[j]->push_back( cb );			
+			}
+		}
+
+
+		cb.offset.x = 0;
+		cb.offset.y = 32;
+		for( int j = 0; j <= 9; ++j )
+		{
+			dairHitboxes[j] = new list<CollisionBox>;
+			dairHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->dairHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->dairHitboxes[j]->push_back( cb );			
+			}
+		}
+
+		cb.rw = 48;
+		cb.rh = 48;
+		cb.offset.x = 32;
+		cb.offset.y = 0;
+		for( int j = 1; j <= 4; ++j )
+		{
+			standNHitboxes[j] = new list<CollisionBox>;
+			standNHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->standNHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->standNHitboxes[j]->push_back( cb );			
+			}
+		}
+
+		cb.rw = 48;
+		cb.rh = 48;
+		cb.offset.x = 32;
+		cb.offset.y = 0;
+		for( int j = 2; j <= 7; ++j )
+		{
+			standDHitboxes[j] = new list<CollisionBox>;
+			standDHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->standDHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->standDHitboxes[j]->push_back( cb );			
+			}
+		}
+
+		cb.rw = 48;
+		cb.rh = 48;
+		cb.offset.x = 0;
+		cb.offset.y = -70;
+		for( int j = 2; j <= 7; ++j )
+		{
+			standUHitboxes[j] = new list<CollisionBox>;
+			standUHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->standUHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->standUHitboxes[j]->push_back( cb );			
 			}
 		}
 
@@ -141,11 +225,14 @@ Actor::Actor( GameSession *gs )
 		actionLength[STAND] = 20 * 8;
 		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
 
-		actionLength[STANDD] = 6 * 2;
-		tileset[STANDD] = owner->GetTileset( "standd.png", 128, 64 );
+		actionLength[STANDD] = 8 * 2;
+		tileset[STANDD] = owner->GetTileset( "standd.png", 96, 48 );
 
 		actionLength[STANDN] = 5 * 2;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
+
+		actionLength[STANDU] = 20;
+		tileset[STANDU] = owner->GetTileset( "standu.png", 64, 80 );
 
 		actionLength[UAIR] = 6 * 3;
 		tileset[UAIR] = owner->GetTileset( "uair.png", 80, 80 );
@@ -211,7 +298,7 @@ Actor::Actor( GameSession *gs )
 		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 144, 128 );
 		fairSword1.setTexture( *ts_fairSword1->texture );
 
-		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 128, 160 );
+		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 128, 144 );
 		dairSword1.setTexture( *ts_dairSword1->texture );
 
 		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 160, 128 );
@@ -738,6 +825,11 @@ void Actor::UpdatePrePhysics()
 					action = STANDD;
 					frame = 0;
 				}
+				else if( currInput.LUp() )
+				{
+					action = STANDU;
+					frame = 0;
+				}
 				else
 				{
 					action = STANDN;
@@ -841,6 +933,11 @@ void Actor::UpdatePrePhysics()
 				if( currInput.LDown() )
 				{
 					action = STANDD;
+					frame = 0;
+				}
+				else if( currInput.LUp() )
+				{
+					action = STANDU;
 					frame = 0;
 				}
 				else
@@ -1362,6 +1459,11 @@ void Actor::UpdatePrePhysics()
 					action = STANDD;
 					frame = 0;
 				}
+				else if( currInput.LUp() )
+				{
+					action = STANDU;
+					frame = 0;
+				}
 				else
 				{
 					action = STANDN;
@@ -1521,6 +1623,11 @@ void Actor::UpdatePrePhysics()
 				if( currInput.LDown() )
 				{
 					action = STANDD;
+					frame = 0;
+				}
+				else if( currInput.LUp() )
+				{
+					action = STANDU;
 					frame = 0;
 				}
 				else
@@ -2416,6 +2523,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case DAIR:
 		{
+			if( dairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = dairHitboxes[frame];
+			}
+
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{		
 				AirMovement();
@@ -2424,6 +2536,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case UAIR:
 		{
+			if( uairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = uairHitboxes[frame];
+			}
+
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{	
 				AirMovement();
@@ -2636,6 +2753,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
+			if( standNHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = standNHitboxes[frame];
+			}
+
+
 			if( currInput.LLeft() )
 			{
 				if( groundSpeed < 0 )
@@ -2690,6 +2813,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDU:
 		{
+			if( standUHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = standUHitboxes[frame];
+			}
+
 			if( currInput.LLeft() )
 			{
 				if( groundSpeed < 0 )
@@ -2743,6 +2871,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDD:
 		{
+
+			if( standDHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = standDHitboxes[frame];
+			}
+
 			if( currInput.LLeft() )
 			{
 				if( groundSpeed < 0 )
@@ -5226,8 +5360,28 @@ void Actor::UpdateHitboxes()
 				(*it).globalAngle = 0;
 			}
 
-			(*it).globalPosition = position + V2d( (*it).offset.x * cos( (*it).globalAngle ) + (*it).offset.y * sin( (*it).globalAngle ), 
-				(*it).offset.x * -sin( (*it).globalAngle ) + (*it).offset.y * cos( (*it).globalAngle ) );
+			double offX = (*it).offset.x;
+			double offY = (*it).offset.y;
+
+			if( !facingRight )
+				offX = -offX;
+
+			V2d pos = position;
+			if( ground != NULL )
+			{
+				V2d gn = ground->Normal();
+				V2d gd = normalize( ground->v1 - ground->v0 );
+
+				pos += gd * offX + gn * -offY;
+			}
+			else
+			{
+				pos += V2d( offX, offY );
+			}
+
+			(*it).globalPosition = pos;
+			//(*it).globalPosition = position + V2d( offX * cos( (*it).globalAngle ) + offY * sin( (*it).globalAngle ), 
+			//	offX * -sin( (*it).globalAngle ) + offY * cos( (*it).globalAngle ) );
 
 			//(*it).globalPosition = position + (*it).offset;
 		
@@ -6152,16 +6306,21 @@ void Actor::UpdatePostPhysics()
 			}
 
 			
-			
+			V2d trueNormal;
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
+				trueNormal = V2d( 0, -1 );
 				if( reversed )
+				{
 					angle = PI;
+					trueNormal = V2d( 0, 1 );
+				}
 			}
 			else
 			{
 				angle = atan2( gn.x, -gn.y );
+				trueNormal = gn;
 			}
 
 			if( showSword1 )
@@ -6198,58 +6357,72 @@ void Actor::UpdatePostPhysics()
 			else
 				sprite->setPosition( pp.x, pp.y );
 
-			V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
-			offset.x * -sin( angle ) +  offset.y * cos( angle ) );
-
-			//V2d pos = pp + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
+			//V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
 			//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
 
-			//V2d pos( sprite->getPosition().x, sprite->getPosition().y );
-			//V2d tgn = ground->Normal();
-			//V2d ed = normalize( ground->v1 - ground->v0 );
-			//pos += ed * (double)offset.x;
-			//pos += tgn * (double)offset.y;
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
 
-			//standingNSword1.setPosition( sprite->getPosition().x, sprite->getPosition().y );//pp.x, pp.y );
 			standingNSword1.setPosition( pos.x, pos.y );
-
-			//cout << "pos: " << standingNSword1.getPosition().x << ", " 
-			//	<< standingNSword1.getPosition().y << endl;
-
-
-			/*if( record > 0 )
-			{
-				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingNSword1;
-			}*/
 
 			break;
 		}
 	case STANDD:
 		{
+			int startFrame = 2;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 7;
+
+
 			sprite->setTexture( *(tileset[STANDD]->texture));
+
+			Vector2i offset( 24, 0 );
+
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
 				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
 
+				if( showSword1 )
+					standingDSword1.setTextureRect( ts_standingDSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
 				sf::IntRect ir = tileset[STANDD]->GetSubRect( frame / 2 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1  )
+				{
+					sf::IntRect irSword = ts_standingDSword1->GetSubRect( frame / 2 - startFrame );
+					standingDSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
 			}
 			
+			V2d trueNormal;
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
+				trueNormal = V2d( 0, -1 );
 				if( reversed )
+				{
 					angle = PI;
+					trueNormal = V2d( 0, 1 );
+				}
 			}
 			else
 			{
 				angle = atan2( gn.x, -gn.y );
+				trueNormal = gn;
+			}
+
+			if( showSword1 )
+			{
+				standingDSword1.setOrigin( standingDSword1.getLocalBounds().width / 2, standingDSword1.getLocalBounds().height);
+				standingDSword1.setRotation( angle / PI * 180 );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -6276,6 +6449,105 @@ void Actor::UpdatePostPhysics()
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			standingDSword1.setPosition( pos.x, pos.y );
+
+			break;
+		}
+	case STANDU:
+		{
+			int startFrame = 1;
+			showSword1 = frame >= startFrame && frame <= 18;
+
+
+			sprite->setTexture( *(tileset[STANDU]->texture));
+
+			Vector2i offset( 0, 32 );
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STANDU]->GetSubRect( frame ) );
+
+				if( showSword1 )
+					standingUSword1.setTextureRect( ts_standingUSword1->GetSubRect( frame - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STANDU]->GetSubRect( frame );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1  )
+				{
+					sf::IntRect irSword = ts_standingUSword1->GetSubRect( frame - startFrame );
+					standingUSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
+			}
+			
+			V2d trueNormal;
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				trueNormal = V2d( 0, -1 );
+				if( reversed )
+				{
+					angle = PI;
+					trueNormal = V2d( 0, 1 );
+				}
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+				trueNormal = gn;
+			}
+
+			if( showSword1 )
+			{
+				standingUSword1.setOrigin( standingUSword1.getLocalBounds().width / 2, standingUSword1.getLocalBounds().height);
+				standingUSword1.setRotation( angle / PI * 180 );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			standingUSword1.setPosition( pos.x, pos.y );
 			break;
 		}
 	case FAIR:
@@ -6337,7 +6609,7 @@ void Actor::UpdatePostPhysics()
 			int startFrame = 0;
 			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
 
-			Vector2i offset( -16, -48 );
+			Vector2i offset( 0, 40 );
 
 			sprite->setTexture( *(tileset[DAIR]->texture));
 			if( facingRight )
@@ -6381,7 +6653,7 @@ void Actor::UpdatePostPhysics()
 			showSword1 = frame / 3 >= startFrame && frame / 3 <= 5;
 			sprite->setTexture( *(tileset[UAIR]->texture));
 
-			Vector2i offset( -32, -48 );
+			Vector2i offset( 8, -24 );
 
 			if( facingRight )
 			{
@@ -6403,11 +6675,13 @@ void Actor::UpdatePostPhysics()
 					uairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
+
+				offset.x = -offset.x;
 			}
 
 			if( showSword1 )
 			{
-				uairSword1.setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+				uairSword1.setOrigin( uairSword1.getLocalBounds().width / 2, uairSword1.getLocalBounds().height / 2 );
 				uairSword1.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
@@ -7733,6 +8007,46 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 			if( fairHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = fairHitboxes[frame];
+			}
+			break;
+		}
+	case UAIR:
+		{
+			if( uairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = uairHitboxes[frame];
+			}
+			break;
+		}
+	case DAIR:
+		{
+			if( dairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = dairHitboxes[frame];
+			}
+			break;
+		}
+	case STANDN:
+		{
+			if( standNHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = standNHitboxes[frame];
+			}
+			break;
+		}
+	case STANDU:
+		{
+			if( standUHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = standUHitboxes[frame];
+			}
+			break;
+		}
+	case STANDD:
+		{
+			if( standDHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = standDHitboxes[frame];
 			}
 			break;
 		}
