@@ -124,6 +124,7 @@ int main()
 		assert( false && "no music found" );
 
 	titleMusic.setLoop( true );
+	titleMusic.setVolume( 0 );
 	titleMusic.play();
 
 	cout << "opened window" << endl;
@@ -153,6 +154,8 @@ int main()
 
 	sf::Event ev;
 	bool quit = false;
+
+
 
 	window->setVerticalSyncEnabled( true );
 

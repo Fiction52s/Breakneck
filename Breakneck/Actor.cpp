@@ -1080,7 +1080,6 @@ void Actor::UpdatePrePhysics()
 				//cout << "special walljump right" << endl;
 				if( currInput.LRight() && !prevInput.LRight() )
 				{
-					
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = true;
@@ -5337,19 +5336,27 @@ void Actor::UpdatePhysics()
 void Actor::UpdateHitboxes()
 {
 	double angle = 0;
+	V2d gn;
+	V2d gd; 
 	if( ground != NULL )
 	{
-
-		V2d gn = ground->Normal();
 		if( !approxEquals( abs(offsetX), b.rw ) )
 		{
+			gn = V2d( 0, -1 );
+			gd = V2d( 1, 0 );
 			if( reversed )
+			{
 				angle = PI;
+				gn = V2d( 0, 1 );
+				gd = V2d( -1, 0 );
+			}
 			//this should never happen
 		}
 		else
 		{
 			angle = atan2( gn.x, -gn.y );
+			gn = ground->Normal();
+			gd = normalize( ground->v1 - ground->v0 );
 		}
 	}
 
@@ -5369,20 +5376,24 @@ void Actor::UpdateHitboxes()
 			double offX = (*it).offset.x;
 			double offY = (*it).offset.y;
 
-			if( !facingRight )
+			if( ( !facingRight && !reversed ) || ( facingRight && reversed ) )
 				offX = -offX;
+
+			if( reversed )
+				offY = -offY;
 
 			V2d pos = position;
 			if( ground != NULL )
 			{
-				V2d gn = ground->Normal();
-				V2d gd = normalize( ground->v1 - ground->v0 );
+			//	V2d gn = ground->Normal();
+				pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
 
-				pos += gd * offX + gn * -offY;
+				pos += gd * offX + gn * -offY + gn * (double)sprite->getLocalBounds().height / 2.0;
+				//pos += gd * offX + gn * -offY; //+ V2d( offsetX, 0 );
 			}
 			else
 			{
-				pos += V2d( offX, offY );
+				pos += V2d( offX, offY );// + V2d( offsetX, 0 );
 			}
 
 			(*it).globalPosition = pos;
