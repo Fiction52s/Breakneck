@@ -1077,8 +1077,10 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( false ) )
 			{
+				//cout << "special walljump right" << endl;
 				if( currInput.LRight() && !prevInput.LRight() )
 				{
+					
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = true;
@@ -1088,9 +1090,11 @@ void Actor::UpdatePrePhysics()
 			
 			
 			if( CheckWall( true ) )
-			{				
+			{		
+				//cout << "special walljump right" << endl;
 				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
+					
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = false;
@@ -3351,31 +3355,33 @@ bool Actor::CheckWall( bool right )
 	}
 	V2d newPos = (position) + vel;
 	Contact test;
-	test.collisionPriority = 10000;
-	test.edge = NULL;
+	//test.collisionPriority = 10000;
+	//test.edge = NULL;
 
 
-	for( int i = 0; i < owner->numPoints; ++i )
+	minContact.collisionPriority = 10000;
+	minContact.edge = NULL;
+	minContact.resolution = V2d( 0, 0 );
+	col = false;
+	queryMode = "checkwall";
+	tempVel = vel;
+
+	//sf::Rect<double> r( 
+	Rect<double> r( position.x + tempVel.x + b.offset.x - b.rw, position.y + tempVel.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+
+
+	owner->terrainTree->Query( this, r );
+	
+
+	if( !col )
 	{
-		Contact *c = owner->coll.collideEdge( newPos , b, owner->edges[i], vel );
-		if( c != NULL )
-		{
-			if( (c->collisionPriority < test.collisionPriority ))//&& c->collisionPriority >= 0 )
-			//	|| (test.collisionPriority == 10000 ) )
-			{
-				test.collisionPriority = c->collisionPriority;
-				test.edge = c->edge;
-				test.position = c->position;
-				test.resolution = c->resolution;
-			}
-		
-		}
+		return false;
 	}
 
 	bool wally = false;
-	if( test.edge != NULL )
+	if( minContact.edge != NULL )
 	{
-		double quant = test.edge->GetQuantity( test.position );
+		double quant = minContact.edge->GetQuantity( test.position );
 		bool zero = false;
 		bool one = false;
 		if( quant <= 0 )
@@ -3383,10 +3389,10 @@ bool Actor::CheckWall( bool right )
 			zero = true;
 			quant = 0;
 		}
-		else if( quant >= length( test.edge->v1 - test.edge->v0 ) )
+		else if( quant >= length( minContact.edge->v1 - minContact.edge->v0 ) )
 		{
 			one = true;
-			quant = length( test.edge->v1 - test.edge->v0 );
+			quant = length( minContact.edge->v1 - minContact.edge->v0 );
 		}
 
 		//if( !zero && !one )
@@ -3394,7 +3400,7 @@ bool Actor::CheckWall( bool right )
 
 		//cout << "zero: " << zero << ", one: " << one << endl;
 		//cout << "haha: "  << quant << ", " << length( test.edge->v1 - test.edge->v0 ) << endl;
-		Edge *e = test.edge;
+		Edge *e = minContact.edge;
 		V2d en = e->Normal();
 		Edge *e0 = e->edge0;
 		Edge *e1 = e->edge1;
@@ -7501,34 +7507,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			return;
 
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
-
-		/*if( c != NULL )
-		{
-			if( !col || c->collisionPriority < minContact.collisionPriority )
-			{
-				minContact.collisionPriority = c->collisionPriority;
-				minContact.edge = e;
-				minContact.resolution = c->resolution;
-				minContact.position = c->position;
-				minContact.normal = c->normal;
-				col = true;
-			}
-		}*/
-		/*
-		if( c != NULL )
-		{
-			if( c->collisionPriority > 0 &&  (!col || c->collisionPriority < minContact.collisionPriority ) )
-			{
-				minContact.collisionPriority = c->collisionPriority;
-				minContact.edge = c->edge;
-				minContact.position = c->position;
-				minContact.resolution = c->resolution;
-				col = true;
-			}
-		}*/
-		//	cout << possibleEdgeCount << ", " << c->collisionPriority << " x: " << e->Normal().x <<" ," << e->Normal().y << endl;
-		//	collisionNumber++;
-			//if( ( c->collisionPriority <= minContact.collisionPriority && minContact.collisionPriority >= 0 ) 
 		
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
@@ -7576,6 +7554,37 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			checkValid = false;
 
 		}
+	}
+	else if( queryMode == "checkwall" )
+	{
+		Contact *c = owner->coll.collideEdge( position + tempVel , b, e, tempVel );
+		
+		if( c != NULL )
+			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			{	
+				if( c->collisionPriority == minContact.collisionPriority )
+				{
+					if( length(c->resolution) > length(minContact.resolution) )
+					{
+						minContact.collisionPriority = c->collisionPriority;
+						minContact.edge = e;
+						minContact.resolution = c->resolution;
+						minContact.position = c->position;
+						minContact.movingPlat = NULL;
+						col = true;
+					}
+				}
+				else
+				{
+					minContact.collisionPriority = c->collisionPriority;
+					minContact.edge = e;
+					minContact.resolution = c->resolution;
+					minContact.position = c->position;
+					minContact.movingPlat = NULL;
+					col = true;
+					
+				}
+			}
 	}
 	++possibleEdgeCount;
 }
