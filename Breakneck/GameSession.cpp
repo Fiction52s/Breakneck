@@ -740,7 +740,6 @@ int GameSession::Run( string fileName )
 
 	OpenFile( fileName );
 	
-	Camera cam;
 	cam.pos.x = player.position.x;
 	cam.pos.y = player.position.y;
 	
@@ -822,7 +821,7 @@ int GameSession::Run( string fileName )
 	//movingPlats.push_back( mt );
 	
 	
-
+	lights.push_back( new Light( this ) );
 
 	while( !quit )
 	{
@@ -1267,6 +1266,11 @@ int GameSession::Run( string fileName )
 		}*/
 
 		
+		for( list<Light*>::iterator it = lights.begin(); it != lights.end(); ++it )
+		{
+			(*it)->Draw( window );
+		}
+
 		player.Draw( window );
 
 		UpdateEnemiesDraw();

@@ -5379,8 +5379,8 @@ void Actor::UpdateHitboxes()
 			if( ( !facingRight && !reversed ) || ( facingRight && reversed ) )
 				offX = -offX;
 
-			if( reversed )
-				offY = -offY;
+			//if( reversed )
+			//	offY = -offY;
 
 			V2d pos = position;
 			if( ground != NULL )

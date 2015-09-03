@@ -8,6 +8,8 @@
 #include "Enemy.h"
 #include "QuadTree.h"
 #include <SFML/Graphics.hpp>
+#include "Light.h"
+#include "Camera.h"
 
 
 struct PowerBar
@@ -82,6 +84,7 @@ struct GameSession : QuadTreeCollider
 
 	std::list<MovingTerrain*> movingPlats;
 
+	Camera cam;
 	Actor player;
 	sf::Shader polyShader;
 	Edge **edges;
@@ -133,6 +136,8 @@ struct GameSession : QuadTreeCollider
 	PowerBar powerBar;
 
 	int pauseFrames;
+
+	std::list<Light*> lights;
 
 	struct Stored
 	{
