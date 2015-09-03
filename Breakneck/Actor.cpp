@@ -214,7 +214,7 @@ Actor::Actor( GameSession *gs )
 		tileset[LAND2] = owner->GetTileset( "land2.png", 64, 64 );
 
 		actionLength[RUN] = 10 * 4;
-		tileset[RUN] = owner->GetTileset( "run.png", 128, 64 );
+		tileset[RUN] = owner->GetTileset( "run2.png", 80, 48 );
 
 		actionLength[SLIDE] = 1;
 		tileset[SLIDE] = owner->GetTileset( "slide.png", 64, 64 );
@@ -7655,7 +7655,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			sh.setParameter( "LightColor", 1, .8, .6, 1 );
 			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
 			sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
-			sh.setParameter( "right", facingRight  );
+			sh.setParameter( "right", (facingRight && !reversed) || (!facingRight && reversed ) );
 			//cout << "right: " << (float)facingRight << endl;
 
 			CircleShape cs;
@@ -7667,8 +7667,11 @@ void Actor::Draw( sf::RenderTarget *target )
 
 			target->draw( spr, &sh );
 
-			sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+			sh.setParameter( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			sh.setParameter( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
+
+			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
 
 			target->draw( *sprite, &sh );
 			target->draw( cs );
