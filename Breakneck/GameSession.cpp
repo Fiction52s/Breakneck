@@ -1240,30 +1240,15 @@ int GameSession::Run( string fileName )
 		//player.sh.setParameter( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
 		
 		
-		Vector2i vi = Mouse::getPosition();
 		
 		
-		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .075 );
+		
+		
 
 
 		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
-		/*if( false )
-		//if( player.action == player.RUN )
-		{
-			player.sh.setParameter( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			player.sh.setParameter( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );
-			player.sh.setParameter( "Resolution", Vector2f( 1920, 1080 ) );
-			player.sh.setParameter( "LightPos", blahblah  );
-			player.sh.setParameter( "LightColor", Color::White );
-			player.sh.setParameter( "AmbientColor", Color( .5, .5, .5, .1 ) );
-			player.sh.setParameter( "Falloff", Vector3f( .3, .3, .3 ) );
-			window->draw( *(player.sprite), &player.sh );
-		}
-		else
-		{
-			if( player.action != player.GRINDBALL )
-				window->draw( *player.sprite );
-		}*/
+		//if( false )
+		
 
 		
 		for( list<Light*>::iterator it = lights.begin(); it != lights.end(); ++it )
@@ -1375,7 +1360,7 @@ int GameSession::Run( string fileName )
 
 		window->setView( view );
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{

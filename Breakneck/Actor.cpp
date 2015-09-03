@@ -7617,7 +7617,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 	{
 		motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
-		target->draw( motionGhosts[i] );
+		//target->draw( motionGhosts[i] );
 	}
 
 	if( action != GRINDBALL )
@@ -7626,9 +7626,58 @@ void Actor::Draw( sf::RenderTarget *target )
 		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
 		
 		wire->Draw( target );
-		
 
-		target->draw( *sprite );
+		Vector2i vi = Mouse::getPosition();
+
+		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+
+		if( action == RUN )
+		{
+			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+			Sprite spr;
+			
+			spr.setTexture( *owner->GetTileset( "testrocks.png", 300, 225)->texture );
+			spr.setOrigin( spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
+			if( !facingRight )
+			{
+				sf::IntRect r = spr.getTextureRect();
+				spr.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+			}
+			spr.setPosition( sprite->getPosition() );
+
+
+			
+			sh.setParameter( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			sh.setParameter( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
+			sh.setParameter( "Resolution", Vector2f( 1920, 1080 ) );
+			sh.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+			sh.setParameter( "LightColor", 1, .8, .6, 1 );
+			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
+			sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
+			sh.setParameter( "right", facingRight  );
+			//cout << "right: " << (float)facingRight << endl;
+
+			CircleShape cs;
+			cs.setFillColor( Color::Magenta );
+			cs.setRadius( 30 );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( 0, -300 );
+			
+
+			target->draw( spr, &sh );
+
+			sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+
+			target->draw( *sprite, &sh );
+			target->draw( cs );
+		}
+		else
+		{
+			target->draw( *sprite );
+		}
+		
 
 		if( showSword1 )
 		{
