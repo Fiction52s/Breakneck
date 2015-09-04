@@ -62,25 +62,6 @@ Actor::Actor( GameSession *gs )
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
 		
-		queryMode = "";
-		wallThresh = .999;
-		//tileset setup
-		{
-		actionLength[DAIR] = 10 * 2;
-		tileset[DAIR] = owner->GetTileset( "dair.png", 96, 64 );
-
-		actionLength[DASH] = 45;
-		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
-
-		actionLength[DOUBLE] = 28 + 10;
-		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
-
-		actionLength[FAIR] = 10 * 2;
-
-		//testGhost = new PlayerGhost;
-
-		
-
 		CollisionBox cb;
 		cb.type = CollisionBox::Hit;
 		cb.isCircle = true;
@@ -95,6 +76,8 @@ Actor::Actor( GameSession *gs )
 			ghosts[i] = new PlayerGhost;
 		}
 
+		//setup hitboxes
+		{
 		for( int j = 4; j < 10; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
@@ -191,90 +174,123 @@ Actor::Actor( GameSession *gs )
 				ghosts[i]->standUHitboxes[j]->push_back( cb );			
 			}
 		}
+		}
 
-		//testGhost->fairHitboxes[4] = new list<CollisionBox>;
-		
-		//testGhost->fairHitboxes[4]->push_back( cb );
-		
+		queryMode = "";
+		wallThresh = .999;
+		//tileset setup
+		{
+		actionLength[DAIR] = 10 * 2;
+		tileset[DAIR] = owner->GetTileset( "dair.png", 96, 64 );
+		normal[DAIR] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
-		//map<int, list<CollisionBox>> &fairHit = *fairHitboxes;
-		//fairHit[4].push_back( CollisionBox() );
-		//CollisionBox &cb = fairHit[4].back();
+		actionLength[DASH] = 45;
+		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
+		normal[DASH] = owner->GetTileset( "dash_NORMALS.png", 64, 64 );
+
+		actionLength[DOUBLE] = 28 + 10;
+		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
+		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
-			
+		actionLength[FAIR] = 10 * 2;
 		tileset[FAIR] = owner->GetTileset( "fair.png", 80, 64 );
+		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
 		actionLength[JUMP] = 2;
 		tileset[JUMP] = owner->GetTileset( "jump.png", 64, 64 );
+		normal[JUMP] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 
 		actionLength[LAND] = 1;
 		tileset[LAND] = owner->GetTileset( "land.png", 64, 64 );
+		normal[LAND] = owner->GetTileset( "land_NORMALS.png", 64, 64 );
 
 		actionLength[LAND2] = 1;
 		tileset[LAND2] = owner->GetTileset( "land2.png", 64, 64 );
+		normal[LAND2] = owner->GetTileset( "land2_NORMALS.png", 64, 64 );
 
 		actionLength[RUN] = 10 * 4;
 		tileset[RUN] = owner->GetTileset( "run2.png", 80, 48 );
+		normal[RUN] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
 
 		actionLength[SLIDE] = 1;
 		tileset[SLIDE] = owner->GetTileset( "slide.png", 64, 64 );
+		normal[SLIDE] = owner->GetTileset( "slide_NORMALS.png", 64, 64 );
 
 		actionLength[SPRINT] = 8 * 3;
 		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
+		normal[SPRINT] = owner->GetTileset( "sprint_NORMALS.png", 128, 64 );		
 
 		actionLength[STAND] = 20 * 8;
 		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
+		normal[STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
 
 		actionLength[STANDD] = 8 * 2;
 		tileset[STANDD] = owner->GetTileset( "standd.png", 96, 48 );
+		normal[STANDD] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
 		actionLength[STANDN] = 5 * 2;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
+		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
 		actionLength[STANDU] = 20;
 		tileset[STANDU] = owner->GetTileset( "standu.png", 64, 80 );
+		normal[STANDU] = owner->GetTileset( "standu_NORMALS.png", 64, 80 );
 
 		actionLength[UAIR] = 6 * 3;
 		tileset[UAIR] = owner->GetTileset( "uair.png", 80, 80 );
+		normal[UAIR] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
 
 		actionLength[WALLCLING] = 1;
 		tileset[WALLCLING] = owner->GetTileset( "wallcling.png", 64, 64 );
+		normal[WALLCLING] = owner->GetTileset( "wallcling_NORMALS.png", 64, 64 );
 
 		actionLength[WALLJUMP] = 9 * 2;
 		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
+		normal[WALLJUMP] = owner->GetTileset( "walljump_NORMALS.png", 64, 64 );
 
 		actionLength[GRINDBALL] = 1;
 		tileset[GRINDBALL] = owner->GetTileset( "grindball.png", 32, 32 );
+		normal[GRINDBALL] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
+		normal[STEEPSLIDE] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
 		actionLength[AIRDASH] = 27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
+		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
 		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb.png", 128, 64 );
+		normal[STEEPCLIMB] = owner->GetTileset( "steepclimb_NORMALS.png", 128, 64 );
 
 		actionLength[AIRHITSTUN] = 1;
 		tileset[AIRHITSTUN] = owner->GetTileset( "hurt_air.png", 64, 64 );
+		normal[AIRHITSTUN] = owner->GetTileset( "hurt_air_NORMALS.png", 64, 64 );
 
 		actionLength[GROUNDHITSTUN] = 1;
 		tileset[GROUNDHITSTUN] = owner->GetTileset( "hurt_stand.png", 64, 64 );
+		normal[GROUNDHITSTUN] = owner->GetTileset( "hurt_stand_NORMALS.png", 64, 64 );
 
 		actionLength[WIREHOLD] = 1;
 		tileset[WIREHOLD] = owner->GetTileset( "steepslide.png", 64, 32 );
+		normal[WIREHOLD] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
 		actionLength[BOUNCEAIR] = 1;
 		tileset[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
+		normal[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
 
 		actionLength[BOUNCEGROUND] = 5;
 		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce.png", 96, 96 );
+		normal[BOUNCEGROUND] = owner->GetTileset( "bounce_NORMALS.png", 96, 96 );
 
 		actionLength[BOUNCEGROUNDEDWALL] = 30;
 		tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall.png", 80, 48 );
+		normal[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall_NORMALS.png", 80, 48 );
 
 		actionLength[DEATH] = 30;
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
+		normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
 		
 
@@ -7631,7 +7647,8 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
 
-		if( action == RUN )
+		if( true )
+		//if( action == RUN )
 		{
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
@@ -7667,18 +7684,22 @@ void Actor::Draw( sf::RenderTarget *target )
 
 			target->draw( spr, &sh );
 
-			sh.setParameter( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			sh.setParameter( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
+			//sh.setParameter( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setParameter( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
+
 
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+
+			sh.setParameter( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			sh.setParameter( "u_normals", *normal[action]->texture );
 
 			target->draw( *sprite, &sh );
 			target->draw( cs );
 		}
 		else
 		{
-			target->draw( *sprite );
+	//		target->draw( *sprite );
 		}
 		
 

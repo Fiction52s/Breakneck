@@ -84,6 +84,8 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
 
+	Tileset *normal[Count];
+
 	sf::Sprite gsdodeca;
 	sf::Sprite gstriblue;
 	sf::Sprite gstricym;
