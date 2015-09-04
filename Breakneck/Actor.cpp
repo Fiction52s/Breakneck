@@ -7643,9 +7643,12 @@ void Actor::Draw( sf::RenderTarget *target )
 		
 		wire->Draw( target );
 
-		Vector2i vi = Mouse::getPosition();
+		//Vector2i vi = Mouse::getPosition();
+		Vector2i vi = owner->window->mapCoordsToPixel( sf::Vector2f( 0, -300 ) );
 
 		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+
+		
 
 		if( true )
 		//if( action == RUN )
@@ -7662,7 +7665,9 @@ void Actor::Draw( sf::RenderTarget *target )
 				spr.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
 			}
 			spr.setPosition( sprite->getPosition() );
+			
 
+			// global positions first. then zooming
 
 			
 			sh.setParameter( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
@@ -7673,6 +7678,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
 			sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 			sh.setParameter( "right", (facingRight && !reversed) || (!facingRight && reversed ) );
+			sh.setParameter( "zoom", owner->cam.GetZoom() );
 			//cout << "right: " << (float)facingRight << endl;
 
 			CircleShape cs;
@@ -7695,7 +7701,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			sh.setParameter( "u_normals", *normal[action]->texture );
 
 			target->draw( *sprite, &sh );
-			target->draw( cs );
+			//target->draw( cs );
 		}
 		else
 		{
