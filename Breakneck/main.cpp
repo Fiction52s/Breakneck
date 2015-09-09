@@ -67,7 +67,7 @@ void GameEditLoop( std::string filename)
 		result = es.Run( filename, lastViewCenter, lastViewSize );
 		if( result > 0 )
 			break;
-		GameSession gs( controller, window, NULL );
+		GameSession gs( controller, window );
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
@@ -82,7 +82,7 @@ void GameEditLoop2( std::string filename)
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
-		GameSession gs( controller, window, NULL );
+		GameSession gs( controller, window );
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
