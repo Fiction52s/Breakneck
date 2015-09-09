@@ -22,6 +22,7 @@ using namespace std;
 using namespace sf;
 
 RenderWindow *window;
+View v;
 
 #define V2d sf::Vector2<double>
 GameController controller(0);
@@ -60,7 +61,10 @@ void GameEditLoop( std::string filename)
 		result = es.Run( filename, lastViewCenter, lastViewSize );
 		if( result > 0 )
 			break;
+
+		window->setView( v );
 		GameSession gs( controller, window, preScreenTexture );
+		
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
@@ -75,6 +79,7 @@ void GameEditLoop2( std::string filename)
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
+		window->setView( v );
 		GameSession gs( controller, window, preScreenTexture );
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
@@ -135,7 +140,7 @@ int main()
 	titleSprite.setPosition( 0, 0 );
 	titleSprite.setScale( 2, 2 );
 	
-	View v;
+	
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );

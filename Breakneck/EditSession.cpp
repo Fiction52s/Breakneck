@@ -392,6 +392,41 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 	return false;
 }
 
+StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos )
+	:color( c ), position( pos )
+{
+}
+
+void StaticLight::Draw( RenderTarget *target )
+{
+	CircleShape cs;
+	cs.setFillColor( color );
+	cs.setRadius( 10 );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
+	target->draw( cs );
+}
+
+void StaticLight::WriteFile( std::ofstream &of )
+{
+	of << position.x << " " << position.y << " " << (int)color.r << " " << (int)color.g << " " << (int)color.b << endl;
+	//of << type->name << " ";
+
+	//if( ground != NULL )
+	//{
+	//	of << "-air" << " " << ground->writeIndex << " " << edgeIndex << " " << groundQuantity << endl;
+	//}
+	//else
+	//{
+	//	of << "+air" << " " << position.x << " " << position.y << endl;
+	//}
+
+	//for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
+	//{
+	//	of << (*it) << endl;
+	//}
+}
+
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
@@ -468,6 +503,22 @@ bool EditSession::OpenFile( string fileName )
 
 			poly->Finalize();
 		}
+
+		//lights here
+		int numLights;
+		is >> numLights;
+		for( int i = 0; i < numLights; ++i )
+		{
+			int r,g,b,x,y;
+			is >> x;
+			is >> y;
+			is >> r;
+			is >> g;
+			is >> b;
+
+			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ) ) );
+		}
+
 
 		//enemies here
 		int numGroups;
@@ -799,6 +850,12 @@ void EditSession::WriteFile(string fileName)
 		}
 	}
 
+	of << lights.size() << endl;
+	for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
+	{
+		(*it)->WriteFile( of );
+	}
+
 	of << groups.size() << endl;
 	//write the stuff for goals and remove them from the enemy stuff
 
@@ -1125,6 +1182,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	Panel *goalPanel = CreateOptionsPanel( "goal" );
 	ActorType *goalType = new ActorType( "goal", goalPanel );
+
+	Panel *lightPanel = CreateOptionsPanel( "light" );
 
 
 	types["patroller"] = patrollerType;
@@ -2149,6 +2208,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( menuSelection == "lowerleft" )
 							{
+								mode = CREATE_LIGHTS;
 							}
 							else if( menuSelection == "lowerright" )
 							{
@@ -2219,6 +2279,71 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								actor->group = groups["--"];
 								patrolPath.clear();
 								mode = CREATE_ENEMY;
+							}
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+					break;
+				}
+
+			case CREATE_LIGHTS:
+				{
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+							if( ev.mouseButton.button == Mouse::Left )
+							{
+								if( showPanel != NULL )
+								{	
+									showPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}
+								else
+								{
+									lightPos = Vector2i( worldPos.x, worldPos.y );
+								}
+							}
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							if( showPanel != NULL )
+							{	
+								showPanel->Update( false, uiMouse.x, uiMouse.y );
+							}
+							else if( ev.mouseButton.button == Mouse::Left )
+							{
+								if( showPanel == NULL )
+								{
+									//cout << "make light panel" << endl;
+									showPanel = lightPanel;
+								}
+							}
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							
+						}
+					case Event::KeyPressed:
+						{
+							if( showPanel != NULL )
+							{
+								showPanel->SendKey( ev.key.code, ev.key.shift );
+								break;
 							}
 							break;
 						}
@@ -2617,7 +2742,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
 					enemySprite.setRotation( 0 );
 					enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
-					
 				}
 
 				if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
@@ -2966,6 +3090,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		}
 		
+		for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
+		{
+			(*it)->Draw( w );
+		}
 
 		iconSprite.setScale( view.getSize().x / 960.0, view.getSize().y / 540.0 );
 		iconSprite.setPosition( view.getCenter().x + 200 * iconSprite.getScale().x, view.getCenter().y - 250 * iconSprite.getScale().y );
@@ -3246,6 +3374,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					cs.setPosition( (menuDownPos + lowerLeftPos).x, (menuDownPos + lowerLeftPos).y );
 					w->draw( cs );
 
+					sf::Text textorange;
+					textorange.setString( "CREATE\nLIGHTS" );
+					textorange.setFont( arial );
+					textorange.setCharacterSize( 14 );
+					textorange.setColor( sf::Color::White );
+					textorange.setOrigin( textorange.getLocalBounds().width / 2, textorange.getLocalBounds().height / 2 );
+					textorange.setPosition( (menuDownPos + lowerLeftPos).x, (menuDownPos + lowerLeftPos).y );
+					w->draw( textorange );
+
 					cs.setFillColor( COLOR_RED );
 					cs.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
 					w->draw( cs );
@@ -3292,6 +3429,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		if( showPanel != NULL )
 		{
+			//cout << "drawing panel" << endl;
 			showPanel->Draw( w );
 		}
 
@@ -3300,6 +3438,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		w->display();
 	}
+	
+
 	
 	return returnVal;
 	
@@ -3628,6 +3768,15 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "light_options" )
+	{
+		if( b->name == "ok" )
+		{
+			//cout << "OKAY!!!" << endl;
+			lights.push_back( new StaticLight( Color::Blue, lightPos ) );
+			showPanel = NULL;
+		}
+	}
 	//cout <<"button" << endl;
 }
 
@@ -3713,6 +3862,12 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		return p;
+	}
+	else if( name == "light" )
+	{
+		Panel *p = new Panel( "light_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		return p;
 	}
 	return NULL;

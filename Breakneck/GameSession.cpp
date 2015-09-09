@@ -524,6 +524,18 @@ bool GameSession::OpenFile( string fileName )
 		//cout << "insertCount: " << insertCount << endl;
 		//cout << "polyCOUNTER: " << polyCounter << endl;
 		
+		int numLights;
+		is >> numLights;
+		for( int i = 0; i < numLights; ++i )
+		{
+			int x,y,r,g,b;
+			is >> x;
+			is >> y;
+			is >> r;
+			is >> g;
+			is >> b;
+		}
+
 		int numGroups;
 		is >> numGroups;
 		for( int i = 0; i < numGroups; ++i )

@@ -41,6 +41,14 @@ struct TerrainPolygon
 	int writeIndex;
 };
 
+struct StaticLight
+{
+	StaticLight( sf::Color c, sf::Vector2i &pos );
+	void Draw( sf::RenderTarget *target );
+	sf::Color color;
+	sf::Vector2i position;
+	void WriteFile( std::ofstream &of );
+};
 
 
 struct ActorType
@@ -151,7 +159,9 @@ struct EditSession : GUIHandler
 	//int polygonTimeoutTextLength;
 
 	//static void TestButton();
-
+	std::list<StaticLight*> lights;
+	sf::Vector2i lightPos;
+	bool lightActive;
 
 	int enemyEdgeIndex;
 	TerrainPolygon *enemyEdgePolygon;
@@ -183,7 +193,8 @@ struct EditSession : GUIHandler
 		SELECT_POLYGONS,
 		PAUSED,
 		CREATE_ENEMY,
-		DRAW_PATROL_PATH
+		DRAW_PATROL_PATH,
+		CREATE_LIGHTS
 	};
 
 	
