@@ -7666,13 +7666,12 @@ void Actor::Draw( sf::RenderTarget *target )
 			}
 			spr.setPosition( sprite->getPosition() );
 			
-
 			// global positions first. then zooming
 
 			
 			sh.setParameter( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			sh.setParameter( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
-			sh.setParameter( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
+			sh.setParameter( "Resolution", owner->window->getSize().x / 2, owner->window->getSize().y / 2 );
 			sh.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
 			sh.setParameter( "LightColor", 1, .8, .6, 1 );
 			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
