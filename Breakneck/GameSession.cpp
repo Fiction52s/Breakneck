@@ -15,7 +15,7 @@
 using namespace std;
 using namespace sf;
 
-GameSession::GameSession( GameController &c, RenderWindow *rw)
+GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 {
 	usePolyShader = true;
@@ -26,6 +26,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw)
 		//assert( 0 && "polygon shader not loaded" );
 		usePolyShader = false;
 	}
+
+	preScreenTex = preTex;
 
 	terrainTree = new QuadTree( 1000000, 1000000 );
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
@@ -1270,7 +1272,22 @@ int GameSession::Run( string fileName )
 		//window->draw( circle );
 		//window->draw(line, numPoints * 2, sf::Lines);
 		
-		polyShader.setParameter( "resolution", window->getSize().x, window->getSize().y );
+		polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		polyShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+		Vector2i vi = Mouse::getPosition();
+		//Vector2i vi = window->mapCoordsToPixel( Vector2f( player.position.x, player.position.y ) );
+		//Vector2i vi = window->mapCoordsToPixel( sf::Vector2f( 0, -300 ) );
+		//vi -= Vector2i( view.getSize().x / 2, view.getSize().y / 2 );
+		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+		blahblah.y = 1 - blahblah.y;
+
+
+		polyShader.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+		polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
+		polyShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
+		polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
+
+		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y );
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y - view.getSize().y / 2 );

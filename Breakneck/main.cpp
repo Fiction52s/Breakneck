@@ -96,6 +96,11 @@ void GameEditLoop2( std::string filename)
 
 int main()
 {
+
+	RenderTexture *preScreenTexture = new RenderTexture;
+	preScreenTexture->create( 960, 540 );
+	preScreenTexture->clear();
+
 	cout << "starting program" << endl;
 	bool fullWindow = true;
 

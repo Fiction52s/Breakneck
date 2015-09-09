@@ -1,9 +1,9 @@
-﻿Build started 9/4/2015 12:13:51 PM.
+﻿Build started 9/4/2015 02:00:22 PM.
      1>Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\Breakneck.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Users\Shephard\Libraries\SFML-2.3\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D SFML_STATIC /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Actor.cpp
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Users\Shephard\Libraries\SFML-2.3\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D SFML_STATIC /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Actor.cpp GameSession.cpp
          Actor.cpp
      1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(160): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
      1>Actor.cpp(427): warning C4482: nonstandard extension used: enum 'CollisionBox::BoxType' used in qualified name
@@ -138,6 +138,8 @@
      1>Actor.cpp(7424): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Actor.cpp(7424): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Actor.cpp(7649): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7675): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>Actor.cpp(7675): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
      1>Actor.cpp(7677): warning C4305: 'argument' : truncation from 'double' to 'float'
      1>Actor.cpp(7677): warning C4305: 'argument' : truncation from 'double' to 'float'
      1>Actor.cpp(7678): warning C4305: 'argument' : truncation from 'double' to 'float'
@@ -148,6 +150,69 @@
      1>Actor.cpp(7800): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Actor.cpp(7823): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>Actor.cpp(7823): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         GameSession.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(160): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>GameSession.cpp(19): warning C4355: 'this' : used in base member initializer list
+     1>GameSession.cpp(372): warning C4018: '<' : signed/unsigned mismatch
+     1>GameSession.cpp(377): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(377): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(378): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(378): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(379): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(379): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(436): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(436): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(437): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(437): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(438): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(438): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(451): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(452): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(452): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(453): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(743): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(744): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(750): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(750): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(751): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(751): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(777): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(777): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(778): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(778): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(779): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(779): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(780): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(780): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(781): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(781): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(782): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(782): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(783): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(783): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(784): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(784): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1224): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1224): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1226): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1226): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1268): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1268): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1279): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1284): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1284): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1285): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1285): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1285): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1286): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1288): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1288): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1356): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1356): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1764): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1765): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
        Link:
          c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe" /NOLOGO /LIBPATH:"C:\Users\Shephard\Libraries\SFML-2.3\lib" "sfml-graphics-s.lib" "sfml-window-s.lib" "sfml-audio-s.lib" "sfml-system-s.lib" openal32.lib opengl32.lib freetype.lib jpeg.lib winmm.lib gdi32.lib flac.lib vorbisenc.lib vorbisfile.lib vorbis.lib ogg.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Breakneck.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.lib" /MACHINE:X86 Release\Actor.obj
          Release\Camera.obj
@@ -196,4 +261,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:10.65
+Time Elapsed 00:00:11.41

@@ -36,7 +36,8 @@ struct PowerBar
 
 struct GameSession : QuadTreeCollider
 {
-	GameSession(GameController &c, sf::RenderWindow *rw);
+	GameSession(GameController &c, sf::RenderWindow *rw, 
+		sf::RenderTexture *preTex );
 	~GameSession();
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
@@ -97,6 +98,8 @@ struct GameSession : QuadTreeCollider
 	Collider coll;
 	std::list<sf::VertexArray*> polygons;
 	std::list<sf::VertexArray*> polygonBorders;
+
+	sf::RenderTexture *preScreenTex;
 
 	struct TestVA : QuadTreeEntrant
 	{

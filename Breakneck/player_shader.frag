@@ -49,7 +49,7 @@ void main() {
     //RGBA of our diffuse color
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );//vec4( 1, 1, 1, 1 );  ////
 	
-	for( int i = 0; i < numLights-2;  ++i )
+	for( int i = 0; i < numLights;  ++i )
 	{
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
 
