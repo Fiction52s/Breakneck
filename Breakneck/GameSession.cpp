@@ -1071,6 +1071,21 @@ int GameSession::Run( string fileName )
 
 			if( pauseFrames > 0 )
 			{
+				if( player.changingClone )
+				{
+					player.percentCloneChanged += player.percentCloneRate;
+					if( player.percentCloneChanged >= 1 )
+					{
+						player.percentCloneChanged = 1;
+						player.changingClone = false;
+						pauseFrames = 0;
+					}
+
+					//pauseFrames--;
+					accumulator -= TIMESTEP;
+					break;
+				}
+
 				//cam.offset.y += 10;
 				cam.Update( &player );
 				
@@ -1415,6 +1430,10 @@ int GameSession::Run( string fileName )
 		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
 		
 		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
+		cloneShader.setParameter( "newscreen", player.percentCloneChanged );
+		cloneShader.setParameter( "resolution", window->getSize().x, window->getSize().y);
+		cloneShader.setParameter( "zoom", cam.GetZoom() );
+
 		window->draw( preTexSprite, &cloneShader );
 		window->display();
 

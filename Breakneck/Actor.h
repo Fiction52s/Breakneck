@@ -135,7 +135,9 @@ struct Actor : QuadTreeCollider,
 	const static int MAX_MOTION_GHOSTS = 2;
 	sf::Sprite motionGhosts[MAX_MOTION_GHOSTS];
 	int numMotionGhosts;
-	
+	float percentCloneChanged;
+	float percentCloneRate;
+	bool changingClone;
 
 	double holdDashAccel;
 	double wallThresh;

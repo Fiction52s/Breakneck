@@ -58,6 +58,10 @@ Actor::Actor( GameSession *gs )
 		
 		slopeLaunchMinSpeed = 15;
 
+		percentCloneChanged = 0;
+		percentCloneRate = .01;
+		changingClone = false;
+
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
@@ -638,6 +642,10 @@ void Actor::UpdatePrePhysics()
 			ghostFrame = 0;
 			owner->powerBar.Use( 20 );
 			record++;
+			changingClone = true;
+			percentCloneChanged = 0;
+			owner->Pause( 60 );
+			//percentCloneRate = .01;
 		}
 		else
 		{
@@ -651,6 +659,9 @@ void Actor::UpdatePrePhysics()
 				ghosts[record]->currFrame = 0;
 				ghostFrame = 1;
 				record++;
+				changingClone = true;
+				owner->Pause( 60 );
+				percentCloneChanged = 0;
 			}
 			
 			
