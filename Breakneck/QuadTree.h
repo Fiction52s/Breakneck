@@ -2,9 +2,10 @@
 #define __QUAD_TREE_H__
 
 #include <SFML\Graphics.hpp>
+#include <list>
 
-using namespace sf;
-using namespace std;
+//using namespace sf;
+//using namespace std;
 
 struct QuadTreeEntrant;
 
@@ -35,6 +36,7 @@ struct ParentNode : QNode
 {
 	ParentNode( const sf::Vector2<double> &pos, double rw, double rh );
 	QNode *children[4];
+	std::list<QuadTreeEntrant*> extraChildren;
 	// 0    |     1
 	//--------------
 	// 2    |     3

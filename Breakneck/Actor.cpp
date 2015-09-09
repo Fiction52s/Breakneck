@@ -4267,7 +4267,7 @@ void Actor::UpdateReversePhysics()
 							}
 
 
-							cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+							//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 
 							V2d oldv0 = ground->v0;
 							V2d oldv1 = ground->v1;

@@ -73,6 +73,15 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 
 		if( IsBoxTouchingBox( r, nodeBox ) )
 		{
+			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
+			{
+				sf::Rect<double> r2 = r;
+				if( (*it)->IsTouchingBox( r2 ) )
+				{
+					(*it)->HandleQuery( qtc );
+				}
+			}
+
 			for( int i = 0; i < 4; ++i )
 			{
 				rQuery( qtc, n->children[i], r );
@@ -123,32 +132,52 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 		sf::Rect<double> se( node->pos.x - error, node->pos.y - error, node->rw + error, node->rh + error );
 
 		
+		bool nwt, net, swt, set;
+		nwt = qte->IsTouchingBox( nw );
+		net = qte->IsTouchingBox( ne ); 
+		swt = qte->IsTouchingBox( sw );
+		set = qte->IsTouchingBox( se );
+		
+		int numTouching = 0;
+		if( nwt ) numTouching++;
+		if( net ) numTouching++;
+		if( swt ) numTouching++;
+		if( set ) numTouching++;
 
-		if( qte->IsTouchingBox( nw ) )
+		if( numTouching > 1 )
 		{
-		//	cout << "calling northwest insert" << endl;
-			n->children[0] = rInsert( n->children[0], qte );
+			n->extraChildren.push_back( qte );
 		}
-		if( qte->IsTouchingBox( ne ) )
+		else
 		{
-		//	cout << "calling northeast insert" << endl;
-			n->children[1] = rInsert( n->children[1], qte );
-		}
-		if( qte->IsTouchingBox( sw ) )
-		{
-		//	cout << "calling southwest insert" << endl;
-			n->children[2] = rInsert( n->children[2], qte );
-		}
-		if( qte->IsTouchingBox( se ) )
-		{
-		//	cout << "calling southeast insert" << endl;
-			n->children[3] = rInsert( n->children[3], qte );
+
+			if( nwt )
+			{
+			//	cout << "calling northwest insert" << endl;
+				n->children[0] = rInsert( n->children[0], qte );
+			}
+			else if( net )
+			{
+			//	cout << "calling northeast insert" << endl;
+				n->children[1] = rInsert( n->children[1], qte );
+			}
+			else if( swt )
+			{
+			//	cout << "calling southwest insert" << endl;
+				n->children[2] = rInsert( n->children[2], qte );
+			}
+			else if( set )
+			{
+			//	cout << "calling southeast insert" << endl;
+				n->children[3] = rInsert( n->children[3], qte );
+			}
 		}
 
-		if( !qte->IsTouchingBox( nw )
+		/*if( !qte->IsTouchingBox( nw )
 			&& !qte->IsTouchingBox( ne )
 			&& !qte->IsTouchingBox( sw )
-			&& !qte->IsTouchingBox( se ) )
+			&& !qte->IsTouchingBox( se ) )*/
+		if( numTouching == 0 )
 		{
 		//	cout << "node pos: " << node->pos.x << ", " << node->pos.y << endl;
 		//	cout << "enemy: " << ((Enemy*)qte)->spawnRect.left << ", " << ((Enemy*)qte)->spawnRect.top << endl; 
