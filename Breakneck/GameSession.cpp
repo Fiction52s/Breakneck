@@ -139,7 +139,7 @@ void GameSession::UpdateEnemiesDraw()
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
-		current->Draw( preScreenTex );
+		current->Draw( window );
 		current = current->next;
 	}
 }
@@ -727,8 +727,7 @@ int GameSession::Run( string fileName )
 	window->setMouseCursorVisible( true );
 
 	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
-	preScreenTex->setView( view );
-	//window->setView( view );
+	window->setView( view );
 
 	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 
@@ -838,8 +837,6 @@ int GameSession::Run( string fileName )
 		accumulator += frameTime;
 
 		window->clear();
-		preScreenTex->clear();
-		//preScreenTex->setSmooth( true );
 
 		
 		coll.ClearDebug();		
@@ -1215,15 +1212,13 @@ int GameSession::Run( string fileName )
 
 
 		
-		//window->setView( bgView );
-		preScreenTex->setView( bgView );
+		window->setView( bgView );
 
-		preScreenTex->draw( background );
-		//window->draw( background );
+		window->draw( background );
 
 		
-		preScreenTex->setView( view );
-		//window->setView( view );
+		
+		window->setView( view );
 
 
 
@@ -1233,10 +1228,7 @@ int GameSession::Run( string fileName )
 		bDraw.setPosition( player.position.x + player.b.offset.x , player.position.y + player.b.offset.y );
 	//	bDraw.setRotation( player.sprite->getRotation() );
 		if( bdrawdraw)
-		{
-			preScreenTex->draw( bDraw );
-		}
-		//window->draw( bDraw );
+		window->draw( bDraw );
 
 	/*	CircleShape cs;
 		cs.setFillColor( Color::Cyan );
@@ -1263,10 +1255,10 @@ int GameSession::Run( string fileName )
 		
 		for( list<Light*>::iterator it = lights.begin(); it != lights.end(); ++it )
 		{
-			(*it)->Draw( preScreenTex );
+			(*it)->Draw( window );
 		}
 
-		player.Draw( preScreenTex );
+		player.Draw( window );
 
 		UpdateEnemiesDraw();
 
@@ -1295,7 +1287,7 @@ int GameSession::Run( string fileName )
 		polyShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
 		polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 
-		polyShader.setParameter( "Resolution", window->getSize().x / 2, window->getSize().y / 2 );
+		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y );
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y - view.getSize().y / 2 );
@@ -1310,11 +1302,11 @@ int GameSession::Run( string fileName )
 		{
 			if( usePolyShader )
 			{
-				preScreenTex->draw( *(*it ), &polyShader);
+				window->draw( *(*it ), &polyShader);
 			}
 			else
 			{
-				preScreenTex->draw( *(*it ) );
+				window->draw( *(*it ) );
 			}
 			//GetTileset( "testrocks.png", 25, 25 )->texture );
 		}
@@ -1367,8 +1359,8 @@ int GameSession::Run( string fileName )
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
 
-			preScreenTex->draw( alphaTextSprite );
-			//window->draw( alphaTextSprite );
+
+			window->draw( alphaTextSprite );
 		}
 
 		/*Enemy *currFX = active;
@@ -1378,19 +1370,18 @@ int GameSession::Run( string fileName )
 			currFX = currFX->next;
 		}*/
 
-		preScreenTex->setView( uiView );
-		//window->setView( uiView );
-	//	window->draw( healthSprite );
-		powerBar.Draw( preScreenTex );
 
-		preScreenTex->setView( view );
-		//window->setView( view );
+		window->setView( uiView );
+	//	window->draw( healthSprite );
+		powerBar.Draw( window );
+
+		window->setView( view );
 
 		//DebugDrawActors();
 
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
-			(*it)->DebugDraw( preScreenTex );
+			(*it)->DebugDraw( window );
 		}
 
 		//coll.DebugDraw( window );
@@ -1398,13 +1389,7 @@ int GameSession::Run( string fileName )
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
 	//	enemyTree->DebugDraw( window );
-		
-		preScreenTex->display();
-		const Texture &preTex = preScreenTex->getTexture();
 
-		Sprite preTexSprite( preTex );
-		preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
-		window->draw( preTexSprite );
 		window->display();
 
 		
@@ -1476,12 +1461,12 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 
 void GameSession::DebugDrawActors()
 {
-	player.DebugDraw( preScreenTex );
+	player.DebugDraw( window );
 	
 	Enemy *currEnemy = activeEnemyList;
 	while( currEnemy != NULL )
 	{
-		currEnemy->DebugDraw( preScreenTex );
+		currEnemy->DebugDraw( window );
 		currEnemy = currEnemy->next;
 	}
 }

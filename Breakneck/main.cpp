@@ -26,7 +26,14 @@ RenderWindow *window;
 #define V2d sf::Vector2<double>
 GameController controller(0);
 
-RenderTexture *preScreenTexture;
+
+
+
+
+
+
+
+
 
 void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
 {
@@ -60,7 +67,7 @@ void GameEditLoop( std::string filename)
 		result = es.Run( filename, lastViewCenter, lastViewSize );
 		if( result > 0 )
 			break;
-		GameSession gs( controller, window, preScreenTexture );
+		GameSession gs( controller, window );
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
@@ -75,7 +82,7 @@ void GameEditLoop2( std::string filename)
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
-		GameSession gs( controller, window, preScreenTexture );
+		GameSession gs( controller, window );
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
@@ -90,7 +97,7 @@ void GameEditLoop2( std::string filename)
 int main()
 {
 
-	preScreenTexture = new RenderTexture;
+	RenderTexture *preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 960, 540 );
 	preScreenTexture->clear();
 
