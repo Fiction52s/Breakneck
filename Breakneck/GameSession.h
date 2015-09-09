@@ -88,6 +88,7 @@ struct GameSession : QuadTreeCollider
 	Camera cam;
 	Actor player;
 	sf::Shader polyShader;
+	sf::Shader cloneShader;
 	Edge **edges;
 	sf::Vector2<double> *points;
 	int numPoints;

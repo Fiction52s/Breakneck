@@ -27,6 +27,13 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		usePolyShader = false;
 	}
 
+	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	
+
+
 	preScreenTex = preTex;
 
 	terrainTree = new QuadTree( 1000000, 1000000 );
@@ -1406,7 +1413,9 @@ int GameSession::Run( string fileName )
 		preTexSprite.setPosition( -960 / 2, -540 / 2 );
 		preTexSprite.setScale( .5, .5 );
 		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
-		window->draw( preTexSprite );
+		
+		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
+		window->draw( preTexSprite, &cloneShader );
 		window->display();
 
 		
