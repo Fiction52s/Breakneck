@@ -8,6 +8,8 @@ uniform float zoom;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 
+//this makes things weird sometimes. need y coords reversed in a way.
+
 //values used for shading algorithm...
 uniform vec2 Resolution;      //resolution of screen
 uniform vec3 LightPos;        //light position, normalized
@@ -31,6 +33,7 @@ void main()
 	vec2 fc = gl_FragCoord.xy;
 	fc = fc * vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
+	//vec2 pixelPos = vec2( fc.x / zoom, fc.y / zoom );
     vec2 pos = mod( topLeft + pixelPos, size ) / vec2( size );
 	gl_FragColor = texture2D( u_texture, pos );
 	
@@ -40,12 +43,12 @@ void main()
 	lights[0].falloff = Falloff;
 	
 	lights[1].on = true;
-	lights[1].pos = LightPos + vec3( .1, 0, 0 );
+	lights[1].pos = LightPos + vec3( .1, 0, 0 ) / zoom;
 	lights[1].color = vec4( 0, 1, 0, 1 );
 	lights[1].falloff = Falloff;
 	
 	lights[2].on = true;
-	lights[2].pos = LightPos + vec3( .05, .05, 0 );
+	lights[2].pos = LightPos + vec3( .05, -.05, 0 ) / zoom;
 	lights[2].color = vec4( 0, 0, 1, 1 );
 	lights[2].falloff = Falloff;
 	

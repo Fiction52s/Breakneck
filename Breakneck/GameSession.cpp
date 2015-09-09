@@ -839,7 +839,7 @@ int GameSession::Run( string fileName )
 
 		window->clear();
 		preScreenTex->clear();
-		//preScreenTex->setSmooth( true );
+		preScreenTex->setSmooth( false );
 
 		
 		coll.ClearDebug();		
@@ -1295,7 +1295,7 @@ int GameSession::Run( string fileName )
 		polyShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
 		polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 
-		polyShader.setParameter( "Resolution", window->getSize().x / 2, window->getSize().y / 2 );
+		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y - view.getSize().y / 2 );
@@ -1401,9 +1401,11 @@ int GameSession::Run( string fileName )
 		
 		preScreenTex->display();
 		const Texture &preTex = preScreenTex->getTexture();
-
+		
 		Sprite preTexSprite( preTex );
-		preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
+		preTexSprite.setPosition( -960 / 2, -540 / 2 );
+		preTexSprite.setScale( .5, .5 );
+		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
 		window->draw( preTexSprite );
 		window->display();
 

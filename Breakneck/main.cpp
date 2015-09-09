@@ -91,7 +91,7 @@ int main()
 {
 
 	preScreenTexture = new RenderTexture;
-	preScreenTexture->create( 960, 540 );
+	preScreenTexture->create( 960 * 2, 540 * 2 );
 	preScreenTexture->clear();
 
 	cout << "starting program" << endl;

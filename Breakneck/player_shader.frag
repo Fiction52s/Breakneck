@@ -37,12 +37,12 @@ void main() {
 	lights[0].falloff = Falloff;
 	
 	lights[1].on = true;
-	lights[1].pos = LightPos + vec3( .1, 0, 0 );
+	lights[1].pos = LightPos + vec3( .1, 0, 0 ) / zoom;
 	lights[1].color = vec4( 0, 1, 0, 1 );
 	lights[1].falloff = Falloff;
 	
 	lights[2].on = true;
-	lights[2].pos = LightPos + vec3( .05, .05, 0 );
+	lights[2].pos = LightPos + vec3( .05, .05, 0 ) / zoom ;
 	lights[2].color = vec4( 0, 0, 1, 1 );
 	lights[2].falloff = Falloff;
 	
@@ -87,7 +87,7 @@ void main() {
 		//calculate attenuation
 		float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
 		//Attenuation = 100;
-		Attenuation = Attenuation * 2;
+		Attenuation = Attenuation * 2 / zoom;
 		//the calculation which brings it all together
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		
