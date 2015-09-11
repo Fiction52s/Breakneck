@@ -73,14 +73,14 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 
 		if( IsBoxTouchingBox( r, nodeBox ) )
 		{
-			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
+			/*for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
 			{
 				sf::Rect<double> r2 = r;
 				if( (*it)->IsTouchingBox( r2 ) )
 				{
 					(*it)->HandleQuery( qtc );
 				}
-			}
+			}*/
 
 			for( int i = 0; i < 4; ++i )
 			{
@@ -144,11 +144,11 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 		if( swt ) numTouching++;
 		if( set ) numTouching++;
 
-		if( numTouching > 1 )
-		{
-			n->extraChildren.push_back( qte );
-		}
-		else
+		//if( numTouching > 1 )
+		//{
+		//	n->extraChildren.push_back( qte );
+		//}
+		//else
 		{
 
 			if( nwt )
@@ -156,17 +156,17 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 			//	cout << "calling northwest insert" << endl;
 				n->children[0] = rInsert( n->children[0], qte );
 			}
-			else if( net )
+			 if( net )
 			{
 			//	cout << "calling northeast insert" << endl;
 				n->children[1] = rInsert( n->children[1], qte );
 			}
-			else if( swt )
+			if( swt )
 			{
 			//	cout << "calling southwest insert" << endl;
 				n->children[2] = rInsert( n->children[2], qte );
 			}
-			else if( set )
+			if( set )
 			{
 			//	cout << "calling southeast insert" << endl;
 				n->children[3] = rInsert( n->children[3], qte );

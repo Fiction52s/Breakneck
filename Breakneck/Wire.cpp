@@ -9,7 +9,7 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p )
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 1000 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 )
 {
 }
@@ -143,6 +143,8 @@ void Wire::UpdateState()
 		}
 	case HIT:
 		{
+
+
 			if( hitStallCounter < hitStallFrames )
 				hitStallCounter++;
 			break;
@@ -294,13 +296,13 @@ void Wire::UpdateAnchors( V2d vel )
 		sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
 		line->append( sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Magenta ) );
 		
-		V2d oldPos = player->position - vel;
+		oldPos = player->position - vel;
 
 
 		//target->draw(line, 2, sf::Lines);
 
 
-		V2d realAnchor;
+		//V2d realAnchor;
 		if( numPoints == 0 )
 		{
 			line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
@@ -322,6 +324,13 @@ void Wire::UpdateAnchors( V2d vel )
 			realAnchor = points[numPoints-1].pos;
 		}
 
+		//V2d testVec = normalize( player->position - realAnchor );
+		//double maxAngle = atan2( testVec.y, testVec.x );
+		//if( maxAngle < 0 )
+		//	maxAngle += 2 * PI;
+		//cout << "angle: " << maxAngle << endl;
+		//cout << "minAngle: " << minAngle << ", maxAngle: " << maxAngle << endl;
+
 		progressDraw.push_back( line );
 
 		double left = min( realAnchor.x, min( oldPos.x, player->position.x ) );
@@ -337,8 +346,11 @@ void Wire::UpdateAnchors( V2d vel )
 		if( foundPoint )
 		{
 			points[numPoints].pos = closestPoint;
-			//points[numPoints].test = normalize( 
+
+			//points[numPoints].test = normalize(  
 			numPoints++;
+			//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
+			cout << "numpoints now! " << numPoints << endl;
 		}
 		
 		//if( rcEdge != NULL )
@@ -368,7 +380,7 @@ void Wire::UpdateAnchors( V2d vel )
 			if( result > 0 )
 			{
 				//cout << "removing point " << result << endl;
-				numPoints--;
+				//numPoints--;
 			}
 			else
 			{
@@ -389,28 +401,97 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 
 void Wire::TestPoint( sf::Vector2<double> p )
 {
-	double radius = length( trueAnchor - player->position ); //new position after moving
+	if( p == realAnchor )
+	{
+		return;
+	}
 
-	double anchorDist = length( trueAnchor - p );
+	double radius = length( realAnchor - player->position ); //new position after moving
+
+	double anchorDist = length( realAnchor - p );
 	if( anchorDist > radius )
 		return;
+	//cout << "anchordist: " << anchorDist << ", radius: " << radius << endl;
 
-	double info = dot( normalize( p - trueAnchor ), normalize( oldPos - trueAnchor ) );
+	V2d oldVec = normalize( oldPos - realAnchor );
+	V2d newVec = normalize( player->position - realAnchor );
+	V2d pVec = normalize( p - realAnchor );
 
-	double maxInfo = dot( normalize( player->position - trueAnchor ), normalize( oldPos - trueAnchor ) );
+	double oldAngle = atan2( oldVec.y, oldVec.x );
+	
+	
 
-	if( maxInfo > 0 )
+	double newAngle = atan2( newVec.y, newVec.x );
+	
+
+	double pAngle = atan2( pVec.y, pVec.x );
+	
+	double angleDiff = abs( oldAngle - pAngle );
+
+	double maxAngleDiff = abs( newAngle - oldAngle );
+
+	//cout << "p: " << p.x << ", " << p.y << " old: " << oldAngle << ", new: " << newAngle << ", pangle: " << pAngle << endl;
+
+	if( angleDiff > maxAngleDiff )
+		return;
+
+	if( oldAngle < 0 )
+		oldAngle += 2 * PI;
+	if( newAngle < 0 )
+		newAngle += 2 * PI;
+	if( pAngle < 0 )
+		pAngle += 2 * PI;
+
+	if( newAngle > oldAngle )
 	{
-		if( info > maxInfo || info < 0 )
+		if( newAngle - oldAngle < PI )
 		{
-			return;
+			//cw
+			if( pAngle - oldAngle <= newAngle - oldAngle )
+			{
+				//good
+			}
+			else
+			{
+				return;
+			}
+		}
+		else
+		{
+			if( pAngle >= oldAngle && pAngle <= newAngle )
+			{
+				//cw
+			}
+			else
+			{
+				return;
+			}
 		}
 	}
-	else if( maxInfo < 0 )
+	else if( newAngle < oldAngle )
 	{
-		if( info < maxInfo || info > 0 )
+		if( oldAngle - newAngle < PI )
 		{
-			return;
+			//ccw
+			if( pAngle - oldAngle <= oldAngle - newAngle )
+			{
+				//good
+			}
+			else
+			{
+				return;
+			}
+		}
+		else
+		{
+			if( pAngle <= newAngle && pAngle >= oldAngle )
+			{
+				//ccw
+			}
+			else
+			{
+				return;
+			}
 		}
 	}
 	else
@@ -421,15 +502,27 @@ void Wire::TestPoint( sf::Vector2<double> p )
 	if( !foundPoint )
 	{
 		foundPoint = true;
-		closestInfo = info;
+		closestDiff = angleDiff;
 		closestPoint = p;
+		//
 	}
 	else
 	{
-		if( abs(info) < abs(closestInfo) )
+		double closestDist = length( realAnchor - closestPoint );
+		if( angleDiff < closestDiff )
 		{
-			closestInfo = info;
+			closestDiff = angleDiff;
 			closestPoint = p;
+
+			//cout << "closestPoint: " << p.x << ", " << p.y << endl;
+		}
+		else if( approxEquals( angleDiff, closestDiff ) )
+		{
+			if( anchorDist > closestDist )
+			{
+				closestDiff = angleDiff;
+				closestPoint = p;
+			}
 		}
 	}
 }

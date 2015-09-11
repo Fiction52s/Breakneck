@@ -35,9 +35,11 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
-	double closestInfo;
-	sf::Vector2<double> trueAnchor;
+	//double closestInfo;
+	double closestDiff;
+	sf::Vector2<double> realAnchor;
 	sf::Vector2<double> oldPos;
+	bool clockwise;
 
 	WireState state;
 
