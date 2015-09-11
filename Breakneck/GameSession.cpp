@@ -45,6 +45,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	borderTree = new QuadTree( 1000000, 1000000 ); 
 
+	lightTree = new QuadTree( 1000000, 1000000 );
+
 	listVA = NULL;
 
 	inactiveEffects = NULL;
@@ -534,6 +536,9 @@ bool GameSession::OpenFile( string fileName )
 			is >> r;
 			is >> g;
 			is >> b;
+
+			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ) );
+			lightTree->Insert( light );
 		}
 
 		int numGroups;
@@ -843,7 +848,7 @@ int GameSession::Run( string fileName )
 	//movingPlats.push_back( mt );
 	
 	
-	lights.push_back( new Light( this ) );
+	//lights.push_back( new Light( this ) );
 
 	while( !quit )
 	{

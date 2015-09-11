@@ -2,15 +2,22 @@
 #define __LIGHT_H__
 
 #include <SFML/Graphics.hpp>
+#include "QuadTree.h"
 
 struct GameSession;
-struct Light
+struct Light : QuadTreeEntrant
 {
-	Light( GameSession *owner );
+	Light( GameSession *owner, sf::Vector2i &p, sf::Color &c );
 	sf::Shader sh;
 	sf::CircleShape cs;
 	GameSession *owner;
 	void Draw( sf::RenderTarget *target );
+
+	sf::Vector2i pos;
+	sf::Color color;
+
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( sf::Rect<double> &r );
 };
 
 #endif

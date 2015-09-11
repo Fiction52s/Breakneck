@@ -134,6 +134,7 @@ struct GameSession : QuadTreeCollider
 
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
+	QuadTree * lightTree;
 
 	bool usePolyShader;
 
