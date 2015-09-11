@@ -4763,6 +4763,7 @@ void Actor::UpdatePhysics()
 				if( !approxEquals( m, 0 ) )
 				{	
 					bool down = true;
+					V2d oldPos = position;
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -4938,7 +4939,11 @@ void Actor::UpdatePhysics()
 						}
 						
 					}
-						
+					else
+					{
+						V2d wVel = position - oldPos;
+						wire->UpdateAnchors( wVel );
+					}
 				}
 
 				
