@@ -3157,10 +3157,9 @@ void Actor::UpdatePrePhysics()
 
 	wire->ClearDebug();
 	wire->UpdateState();
-//	wire->UpdateAnchors();
+	wire->UpdateAnchors();
 	
-	if( false )
-	//if( wire->state == wire->PULLING  )
+	if( wire->state == wire->PULLING  )
 	{
 		
 
@@ -4974,56 +4973,8 @@ void Actor::UpdatePhysics()
 			}
 
 			V2d newVel( 0, 0 );
-			V2d oldPos = position;
+				
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
-
-			//if( wire->state == wire->PULLING  )
-			if( false )
-			{
-				V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
-				if( wire->numPoints > 0 )
-					wirePoint = wire->points[wire->numPoints-1].pos;
-					//wirePoint = wirePoints[pointNum-1].pos;
-
-				
-
-				V2d tes =  normalize( position - wirePoint );
-				double temp = tes.x;
-				tes.x = tes.y;
-				tes.y = -temp;
-
-				double val = dot( movementVec, normalize( wirePoint - position ) );
-				V2d otherTes;
-				if( val > 0 )
-				{
-					otherTes = val * normalize( wirePoint - position );
-				}
-		 
-				V2d old = movementVec;
-				
-
-				//velocity.y *= 10;
-	
-				movementVec = dot( velocity, tes ) * tes;
-				movementVec += otherTes;
-
-				V2d future = position + movementVec;
-		
-				V2d diff = wirePoint - future;
-		
-				if( length( diff ) > wire->segmentLength )
-				{
-					//position += normalize(diff) * ( length( diff ) - wire->segmentLength );
-					future += normalize(diff) * ( length( diff ) - wire->segmentLength );
-
-					movementVec = future - position;
-					//velocity += normalize(diff) * ( length( diff ) - maxLength );
-				}
-				cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
-			}
-
-
-
 			bool tempCollision = ResolvePhysics( movementVec );
 
 			//wire->UpdateAnchors();
@@ -5173,9 +5124,7 @@ void Actor::UpdatePhysics()
 			//cout << framesInAir << endl;
 			//cout << "blah: " << minContact.position.y - (position.y + b.rh ) << ", " << tempCollision << endl;
 
-			V2d wVel = position - oldPos;
 
-			wire->UpdateAnchors( wVel );
 			
 
 			int maxJumpHeightFrame = 10;

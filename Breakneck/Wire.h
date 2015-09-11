@@ -4,11 +4,10 @@
 #include <SFML/Graphics.hpp>
 //#include "Actor.h"
 #include "Physics.h"
-#include "QuadTree.h"
 //#include "GameSession.h"
 
 struct Actor;
-struct Wire : RayCastHandler, QuadTreeCollider
+struct Wire : RayCastHandler
 {
 	enum WireState
 	{
@@ -21,8 +20,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 	//sf::Vector2<double> 
 	Wire( Actor *player );
-	void UpdateAnchors( sf::Vector2<double> vel );
-	void UpdateAnchors2();
+	void UpdateAnchors();
 	void SetFireDirection( sf::Vector2<double> dir );
 	void Check();
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
@@ -30,14 +28,6 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void Draw( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void TestPoint( sf::Vector2<double> p );
-
-	bool foundPoint;
-	sf::Vector2<double> closestPoint;
-	double closestInfo;
-	sf::Vector2<double> trueAnchor;
-	sf::Vector2<double> oldPos;
 
 	WireState state;
 

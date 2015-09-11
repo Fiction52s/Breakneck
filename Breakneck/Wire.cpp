@@ -56,8 +56,7 @@ void Wire::UpdateState()
 		}
 	case FIRING:
 		{
-			//rcEdge = NULL;
-		//	RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
+
 			if( rcEdge != NULL )
 			{
 				state = HIT;
@@ -217,7 +216,7 @@ void Wire::UpdateState()
 	}
 }
 
-void Wire::UpdateAnchors2()
+void Wire::UpdateAnchors()
 {
 	if( state == HIT || state == PULLING )
 	{
@@ -283,101 +282,6 @@ void Wire::UpdateAnchors2()
 	}
 }
 
-void Wire::UpdateAnchors( V2d vel )
-{
-	if( state == HIT || state == PULLING )
-	{
-	//	rayCastMode = "check";
-		//rcEdge = NULL;
-
-
-		sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
-		line->append( sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Magenta ) );
-		
-		V2d oldPos = player->position - vel;
-
-
-		//target->draw(line, 2, sf::Lines);
-
-
-		V2d realAnchor;
-		if( numPoints == 0 )
-		{
-			line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
-			//Rect<double> rStart( oldPos.x);
-		
-			//Rect<double> rEnd( position.x + tempVel.x +  - b.rw, position.y + tempVel.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-			
-
-			realAnchor = anchor.pos;
-
-
-			//owner->terrainTree->Query( this, r );
-			//RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
-		}
-		else
-		{
-			line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
-			//RayCast( this, player->owner->terrainTree->startNode, points[numPoints - 1].pos, player->position );
-			realAnchor = points[numPoints-1].pos;
-		}
-
-		progressDraw.push_back( line );
-
-		double left = min( realAnchor.x, min( oldPos.x, player->position.x ) );
-		double right = max( realAnchor.x, max( oldPos.x, player->position.x ) );
-		double top = min( realAnchor.y, min( oldPos.y, player->position.y ) );
-		double bottom = max( realAnchor.y, max( oldPos.y, player->position.y ) );
-
-		Rect<double> r( left, top, right - left, bottom - top );
-
-		foundPoint = false;
-		player->owner->terrainTree->Query( this, r );
-		
-		if( foundPoint )
-		{
-			points[numPoints].pos = closestPoint;
-			//points[numPoints].test = normalize( 
-			numPoints++;
-		}
-		
-		//if( rcEdge != NULL )
-		if( false )
-		{
-			if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - rcQuant )
-			{
-				points[numPoints].pos = rcEdge->v1;
-				//wirePoints[pointNum].e = rcEdge;
-				points[numPoints].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
-				//cout << "over" << endl;
-
-				numPoints++;
-			}
-			else
-			{
-				//cout << "under" << endl;
-				points[numPoints].pos = rcEdge->v0;
-				points[numPoints].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
-				numPoints++;
-			}
-		}
-
-		for( int i = numPoints - 1; i >= 0; --i )
-		{
-			double result = cross( player->position - points[numPoints-1].pos, points[i].test );
-			if( result > 0 )
-			{
-				//cout << "removing point " << result << endl;
-				numPoints--;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-}
-
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
 	if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - player->position ) < length( rcEdge->GetPoint( rcQuant ) - player->position ) ) )
@@ -385,64 +289,6 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 		rcEdge = edge;
 		rcQuant = edgeQuantity;
 	}
-}
-
-void Wire::TestPoint( sf::Vector2<double> p )
-{
-	double radius = length( trueAnchor - player->position ); //new position after moving
-
-	double anchorDist = length( trueAnchor - p );
-	if( anchorDist > radius )
-		return;
-
-	double info = dot( normalize( p - trueAnchor ), normalize( oldPos - trueAnchor ) );
-
-	double maxInfo = dot( normalize( player->position - trueAnchor ), normalize( oldPos - trueAnchor ) );
-
-	if( maxInfo > 0 )
-	{
-		if( info > maxInfo || info < 0 )
-		{
-			return;
-		}
-	}
-	else if( maxInfo < 0 )
-	{
-		if( info < maxInfo || info > 0 )
-		{
-			return;
-		}
-	}
-	else
-	{
-		return;
-	}
-
-	if( !foundPoint )
-	{
-		foundPoint = true;
-		closestInfo = info;
-		closestPoint = p;
-	}
-	else
-	{
-		if( abs(info) < abs(closestInfo) )
-		{
-			closestInfo = info;
-			closestPoint = p;
-		}
-	}
-}
-
-void Wire::HandleEntrant( QuadTreeEntrant *qte )
-{
-	Edge *e = (Edge*)qte;
-
-	V2d v0 = e->v0;
-	V2d v1 = e->v1;
-
-	TestPoint( v0 );
-	TestPoint( v1 );
 }
 
 void Wire::Draw( RenderTarget *target )

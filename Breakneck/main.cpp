@@ -66,7 +66,7 @@ void GameEditLoop( std::string filename)
 		GameSession gs( controller, window, preScreenTexture );
 		
 		result = gs.Run( filename );
-		lastViewCenter = gs.lastViewCenter;
+		lastViewCenter = gs.lastViewCenter;l
 		lastViewSize = gs.lastViewSize;
 	}
 }
