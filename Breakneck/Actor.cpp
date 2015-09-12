@@ -7500,6 +7500,15 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
+
+	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+
+	lightsAtOnce = 0;
+	tempLightLimit = 3;
+	owner->lightTree->Query( this, r );
+
+	
+
 	if( record > 0 )
 	{
 		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
@@ -7682,6 +7691,29 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 	}
+	else if( queryMode == "lights" )
+	{
+		Light *light = (Light*)qte;
+
+		if( owner->lightsAtOnce < owner->tempLightLimit )
+		{
+			owner->touchedLights[owner->lightsAtOnce] = light;
+			owner->lightsAtOnce++;
+		}
+		else
+		{
+			for( int i = 0; i < owner->lightsAtOnce; ++i )
+			{
+				if( length( owner->touchedLights[i]->pos - position ) > length( light->pos - position ) )//some calculation here
+				{
+					owner->touchedLights[i] = light;
+					break;
+				}
+					
+			}
+		}
+	}
+	
 	++possibleEdgeCount;
 }
 

@@ -142,7 +142,13 @@ struct GameSession : QuadTreeCollider
 
 	int pauseFrames;
 
+	const static int MAX_LIGHTS_AT_ONCE = 16;
+	int lightsAtOnce;
+	Light *touchedLights[MAX_LIGHTS_AT_ONCE];
+	int tempLightLimit;
+
 	std::list<Light*> lights;
+
 
 	struct Stored
 	{
