@@ -2330,7 +2330,7 @@ void Actor::UpdatePrePhysics()
 					velocity = -groundSpeed * normalize(ground->v1 - ground->v0 );
 					ground = NULL;
 					movingGround = NULL;
-					frame = 1;
+					frame = 1; //so it doesnt use the jump frame when just dropping
 					reversed = false;
 					//facingRight = !facingRight;
 					
@@ -6145,7 +6145,7 @@ void Actor::UpdatePostPhysics()
 			ir = tileset[JUMP]->GetSubRect( 8 );
 		}
 
-		//if( frame > 0 )
+		if( frame > 0 )
 		{
 			sprite->setRotation( 0 );
 		}
@@ -7502,7 +7502,6 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
-	cout << "reversed: " << reversed << ", facingright: " << facingRight << endl;
 
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
