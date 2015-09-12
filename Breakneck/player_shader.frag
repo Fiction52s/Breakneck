@@ -10,10 +10,24 @@ uniform sampler2D u_normals;   //normal map
 
 //values used for shading algorithm...
 uniform vec2 Resolution;      //resolution of screen
-uniform vec3 LightPos;        //light position, normalized
-uniform vec4 LightColor;      //light RGBA -- alpha is intensity
-uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
-uniform vec3 Falloff;         //attenuation coefficients
+
+uniform vec3 LightPos0;        //light position, normalized
+uniform vec4 LightColor0;      //light RGBA -- alpha is intensity
+uniform vec3 Falloff0;         //attenuation coefficients
+uniform bool On0;
+
+uniform vec3 LightPos1;        
+uniform vec4 LightColor1;      
+uniform vec3 Falloff1;         
+uniform bool On1;
+
+uniform vec3 LightPos2;        
+uniform vec4 LightColor2;      
+uniform vec3 Falloff2;         
+uniform bool On2;
+
+uniform vec4 AmbientColor;    
+
 uniform float zoom;
 uniform bool right;
 
@@ -31,26 +45,30 @@ LightSource lights[numLights];
 
 void main() {
 
-	lights[0].on = true;
-	lights[0].pos = LightPos;
-	lights[0].color = vec4( 1, 0, 0, 1 );//LightColor;
-	lights[0].falloff = Falloff;
+	lights[0].on = On0;
+	lights[0].pos = LightPos0;
+	lights[0].color = LightColor0;//vec4( 1, 0, 0, 1 );//LightColor;
+	lights[0].falloff = Falloff0;
 	
-	lights[1].on = true;
-	lights[1].pos = LightPos + vec3( .1, 0, 0 ) / zoom;
-	lights[1].color = vec4( 0, 1, 0, 1 );
-	lights[1].falloff = Falloff;
+	lights[1].on = On1;
+	lights[1].pos = LightPos1 ;// + vec3( .1, 0, 0 ) / zoom;
+	lights[1].color = LightColor1; //vec4( 0, 1, 0, 1 );
+	lights[1].falloff = Falloff1;
 	
-	lights[2].on = true;
-	lights[2].pos = LightPos + vec3( .05, .05, 0 ) / zoom ;
-	lights[2].color = vec4( 0, 0, 1, 1 );
-	lights[2].falloff = Falloff;
+	lights[2].on = On2;
+	lights[2].pos = LightPos2;// + vec3( .05, .05, 0 ) / zoom ;
+	lights[2].color = LightColor2; //vec4( 0, 0, 1, 1 );
+	lights[2].falloff = Falloff2;
 	
     //RGBA of our diffuse color
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );//vec4( 1, 1, 1, 1 );  ////
 	
 	for( int i = 0; i < numLights;  ++i )
 	{
+		if( !lights[i].on )
+		{
+			continue;
+		}
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
 
 		//RGB of our normal map

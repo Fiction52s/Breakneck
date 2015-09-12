@@ -148,7 +148,7 @@ struct GameSession : QuadTreeCollider
 	int tempLightLimit;
 
 	std::list<Light*> lights;
-
+	Light *lightList;
 
 	struct Stored
 	{

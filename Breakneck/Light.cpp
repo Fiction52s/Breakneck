@@ -6,7 +6,7 @@
 using namespace sf;
 using namespace std;
 Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
-	:color( c ), pos( p ), prev( NULL ), next( NULL )
+	:color( c ), pos( p ), next( NULL )
 {
 	owner = own;
 	if (!sh.loadFromFile("light_shader.frag", sf::Shader::Fragment))

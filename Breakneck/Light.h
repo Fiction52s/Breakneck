@@ -8,6 +8,7 @@ struct GameSession;
 struct Light : QuadTreeEntrant
 {
 	Light( GameSession *owner, sf::Vector2i &p, sf::Color &c );
+	Light * next;
 	sf::Shader sh;
 	sf::CircleShape cs;
 	GameSession *owner;

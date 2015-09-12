@@ -48,6 +48,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	lightTree = new QuadTree( 1000000, 1000000 );
 
 	listVA = NULL;
+	lightList = NULL;
 
 	inactiveEffects = NULL;
 	pauseImmuneEffects = NULL;
@@ -1374,12 +1375,27 @@ int GameSession::Run( string fileName )
 		numBorders = 0;
 		borderTree->Query( this, screenRect );
 
+		while( lightList != NULL )
+		{
+			Light *l = lightList->next;
+			lightList->next = NULL;
+			lightList = l;
+		}
 
+		queryMode = "lights";
+		lightTree->Query( this, screenRect );
 		
 		
 
 		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		
+		Light *lightListIter = lightList;
+		while( lightListIter != NULL )
+		{
+			lightListIter->Draw( preScreenTex );
+			lightListIter = lightListIter->next;
+		}
+
 		
 		int timesDraw = 0;
 		TestVA * listVAIter = listVA;
@@ -1520,6 +1536,35 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 		
+	}
+	else if( queryMode == "lights" )
+	{
+		if( lightList == NULL )
+		{
+			lightList = (Light*)qte;
+		}
+		else
+		{
+			
+			Light *tlight = (Light*)qte;
+			Light *temp = lightList;
+			bool okay = true;
+			while( temp != NULL )
+			{
+				if( temp == tlight )
+				{
+					okay = false;
+					break;
+				}	
+				temp = temp->next;
+			}
+
+			if( okay )
+			{
+				tlight->next = lightList;
+				lightList = tlight;
+			}
+		}
 	}
 }
 

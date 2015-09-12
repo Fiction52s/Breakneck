@@ -7503,11 +7503,65 @@ void Actor::UpdatePostPhysics()
 
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
-	lightsAtOnce = 0;
-	tempLightLimit = 3;
+	owner->lightsAtOnce = 0;
+	owner->tempLightLimit = 3;
+	queryMode = "lights"; 
 	owner->lightTree->Query( this, r );
 
+	Vector2i vi = Mouse::getPosition();
+	Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+	//owner->preScreenTex->map
+	Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
+	Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) );
+	Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
+
+
+	//vi0 = vi1 = vi2 = vi;
+	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
+	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+
+	Color c0 = owner->touchedLights[0]->color;
+	Color c1 = owner->touchedLights[1]->color;
+	Color c2 = owner->touchedLights[2]->color;
+
+	//cout << "lights captured!: " << owner->lightsAtOnce << endl;
+	//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
+	//cout << "pos1: " << pos1.x << ", " << pos1.y << endl;
+	//cout << "pos2: " << pos2.x << ", " << pos2.y << endl;
+
+	bool on0 = false;
+	bool on1 = false;
+	bool on2 = false;
+
+	if( owner->lightsAtOnce > 0 )
+	{
+		//sh.setParameter( "On0", true );
+		on0 = true;
+		sh.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
+		sh.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
+		sh.setParameter( "Falloff0", Vector3f( 2, 3, 20 ) );
+	}
+	if( owner->lightsAtOnce > 1 )
+	{
+		on1 = true;
+		//sh.setParameter( "On1", true );
+		sh.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
+		sh.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
+		sh.setParameter( "Falloff1", Vector3f( .4, 3, 20 ) );
+	}
+	if( owner->lightsAtOnce > 2 )
+	{
+		on2 = true;
+		//sh.setParameter( "On2", true );
+		sh.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
+		sh.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
+		sh.setParameter( "Falloff2", Vector3f( .4, 3, 20 ) );
+	}
 	
+	sh.setParameter( "On0", on0 );
+	sh.setParameter( "On1", on1 );
+	sh.setParameter( "On2", on2 );
 
 	if( record > 0 )
 	{
@@ -7704,7 +7758,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			for( int i = 0; i < owner->lightsAtOnce; ++i )
 			{
-				if( length( owner->touchedLights[i]->pos - position ) > length( light->pos - position ) )//some calculation here
+				if( length( V2d( owner->touchedLights[i]->pos.x, owner->touchedLights[i]->pos.y ) - position ) > length( V2d( light->pos.x, light->pos.y ) - position ) )//some calculation here
 				{
 					owner->touchedLights[i] = light;
 					break;
@@ -7775,10 +7829,10 @@ void Actor::Draw( sf::RenderTarget *target )
 			sh.setParameter( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			sh.setParameter( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
 			sh.setParameter( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
-			sh.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
-			sh.setParameter( "LightColor", 1, .8, .6, 1 );
+			//sh.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+			//sh.setParameter( "LightColor", 1, .8, .6, 1 );
 			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
-			sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
+			//sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 			sh.setParameter( "right", (facingRight && !reversed) || (!facingRight && reversed ) );
 			sh.setParameter( "zoom", owner->cam.GetZoom() );
 			//cout << "right: " << (float)facingRight << endl;
@@ -7790,7 +7844,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			cs.setPosition( 0, -300 );
 			
 
-			//target->draw( spr, &sh );
+			target->draw( spr, &sh );
 
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setParameter( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
