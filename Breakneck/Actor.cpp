@@ -7768,6 +7768,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 	}
 	
+	
 	++possibleEdgeCount;
 }
 

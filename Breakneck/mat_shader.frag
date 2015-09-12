@@ -12,10 +12,25 @@ layout(origin_upper_left) in vec4 gl_FragCoord;
 
 //values used for shading algorithm...
 uniform vec2 Resolution;      //resolution of screen
-uniform vec3 LightPos;        //light position, normalized
-uniform vec4 LightColor;      //light RGBA -- alpha is intensity
+
+uniform vec3 LightPos0;        //light position, normalized
+uniform vec4 LightColor0;      //light RGBA -- alpha is intensity
+uniform vec3 Falloff0;         //attenuation coefficients
+uniform bool On0;
+
+uniform vec3 LightPos1;        
+uniform vec4 LightColor1;      
+uniform vec3 Falloff1;         
+uniform bool On1;
+
+uniform vec3 LightPos2;        
+uniform vec4 LightColor2;      
+uniform vec3 Falloff2;         
+uniform bool On2;
+
+
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
-uniform vec3 Falloff;         //attenuation coefficients
+
 
 const int numLights = 3;
 struct LightSource
@@ -37,20 +52,20 @@ void main()
     vec2 pos = mod( topLeft + pixelPos, size ) / vec2( size );
 	gl_FragColor = texture2D( u_texture, pos );
 	
-	lights[0].on = true;
-	lights[0].pos = LightPos;
-	lights[0].color = vec4( 1, 0, 0, 1 );//LightColor;
-	lights[0].falloff = Falloff;
+	lights[0].on = On0;
+	lights[0].pos = LightPos0;
+	lights[0].color = LightColor0;//vec4( 1, 0, 0, 1 );//LightColor;
+	lights[0].falloff = Falloff0;
 	
-	lights[1].on = true;
-	lights[1].pos = LightPos + vec3( .1, 0, 0 ) / zoom;
-	lights[1].color = vec4( 0, 1, 0, 1 );
-	lights[1].falloff = Falloff;
+	lights[1].on = On1;
+	lights[1].pos = LightPos1 ;// + vec3( .1, 0, 0 ) / zoom;
+	lights[1].color = LightColor1; //vec4( 0, 1, 0, 1 );
+	lights[1].falloff = Falloff1;
 	
-	lights[2].on = true;
-	lights[2].pos = LightPos + vec3( .05, -.05, 0 ) / zoom;
-	lights[2].color = vec4( 0, 0, 1, 1 );
-	lights[2].falloff = Falloff;
+	lights[2].on = On2;
+	lights[2].pos = LightPos2;// + vec3( .05, .05, 0 ) / zoom ;
+	lights[2].color = LightColor2; //vec4( 0, 0, 1, 1 );
+	lights[2].falloff = Falloff2;
 	
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );
 	
@@ -58,6 +73,11 @@ void main()
 	
 	for( int i = 0; i < numLights;  ++i )
 	{
+		if( !lights[i].on )
+		{
+			continue;
+		}
+	
 		vec4 DiffuseColor = texture2D(u_texture, pos);
 		vec3 NormalMap = texture2D(u_normals, pos).rgb;
 		vec3 LightDir = vec3(lights[i].pos.xy - (vec2( gl_FragCoord.x, gl_FragCoord.y) / Resolution.xy), lights[i].pos.z);
