@@ -355,8 +355,8 @@ void Wire::UpdateAnchors( V2d vel )
 			}
 			//points[numPoints].test = normalize(  
 			numPoints++;
-			cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
-			cout << "numpoints now! " << numPoints << endl;
+			//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
+			//cout << "numpoints now! " << numPoints << endl;
 		}
 		
 		//if( rcEdge != NULL )

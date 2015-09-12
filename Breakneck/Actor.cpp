@@ -2330,7 +2330,9 @@ void Actor::UpdatePrePhysics()
 					velocity = -groundSpeed * normalize(ground->v1 - ground->v0 );
 					ground = NULL;
 					movingGround = NULL;
+					frame = 1;
 					reversed = false;
+					//facingRight = !facingRight;
 					
 
 				}
@@ -6143,12 +6145,12 @@ void Actor::UpdatePostPhysics()
 			ir = tileset[JUMP]->GetSubRect( 8 );
 		}
 
-		if( frame > 0 )
+		//if( frame > 0 )
 		{
 			sprite->setRotation( 0 );
 		}
 
-		if( !facingRight )
+		if( ( !facingRight && !reversed ) )
 		{
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -7500,6 +7502,7 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
+	cout << "reversed: " << reversed << ", facingright: " << facingRight << endl;
 
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
@@ -7789,7 +7792,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 	{
 		motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
-		//target->draw( motionGhosts[i] );
+		target->draw( motionGhosts[i] );
 	}
 
 	if( action != GRINDBALL )
@@ -7834,7 +7837,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			//sh.setParameter( "LightColor", 1, .8, .6, 1 );
 			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
 			//sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
-			sh.setParameter( "right", (facingRight && !reversed) || (!facingRight && reversed ) );
+			sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
 			sh.setParameter( "zoom", owner->cam.GetZoom() );
 			//cout << "right: " << (float)facingRight << endl;
 

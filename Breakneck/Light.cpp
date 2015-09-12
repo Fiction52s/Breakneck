@@ -16,7 +16,7 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
 		assert( 0 && "light shader not loaded" );
 	}
 	sh.setParameter( "pos", 0, 0 );
-	sh.setParameter( "lightpos", 0, -300 );
+	//sh.setParameter( "lightpos", 0, -300 );
 
 	cs.setRadius( 100 );
 	cs.setFillColor( color );
