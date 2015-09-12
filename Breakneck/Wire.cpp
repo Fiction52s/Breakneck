@@ -347,9 +347,15 @@ void Wire::UpdateAnchors( V2d vel )
 		{
 			points[numPoints].pos = closestPoint;
 
+
+			points[numPoints].test = normalize( closestPoint - realAnchor );
+			if( !clockwise )
+			{
+				points[numPoints].test = -points[numPoints].test;
+			}
 			//points[numPoints].test = normalize(  
 			numPoints++;
-			//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
+			cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
 			cout << "numpoints now! " << numPoints << endl;
 		}
 		
@@ -380,7 +386,7 @@ void Wire::UpdateAnchors( V2d vel )
 			if( result > 0 )
 			{
 				//cout << "removing point " << result << endl;
-				//numPoints--;
+				numPoints--;
 			}
 			else
 			{
@@ -410,7 +416,10 @@ void Wire::TestPoint( sf::Vector2<double> p )
 
 	double anchorDist = length( realAnchor - p );
 	if( anchorDist > radius )
+	{
 		return;
+	}
+	
 	//cout << "anchordist: " << anchorDist << ", radius: " << radius << endl;
 
 	V2d oldVec = normalize( oldPos - realAnchor );
@@ -430,10 +439,10 @@ void Wire::TestPoint( sf::Vector2<double> p )
 
 	double maxAngleDiff = abs( newAngle - oldAngle );
 
-	//cout << "p: " << p.x << ", " << p.y << " old: " << oldAngle << ", new: " << newAngle << ", pangle: " << pAngle << endl;
+	
 
-	if( angleDiff > maxAngleDiff )
-		return;
+	//if( angleDiff > maxAngleDiff )
+	//	return;
 
 	if( oldAngle < 0 )
 		oldAngle += 2 * PI;
@@ -442,12 +451,15 @@ void Wire::TestPoint( sf::Vector2<double> p )
 	if( pAngle < 0 )
 		pAngle += 2 * PI;
 
+	//cout << "p: " << p.x << ", " << p.y << " old: " << oldAngle << ", new: " << newAngle << ", pangle: " << pAngle << endl;
+	bool tempClockwise = false;
 	if( newAngle > oldAngle )
 	{
 		if( newAngle - oldAngle < PI )
 		{
+			tempClockwise = true;
 			//cw
-			if( pAngle - oldAngle <= newAngle - oldAngle )
+			if( pAngle - oldAngle >= 0 && pAngle - oldAngle <= newAngle - oldAngle )
 			{
 				//good
 			}
@@ -458,7 +470,7 @@ void Wire::TestPoint( sf::Vector2<double> p )
 		}
 		else
 		{
-			if( pAngle >= oldAngle && pAngle <= newAngle )
+			if( pAngle >= newAngle || pAngle <= oldAngle )
 			{
 				//cw
 			}
@@ -473,7 +485,7 @@ void Wire::TestPoint( sf::Vector2<double> p )
 		if( oldAngle - newAngle < PI )
 		{
 			//ccw
-			if( pAngle - oldAngle <= oldAngle - newAngle )
+			if( pAngle - newAngle >= 0 && pAngle - newAngle <= oldAngle - newAngle )
 			{
 				//good
 			}
@@ -484,7 +496,8 @@ void Wire::TestPoint( sf::Vector2<double> p )
 		}
 		else
 		{
-			if( pAngle <= newAngle && pAngle >= oldAngle )
+			tempClockwise = true;
+			if( pAngle <= newAngle || pAngle >= oldAngle )
 			{
 				//ccw
 			}
@@ -498,6 +511,10 @@ void Wire::TestPoint( sf::Vector2<double> p )
 	{
 		return;
 	}
+
+	clockwise = tempClockwise;
+
+	//would be more efficient to remove this calculation and only do it once per frame
 
 	if( !foundPoint )
 	{
@@ -513,7 +530,6 @@ void Wire::TestPoint( sf::Vector2<double> p )
 		{
 			closestDiff = angleDiff;
 			closestPoint = p;
-
 			//cout << "closestPoint: " << p.x << ", " << p.y << endl;
 		}
 		else if( approxEquals( angleDiff, closestDiff ) )
@@ -535,7 +551,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	V2d v1 = e->v1;
 
 	TestPoint( v0 );
-	TestPoint( v1 );
+	//TestPoint( v1 );
 }
 
 void Wire::Draw( RenderTarget *target )

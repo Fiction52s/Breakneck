@@ -1388,7 +1388,7 @@ int GameSession::Run( string fileName )
 		//for( int i = 0; i < numBorders; ++i )
 		{
 			//cout << "drawing border" << endl;
-			preScreenTex->draw( *listVAIter->va, &borderTex );
+		//	preScreenTex->draw( *listVAIter->va, &borderTex );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
