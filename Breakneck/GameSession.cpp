@@ -1387,12 +1387,10 @@ int GameSession::Run( string fileName )
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
-			//cout << "drawing border" << endl;
-			preScreenTex->draw( *listVAIter->va, &borderTex );
+			//window->draw( *listVAIter->va, &borderTex );
 			listVAIter = listVAIter->next;
-			timesDraw++; 
+			//timesDraw++; 
 		}
-		//cout << "times draw: " << timesDraw << endl;
 		//cout << "drew: " << timesDraw << endl;
 		//for( list<VertexArray*>::iterator it = polygonBorders.begin(); it != polygonBorders.end(); ++it )
 	//	{

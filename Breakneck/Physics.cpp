@@ -2206,28 +2206,9 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 	{
 		ParentNode *n = (ParentNode*)node;
 
-		Edge e;
-		e.v0 = startPoint;
-		e.v1 = endPoint;
-
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
-
-		if( IsEdgeTouchingBox( &e, nodeBox ) )
+		for( int i = 0; i < 4; ++i )
 		{
-			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
-			{
-				LineIntersection li = SegmentIntersect( startPoint, endPoint, ((Edge*)(*it))->v0, ((Edge*)(*it))->v1 );	
-				if( !li.parallel )
-				{
-					handler->HandleRayCollision( ((Edge*)(*it)), ((Edge*)(*it))->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
-				}
-			}
-
-			for( int i = 0; i < 4; ++i )
-			{
-				RayCast( handler, n->children[i], startPoint, endPoint );
-			}
+			RayCast( handler, n->children[i], startPoint, endPoint );
 		}
 	}
 }
