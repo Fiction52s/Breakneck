@@ -841,12 +841,12 @@ int GameSession::Run( string fileName )
 	pathTest.push_back( Vector2i( 100, 100 ) );
 
 	pointsTest.push_back( Vector2i(-100, -100) );
-	pointsTest.push_back( Vector2i(100, -100) );
-	pointsTest.push_back( Vector2i(100, 100) );
-	pointsTest.push_back( Vector2i(-100, 100) );
+	pointsTest.push_back( Vector2i(300, 100) );
+	pointsTest.push_back( Vector2i(300, 200) );
+	pointsTest.push_back( Vector2i(-100, 200) );
 
-	//MovingTerrain *mt = new MovingTerrain( Vector2i( 100, 100 ), pathTest, pointsTest, false, 2 );
-	//movingPlats.push_back( mt );
+	MovingTerrain *mt = new MovingTerrain( Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
+	movingPlats.push_back( mt );
 	
 	
 	//lights.push_back( new Light( this ) );

@@ -7616,8 +7616,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		V2d temp0 = e->v0;
 		V2d temp1 = e->v1;
 
-		e->v0 += currMovingTerrain->position;
-		e->v1 += currMovingTerrain->position;
+		e->v0 += currMovingTerrain->oldPosition;
+		e->v1 += currMovingTerrain->oldPosition;
 
 		if( e->Normal().y == -1 )
 		{
@@ -7625,7 +7625,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				e->v1.x << ", " << e->v1.y << endl;
 		}
 
-		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel );
+		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + -currMovingTerrain->vel );
 
 		e->v0 = temp0;
 		e->v1 = temp1;

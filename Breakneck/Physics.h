@@ -47,6 +47,7 @@ struct MovingTerrain
 	int top;
 	int bottom;
 	sf::Vector2<double> position;
+	sf::Vector2<double> oldPosition;
 	sf::Vector2i *path; //global coords
 	int pathLength;
 	bool loop;

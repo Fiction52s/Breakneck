@@ -60,7 +60,7 @@ MovingTerrain::MovingTerrain( Vector2i pos, list<Vector2i> &pathParam, list<Vect
 	:quadTree( NULL ), numEdges( 0 ), edgeArray( NULL ), loop( loopP ), speed( pspeed ), 
 	position( pos.x, pos.y ), targetNode( 1 ), slowCounter( 1 ), slowMultiple( 1 )
 {
-
+	//cout << "pos is: " << pos.x << ", " << pos.y << endl;
 	//set up path
 	pathLength = pathParam.size() + 1;
 	path = new Vector2i[pathLength];
@@ -107,8 +107,8 @@ MovingTerrain::MovingTerrain( Vector2i pos, list<Vector2i> &pathParam, list<Vect
 	for( it = pointsParam.begin(); it != pointsParam.end(); ++it )
 	{
 		Edge *e = new Edge;
-		e->v0 = V2d( (double)(*last).x - position.x, (double)(*last).y - position.y);
-		e->v1 = V2d( (double)(*it).x - position.x, (double)(*it).y - position.y );
+		e->v0 = V2d( (double)(*last).x, (double)(*last).y );
+		e->v1 = V2d( (double)(*it).x, (double)(*it).y );
 		edges.push_back( e );
 		last = it;
 	}
@@ -178,7 +178,7 @@ void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
 void MovingTerrain::UpdatePhysics()
 {
 	//return;
-	V2d oldPosition = position;
+	oldPosition = position;
 
 	double movement = speed;
 	
