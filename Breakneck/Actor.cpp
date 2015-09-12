@@ -7845,7 +7845,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			cs.setPosition( 0, -300 );
 			
 
-			target->draw( spr, &sh );
+			//target->draw( spr, &sh );
 
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setParameter( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );

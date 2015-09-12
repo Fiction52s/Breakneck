@@ -1372,11 +1372,19 @@ int GameSession::Run( string fileName )
 				Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
 				Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
 
-				Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
+
+			/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 				pos0.y = 1 - pos0.y;
 				Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
 				pos1.y = 1 - pos1.y;
 				Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+				pos2.y = 1 - pos2.y;*/
+
+				Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+				pos0.y = 1 - pos0.y;
+				Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
+				pos1.y = 1 - pos1.y;
+				Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
 				pos2.y = 1 - pos2.y;
 
 				Color c0 = touchedLights[0]->color;
