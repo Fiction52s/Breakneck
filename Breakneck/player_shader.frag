@@ -31,6 +31,8 @@ uniform vec4 AmbientColor;
 uniform float zoom;
 uniform bool right;
 
+uniform float despFrame; //-1 if not desp mode
+
 const int numLights = 3;
 struct LightSource
 {
@@ -62,13 +64,14 @@ void main() {
 	
     //RGBA of our diffuse color
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );//vec4( 1, 1, 1, 1 );  ////
-	
+	bool noLights = true;
 	for( int i = 0; i < numLights;  ++i )
 	{
 		if( !lights[i].on )
 		{
 			continue;
 		}
+		noLights = false;
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
 
 		//RGB of our normal map
@@ -114,6 +117,22 @@ void main() {
 		
 		//gl_FragColor =  gl_Color * vec4(FinalColor, DiffuseColor.a);
 	}
-	gl_FragColor =  gl_Color * finalfinal;//vec4(finalfinal, DiffuseColor.a);
+	vec4 doneColor = finalfinal;//vec4(finalfinal, DiffuseColor.a);
+	if( noLights )
+	{
+		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
+		doneColor = DiffuseColor;
+	}
+	if( despFrame >= 0 )
+	{
+		vec4 desperation = vec4( 1, 0, 0, doneColor.a );//vec4( doneColor.g, doneColor.b, doneColor.r, doneColor.a );
+		gl_FragColor =  gl_Color * desperation;
+		//gl_FragColor =  gl_Color * desperation;
+	}
+	else if( despFrame == -1 )
+	{
+		gl_FragColor = gl_Color * doneColor;
+	}
+
     
 }

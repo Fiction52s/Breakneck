@@ -213,6 +213,9 @@ struct Actor : QuadTreeCollider,
 	std::string queryMode;
 	MovingTerrain *currMovingTerrain;
 
+	int maxDespFrames;
+	int despCounter;
+	bool desperationMode;
 	//MovingTerrain *minContactTerrain;
 
 	bool checkValid;

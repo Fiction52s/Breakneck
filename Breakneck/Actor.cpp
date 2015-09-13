@@ -62,6 +62,10 @@ Actor::Actor( GameSession *gs )
 		percentCloneRate = .01;
 		changingClone = false;
 
+		desperationMode = false;
+		maxDespFrames = 120;
+		despCounter = 0;
+
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
@@ -292,9 +296,9 @@ Actor::Actor( GameSession *gs )
 		tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall.png", 80, 48 );
 		normal[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall_NORMALS.png", 80, 48 );
 
-		actionLength[DEATH] = 30;
+		actionLength[DEATH] = 44;
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
-		normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
+		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
 		
 
@@ -619,7 +623,7 @@ void Actor::UpdatePrePhysics()
 	}
 	motionGhosts[0] = *sprite;
 
-
+	
 
 	if( action == DEATH )
 	{
@@ -629,6 +633,19 @@ void Actor::UpdatePrePhysics()
 			frame = 0;
 		}
 		return;
+	}
+
+	if( desperationMode )
+	{
+		//cout << "desperation: " << despCounter << endl;
+		despCounter++;
+		if( despCounter == maxDespFrames )
+		{
+			desperationMode = false;
+			action = DEATH;
+			slowCounter = 1;
+			frame = 0;
+		}
 	}
 
 	if( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) )
@@ -739,8 +756,10 @@ void Actor::UpdatePrePhysics()
 		}
 		else
 		{
-			action = DEATH;
-			frame = 0;
+			desperationMode = true;
+			despCounter = 0;
+			//action = DEATH;
+			//frame = 0;
 		}
 
 
@@ -5514,27 +5533,33 @@ void Actor::UpdatePostPhysics()
 
 	if( action == DEATH )
 	{
+		sh.setParameter( "On0", false );
+		sh.setParameter( "On1", false );
+		sh.setParameter( "On2", false );
+		sh.setParameter( "despFrame", -1 );
+
 		sprite->setTexture( *(tileset[DEATH]->texture));
 		if( facingRight )
 		{
-			sprite->setTextureRect( tileset[DEATH]->GetSubRect( 0 ) );
+			sprite->setTextureRect( tileset[DEATH]->GetSubRect( frame ) );
 		}
 		else
 		{
-			sf::IntRect ir = tileset[DEATH]->GetSubRect( 0 );
+			sf::IntRect ir = tileset[DEATH]->GetSubRect( frame );
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 		sprite->setPosition( position.x, position.y );
 		sprite->setRotation( 0 );
 
-		if( slowCounter == slowMultiple )
-		{
-			++frame;
-			slowCounter = 1;
-		}
-		else
-			slowCounter++;
+		//if( slowCounter == slowMultiple )
+		//{
+		
+		++frame;
+			//slowCounter = 1;
+		//}
+		//else
+		//	slowCounter++;
 		return;
 	}
 
@@ -5770,8 +5795,8 @@ void Actor::UpdatePostPhysics()
 			frame = 0;
 		}
 
-		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-		cout << owner->movingPlats.front()->vel.x << ", " << owner->movingPlats.front()->vel.y << endl;
+		//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+		//cout << owner->movingPlats.front()->vel.x << ", " << owner->movingPlats.front()->vel.y << endl;
 		if( action != AIRHITSTUN )
 		{
 			if( collision )
@@ -5781,7 +5806,7 @@ void Actor::UpdatePostPhysics()
 				//if( false )
 				{
 				//	cout << "wallnormal active: " << wallNormal.x << ", " << wallNormal.y << endl;
-					cout << "wallcling" << endl;
+					//cout << "wallcling" << endl;
 					if( wallNormal.x > 0)
 					{
 						
@@ -5809,7 +5834,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( action == WALLCLING && length( wallNormal ) == 0 )
 			{
-				cout << "jump" << endl;
+			//	cout << "jump" << endl;
 				action = JUMP;
 				frame = 1;
 			}
@@ -7488,7 +7513,7 @@ void Actor::UpdatePostPhysics()
 		}
 	case DEATH:
 		{
-			break;
+		
 		}
 	}
 
@@ -7554,6 +7579,18 @@ void Actor::UpdatePostPhysics()
 	sh.setParameter( "On0", on0 );
 	sh.setParameter( "On1", on1 );
 	sh.setParameter( "On2", on2 );
+
+	if( desperationMode )
+	{
+		//cout << "sending this parameter! "<< endl;
+		sh.setParameter( "despFrame", despCounter );
+	}
+	else
+	{
+		
+		sh.setParameter( "despFrame", -1 );
+	}
+
 
 	if( record > 0 )
 	{
