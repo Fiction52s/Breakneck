@@ -320,6 +320,8 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 void MovingTerrain::Draw( RenderTarget *target )
 {
 	owner->UpdateTerrainShader();
+	owner->polyShader.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2 - ( position.x - path[0].x ),
+			owner->view.getCenter().y - owner->view.getSize().y / 2 - ( position.y - path[0].y ) );
 	target->draw( *polygonVA, &owner->polyShader );
 }
 

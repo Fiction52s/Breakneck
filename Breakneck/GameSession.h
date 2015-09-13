@@ -78,6 +78,7 @@ struct GameSession : QuadTreeCollider
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;
 
+	sf::View view;
 
 	void SaveState();
 	void LoadState();

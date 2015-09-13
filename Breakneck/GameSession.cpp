@@ -753,7 +753,7 @@ int GameSession::Run( string fileName )
 	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
 
-	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
+	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	preScreenTex->setView( view );
 	//window->setView( view );
 
@@ -1415,7 +1415,7 @@ int GameSession::Run( string fileName )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			preScreenTex->draw( *listVAIter->va, &borderTex );
+			//preScreenTex->draw( *listVAIter->va, &borderTex );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
@@ -1458,7 +1458,8 @@ int GameSession::Run( string fileName )
 
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
-			(*it)->DebugDraw( preScreenTex );
+			//(*it)->DebugDraw( preScreenTex );
+			(*it)->Draw( preScreenTex );
 		}
 
 		//coll.DebugDraw( window );
