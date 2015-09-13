@@ -58,6 +58,7 @@ struct GameSession : QuadTreeCollider
 	void ResetEnemies();
 	void rReset( QNode *node );
 	int CountActiveEnemies();
+	void UpdateTerrainShader();
 
 	void DebugDrawActors();
 
@@ -105,6 +106,7 @@ struct GameSession : QuadTreeCollider
 	struct TestVA : QuadTreeEntrant
 	{
 		sf::VertexArray *va;
+		sf::VertexArray *terrainVA;
 		bool show;
 		//TestVA *prev;
 		TestVA *next;
