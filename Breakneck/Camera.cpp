@@ -45,6 +45,17 @@ void Camera::Update( Actor *player )
 	//pos.x = player->position.x;
 	//pos.y = player->position.y;
 
+	bool desp = player->desperationMode || player->action == Actor::DEATH;
+	if( desp )
+	{
+		offset.x = 0;
+		offset.y = 0;
+		pos.x = player->position.x;
+		pos.y = player->position.y;
+		zoomLevel = 0;
+		//return;
+	}
+
 	if( owner->pauseFrames > 0 )
 	{
 		if( owner->pauseFrames % 2 == 0 )
@@ -60,6 +71,9 @@ void Camera::Update( Actor *player )
 		pos.y = player->position.y + offset.y;
 	}
 
+	if( desp )
+		return;
+	
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;
 

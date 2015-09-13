@@ -296,7 +296,7 @@ Actor::Actor( GameSession *gs )
 		tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall.png", 80, 48 );
 		normal[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall_NORMALS.png", 80, 48 );
 
-		actionLength[DEATH] = 44;
+		actionLength[DEATH] = 44 * 2;
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
 		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
@@ -735,7 +735,8 @@ void Actor::UpdatePrePhysics()
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
 		//cout << "damaging player with: " << receivedHit->damage << endl;
-		if( owner->powerBar.Damage( receivedHit->damage ) )
+		bool dmgSuccess = owner->powerBar.Damage( receivedHit->damage );
+		if( true )
 		{
 			if( grindEdge != NULL )
 			{
@@ -754,7 +755,8 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 			}
 		}
-		else
+		
+		if( !dmgSuccess && !desperationMode )
 		{
 			desperationMode = true;
 			despCounter = 0;
@@ -5541,11 +5543,11 @@ void Actor::UpdatePostPhysics()
 		sprite->setTexture( *(tileset[DEATH]->texture));
 		if( facingRight )
 		{
-			sprite->setTextureRect( tileset[DEATH]->GetSubRect( frame ) );
+			sprite->setTextureRect( tileset[DEATH]->GetSubRect( frame / 2 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tileset[DEATH]->GetSubRect( frame );
+			sf::IntRect ir = tileset[DEATH]->GetSubRect( frame / 2 );
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );

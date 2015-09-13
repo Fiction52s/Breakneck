@@ -29,6 +29,11 @@ GameController controller(0);
 
 RenderTexture *preScreenTexture;
 
+sf::Texture worldMapTex;
+sf::Sprite worldMapSpr;
+
+sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+
 void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
 {
 	if( b.isCircle && b1.isCircle )
@@ -92,12 +97,43 @@ void GameEditLoop2( std::string filename)
 	}
 }
 
+void WorldSelectMenu()
+{
+	window->setView( uiView );
+	bool quit = false;
+	int worldSel = 0;
+	while( !quit )
+	{
+		window->clear();
+		if( controller.UpdateState() )
+		{
+			ControllerState cs = controller.GetState();
+			if( cs.LDown() )
+			{
+				worldSel++;
+				cout << "worldSel: " << worldSel << endl;
+			}
+		}
+		window->draw( worldMapSpr );
+		window->display();
+	}
+	window->setView( v );
+}
+
+void LoadMenus()
+{
+	worldMapTex.loadFromFile( "worldmap.png" );
+	worldMapSpr.setTexture( worldMapTex );
+}
+
 int main()
 {
-
+	
 	preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 960 * 2, 540 * 2 );
 	preScreenTexture->clear();
+
+	LoadMenus();
 
 	cout << "starting program" << endl;
 	bool fullWindow = true;
@@ -210,6 +246,10 @@ int main()
 					if( ev.key.code == Keyboard::Escape )
 					{
 						quit = true;
+					}
+					else if( ev.key.code == Keyboard::M )
+					{
+						WorldSelectMenu();
 					}
 					else
 					{
