@@ -2,6 +2,8 @@
 #include "VectorMath.h"
 #include <iostream>
 #include <assert.h>
+#include "GameSession.h"
+#include "poly2tri/poly2tri.h"
 
 using namespace sf;
 using namespace std;
@@ -55,10 +57,10 @@ double Edge::GetQuantityGivenX( double x )
 }
 
 //pathparam is local. pointsParam is local
-MovingTerrain::MovingTerrain( Vector2i pos, list<Vector2i> &pathParam, list<Vector2i> &pointsParam,
+MovingTerrain::MovingTerrain( GameSession *own, Vector2i pos, list<Vector2i> &pathParam, list<Vector2i> &pointsParam,
 	bool loopP, float pspeed )
 	:quadTree( NULL ), numEdges( 0 ), edgeArray( NULL ), loop( loopP ), speed( pspeed ), 
-	position( pos.x, pos.y ), targetNode( 1 ), slowCounter( 1 ), slowMultiple( 1 )
+	position( pos.x, pos.y ), targetNode( 1 ), slowCounter( 1 ), slowMultiple( 1 ), owner( own )
 {
 	//cout << "pos is: " << pos.x << ", " << pos.y << endl;
 	//set up path
@@ -149,6 +151,31 @@ MovingTerrain::MovingTerrain( Vector2i pos, list<Vector2i> &pathParam, list<Vect
 		}
 	}
 	cout << "creating moving terrain with position: " << position.x << ", " << position.y << endl;
+
+	vector<p2t::Point*> polyline;
+	for( it = pointsParam.begin(); it != pointsParam.end(); ++it )
+	{
+		polyline.push_back( new p2t::Point( (*it).x + position.x, (*it).y + position.y ) );
+	}
+
+	p2t::CDT * cdt = new p2t::CDT( polyline );
+	
+	cdt->Triangulate();
+	vector<p2t::Triangle*> tris;
+	tris = cdt->GetTriangles();
+	numTris = tris.size();
+	polygonVA = new VertexArray( sf::Triangles , tris.size() * 3 );
+	VertexArray & v = *polygonVA;
+	Color testColor( 0x75, 0x70, 0x90 );
+	for( int i = 0; i < tris.size(); ++i )
+	{	
+		p2t::Point *p = tris[i]->GetPoint( 0 );	
+		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+		v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+	}
 }
 
 MovingTerrain::~MovingTerrain()
@@ -164,7 +191,7 @@ void MovingTerrain::AddPoint( Vector2i p )
 
 void MovingTerrain::Finalize()
 {
-
+	
 }
 
 void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
@@ -221,6 +248,14 @@ void MovingTerrain::UpdatePhysics()
 	}
 
 	vel = position - oldPosition;
+
+	VertexArray &v = *polygonVA;
+	for( int i = 0; i < numTris; ++i )
+	{
+		v[i*3].position += Vector2f( vel.x, vel.y );
+		v[i*3+1].position += Vector2f( vel.x, vel.y );
+		v[i*3+2].position += Vector2f( vel.x, vel.y );
+	}
 }
 
 void MovingTerrain::AdvanceTargetNode()
@@ -280,6 +315,12 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 	}
 
 
+}
+
+void MovingTerrain::Draw( RenderTarget *target )
+{
+	owner->UpdateTerrainShader();
+	target->draw( *polygonVA, &owner->polyShader );
 }
 
 bool CollisionBox::Intersects( CollisionBox &c )

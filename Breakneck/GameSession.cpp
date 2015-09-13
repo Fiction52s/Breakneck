@@ -847,7 +847,7 @@ int GameSession::Run( string fileName )
 	pointsTest.push_back( Vector2i(300, 200) );
 	pointsTest.push_back( Vector2i(-100, 200) );
 
-	MovingTerrain *mt = new MovingTerrain( Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
+	MovingTerrain *mt = new MovingTerrain( this, Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
 	movingPlats.push_back( mt );
 	
 	
@@ -1409,13 +1409,10 @@ int GameSession::Run( string fileName )
 			{
 				UpdateTerrainShader();
 				preScreenTex->draw( *listVAIter->terrainVA, &polyShader );
-				//preScreenTex->draw( *(*it ), &polyShader);
 			}
 			else
 			{
 				preScreenTex->draw( *listVAIter->terrainVA );
-
-				//preScreenTex->draw( *(*it ) );
 			}
 			//cout << "drawing border" << endl;
 			preScreenTex->draw( *listVAIter->va, &borderTex );
