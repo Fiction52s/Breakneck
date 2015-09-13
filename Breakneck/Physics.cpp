@@ -1981,9 +1981,9 @@ bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 
 	return test2;
 }
 
-bool IsCircleTouchingCircle( V2d pos0, double rad0, V2d pos1, double rad1 )
+bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
 {
-	return length( pos1 - pos0 ) <= rad0 + rad1;
+	return length( pos1 - pos0 ) <= rad_0 + rad_1;
 }
 
 EdgeQNode *Insert( EdgeQNode *node, Edge* e )
