@@ -836,9 +836,9 @@ int GameSession::Run( string fileName )
 
 	list<Vector2i> pathTest;
 	list<Vector2i> pointsTest;
-	pathTest.push_back( Vector2i( 100, 0 ) );
-	pathTest.push_back( Vector2i( 0, 100 ) );
-	pathTest.push_back( Vector2i( 100, 100 ) );
+	pathTest.push_back( Vector2i( 200, 0 ) );
+	//pathTest.push_back( Vector2i( 0, 100 ) );
+	//pathTest.push_back( Vector2i( 100, 100 ) );
 
 	pointsTest.push_back( Vector2i(-100, -100) );
 	pointsTest.push_back( Vector2i(300, 100) );

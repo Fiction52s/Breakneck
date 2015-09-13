@@ -2493,21 +2493,7 @@ void Actor::UpdatePrePhysics()
 				//cout << "running wallcling" << endl;
 				velocity.y = clingSpeed;
 			}
-			if( currInput.LLeft() )
-			{
-				//if( !( velocity.x > -maxAirXSpeedNormal && velocity.x - airAccel < -maxAirXSpeedNormal ) )
-				//{
-					velocity.x -= airAccel;
-				//}
-					
-			}
-			else if( currInput.LRight() )
-			{
-				//if( !( velocity.x < maxAirXSpeedNormal && velocity.x + airAccel > maxAirXSpeedNormal ) )
-				//{
-					velocity.x += airAccel;
-				//}
-			}
+			AirMovement();
 			
 			break;
 		}
@@ -5784,6 +5770,8 @@ void Actor::UpdatePostPhysics()
 			frame = 0;
 		}
 
+		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+		cout << owner->movingPlats.front()->vel.x << ", " << owner->movingPlats.front()->vel.y << endl;
 		if( action != AIRHITSTUN )
 		{
 			if( collision )
@@ -5792,7 +5780,8 @@ void Actor::UpdatePostPhysics()
 				if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
 				//if( false )
 				{
-					cout << "wallnormal active: " << wallNormal.x << ", " << wallNormal.y << endl;
+				//	cout << "wallnormal active: " << wallNormal.x << ", " << wallNormal.y << endl;
+					cout << "wallcling" << endl;
 					if( wallNormal.x > 0)
 					{
 						
@@ -5820,6 +5809,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( action == WALLCLING && length( wallNormal ) == 0 )
 			{
+				cout << "jump" << endl;
 				action = JUMP;
 				frame = 1;
 			}
@@ -7618,6 +7608,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		e->v0 += currMovingTerrain->oldPosition;
 		e->v1 += currMovingTerrain->oldPosition;
+
+		//e->v0 += currMovingTerrain->position;
+		//e->v1 += currMovingTerrain->position;
 
 		if( e->Normal().y == -1 )
 		{
