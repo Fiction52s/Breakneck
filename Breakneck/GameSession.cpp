@@ -8,6 +8,7 @@
 #include "poly2tri/poly2tri.h"
 #include "VectorMath.h"
 #include "Camera.h"
+#include <sstream>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -31,8 +32,21 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	
 
+	stringstream ss;
+
+	for( int i = 1; i <= 17; ++i )
+	{
+		ss << i;
+		string texName = "deathbg" + ss.str() + ".png";
+		ss.str( "" );
+		ss.clear();
+		wipeTextures[i-1].loadFromFile( texName );
+	}
+
+	deathWipe = false;
+	deathWipeFrame = 0;
+	deathWipeLength = 17 * 5;
 
 	preScreenTex = preTex;
 
@@ -1131,6 +1145,16 @@ int GameSession::Run( string fileName )
 				break;
 			}
 
+			if( deathWipe )
+			{
+				deathWipeFrame++;
+				if( deathWipeFrame == deathWipeLength )
+				{
+					deathWipe = false;
+					deathWipeFrame = 0;
+				}
+			}
+
 			player.UpdatePrePhysics();
 
 			
@@ -1206,7 +1230,8 @@ int GameSession::Run( string fileName )
 					screenRect;
 			}
 			
-
+			
+	
 
 		
 		//	cout << "query for: " << numBorders << endl;
@@ -1319,7 +1344,8 @@ int GameSession::Run( string fileName )
 		}
 
 		
-		player.Draw( preScreenTex );
+		if( player.action != Actor::DEATH )
+			player.Draw( preScreenTex );
 
 		UpdateEnemiesDraw();
 
@@ -1474,6 +1500,23 @@ int GameSession::Run( string fileName )
 		//DebugDrawQuadTree( window, enemyTree );
 	//	enemyTree->DebugDraw( window );
 		
+
+		if( deathWipe )
+		{
+			cout << "showing death wipe frame: " << deathWipeFrame << " panel: " << deathWipeFrame / 5 << endl;
+			wipeSprite.setTexture( wipeTextures[deathWipeFrame / 5] );
+			wipeSprite.setTextureRect( IntRect( 0, 0, wipeSprite.getTexture()->getSize().x, 
+				wipeSprite.getTexture()->getSize().y) );
+			wipeSprite.setOrigin( wipeSprite.getLocalBounds().width / 2, wipeSprite.getLocalBounds().height / 2 );
+			wipeSprite.setPosition( player.position.x, player.position.y );//view.getCenter().x, view.getCenter().y );
+			preScreenTex->draw( wipeSprite );
+		}
+
+		if( player.action == Actor::DEATH )
+		{
+			player.Draw( preScreenTex );
+		}
+
 		preScreenTex->display();
 		const Texture &preTex = preScreenTex->getTexture();
 		
@@ -1488,6 +1531,9 @@ int GameSession::Run( string fileName )
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
 		window->draw( preTexSprite, &cloneShader );
+
+
+
 		window->display();
 
 		

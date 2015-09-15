@@ -153,8 +153,12 @@ struct GameSession : QuadTreeCollider
 	std::list<Light*> lights;
 	Light *lightList;
 
+	int deathWipeLength;
 	int deathWipeFrame;
 	bool deathWipe;
+
+	sf::Texture wipeTextures[17];
+	sf::Sprite wipeSprite;
 
 	//
 

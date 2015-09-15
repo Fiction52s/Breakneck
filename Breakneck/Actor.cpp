@@ -672,6 +672,7 @@ void Actor::UpdatePrePhysics()
 			action = DEATH;
 			slowCounter = 1;
 			frame = 0;
+			owner->deathWipe = true;
 		}
 	}
 
