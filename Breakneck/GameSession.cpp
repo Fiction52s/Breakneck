@@ -1318,6 +1318,7 @@ int GameSession::Run( string fileName )
 			lightListIter = lightListIter->next;
 		}
 
+		
 		player.Draw( preScreenTex );
 
 		UpdateEnemiesDraw();
@@ -1426,6 +1427,11 @@ int GameSession::Run( string fileName )
 	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
 	//	}
 		
+
+		if( player.action != Actor::GRINDBALL )
+		{
+			player.wire->Draw( preScreenTex );
+		}
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
 		{

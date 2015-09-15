@@ -285,6 +285,29 @@ void Wire::UpdateAnchors2()
 	}
 }
 
+void Wire::SortNewPoints( int start, int end )
+{
+	/*int first;
+	for( int i = end; i >= start; --i )
+	{
+		first = start;
+		for( int j = 1; j <= i; ++j )
+		{
+			if( points[j].angleDiff < points[first].angleDiff )
+			{
+				first = 
+			}
+		}
+	}*/
+}
+
+void Wire::SwapPoints( int aIndex, int bIndex )
+{
+	WirePoint temp = points[aIndex];
+	points[aIndex] = points[bIndex];
+	points[bIndex] = temp;
+}
+
 void Wire::UpdateAnchors( V2d vel )
 {
 	if( state == HIT || state == PULLING )
@@ -298,38 +321,16 @@ void Wire::UpdateAnchors( V2d vel )
 		
 		oldPos = player->position - vel;
 
-
-		//target->draw(line, 2, sf::Lines);
-
-
-		//V2d realAnchor;
 		if( numPoints == 0 )
 		{
 			line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
-			//Rect<double> rStart( oldPos.x);
-		
-			//Rect<double> rEnd( position.x + tempVel.x +  - b.rw, position.y + tempVel.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-			
-
 			realAnchor = anchor.pos;
-
-
-			//owner->terrainTree->Query( this, r );
-			//RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
 		}
 		else
 		{
 			line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
-			//RayCast( this, player->owner->terrainTree->startNode, points[numPoints - 1].pos, player->position );
 			realAnchor = points[numPoints-1].pos;
 		}
-
-		//V2d testVec = normalize( player->position - realAnchor );
-		//double maxAngle = atan2( testVec.y, testVec.x );
-		//if( maxAngle < 0 )
-		//	maxAngle += 2 * PI;
-		//cout << "angle: " << maxAngle << endl;
-		//cout << "minAngle: " << minAngle << ", maxAngle: " << maxAngle << endl;
 
 		progressDraw.push_back( line );
 
@@ -340,9 +341,19 @@ void Wire::UpdateAnchors( V2d vel )
 
 		Rect<double> r( left, top, right - left, bottom - top );
 
-		foundPoint = false;
+		addedPoints = 0;
 		player->owner->terrainTree->Query( this, r );
 		
+
+		/*for( int i = 1; i < addedPoints; ++i )
+		{
+			for( int j = i; j > 0; ++j )
+			{
+
+			}
+			
+		}*/
+
 		if( foundPoint )
 		{
 			points[numPoints].pos = closestPoint;
@@ -381,7 +392,7 @@ void Wire::UpdateAnchors( V2d vel )
 		}
 
 		for( int i = numPoints - 1; i >= 0; --i )
-		{
+		{ 
 			double result = cross( player->position - points[numPoints-1].pos, points[i].test );
 			if( result > 0 )
 			{
@@ -405,8 +416,11 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	}
 }
 
-void Wire::TestPoint( sf::Vector2<double> p )
+void Wire::TestPoint( Edge *e )
 {
+
+	V2d p = e->v0;
+
 	if( p == realAnchor )
 	{
 		return;
@@ -512,11 +526,20 @@ void Wire::TestPoint( sf::Vector2<double> p )
 		return;
 	}
 
-	clockwise = tempClockwise;
+
 
 	//would be more efficient to remove this calculation and only do it once per frame
+	clockwise = tempClockwise;
 
-	if( !foundPoint )
+	
+
+	points[numPoints + addedPoints].pos = p;
+	points[numPoints + addedPoints].angleDiff = angleDiff;
+	points[numPoints + addedPoints].e = e;
+	addedPoints++;
+	
+	
+	/*if( !foundPoint )
 	{
 		foundPoint = true;
 		closestDiff = angleDiff;
@@ -540,7 +563,7 @@ void Wire::TestPoint( sf::Vector2<double> p )
 				closestPoint = p;
 			}
 		}
-	}
+	}*/
 }
 
 void Wire::HandleEntrant( QuadTreeEntrant *qte )
@@ -550,7 +573,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	V2d v0 = e->v0;
 	V2d v1 = e->v1;
 
-	TestPoint( v0 );
+	TestPoint( e );
 	//TestPoint( v1 );
 }
 
@@ -617,7 +640,7 @@ void Wire::Draw( RenderTarget *target )
 
 		CircleShape cs1;
 		cs1.setFillColor( Color::Red );
-		cs1.setRadius( 20 );
+		cs1.setRadius( 10 );
 		cs1.setOrigin( cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2 );
 		cs1.setPosition( anchor.pos.x, anchor.pos.y );
 
@@ -627,7 +650,7 @@ void Wire::Draw( RenderTarget *target )
 		{
 			CircleShape cs;
 			cs.setFillColor( Color::Cyan );
-			cs.setRadius( 20 );
+			cs.setRadius( 5 );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( points[i].pos.x, points[i].pos.y );
 

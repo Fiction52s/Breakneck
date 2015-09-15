@@ -7831,7 +7831,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
 		
-		wire->Draw( target );
+		
 
 		Vector2i vi = Mouse::getPosition();
 		//Vector2i vi = owner->window->mapCoordsToPixel( Vector2f( position.x, position.y ) );//sf::Vector2f( 0, -300 ) );

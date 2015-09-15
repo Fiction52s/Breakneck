@@ -1,12 +1,544 @@
-﻿Build started 9/13/2015 12:30:49 PM.
+﻿Build started 9/15/2015 10:25:21 AM.
      1>Project "C:\Users\Shephard\Programming\Breakneck\Breakneck\Breakneck.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
-         Touching "Release\Breakneck.unsuccessfulbuild".
+         Creating "Release\Breakneck.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Users\Shephard\Libraries\SFML-2.3\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D SFML_STATIC /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Actor.cpp Camera.cpp Enemy.cpp EnemyQuadTree.cpp Enemy_BasicEffect.cpp Enemy_BasicTurret.cpp Enemy_Crawler.cpp Enemy_FootTrap.cpp Enemy_Goal.cpp Enemy_Patroller.cpp GameSession.cpp Light.cpp Physics.cpp QuadTree.cpp Wire.cpp main.cpp
+         Actor.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Actor.cpp(62): warning C4305: '=' : truncation from 'double' to 'float'
+     1>Actor.cpp(435): warning C4482: nonstandard extension used: enum 'CollisionBox::BoxType' used in qualified name
+     1>Actor.cpp(446): warning C4482: nonstandard extension used: enum 'CollisionBox::BoxType' used in qualified name
+     1>Actor.cpp(3551): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(3551): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(3553): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(3553): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5554): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5554): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5923): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5923): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5925): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5925): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(5926): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6004): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6025): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6025): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6027): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6027): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6096): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6116): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6116): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6118): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6118): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6180): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6180): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6216): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6236): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6236): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6238): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6238): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6282): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6302): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6302): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6304): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6304): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6321): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6321): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6338): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6338): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6368): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6388): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6388): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6390): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6390): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6450): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6457): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6477): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6477): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6479): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6479): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6489): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6489): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6546): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6550): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6570): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6570): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6572): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6572): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6580): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6580): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6637): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6641): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6661): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6661): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6663): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6663): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6671): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6671): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6712): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6712): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6716): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6716): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6763): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6763): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6767): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6767): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6806): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6806): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6810): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6810): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6833): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6833): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6892): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6912): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6912): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6914): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6914): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6948): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
+     1>Actor.cpp(6986): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6986): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6998): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6998): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6999): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(6999): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7000): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7000): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7001): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7001): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7002): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7002): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7003): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7003): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7004): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7004): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7037): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7056): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7056): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7118): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7118): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7151): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7170): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7170): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7196): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7196): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7228): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7248): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7248): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7250): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7250): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7266): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7266): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7324): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7324): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7406): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7414): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7414): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7489): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7510): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7510): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7512): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7512): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7531): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7533): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7533): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7534): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7534): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7535): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7535): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7539): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7540): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7541): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7561): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7561): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7561): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7569): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7569): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7569): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7570): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7577): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7577): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7577): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7578): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7588): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Actor.cpp(7839): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7866): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>Actor.cpp(7866): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>Actor.cpp(7869): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7869): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7869): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>Actor.cpp(7991): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(7991): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(8014): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Actor.cpp(8014): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Camera.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Camera.cpp(20): warning C4305: '=' : truncation from 'double' to 'float'
+     1>Camera.cpp(53): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(54): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(70): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(71): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(127): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(136): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(143): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(151): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(152): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(164): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(179): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(184): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(190): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(281): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(290): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(297): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(355): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(355): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(364): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(365): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(374): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(375): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(397): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Camera.cpp(398): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+         Enemy.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+         EnemyQuadTree.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>EnemyQuadTree.cpp(177): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(177): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(197): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(197): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(199): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(199): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(208): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(208): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(214): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(214): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(216): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(216): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(218): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(218): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(227): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>EnemyQuadTree.cpp(227): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Enemy_BasicEffect.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Enemy_BasicEffect.cpp(14): warning C4482: nonstandard extension used: enum 'Enemy::EnemyType' used in qualified name
+     1>Enemy_BasicEffect.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicEffect.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicEffect.cpp(54): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Enemy_BasicTurret.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Enemy_BasicTurret.cpp(13): warning C4482: nonstandard extension used: enum 'Enemy::EnemyType' used in qualified name
+     1>Enemy_BasicTurret.cpp(20): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(20): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(29): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(29): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(30): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(343): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(343): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(344): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(344): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(345): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(345): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(346): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(346): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(350): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(350): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(351): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(351): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(352): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(352): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(353): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(353): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(393): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_BasicTurret.cpp(393): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Enemy_Crawler.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Enemy_Crawler.cpp(14): warning C4482: nonstandard extension used: enum 'Enemy::EnemyType' used in qualified name
+     1>Enemy_Crawler.cpp(21): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(21): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(30): warning C4482: nonstandard extension used: enum 'CollisionBox::BoxType' used in qualified name
+     1>Enemy_Crawler.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(921): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(929): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(929): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(934): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(934): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(939): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(939): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(980): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Crawler.cpp(980): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Enemy_FootTrap.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Enemy_FootTrap.cpp(13): warning C4482: nonstandard extension used: enum 'Enemy::EnemyType' used in qualified name
+     1>Enemy_FootTrap.cpp(26): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(26): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(27): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(172): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(172): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(268): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(268): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(274): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(274): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(280): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_FootTrap.cpp(280): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Enemy_Goal.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Enemy_Goal.cpp(13): warning C4482: nonstandard extension used: enum 'Enemy::EnemyType' used in qualified name
+     1>Enemy_Goal.cpp(26): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Goal.cpp(26): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Goal.cpp(27): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Enemy_Patroller.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Enemy_Patroller.cpp(14): warning C4482: nonstandard extension used: enum 'Enemy::EnemyType' used in qualified name
+     1>Enemy_Patroller.cpp(45): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(45): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(239): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(239): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(245): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(245): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(251): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(251): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(269): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Enemy_Patroller.cpp(269): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         GameSession.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>GameSession.cpp(19): warning C4355: 'this' : used in base member initializer list
+     1>GameSession.cpp(384): warning C4018: '<' : signed/unsigned mismatch
+     1>GameSession.cpp(389): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(389): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(390): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(390): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(391): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(391): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(448): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(448): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(449): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(449): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(450): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(450): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(451): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(451): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(464): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(465): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(465): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(466): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(773): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(774): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(780): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(780): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(781): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(781): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(807): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(807): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(808): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(808): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(809): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(809): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(810): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(810): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(811): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(811): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(812): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(812): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(813): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(813): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(814): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(814): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1273): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1273): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1275): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1275): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1331): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1331): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1342): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1348): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1348): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1348): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1351): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1351): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1440): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1440): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1487): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1487): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>GameSession.cpp(1668): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1668): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1669): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1669): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1670): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1670): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>GameSession.cpp(1680): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1682): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1684): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1700): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1700): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1700): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1708): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1708): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1708): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1709): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1716): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1716): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1716): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1717): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>GameSession.cpp(1983): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>GameSession.cpp(1984): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Light.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Light.cpp(25): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>Light.cpp(25): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+         Physics.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Physics.cpp(170): warning C4018: '<' : signed/unsigned mismatch
+     1>Physics.cpp(175): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(175): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(176): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(176): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(177): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(177): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(255): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(255): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(256): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(256): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(257): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(257): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(304): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(304): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(310): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(310): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(311): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(311): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(324): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(324): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(418): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(420): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(420): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(443): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(443): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(445): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(447): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(447): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1235): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1235): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1253): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1253): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1431): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1431): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1606): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(1606): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2088): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2088): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2108): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2108): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2110): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2110): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2119): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2119): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2125): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2125): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2127): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2127): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2129): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2129): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2138): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Physics.cpp(2138): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         QuadTree.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>QuadTree.cpp(202): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(202): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(216): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(216): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(218): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(218): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(226): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(226): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(233): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(233): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(235): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(235): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(237): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(237): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(246): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>QuadTree.cpp(246): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Wire.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
+     1>Wire.cpp(231): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(231): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(239): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(239): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(244): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(244): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(320): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(320): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(326): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(326): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(331): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(331): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(586): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(586): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(588): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(588): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(601): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(601): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(602): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(602): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(611): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(611): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(612): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(612): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(622): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(622): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(623): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(623): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(634): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(634): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(635): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(635): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(645): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(645): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(655): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Wire.cpp(655): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         main.cpp
+     1>c:\users\shephard\programming\breakneck\breakneck\Actor.h(162): warning C4482: nonstandard extension used: enum 'Actor::Action' used in qualified name
        Link:
-         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe" /NOLOGO /LIBPATH:"C:\Users\Shephard\Libraries\SFML-2.3\lib" "sfml-graphics-s.lib" "sfml-window-s.lib" "sfml-audio-s.lib" "sfml-system-s.lib" openal32.lib opengl32.lib freetype.lib jpeg.lib winmm.lib gdi32.lib flac.lib vorbisenc.lib vorbisfile.lib vorbis.lib ogg.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Breakneck.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.lib" /MACHINE:X86 Release\Actor.obj
+         Release\Camera.obj
+         Release\EditSession.obj
+         Release\Enemy.obj
+         Release\EnemyQuadTree.obj
+         Release\Enemy_BasicEffect.obj
+         Release\Enemy_BasicTurret.obj
+         Release\Enemy_Crawler.obj
+         Release\Enemy_FootTrap.obj
+         Release\Enemy_Goal.obj
+         Release\Enemy_Patroller.obj
+         Release\GameSession.obj
+         Release\GUI.obj
+         Release\Input.obj
+         Release\Light.obj
+         Release\MacInput.obj
+         Release\main.obj
+         Release\Physics.obj
+         Release\PlayerChar.obj
+         Release\shapes.obj
+         Release\advancing_front.obj
+         Release\cdt.obj
+         Release\sweep.obj
+         Release\sweep_context.obj
+         Release\QuadTree.obj
+         Release\SurfaceMover.obj
+         Release\Tileset.obj
+         Release\VectorMath.obj
+         Release\Wire.obj
+         Generating code
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\common\shapes.cc(239): warning C4715: 'p2t::Triangle::PointCCW' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\common\shapes.cc(226): warning C4715: 'p2t::Triangle::PointCW' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\common\shapes.cc(167): warning C4715: 'p2t::Triangle::Index' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\poly2tri\sweep\sweep.cc(772): warning C4715: 'p2t::Sweep::NextFlipPoint' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\gamesession.cpp(730): warning C4715: 'GameSession::OpenFile' : not all control paths return a value
+     1>c:\users\shephard\programming\breakneck\breakneck\editsession.cpp(801): warning C4715: 'EditSession::OpenFile' : not all control paths return a value
+         Finished generating code
          Breakneck.vcxproj -> C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\Shephard\Programming\Breakneck\Release\Breakneck.exe;#1" /manifest Release\Breakneck.exe.intermediate.manifest
        FinalizeBuildStatus:
          Deleting file "Release\Breakneck.unsuccessfulbuild".
          Touching "Release\Breakneck.lastbuildstate".
@@ -14,4 +546,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.09
+Time Elapsed 00:00:25.65

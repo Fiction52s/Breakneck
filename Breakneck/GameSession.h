@@ -153,6 +153,12 @@ struct GameSession : QuadTreeCollider
 	std::list<Light*> lights;
 	Light *lightList;
 
+	int deathWipeFrame;
+	bool deathWipe;
+
+	//
+
+
 	struct Stored
 	{
 		Enemy *activeEnemyList;

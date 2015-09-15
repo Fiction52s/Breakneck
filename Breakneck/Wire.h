@@ -31,7 +31,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
 	void HandleEntrant( QuadTreeEntrant *qte );
-	void TestPoint( sf::Vector2<double> p );
+	void TestPoint( Edge * e);
+	void SortNewPoints( int start, int end );
+	void SwapPoints( int aIndex, int bIndex );
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
@@ -40,6 +42,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::Vector2<double> realAnchor;
 	sf::Vector2<double> oldPos;
 	bool clockwise;
+
+	int addedPoints;
 
 	WireState state;
 
@@ -52,6 +56,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		sf::Vector2<double> edgeEnd;
 		sf::Vector2<double> test;
 		bool clockwise;
+		double angleDiff;
 	};
 
 	int numPoints;
