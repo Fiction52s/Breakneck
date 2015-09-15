@@ -23,6 +23,8 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
+		
+
 		if( !fairBuffer.loadFromFile( "fair.ogg" ) )
 		{
 			assert( 0 && "failed to load test fair noise" );
@@ -497,6 +499,31 @@ Actor::Actor( GameSession *gs )
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 
+		hasPowerAirDash = false;
+		hasPowerGravReverse = false;
+		hasPowerBounce = true;
+		hasPowerGrindBall = true;
+		hasPowerTimeSlow = true;
+
+		//wire still under development
+		hasPowerLeftWire = true;
+		hasPowerRightWire = true;
+
+
+		//do this a little later.
+		hasPowerClones = MAX_GHOSTS;
+
+
+		//only set these parameters again if u get a power or lose one.
+		sh.setParameter( "hasPowerAirDash", hasPowerAirDash );
+		sh.setParameter( "hasPowerGravReverse", hasPowerGravReverse );
+		sh.setParameter( "hasPowerBounce", hasPowerBounce );
+		sh.setParameter( "hasPowerGrindBall", hasPowerGrindBall );
+		sh.setParameter( "hasPowerTimeSlow", hasPowerTimeSlow );
+		sh.setParameter( "hasPowerLeftWire", hasPowerLeftWire );
+		sh.setParameter( "hasPowerRightWire", hasPowerRightWire );
+		sh.setParameter( "hasPowerClones", hasPowerClones > 0 );
+
 		//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 		//{
 		//	motionGhosts[i] = 
@@ -894,7 +921,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case RUN:
 		{
-			if( currInput.X )
+			if( hasPowerBounce && currInput.X )
 			{
 				bounceGrounded = true;
 			}
@@ -906,7 +933,7 @@ void Actor::UpdatePrePhysics()
 
 			
 
-			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -1100,7 +1127,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}*/
 
-			if( currInput.X && !prevInput.X )
+			if( hasPowerBounce && currInput.X && !prevInput.X )
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
@@ -1108,11 +1135,14 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( hasAirDash && !prevInput.B && currInput.B )
+			if( hasPowerAirDash )
 			{
-				action = AIRDASH;
-				frame = 0;
-				break;
+				if( hasAirDash && !prevInput.B && currInput.B )
+				{
+					action = AIRDASH;
+					frame = 0;
+					break;
+				}
 			}
 
 			if( hasDoubleJump && currInput.A && !prevInput.A )
@@ -1177,7 +1207,7 @@ void Actor::UpdatePrePhysics()
 	case DOUBLE:
 		{
 
-			if( currInput.X && !prevInput.X )
+			if( hasPowerBounce && currInput.X && !prevInput.X )
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
@@ -1185,11 +1215,14 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( hasAirDash && !prevInput.B && currInput.B )
+			if( hasPowerAirDash )
 			{
-				action = AIRDASH;
-				frame = 0;
-				break;
+				if( hasAirDash && !prevInput.B && currInput.B )
+				{
+					action = AIRDASH;
+					frame = 0;
+					break;
+				}
 			}
 
 			if( CheckWall( false ) )
@@ -1364,11 +1397,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
-			if( hasAirDash && !prevInput.B && currInput.B )
+			if( hasPowerAirDash )
 			{
-				action = AIRDASH;
-				frame = 0;
-				break;
+				if( hasAirDash && !prevInput.B && currInput.B )
+				{
+					action = AIRDASH;
+					frame = 0;
+					break;
+				}
 			}
 
 
@@ -1443,7 +1479,7 @@ void Actor::UpdatePrePhysics()
 	case DASH:
 		{
 
-			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -1547,7 +1583,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
-			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -1609,7 +1645,7 @@ void Actor::UpdatePrePhysics()
 	case SPRINT:
 		{
 
-			if( currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
@@ -1867,7 +1903,8 @@ void Actor::UpdatePrePhysics()
 						else
 						{
 							//abs( e0n.x ) < wallThresh )
-							if( abs( grindNorm.x ) >= wallThresh || !hasGravReverse )
+
+							if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
 							{
 								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 								action = JUMP;
@@ -3252,7 +3289,7 @@ void Actor::UpdatePrePhysics()
 
 	bool bubbleCreated = false;
 
-	if( currInput.leftShoulder|| cloneBubbleCreated )
+	if( hasPowerTimeSlow && currInput.leftShoulder|| cloneBubbleCreated )
 	{
 		bool inBubble = false;
 		for( int i = 0; i < maxBubbles; ++i )
@@ -5317,7 +5354,7 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( hasPowerGravReverse && hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
 				
 

@@ -33,6 +33,16 @@ uniform bool right;
 
 uniform float despFrame; //-1 if not desp mode
 
+
+uniform bool hasPowerAirDash;
+uniform bool hasPowerGravReverse;
+uniform bool hasPowerBounce;
+uniform bool hasPowerGrindBall;
+uniform bool hasPowerTimeSlow;
+uniform bool hasPowerLeftWire;
+uniform bool hasPowerRightWire;
+uniform bool hasPowerClones;
+
 const int numLights = 3;
 struct LightSource
 {
@@ -43,7 +53,45 @@ struct LightSource
 };
 LightSource lights[numLights];
 
-
+vec4 BallColors( vec4 DiffuseColor )
+{		
+	//blue
+	if( !hasPowerAirDash && DiffuseColor.rgb == vec3( 0, 0x66/ 255.0, 0xcc / 255.0 ) )
+	{
+		DiffuseColor.rgb = vec3( 0, 0, 0 );
+	}
+	
+	//green
+	if( !hasPowerGravReverse && DiffuseColor.rgb == vec3( 0, 0xcc / 255.0, 0x44 / 255.0 ) )
+	{
+		DiffuseColor.rgb = vec3( 0, 0, 0 );
+	}
+	
+	//yellow
+	if( !hasPowerBounce && DiffuseColor.rgb == vec3( 0xff / 255.0, 0xf0 / 255.0, 0 ) )
+	{
+		DiffuseColor.rgb = vec3( 0, 0, 0 );
+	}
+	
+	//orange
+	if( !hasPowerGrindBall && DiffuseColor.rgb == vec3( 0xff / 255.0, 0xbb / 255.0, 0 ) )
+	{
+		DiffuseColor.rgb = vec3( 0, 0, 0 );
+	}
+	
+	//red
+	if( !hasPowerTimeSlow && DiffuseColor.rgb == vec3( 0xff / 255.0, 0x22 / 255.0, 0 ) )
+	{
+		DiffuseColor.rgb = vec3( 0, 0, 0 );
+	}
+	
+	//magenta
+	if( !hasPowerRightWire && DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xff / 255.0 ) )
+	{
+		DiffuseColor.rgb = vec3( 0, 0, 0 );
+	}
+	return DiffuseColor;
+}
 
 void main() {
 
@@ -71,9 +119,20 @@ void main() {
 		{
 			continue;
 		}
-		noLights = false;
+	//	noLights = false;
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
-
+		
+		//magenta
+		if( DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xff / 255.0 ) )
+		{
+			DiffuseColor.rgb = vec3( 0, 0, 0 );
+		}
+		//orange
+		if( DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xbb / 255.0 ) )
+		{
+			DiffuseColor.rgb = vec3( 0, 0, 0 );
+		}
+		
 		//RGB of our normal map
 		vec3 NormalMap = texture2D(u_normals, gl_TexCoord[0].xy).rgb;
 		
@@ -121,6 +180,9 @@ void main() {
 	if( noLights )
 	{
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
+
+		DiffuseColor = BallColors( DiffuseColor );
+		
 		doneColor = DiffuseColor;
 	}
 	if( despFrame >= 0 )

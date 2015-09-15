@@ -305,6 +305,16 @@ struct Actor : QuadTreeCollider,
 	int currBubble;
 
 	
+	bool hasPowerAirDash;
+	bool hasPowerGravReverse;
+	bool hasPowerBounce;
+	bool hasPowerGrindBall;
+	bool hasPowerTimeSlow;
+	bool hasPowerLeftWire;
+	bool hasPowerRightWire;
+	int hasPowerClones;
+
+
 	//unstored while working on
 	bool dead;	
 
