@@ -1456,7 +1456,8 @@ int GameSession::Run( string fileName )
 
 		if( player.action != Actor::GRINDBALL )
 		{
-			player.wire->Draw( preScreenTex );
+			player.leftWire->Draw( preScreenTex );
+			player.rightWire->Draw( preScreenTex );
 		}
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )

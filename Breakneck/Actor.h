@@ -278,14 +278,19 @@ struct Actor : QuadTreeCollider,
 
 	sf::Vector2<double> storedBounceVel;
 	double storedBounceGroundSpeed;
-	Wire *wire;
+	
+	Wire *leftWire;
+	Wire *rightWire;
+	bool touchEdgeWithLeftWire;
+	bool touchEdgeWithRightWire;
+
 	Edge *bounceEdge;
 	double bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
 	bool groundedWallBounce;
 
-	bool touchEdgeWithWire;
+	
 
 	
 	//dont need to store these
@@ -382,7 +387,8 @@ struct Actor : QuadTreeCollider,
 		Edge *oldBounceEdge;
 		int framesSinceBounce;
 
-		bool touchEdgeWithWire;
+		bool touchEdgeWithLeftWire;
+		bool touchEdgeWithRightWire;
 
 		sf::Vector2<double> bubblePos[maxBubbles];
 		int bubbleFramesToLive[maxBubbles];

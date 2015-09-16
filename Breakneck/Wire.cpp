@@ -8,41 +8,67 @@ using namespace std;
 
 #define V2d sf::Vector2<double>
 
-Wire::Wire( Actor *p )
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 40 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
-	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 )
+Wire::Wire( Actor *p, bool r)
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 80 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
+	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 {
 }
 
-void Wire::UpdateState()
+void Wire::UpdateState( bool touchEdgeWithWire )
 {
 	ControllerState &currInput = player->currInput;
 	ControllerState &prevInput = player->prevInput;
+
+	bool triggerDown;
+	bool prevTriggerDown;
+
+	if( right )
+	{
+		triggerDown = currInput.rightTrigger >= triggerThresh;
+		prevTriggerDown = prevInput.rightTrigger >= triggerThresh;
+	}
+	else
+	{
+		triggerDown = currInput.leftTrigger >= triggerThresh;
+		prevTriggerDown = prevInput.leftTrigger >= triggerThresh;
+	}
+
+
 	switch( state )
 	{
 	case IDLE:
 		{
 			
-			if( currInput.rightTrigger >= triggerThresh && prevInput.rightTrigger < triggerThresh )
+			if( triggerDown && !prevTriggerDown )
 			{
 				//cout << "firing" << endl;
 				fireDir = V2d( 0, 0 );
-				if( currInput.LLeft() )
+
+
+				if( false )
 				{
-					fireDir.x -= 1;
-				}
-				else if( currInput.LRight() )
-				{
-					fireDir.x += 1;
-				}
+					if( currInput.LLeft() )
+					{
+						fireDir.x -= 1;
+					}
+					else if( currInput.LRight() )
+					{
+						fireDir.x += 1;
+					}
 			
-				if( currInput.LUp() )
-				{
-					fireDir.y -= 1;
+					if( currInput.LUp() )
+					{
+						fireDir.y -= 1;
+					}
+					else if( currInput.LDown() )
+					{
+						fireDir.y += 1;
+					}
 				}
-				else if( currInput.LDown() )
+				else
 				{
-					fireDir.y += 1;
+					fireDir.x = cos( currInput.leftStickRadians );
+					fireDir.y = -sin( currInput.leftStickRadians );
 				}
 
 				if( length( fireDir ) > .1 )
@@ -61,7 +87,7 @@ void Wire::UpdateState()
 			if( rcEdge != NULL )
 			{
 				state = HIT;
-				hitStallCounter = 0;
+				hitStallCounter = framesFiring;
 			}
 
 			if( framesFiring * fireRate > maxTotalLength )
@@ -90,7 +116,7 @@ void Wire::UpdateState()
 				state = IDLE;
 			}
 
-			if( hitStallCounter == hitStallFrames && currInput.rightTrigger >= triggerThresh )
+			if( player->ground == NULL && hitStallCounter >= hitStallFrames && triggerDown )
 			{
 				state = PULLING;
 			}
@@ -98,11 +124,11 @@ void Wire::UpdateState()
 		}
 	case PULLING:
 		{
-			if( currInput.rightTrigger < triggerThresh )
+			if( !triggerDown )
 			{
 				state = RELEASED;
 			}
-			if( player->touchEdgeWithWire )
+			if( touchEdgeWithWire )
 			{
 				state = RELEASED;
 			}
@@ -197,7 +223,7 @@ void Wire::UpdateState()
 
 			shrinkInput = true;
 
-			if( shrinkInput && currInput.rightTrigger >= triggerThresh && player->ground == NULL )
+			if( shrinkInput && triggerDown && player->ground == NULL )
 			//if( false )
 			{
 				//totalLength -= pullStrength;

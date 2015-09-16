@@ -20,13 +20,13 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	};
 
 	//sf::Vector2<double> 
-	Wire( Actor *player );
+	Wire( Actor *player, bool right );
 	void UpdateAnchors( sf::Vector2<double> vel );
 	void UpdateAnchors2();
 	void SetFireDirection( sf::Vector2<double> dir );
 	void Check();
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
-	void UpdateState();
+	void UpdateState( bool touchEdgeWithWire );
 	void Draw( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
@@ -37,6 +37,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
+	
 	//double closestInfo;
 	double closestDiff;
 	sf::Vector2<double> realAnchor;
@@ -44,7 +45,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	bool clockwise;
 
 	int addedPoints;
-
+	bool right;
 	WireState state;
 
 	struct WirePoint

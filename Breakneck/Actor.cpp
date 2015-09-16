@@ -468,7 +468,8 @@ Actor::Actor( GameSession *gs )
 		maxLength = 100;
 		minLength = 32;*/
 
-		wire = new Wire( this );
+		leftWire = new Wire( this, false );
+		rightWire = new Wire( this, true );
 
 		bounceEdge = NULL;
 		bounceGrounded = false;
@@ -477,8 +478,8 @@ Actor::Actor( GameSession *gs )
 		record = false;
 		blah = false;
 
-		touchEdgeWithWire = false;
-		
+		touchEdgeWithLeftWire= false;
+		touchEdgeWithRightWire= false;
 		ghostFrame = 0;
 
 		recordedGhosts = 0;
@@ -3202,15 +3203,20 @@ void Actor::UpdatePrePhysics()
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
-	wire->ClearDebug();
-	wire->UpdateState();
+	leftWire->ClearDebug();
+	leftWire->UpdateState( touchEdgeWithLeftWire );
+
+	rightWire->ClearDebug();
+	rightWire->UpdateState( touchEdgeWithRightWire );
+	
 //	wire->UpdateAnchors();
 	
-	if( false )
-	//if( wire->state == wire->PULLING  )
+	//if( false )
+	Wire *wire = rightWire;
+	//while( wire != leftWire )	
+	if( wire->state == wire->PULLING  )
 	{
-		
-
+		//cout << "pulling right" << endl;
 		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
@@ -3248,9 +3254,55 @@ void Actor::UpdatePrePhysics()
 			velocity = future - position;
 			//velocity += normalize(diff) * ( length( diff ) - maxLength );
 		}
-		cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
+		//cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
 	}
 
+	wire = leftWire;
+	if( wire->state == wire->PULLING  )
+	{
+		//cout << "pulling left" << endl;
+		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
+		if( wire->numPoints > 0 )
+			wirePoint = wire->points[wire->numPoints-1].pos;
+			//wirePoint = wirePoints[pointNum-1].pos;
+
+		V2d tes =  normalize( position - wirePoint );
+		double temp = tes.x;
+		tes.x = tes.y;
+		tes.y = -temp;
+
+		double val = dot( velocity, normalize( wirePoint - position ) );
+		V2d otherTes;
+		if( val > 0 )
+		{
+			otherTes = val * normalize( wirePoint - position );
+		}
+		 
+
+		V2d old = velocity;
+
+		//velocity.y *= 10;
+	
+		velocity = dot( velocity, tes ) * tes;
+		velocity += otherTes;
+
+		V2d future = position + velocity;
+		
+		V2d diff = wirePoint - future;
+		
+		if( length( diff ) > wire->segmentLength )
+		{
+			//position += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			future += normalize(diff) * ( length( diff ) - wire->segmentLength );
+
+			velocity = future - position;
+			//velocity += normalize(diff) * ( length( diff ) - maxLength );
+		}
+
+		//cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
+	}
+	
+	
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -3412,7 +3464,8 @@ void Actor::UpdatePrePhysics()
 	velocity /= (double)slowMultiple;
 	grindSpeed /= slowMultiple;
 
-	touchEdgeWithWire = false;
+	touchEdgeWithLeftWire = false;
+	touchEdgeWithRightWire = false;
 }
 
 bool Actor::CheckWall( bool right )
@@ -3969,10 +4022,11 @@ void Actor::UpdateReversePhysics()
 					
 				}*/
 
-
+				//wire problem could arise later because i dont update anchors when i hit an edge.
 				if(!approxEquals( m, 0 ) )
 				{
 				
+					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -4076,6 +4130,13 @@ void Actor::UpdateReversePhysics()
 							break;
 						}
 					}
+					else
+					{
+						V2d wVel = position - oldPos;
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
+					}
+
 				}
 				else
 				{
@@ -4212,7 +4273,8 @@ void Actor::UpdateReversePhysics()
 
 				if( !approxEquals( m, 0 ) )
 				{	
-					
+					//wire problem could arise later because i dont update anchors when i hit an edge.
+					V2d oldPos = position;
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
@@ -4367,7 +4429,14 @@ void Actor::UpdateReversePhysics()
 							break;
 						}						
 					}
-						
+					else
+					{
+						V2d wVel = position - oldPos;
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
+					}
+					
+					
 				}
 			
 			}
@@ -4719,7 +4788,8 @@ void Actor::UpdatePhysics()
 					else
 					{
 						V2d wVel = position - oldPos;
-						wire->UpdateAnchors( wVel );
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
 					}
 				}
 			}
@@ -5023,7 +5093,8 @@ void Actor::UpdatePhysics()
 					else
 					{
 						V2d wVel = position - oldPos;
-						wire->UpdateAnchors( wVel );
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
 					}
 				}
 
@@ -5064,6 +5135,7 @@ void Actor::UpdatePhysics()
 			//cout << "moving you: " << movementVec.x << ", " << movementVec.y << endl;
 
 			//if( wire->state == wire->PULLING  )
+			/*
 			if( false )
 			{
 				V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
@@ -5107,7 +5179,7 @@ void Actor::UpdatePhysics()
 				}
 				cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
 			}
-
+			*/
 
 
 			bool tempCollision = ResolvePhysics( movementVec );
@@ -5261,14 +5333,20 @@ void Actor::UpdatePhysics()
 
 			V2d wVel = position - oldPos;
 
-			wire->UpdateAnchors( wVel );
+			leftWire->UpdateAnchors( wVel );
+			rightWire->UpdateAnchors( wVel );
 			
 
 			int maxJumpHeightFrame = 10;
 
-			if( tempCollision && wire->state == Wire::PULLING )
+			if( tempCollision && leftWire->state == Wire::PULLING )
 			{
-				touchEdgeWithWire = true;
+				touchEdgeWithLeftWire = true;
+			}
+
+			if( tempCollision && rightWire->state == Wire::PULLING )
+			{
+				touchEdgeWithRightWire = true;
 			}
 
 			bool bounceOkay = true;
@@ -8198,7 +8276,8 @@ void Actor::DebugDraw( RenderTarget *target )
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}*/
 
-	wire->DebugDraw( target );
+	leftWire->DebugDraw( target );
+	rightWire->DebugDraw( target );
 
 }
 
@@ -8265,14 +8344,14 @@ void Actor::SaveState()
 	stored.receivedHit = receivedHit;
 
 	stored.storedBounceVel = storedBounceVel;
-	stored.wire = wire;
+	//stored.leftWire = leftWire;
 	stored.bounceEdge = bounceEdge;
 	stored.bounceQuant = bounceQuant;
 
 	stored.oldBounceEdge = oldBounceEdge;
 	stored.framesSinceBounce = framesSinceBounce;
 
-	stored.touchEdgeWithWire = touchEdgeWithWire;
+//	stored.touchEdgeWithWire = touchEdgeWithWire;
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -8336,14 +8415,14 @@ void Actor::LoadState()
 	receivedHit = stored.receivedHit;
 
 	storedBounceVel = stored.storedBounceVel;
-	wire = stored.wire;
+	//wire = stored.wire;
 	bounceEdge = stored.bounceEdge;
 	bounceQuant = stored.bounceQuant;
 
 	oldBounceEdge = stored.oldBounceEdge;
 	framesSinceBounce = stored.framesSinceBounce;
 
-	touchEdgeWithWire = stored.touchEdgeWithWire;
+	//touchEdgeWithWire = stored.touchEdgeWithWire;
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -8356,7 +8435,7 @@ void Actor::LoadState()
 
 void Actor::AirMovement()
 {
-	if( wire->state == Wire::PULLING )
+	if( leftWire->state == Wire::PULLING || rightWire->state == Wire::PULLING )
 	{
 	}
 	else
