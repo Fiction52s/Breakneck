@@ -8075,7 +8075,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		
 
-		if( true )
+		if( action != DEATH )
 		//if( action == RUN )
 		{
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
@@ -8129,7 +8129,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 		else
 		{
-	//		target->draw( *sprite );
+			target->draw( *sprite );
 		}
 		
 
