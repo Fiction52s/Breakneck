@@ -472,6 +472,7 @@ Actor::Actor( GameSession *gs )
 		rightWire = new Wire( this, true );
 
 		bounceEdge = NULL;
+		bounceMovingTerrain = NULL;
 		bounceGrounded = false;
 
 
@@ -1133,6 +1134,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
 				frame = 0;
 				break;
 			}
@@ -1213,6 +1215,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
+				oldBounceMovingTerrain = NULL;
 				frame = 0;
 				break;
 			}
@@ -2167,6 +2170,7 @@ void Actor::UpdatePrePhysics()
 				action = JUMP;
 				frame = 1;
 				bounceEdge = NULL;
+				bounceMovingTerrain = NULL;
 				break;
 			}
 
@@ -2242,6 +2246,7 @@ void Actor::UpdatePrePhysics()
 				//velocity = length( storedBounceVel ) * bounceEdge->Normal();
 				//ground = NULL;
 				bounceEdge = NULL;
+				bounceMovingTerrain = NULL;
 
 				//if( ground != NULL )
 				//	ground = NULL;
@@ -5389,9 +5394,31 @@ void Actor::UpdatePhysics()
 				
 				
 				bounceEdge = minContact.edge;
-				bounceQuant = minContact.edge->GetQuantity( minContact.position );
-				movement = 0;
+				bounceMovingTerrain = minContact.movingPlat;
+				
+
+				V2d oldv0 = bounceEdge->v0;
+				V2d oldv1 = bounceEdge->v1;
+
+				if( bounceMovingTerrain != NULL )
+				{
+					bounceEdge->v0 += bounceMovingTerrain->position;
+					bounceEdge->v1 += bounceMovingTerrain->position;
+				}
+
+				bounceQuant = bounceEdge->GetQuantity( minContact.position );
+				
+
+				if( bounceMovingTerrain != NULL )
+				{
+					bounceEdge->v0 = oldv0;
+					bounceEdge->v1 = oldv1;
+				}
+
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+
+				movement = 0;
+				
 			//	cout << "offset now!: " << offsetX << endl;
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
@@ -5789,7 +5816,23 @@ void Actor::UpdatePostPhysics()
 			{
 				if( bounceEdge != NULL )
 				{
+					V2d oldv0 = bounceEdge->v0;
+					V2d oldv1 = bounceEdge->v1;
+
+					if( bounceMovingTerrain != NULL )
+					{
+						bounceEdge->v0 += bounceMovingTerrain->position;
+						bounceEdge->v1 += bounceMovingTerrain->position;
+					}
+
 					position = bounceEdge->GetPoint( bounceQuant );
+
+					if( bounceMovingTerrain != NULL )
+					{
+						bounceEdge->v0 = oldv0;
+						bounceEdge->v1 = oldv1;
+					}
+					
 				}
 				else
 				{
@@ -7594,7 +7637,24 @@ void Actor::UpdatePostPhysics()
 			
 			sprite->setPosition( position.x, position.y );
 		//		sprite->setRotation( angle / PI * 180 );
-				V2d pp = bounceEdge->GetPoint( bounceQuant );
+
+			V2d oldv0 = bounceEdge->v0;
+			V2d oldv1 = bounceEdge->v1;
+
+			if( bounceMovingTerrain != NULL )
+			{
+				bounceEdge->v0 += bounceMovingTerrain->position;
+				bounceEdge->v1 += bounceMovingTerrain->position;
+			}
+
+			V2d pp = bounceEdge->GetPoint( bounceQuant );
+
+			if( bounceMovingTerrain != NULL )
+			{
+				bounceEdge->v0 = oldv0;
+				bounceEdge->v1 = oldv1;
+			}
+				
 				//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				//	sprite->setPosition( pp.x + offsetX, pp.y );
 				//else

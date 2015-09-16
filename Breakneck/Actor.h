@@ -285,8 +285,10 @@ struct Actor : QuadTreeCollider,
 	bool touchEdgeWithRightWire;
 
 	Edge *bounceEdge;
+	MovingTerrain *bounceMovingTerrain;
 	double bounceQuant;
 	Edge *oldBounceEdge;
+	MovingTerrain *oldBounceMovingTerrain;
 	int framesSinceBounce;
 	bool groundedWallBounce;
 

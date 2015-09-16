@@ -1504,7 +1504,7 @@ int GameSession::Run( string fileName )
 
 		if( deathWipe )
 		{
-			cout << "showing death wipe frame: " << deathWipeFrame << " panel: " << deathWipeFrame / 5 << endl;
+			//cout << "showing death wipe frame: " << deathWipeFrame << " panel: " << deathWipeFrame / 5 << endl;
 			wipeSprite.setTexture( wipeTextures[deathWipeFrame / 5] );
 			wipeSprite.setTextureRect( IntRect( 0, 0, wipeSprite.getTexture()->getSize().x, 
 				wipeSprite.getTexture()->getSize().y) );
