@@ -312,62 +312,89 @@ void Wire::UpdateAnchors( V2d vel )
 {
 	if( state == HIT || state == PULLING )
 	{
+		cout << "updating anchors" << endl;
 	//	rayCastMode = "check";
 		//rcEdge = NULL;
 
 
-		sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
-		line->append( sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Magenta ) );
+		//sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
+		//line->append( sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Magenta ) );
 		
 		oldPos = player->position - vel;
+		double radius = length( realAnchor - player->position ); //new position after moving
 
 		if( numPoints == 0 )
 		{
-			line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
+			//line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
 			realAnchor = anchor.pos;
 		}
 		else
 		{
-			line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
+			//line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
 			realAnchor = points[numPoints-1].pos;
 		}
 
-		progressDraw.push_back( line );
+		int counter = 0;
+		while( true )
+		{
+			//progressDraw.push_back( line );
+			if( counter > 1 )
+			{
+				cout << "COUNTER: " << counter << endl;
+			}
 
-		double left = min( realAnchor.x, min( oldPos.x, player->position.x ) );
-		double right = max( realAnchor.x, max( oldPos.x, player->position.x ) );
-		double top = min( realAnchor.y, min( oldPos.y, player->position.y ) );
-		double bottom = max( realAnchor.y, max( oldPos.y, player->position.y ) );
+			double left = min( realAnchor.x, min( oldPos.x, player->position.x ) );
+			double right = max( realAnchor.x, max( oldPos.x, player->position.x ) );
+			double top = min( realAnchor.y, min( oldPos.y, player->position.y ) );
+			double bottom = max( realAnchor.y, max( oldPos.y, player->position.y ) );
 
-		Rect<double> r( left, top, right - left, bottom - top );
+			Rect<double> r( left, top, right - left, bottom - top );
 
-		addedPoints = 0;
-		player->owner->terrainTree->Query( this, r );
+			//addedPoints = 0;
+			foundPoint = false;
+
+			player->owner->terrainTree->Query( this, r );
 		
 
-		/*for( int i = 1; i < addedPoints; ++i )
-		{
-			for( int j = i; j > 0; ++j )
+			/*for( int i = 1; i < addedPoints; ++i )
 			{
+				for( int j = i; j > 0; ++j )
+				{
 
-			}
+				}
 			
-		}*/
+			}*/
 
-		if( foundPoint )
-		{
-			points[numPoints].pos = closestPoint;
-
-
-			points[numPoints].test = normalize( closestPoint - realAnchor );
-			if( !clockwise )
+			if( foundPoint )
 			{
-				points[numPoints].test = -points[numPoints].test;
+				points[numPoints].pos = closestPoint;
+
+
+				points[numPoints].test = normalize( closestPoint - realAnchor );
+				if( !clockwise )
+				{
+					points[numPoints].test = -points[numPoints].test;
+				}
+				//points[numPoints].test = normalize(  
+				numPoints++;
+				//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
+				//cout << "numpoints now! " << numPoints << endl;
+
+				V2d oldAnchor = realAnchor;
+				realAnchor = points[numPoints-1].pos;
+
+				radius = radius - length( oldAnchor - realAnchor );
+				oldPos = realAnchor + normalize( realAnchor - oldAnchor ) * radius;
+
+				cout << "point added!: " << numPoints << endl;
+				counter++;
 			}
-			//points[numPoints].test = normalize(  
-			numPoints++;
-			//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
-			//cout << "numpoints now! " << numPoints << endl;
+			else
+			{
+				break;
+			}
+			//oldPos = 
+			
 		}
 		
 		//if( rcEdge != NULL )
@@ -532,14 +559,14 @@ void Wire::TestPoint( Edge *e )
 	clockwise = tempClockwise;
 
 	
-
+	/*
 	points[numPoints + addedPoints].pos = p;
 	points[numPoints + addedPoints].angleDiff = angleDiff;
 	points[numPoints + addedPoints].e = e;
-	addedPoints++;
+	addedPoints++;*/
 	
 	
-	/*if( !foundPoint )
+	if( !foundPoint )
 	{
 		foundPoint = true;
 		closestDiff = angleDiff;
@@ -563,7 +590,7 @@ void Wire::TestPoint( Edge *e )
 				closestPoint = p;
 			}
 		}
-	}*/
+	}
 }
 
 void Wire::HandleEntrant( QuadTreeEntrant *qte )

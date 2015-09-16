@@ -1156,7 +1156,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( false ) )
 			{
-				//cout << "special walljump right" << endl;
+				cout << "special walljump right" << endl;
 				if( currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
@@ -1169,7 +1169,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{		
-				//cout << "special walljump right" << endl;
+				cout << "special walljump left" << endl;
 				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
 					
@@ -3436,6 +3436,7 @@ bool Actor::CheckWall( bool right )
 	minContact.collisionPriority = 10000;
 	minContact.edge = NULL;
 	minContact.resolution = V2d( 0, 0 );
+	minContact.movingPlat = NULL;
 	col = false;
 	queryMode = "checkwall";
 	tempVel = vel;
@@ -3446,6 +3447,14 @@ bool Actor::CheckWall( bool right )
 
 	owner->terrainTree->Query( this, r );
 	
+	queryMode = "moving_checkwall";
+	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
+	{
+		currMovingTerrain = (*it);
+		(*it)->Query( this, r );
+	}
+	
+
 
 	if( !col )
 	{
@@ -3455,7 +3464,25 @@ bool Actor::CheckWall( bool right )
 	bool wally = false;
 	if( minContact.edge != NULL )
 	{
+		V2d oldv0 = minContact.edge->v0;
+		V2d oldv1 = minContact.edge->v1;
+
+		if( minContact.movingPlat != NULL )
+		{
+			cout << "moving plat blah" << endl;
+			minContact.edge->v0 += minContact.movingPlat->position;
+			minContact.edge->v1 += minContact.movingPlat->position;
+		}
+
 		double quant = minContact.edge->GetQuantity( test.position );
+
+		if( minContact.movingPlat!= NULL )
+		{
+			minContact.edge->v0 = oldv0;
+			minContact.edge->v1 = oldv1;
+		}
+
+		
 		bool zero = false;
 		bool one = false;
 		if( quant <= 0 )
@@ -4515,7 +4542,7 @@ void Actor::UpdatePhysics()
 				
 			if( transferLeft )
 			{
-			//	cout << "transfer left "<< endl;
+				cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
 				{
@@ -4577,7 +4604,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-			//	cout << "slide: " << q << ", " << offsetX << endl;
+				cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -4607,6 +4634,7 @@ void Actor::UpdatePhysics()
 
 				if(!approxEquals( m, 0 ) )
 				{
+					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -4688,10 +4716,16 @@ void Actor::UpdatePhysics()
 								break;
 						}
 					}
+					else
+					{
+						V2d wVel = position - oldPos;
+						wire->UpdateAnchors( wVel );
+					}
 				}
 			}
 			else
 			{
+				cout << "other" << endl;
 				if( movement > 0 )
 				{	
 					extra = (q + movement) - groundLength;
@@ -5839,6 +5873,7 @@ void Actor::UpdatePostPhysics()
 		//cout << owner->movingPlats.front()->vel.x << ", " << owner->movingPlats.front()->vel.y << endl;
 		if( action != AIRHITSTUN )
 		{
+			Action oldAction = action;
 			if( collision )
 			{
 				//cout << "wallcling" << endl;
@@ -5872,11 +5907,41 @@ void Actor::UpdatePostPhysics()
 					}
 				}
 			}
-			else if( action == WALLCLING && length( wallNormal ) == 0 )
+			
+			if( oldAction == WALLCLING )
 			{
+				bool stopWallClinging = false;
+				if( collision && length( wallNormal ) > 0 )
+				{
+					if( wallNormal.x > 0 )
+					{
+						if( !currInput.LLeft() )
+						{
+							stopWallClinging = true;
+						}
+
+					}
+					else
+					{
+						if( !currInput.LRight() )
+						{
+							stopWallClinging = true;
+						}
+					}
+				}
+				else
+				{
+					stopWallClinging = true;
+					
+				}
+
+				if( stopWallClinging )
+				{
+					action = JUMP;
+					frame = 1;
+				}
 			//	cout << "jump" << endl;
-				action = JUMP;
-				frame = 1;
+				
 			}
 
 			if( leftGround )
@@ -7812,6 +7877,58 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
 					minContact.movingPlat = NULL;
+					col = true;
+					
+				}
+			}
+	}
+	else if( queryMode == "moving_checkwall" )
+	{
+		if( e == ground )
+			return;
+
+		V2d temp0 = e->v0;
+		V2d temp1 = e->v1;
+
+		e->v0 += currMovingTerrain->position;
+		e->v1 += currMovingTerrain->position;
+
+		//e->v0 += currMovingTerrain->position;
+		//e->v1 += currMovingTerrain->position;
+
+		if( e->Normal().y == -1 )
+		{
+			cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
+				e->v1.x << ", " << e->v1.y << endl;
+		}
+
+		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel );
+
+		e->v0 = temp0;
+		e->v1 = temp1;
+		
+		if( c != NULL )
+			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			{	
+				if( c->collisionPriority == minContact.collisionPriority )
+				{
+					if( length(c->resolution) > length(minContact.resolution) )
+					{
+						minContact.collisionPriority = c->collisionPriority;
+						minContact.edge = e;
+						minContact.resolution = c->resolution;
+						minContact.position = c->position;
+						minContact.movingPlat = currMovingTerrain;
+						col = true;
+					}
+				}
+				else
+				{
+					minContact.collisionPriority = c->collisionPriority;
+					minContact.edge = e;
+					minContact.resolution = c->resolution;
+					minContact.position = c->position;
+					minContact.movingPlat = currMovingTerrain;
 					col = true;
 					
 				}
