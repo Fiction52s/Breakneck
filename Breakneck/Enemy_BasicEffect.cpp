@@ -110,6 +110,8 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( s.getPosition().x, s.getPosition().y );
 	target->draw( cs );*/
+
+	//cout << ts->sourceName << ": " << target->endl;
 	target->draw( s );	
 }
 

@@ -481,7 +481,7 @@ void Crawler::UpdatePhysics()
 				
 			if( transferLeft )
 			{
-			//	cout << "transfer left "<< endl;
+				cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				
 				ground = next;
@@ -489,6 +489,7 @@ void Crawler::UpdatePhysics()
 			}
 			else if( transferRight )
 			{
+				cout << "transfer right" << endl;
 				Edge *next = ground->edge1;
 				
 				ground = next;
@@ -496,6 +497,7 @@ void Crawler::UpdatePhysics()
 			}
 			else if( changeOffsetX )
 			{
+				cout << "change offset x" << endl;
 				if( gNormal.y < 0 || (gNormal.y == 0 && gNormal.x < 0 ) )
 				{
 				if( movement > 0 )
@@ -641,7 +643,8 @@ void Crawler::UpdatePhysics()
 			}
 			else if( changeOffsetY )
 			{
-				if( gNormal.x < 0 )
+				cout << "change offset y" << endl;
+				if( gNormal.x < 0 || (gNormal.x == 0 && gNormal.y > 0 ) )
 				{
 					cout << "changing offsety: " << offset.x << ", " << offset.y << endl;
 					if( movement > 0 )
@@ -656,6 +659,7 @@ void Crawler::UpdatePhysics()
 
 					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 					{
+						
 						//m -= extra;
 					
 						m -= extra;
@@ -672,6 +676,7 @@ void Crawler::UpdatePhysics()
 					}
 					else
 					{
+						
 						//m = -m;
 						movement = 0;
 						offset.y -= m;
@@ -708,6 +713,7 @@ void Crawler::UpdatePhysics()
 				}
 				else
 				{
+					
 					if( movement > 0 )
 					{				
 						extra = (offset.y + movement) - physBody.rh;				
@@ -736,6 +742,7 @@ void Crawler::UpdatePhysics()
 					}
 					else
 					{
+						
 						//m = -m;
 						movement = 0;
 						offset.y += m;
@@ -769,11 +776,16 @@ void Crawler::UpdatePhysics()
 							break;
 						}
 					}
+					else
+					{
+						cout << "problelm" << endl;
+					}
 				}
 				
 			}
 			else
 			{
+				cout << "else" << endl;
 				if( movement > 0 )
 				{	
 					extra = (q + movement) - groundLength;
@@ -889,16 +901,33 @@ bool Crawler::ResolvePhysics( V2d vel )
 
 void Crawler::UpdatePostPhysics()
 {
+
+	if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity < groundSpeed + 32 )
+		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed < 32 ) )
+	{
+		cout << "ROLLIN" << endl;
+	}
+	else
+	{
+		cout << "groundspeed: " << groundSpeed << ", edge: " << edgeQuantity << ", len: " << length( ground->v1 - ground->v0 ) << endl;
+	}
+
 	double angle = 0;
 	V2d gn = ground->Normal();
 	if( !approxEquals( abs(offset.x), physBody.rw ) )
 	{
-		if( gn.y > 0 )
-			angle = PI;
+		sprite.setTextureRect( ts->GetSubRect(0) );
+		angle = 0;
+		cout << "aaa" << endl;
+		//if( gn.y > 0 )
+		//	angle = PI;
 	}
 	else if( !approxEquals( abs( offset.y ), physBody.rh ) )
 	{
-		cout << "gn: " << gn.x << ", " << gn.y << endl;
+		sprite.setTextureRect( ts->GetSubRect( 0 )  );
+		angle = 0;
+		cout << "bbb" << endl;
+		/*cout << "gn: " << gn.x << ", " << gn.y << endl;
 		if( gn.x > 0 )
 		{
 			angle = PI / 2;
@@ -910,11 +939,13 @@ void Crawler::UpdatePostPhysics()
 		else
 		{
 			angle = atan2( gn.x, -gn.y );
-		}
+		}*/
 	}
 	else
 	{
-		angle = atan2( gn.x, -gn.y );
+		cout << "ccccc" << endl;
+		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		atan2( gn.x, -gn.y );
 	}
 
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);

@@ -1487,7 +1487,7 @@ int GameSession::Run( string fileName )
 		preScreenTex->setView( view );
 		//window->setView( view );
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
