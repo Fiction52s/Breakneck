@@ -239,6 +239,7 @@ struct Actor : QuadTreeCollider,
 	bool hasGravReverse;
 
 	Edge *grindEdge;
+	MovingTerrain *grindMovingTerrain;
 	double grindQuantity;
 	double grindSpeed;
 
@@ -288,7 +289,6 @@ struct Actor : QuadTreeCollider,
 	MovingTerrain *bounceMovingTerrain;
 	double bounceQuant;
 	Edge *oldBounceEdge;
-	MovingTerrain *oldBounceMovingTerrain;
 	int framesSinceBounce;
 	bool groundedWallBounce;
 
@@ -344,6 +344,7 @@ struct Actor : QuadTreeCollider,
 		bool hasGravReverse;
 
 		Edge *grindEdge;
+		
 		double grindQuantity;
 		double grindSpeed;
 

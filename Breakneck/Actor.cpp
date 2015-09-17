@@ -405,6 +405,7 @@ Actor::Actor( GameSession *gs )
 		groundOffsetX = 0;
 
 		grindEdge = NULL;
+		grindMovingTerrain = NULL;
 		grindQuantity = 0;
 		grindSpeed = 0;
 
@@ -940,6 +941,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
+				grindMovingTerrain = movingGround;
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
@@ -1215,7 +1217,6 @@ void Actor::UpdatePrePhysics()
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
-				oldBounceMovingTerrain = NULL;
 				frame = 0;
 				break;
 			}
@@ -1488,6 +1489,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
+				grindMovingTerrain = movingGround;
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
@@ -1592,6 +1594,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
+				grindMovingTerrain = movingGround;
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
@@ -1654,6 +1657,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = GRINDBALL;
 				grindEdge = ground;
+				grindMovingTerrain = movingGround;
 				frame = 0;
 				grindSpeed = groundSpeed;
 				grindQuantity = edgeQuantity;
@@ -1876,6 +1880,7 @@ void Actor::UpdatePrePhysics()
 						hasGravReverse = true;
 						hasDoubleJump = true;
 						ground = grindEdge;
+						movingGround = grindMovingTerrain;
 						edgeQuantity = grindQuantity;
 						action = LAND;
 						frame = 0;
@@ -1917,6 +1922,7 @@ void Actor::UpdatePrePhysics()
 								ground = NULL;
 								movingGround = NULL;
 								grindEdge = NULL;
+								grindMovingTerrain = NULL;
 								reversed = false;
 							}
 							else
@@ -1941,6 +1947,7 @@ void Actor::UpdatePrePhysics()
 
 
 								ground = grindEdge;
+								movingGround = grindMovingTerrain;
 								groundSpeed = -grindSpeed;
 								edgeQuantity = grindQuantity;
 								grindEdge = NULL;
@@ -5751,7 +5758,26 @@ void Actor::UpdatePostPhysics()
 	if( grindEdge != NULL )
 	{
 		framesInAir = 0;
+
+		V2d oldv0 = grindEdge->v0;
+		V2d oldv1 = grindEdge->v1;
+
+
+		if( grindMovingTerrain != NULL )
+		{
+			grindEdge->v0 += grindMovingTerrain->position;
+			grindEdge->v1 += grindMovingTerrain->position;
+		}
+
+
 		V2d grindPoint = grindEdge->GetPoint( grindQuantity );
+
+		if( grindMovingTerrain != NULL )
+		{
+			grindEdge->v0 = oldv0;
+			grindEdge->v1 = oldv1;
+		}
+
 		position = grindPoint;
 	//	assert( action != AIRHITSTUN );
 	}
@@ -7206,7 +7232,25 @@ void Actor::UpdatePostPhysics()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		//	sprite->setRotation( angle / PI * 180 );
 			sprite->setRotation( 0 );
+			
+			V2d oldv0 = grindEdge->v0;
+			V2d oldv1 = grindEdge->v1;
+
+
+			if( grindMovingTerrain != NULL )
+			{
+				grindEdge->v0 += grindMovingTerrain->position;
+				grindEdge->v1 += grindMovingTerrain->position;
+			}
+
 			V2d pp = grindEdge->GetPoint( grindQuantity );
+
+			if( grindMovingTerrain != NULL )
+			{
+				grindEdge->v0 = oldv0;
+				grindEdge->v1 = oldv1;
+			}
+			
 			sprite->setPosition( pp.x, pp.y );
 
 
