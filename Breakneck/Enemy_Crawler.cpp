@@ -901,19 +901,61 @@ bool Crawler::ResolvePhysics( V2d vel )
 
 void Crawler::UpdatePostPhysics()
 {
-
-	if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity < groundSpeed + 32 )
-		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed < 32 ) )
+	double spaceNeeded = 0;
+	V2d gn = ground->Normal();
+	if( gn.y == 0 )
 	{
-		cout << "ROLLIN" << endl;
+		double offsetY = offset.y;
+		if( gn.x > 0 )
+		{
+			offsetY = -offsetY;
+		}
+		
+		if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity + offsetY < groundSpeed + 32 )
+		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed + offsetY < 32 ) )
+		{
+			cout << "ROLLIN" << endl;
+		}
+		else
+		{
+		//	cout << "groundspeed: " << groundSpeed << ", edge: " << edgeQuantity << ", len: " << length( ground->v1 - ground->v0 ) << endl;
+		}
+	}
+	else if( gn.x == 0 )
+	{
+		double offsetX = offsetX;
+		if( gn.y > 0 )
+		{
+			offsetX = -offsetX;
+		}
+
+		if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity + offsetX < groundSpeed + 32 )
+		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed + offsetX < 32 ) )
+		{
+			cout << "ROLLIN" << endl;
+		}
+		else
+		{
+		//	cout << "groundspeed: " << groundSpeed << ", edge: " << edgeQuantity << ", len: " << length( ground->v1 - ground->v0 ) << endl;
+		}
 	}
 	else
 	{
-		cout << "groundspeed: " << groundSpeed << ", edge: " << edgeQuantity << ", len: " << length( ground->v1 - ground->v0 ) << endl;
+		if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity < groundSpeed + 32 )
+		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed < 32 ) )
+		{
+			cout << "ROLLIN" << endl;
+		}
+		else
+		{
+			//cout << "groundspeed: " << groundSpeed << ", edge: " << edgeQuantity << ", len: " << length( ground->v1 - ground->v0 ) << endl;
+		}
 	}
 
+	
+
 	double angle = 0;
-	V2d gn = ground->Normal();
+	//V2d gn = ground->Normal();
 	if( !approxEquals( abs(offset.x), physBody.rw ) )
 	{
 		sprite.setTextureRect( ts->GetSubRect(0) );
