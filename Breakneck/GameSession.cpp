@@ -341,6 +341,7 @@ bool GameSession::OpenFile( string fileName )
 				++pointCounter;
 			}
 
+			double left, right, top, bottom;
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				Edge *ee = new Edge();
@@ -353,6 +354,25 @@ bool GameSession::OpenFile( string fileName )
 					ee->v1 = points[currentEdgeIndex];
 
 				terrainTree->Insert( ee );
+
+				double localLeft = min( ee->v0.x, ee->v1.x );
+				double localRight = max( ee->v0.x, ee->v1.x );
+				double localTop = min( ee->v0.y, ee->v1.y );
+				double localBottom = max( ee->v0.y, ee->v1.y ); 
+				if( i == 0 )
+				{
+					left = localLeft;
+					right = localRight;
+					top = localTop;
+					bottom = localBottom;
+				}
+				else
+				{
+					left = min( left, localLeft );
+					right = max( right, localRight );
+					top = min( top, localTop);
+					bottom = max( bottom, localBottom);
+				}
 
 			}
 
@@ -410,41 +430,102 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *polygonVA = va;
 
 			double totalPerimeter = 0;
+
 			Edge * testEdge = edges[currentEdgeIndex];
 
+			int size = 8;
+			double inward = 8;
+			double spacing = 2;
+			
+
+			/*do
+			{
+				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				V2d adjv0 = testEdge->v0 - bisector0 * inward;
+				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+
+				totalPerimeter += length( adjv1 - adjv0 );
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );*/
+
+			//testEdge = edges[currentEdgeIndex];
+			
+
+			
+		
+			//double amount = totalPerimeter / spacing;
+
+			va = new VertexArray( sf::Quads, polyPoints * 4 );
+			VertexArray & borderVa = *va;
+			double testQuantity = 0;
+
+			int i = 0;
 			do
 			{
-				totalPerimeter += length( testEdge->v1 - testEdge->v0 );
+				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				V2d adjv0 = testEdge->v0 - bisector0 * inward;
+				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+
+				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+
+				//borderVa[i*4].color = Color::Red;
+				borderVa[i*4].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
+				borderVa[i*4].texCoords = Vector2f( 0, 0 );
+
+				//borderVa[i*4+1].color = Color::Blue;
+				borderVa[i*4+1].position = Vector2f( adjv0.x, adjv0.y  );
+				borderVa[i*4+1].texCoords = Vector2f( 0, size );
+
+				//borderVa[i*4+2].color = Color::Green;
+				borderVa[i*4+2].position = Vector2f( nadjv0.x, nadjv0.y  );
+				borderVa[i*4+2].texCoords = Vector2f( size, size );
+
+				//borderVa[i*4+3].color = Color::Magenta;
+				borderVa[i*4+3].position = Vector2f( testEdge->edge1->v0.x, testEdge->edge1->v0.y  );
+				borderVa[i*4+3].texCoords = Vector2f( size, 0 );
+				++i;
+
 				testEdge = testEdge->edge1;
 			}
 			while( testEdge != edges[currentEdgeIndex] );
 
-			double spacing = 8;
-			double amount = totalPerimeter / spacing;
-		//	cout << "total perimeter: " << totalPerimeter << endl;
-		//	cout << "num vertexes: " << (int)amount * 4 << endl;
 
-			va = new VertexArray( sf::Quads, (int)amount * 4 + 4 );
+			/*V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+			V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+			V2d adjv0 = testEdge->v0 - bisector0 * inward;
+			V2d adjv1 = testEdge->v1 - bisector1 * inward;
 
-			double testQuantity = 0;
+			borderVa[i*2].color = Color::Red;
+			borderVa[i*2].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
+			borderVa[i*2+1].color = Color::Red;
+			borderVa[i*2+1].position = Vector2f( adjv0.x, adjv0.y  );*/
+			
 
-			testEdge = edges[currentEdgeIndex];
 
-
-			double left, right, bottom, top;
+			//double left, right, bottom, top;
 			bool first = true;
 			
-			for( int i = 0; i < amount; ++i )
+			/*for( int i = 0; i < amount; ++i )
 			{
 				double movement = spacing;
 				while( movement > 0 )
 				{
 					testQuantity += movement;
-					double testLength = length( testEdge->v1 - testEdge->v0 );
+					double testLength = length( adjv1 - adjv0 );
 					if( testQuantity > testLength )
 					{
 						movement = testQuantity - testLength;
 						testEdge = testEdge->edge1;
+						bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+						bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+						adjv0 = testEdge->v0 - bisector0 * inward;
+						adjv1 = testEdge->v1 - bisector1 * inward;
 						testQuantity = 0;
 					}
 					else
@@ -453,11 +534,13 @@ bool GameSession::OpenFile( string fileName )
 					}
 				}
 
-				V2d spriteCenter = testEdge->GetPoint( testQuantity );
+				V2d spriteCenter = adjv0 + (adjv1 - adjv0) * testQuantity / length( testEdge->v1 - testEdge->v0 );//testEdge->GetPoint( testQuantity );
 				spriteCenter.x = floor( spriteCenter.x + .5 );
 				spriteCenter.y = floor( spriteCenter.y + .5 );
+			//	spriteCenter.y -= 8 * testEdge->Normal().y;
+			//	spriteCenter.x += 8 * testEdge->Normal().x;
 				VertexArray & testVa = (*va);
-				int size = 8;
+				
 				int halfSize = size / 2;
 				testVa[i*4].position = Vector2f( spriteCenter.x - halfSize, spriteCenter.y - halfSize );
 				testVa[i*4+1].position = Vector2f( spriteCenter.x + halfSize, spriteCenter.y - halfSize );
@@ -512,6 +595,9 @@ bool GameSession::OpenFile( string fileName )
 				//polygonBorders.push_back( va );
 
 			}
+			*/
+
+			
 
 			TestVA * testva = new TestVA;
 			testva->next = NULL;
@@ -923,19 +1009,19 @@ int GameSession::Run( string fileName )
 
 	goalDestroyed = false;
 
-	list<Vector2i> pathTest;
-	list<Vector2i> pointsTest;
-	pathTest.push_back( Vector2i( 200, 0 ) );
-	//pathTest.push_back( Vector2i( 0, 100 ) );
-	//pathTest.push_back( Vector2i( 100, 100 ) );
+	//list<Vector2i> pathTest;
+	//list<Vector2i> pointsTest;
+	//pathTest.push_back( Vector2i( 200, 0 ) );
+	////pathTest.push_back( Vector2i( 0, 100 ) );
+	////pathTest.push_back( Vector2i( 100, 100 ) );
+	
+	//pointsTest.push_back( Vector2i(-100, -100) );
+	//pointsTest.push_back( Vector2i(300, 100) );
+	//pointsTest.push_back( Vector2i(300, 200) );
+	//pointsTest.push_back( Vector2i(-100, 200) );
 
-	pointsTest.push_back( Vector2i(-100, -100) );
-	pointsTest.push_back( Vector2i(300, 100) );
-	pointsTest.push_back( Vector2i(300, 200) );
-	pointsTest.push_back( Vector2i(-100, 200) );
-
-	MovingTerrain *mt = new MovingTerrain( this, Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
-	movingPlats.push_back( mt );
+	////MovingTerrain *mt = new MovingTerrain( this, Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
+	////movingPlats.push_back( mt );
 	
 	
 	//lights.push_back( new Light( this ) );
@@ -1515,7 +1601,8 @@ int GameSession::Run( string fileName )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			//preScreenTex->draw( *listVAIter->va, &borderTex );
+			preScreenTex->draw( *listVAIter->va, &borderTex );
+			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
@@ -1551,6 +1638,14 @@ int GameSession::Run( string fileName )
 			currFX->Draw( window );
 			currFX = currFX->next;
 		}*/
+		
+		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+		{
+			//(*it)->DebugDraw( preScreenTex );
+			(*it)->Draw( preScreenTex );
+		}
+
+		DebugDrawActors();
 
 		preScreenTex->setView( uiView );
 		//window->setView( uiView );
@@ -1560,13 +1655,9 @@ int GameSession::Run( string fileName )
 		preScreenTex->setView( view );
 		//window->setView( view );
 
-		DebugDrawActors();
+		
 
-		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
-		{
-			//(*it)->DebugDraw( preScreenTex );
-			(*it)->Draw( preScreenTex );
-		}
+		
 
 		//coll.DebugDraw( window );
 
@@ -1772,6 +1863,7 @@ void GameSession::RespawnPlayer()
 	player.record = 0;
 	player.recordedGhosts = 0;
 	player.blah = false;
+	player.receivedHit = NULL;
 }
 
 void GameSession::UpdateTerrainShader()

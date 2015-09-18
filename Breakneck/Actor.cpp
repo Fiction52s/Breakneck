@@ -757,11 +757,11 @@ void Actor::UpdatePrePhysics()
 	if( ground != NULL )
 		gNorm = ground->Normal();
 
-	if( receivedHit != NULL )
+	if( receivedHit != NULL && action != DEATH )
 	{
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
-		invincibleFrames = receivedHit->damage;
+		invincibleFrames = 30;//receivedHit->damage;
 		
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
@@ -4623,7 +4623,7 @@ void Actor::UpdatePhysics()
 				
 			if( transferLeft )
 			{
-				cout << "transfer left "<< endl;
+				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
 				{
@@ -4685,7 +4685,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				cout << "slide: " << q << ", " << offsetX << endl;
+				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -4807,7 +4807,7 @@ void Actor::UpdatePhysics()
 			}
 			else
 			{
-				cout << "other" << endl;
+				//cout << "other" << endl;
 				if( movement > 0 )
 				{	
 					extra = (q + movement) - groundLength;
