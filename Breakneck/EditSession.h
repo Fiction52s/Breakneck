@@ -22,7 +22,7 @@ struct TerrainPolygon
 	void RemoveSelectedPoints();
 	void Finalize();
 	void Reset();
-	void Draw( double zoomMultiple, sf::RenderTarget * rt);
+	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
 	bool ContainsPoint( sf::Vector2f p );
@@ -36,7 +36,7 @@ struct TerrainPolygon
 	int right;
 	int top;
 	int bottom;
-	
+	std::list<sf::Vector2i> path;
 	std::list<ActorParams*> enemies;
 	int writeIndex;
 };
@@ -123,8 +123,9 @@ struct EditSession : GUIHandler
 
 	bool makingRect;
 	sf::Vector2i rectStart;
-
-	std::string mode;
+	
+	bool showTerrainPath;
+	
 	sf::RenderWindow *w;
 	sf::Vector2i playerPosition;
 	//sf::Vector2i goalPosition;
@@ -182,6 +183,9 @@ struct EditSession : GUIHandler
 	std::list<sf::Vector2i> patrolPath;
 	double minimumPathEdgeLength;
 
+	sf::IntRect fullRect;
+	
+
 	enum Emode
 	{
 		CREATE_TERRAIN,
@@ -194,9 +198,11 @@ struct EditSession : GUIHandler
 		PAUSED,
 		CREATE_ENEMY,
 		DRAW_PATROL_PATH,
+		CREATE_TERRAIN_PATH,
 		CREATE_LIGHTS
 	};
 
+	Emode mode;
 	
 };
 

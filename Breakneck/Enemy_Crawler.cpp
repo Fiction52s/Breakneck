@@ -902,8 +902,8 @@ bool Crawler::ResolvePhysics( V2d vel )
 void Crawler::UpdatePostPhysics()
 {
 
-	if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity < groundSpeed + 32 )
-		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed < 32 ) )
+	if( ( groundSpeed > 0 && length( ground->v1 - ground->v0 ) - edgeQuantity < groundSpeed + 16 )
+		|| ( groundSpeed< 0 && edgeQuantity + groundSpeed < 16 ) )
 	{
 		cout << "ROLLIN" << endl;
 	}

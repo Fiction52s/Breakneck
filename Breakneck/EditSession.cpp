@@ -177,7 +177,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( true );
 }
 
-void TerrainPolygon::Draw( double zoomMultiple, RenderTarget *rt )
+void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt )
 {
 	if( va != NULL )
 	rt->draw( *va );
@@ -199,6 +199,45 @@ void TerrainPolygon::Draw( double zoomMultiple, RenderTarget *rt )
 			rt->draw( cs );
 		}
 		rt->draw( lines, points.size() * 2, sf::Lines );
+	}
+
+	Vector2i center( (right + left) / 2, (bottom + top) / 2 );
+
+
+	if( showPath )
+	{
+		for( list<Vector2i>::iterator it = path.begin(); it != path.end(); ++it )
+		{
+			CircleShape cs;
+			cs.setRadius( 5 * zoomMultiple );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+			cs.setFillColor( Color::Magenta );
+			cs.setPosition( center.x + (*it).x, center.y + (*it).y );
+			rt->draw( cs );
+	
+		}
+
+
+		if( path.size() > 1 )
+		{
+			list<Vector2i>::iterator prev = path.begin();
+			list<Vector2i>::iterator curr = path.begin();
+			++curr;
+			while( curr != path.end() )
+			{
+				sf::Vertex activePreview[2] =
+				{
+					sf::Vertex(sf::Vector2<float>(center.x + (*prev).x, center.y + (*prev).y), Color::White ),
+					sf::Vertex(sf::Vector2<float>(center.x + (*curr).x, center.y + (*curr).y), Color::White )
+				};
+				rt->draw( activePreview, 2, sf::Lines );
+
+				prev = curr;
+				++curr;
+			}
+		
+		}
 	}
 }
 
@@ -430,7 +469,7 @@ void StaticLight::WriteFile( std::ofstream &of )
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
-
+	showTerrainPath = false;
 	minAngle = .99;
 	//	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
@@ -449,7 +488,7 @@ void EditSession::Draw()
 {
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->Draw( zoomMultiple, w );
+		(*it)->Draw( showTerrainPath, zoomMultiple, w );
 	}
 
 	int psize = polygonInProgress->points.size();
@@ -1167,6 +1206,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
+	Panel *terrainOptionsPanel = CreateOptionsPanel( "terrain" );
 
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
@@ -1260,7 +1300,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
 		view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
 
-	mode = "neutral";
+	//mode = "neutral";
 	bool quit = false;
 	polygonInProgress = new TerrainPolygon();
 	zoomMultiple = 1;
@@ -1323,7 +1363,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	V2d menuDownPos;
 	Emode menuDownStored;
 
-	Emode mode = CREATE_TERRAIN;
+	mode = CREATE_TERRAIN;
 	Emode stored = mode;
 	bool canCreatePoint = true;
 	gs.active = true;
@@ -1523,7 +1563,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( showPanel != NULL )
 								{	
+									//cout << "edit mouse update" << endl;
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
+
+									
+
 									break;
 								}
 
@@ -2177,7 +2221,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								menuSelection = "none";
 							}
 
-							if( menuDownStored == EDIT && menuSelection != "none" )
+							if( menuDownStored == EDIT && menuSelection != "none" && menuSelection != "top" )
 							{
 								selectedPlayer = false;
 								selectedActor = NULL;
@@ -2196,7 +2240,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							cout << "menu: " << menuSelection << endl;
 							if( menuSelection == "top" )
 							{
-								mode = EDIT;
+								if( menuDownStored == EDIT && selectedPolygons.size() > 0 )
+								{
+									showPanel = terrainOptionsPanel;
+									mode = menuDownStored;
+								}
+								else
+								{
+									mode = EDIT;
+								}
 							}
 							else if( menuSelection == "upperleft" )
 							{
@@ -2297,7 +2349,55 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					break;
 				}
+			case CREATE_TERRAIN_PATH:
+				{
+					minimumPathEdgeLength = 16;
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
 
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
+							{
+								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								{
+									(*it)->path.pop_back();
+								}
+							}
+							else if( ev.key.code == Keyboard::Space )
+							{
+								showPanel = terrainOptionsPanel;
+								mode = EDIT;
+							}
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+					break;
+				}
 			case CREATE_LIGHTS:
 				{
 					switch( ev.type )
@@ -2363,6 +2463,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					break;
 				}
 			}
+
+			
 
 			//ones that aren't specific to mode
 			
@@ -2517,10 +2619,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		}
 
+		
+
 		if( quit )
 			break;
 
 		showGraph = false;
+
+		showTerrainPath = true;
 
 		switch( mode )
 		{
@@ -2888,6 +2994,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				break;
 			}
+		case CREATE_TERRAIN_PATH:
+			{
+				showTerrainPath = false;
+				if( showPanel != NULL )
+					break;
+
+				
+				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.0, fullRect.top + fullRect.height / 2.0 );
+				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
+				{
+					if( length( ( worldPos - V2d( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<double>(selectedPolygons.front()->path.back().x, 
+						selectedPolygons.front()->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					{
+						Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
+
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+						{
+							(*it)->path.push_back( worldi );
+						}
+					}					
+				}
+				break;
+			}
 		}
 
 		//cout << "here before crash" << endl;
@@ -2932,6 +3061,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			(*it).second->Draw( w );
 		}
 
+		
 		switch( mode )
 		{
 		case CREATE_TERRAIN:
@@ -3087,6 +3217,88 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			
 
 				break;
+			}
+		case CREATE_TERRAIN_PATH:
+			{
+				
+				int pathSize = selectedPolygons.front()->path.size();
+
+				sf::FloatRect bounds;
+				bounds.left = fullRect.left;
+				bounds.top = fullRect.top;
+				bounds.width = fullRect.width;
+				bounds.height = fullRect.height;
+
+				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
+				
+				rs.setOutlineColor( Color::Cyan );				
+				rs.setFillColor( Color::Transparent );
+				rs.setOutlineThickness( 5 );
+				rs.setPosition( bounds.left, bounds.top );
+
+				w->draw( rs );
+
+				Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
+				if( pathSize > 0 )
+				{
+					Vector2i backPoint = selectedPolygons.front()->path.back();
+					backPoint += fullCenter;
+			
+					Color validColor = Color::Magenta;
+					Color invalidColor = Color::Red;
+					Color colorSelection;
+					if( true )
+					{
+						colorSelection = validColor;
+					}
+					sf::Vertex activePreview[2] =
+					{
+						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
+						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+					};
+					w->draw( activePreview, 2, sf::Lines );
+
+					if( pathSize > 1 )
+					{
+						VertexArray v( sf::LinesStrip, pathSize );
+						int i = 0;
+
+						for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
+							it != selectedPolygons.front()->path.end(); ++it )
+						{
+							v[i] = Vertex( Vector2f( (*it).x + fullCenter.x, (*it).y + fullCenter.y) );
+							++i;
+						}
+						w->draw( v );
+					}
+				}
+				
+				if( pathSize >= 0 ) //always
+				{
+					CircleShape cs;
+					cs.setRadius( 5 * zoomMultiple  );
+					cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+					cs.setFillColor( Color::Magenta );
+
+					//Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
+
+					for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
+							it != selectedPolygons.front()->path.end(); ++it )
+					{
+						//cout << "drawing" << endl;
+						cs.setPosition( (*it).x + fullCenter.x, (*it).y + fullCenter.y );
+						w->draw( cs );
+					}		
+				}
+
+/*				CircleShape cs;
+				cs.setRadius( 5 * zoomMultiple  );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setFillColor( Color::Magenta );
+				cs.setPosition( fullCenter.x, fullCenter.y );
+				w->draw( cs );*/
+				
+
 			}
 		}
 		
@@ -3404,6 +3616,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( menuDownStored == EditSession::EDIT && selectedActor != NULL )
 					{
 						textmag.setString( "EDIT\nENEMY" );
+					}
+					else if( menuDownStored == EditSession::EDIT && selectedPolygons.size() > 0 )
+					{
+						textmag.setString( "TERRAIN\nOPTIONS" );
 					}
 					else
 					{
@@ -3738,7 +3954,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			trackingEnemy = NULL;
 		}
 	}
-
 	else if( p->name == "map_options" )
 	{
 		if( b->name == "ok" );
@@ -3765,6 +3980,64 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 
 			minimumEdgeLength = minEdgeSize;
+			showPanel = NULL;
+		}
+	}
+	else if( p->name == "terrain_options" )
+	{
+		if( b->name == "ok" )
+		{
+			showPanel = NULL;
+		}
+		else if( b->name == "create_path" )
+		{
+			cout << "setting mode to create path terrain" << endl;
+			mode = CREATE_TERRAIN_PATH;
+			//patrolPath.clear();
+
+			
+
+			assert( selectedPolygons.size() > 0 );
+
+			int left, right, top, bottom;
+			list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+			left = (*it)->left;
+			right = (*it)->right;
+			top = (*it)->top;
+			bottom = (*it)->bottom;
+			(*it)->path.clear();
+			(*it)->path.push_back( Vector2i( 0, 0 ) );
+			++it;
+
+			for(  ;it != selectedPolygons.end(); ++it )
+			{
+				(*it)->path.clear();
+
+				if( (*it)->left < left )
+					left = (*it)->left;
+				if( (*it)->right > right )
+					right = (*it)->left;
+				if( (*it)->top < top )
+					top = (*it)->top;
+				if( (*it)->bottom > bottom )
+					bottom = (*it)->bottom;
+
+				(*it)->path.push_back( Vector2i( 0, 0 ) );
+			}
+
+			fullRect.left = left;
+			fullRect.top = top;
+			fullRect.width = right - left;
+			fullRect.height = bottom - top;
+
+
+			for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+			{
+				//it doesnt need to push this cuz its just storing the locals. draw from the center of the entire bounding box!
+
+			//	(*it)->path.push_back( Vector2i( ((*it)->right + (*it)->left) / 2.0, ((*it)->bottom - (*it)->top) / 2.0 ) );
+			}
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 			showPanel = NULL;
 		}
 	}
@@ -3862,6 +4135,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		return p;
+	}
+	else if( name == "terrain" )
+	{
+		Panel *p = new Panel( "terrain_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
+		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
+		
 		return p;
 	}
 	else if( name == "light" )
