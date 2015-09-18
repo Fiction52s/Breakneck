@@ -321,9 +321,9 @@ bool GameSession::OpenFile( string fileName )
 
 		while( pointCounter < numPoints )
 		{
-			
 			string matStr;
 			is >> matStr;
+
 			int polyPoints;
 			is >> polyPoints;
 
@@ -543,6 +543,79 @@ bool GameSession::OpenFile( string fileName )
 		//cout << "insertCount: " << insertCount << endl;
 		//cout << "polyCOUNTER: " << polyCounter << endl;
 		
+		int numMovingPlats;
+		is >> numMovingPlats;
+		for( int i = 0; i < numMovingPlats; ++i )
+		{
+			string matStr;
+			is >> matStr;
+
+
+			int polyPoints;
+			is >> polyPoints;
+
+			list<Vector2i> poly;
+
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				int px, py;
+				is >> px;
+				is >> py;
+			
+				poly.push_back( Vector2i( px, py ) );
+			}
+
+
+			
+			list<Vector2i>::iterator it = poly.begin();
+			int left = (*it).x;
+			int right = (*it).x;
+			int top = (*it).y;
+			int bottom = (*it).y;
+			
+			for( ;it != poly.end(); ++it )
+			{
+				if( (*it).x < left )
+					left = (*it).x;
+
+				if( (*it).x > right )
+					right = (*it).x;
+
+				if( (*it).y < top )
+					top = (*it).y;
+
+				if( (*it).y > bottom )
+					bottom = (*it).y;
+			}
+
+
+			//might need to round for perfect accuracy here
+			Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
+
+			for( it = poly.begin(); it != poly.end(); ++it )
+			{
+				(*it).x -= center.x;
+				(*it).y -= center.y;
+			}
+
+			int pathPoints;
+			is >> pathPoints;
+
+			list<Vector2i> path;
+
+			for( int i = 0; i < pathPoints; ++i )
+			{
+				int x,y;
+				is >> x;
+				is >> y;
+				path.push_back( Vector2i( x, y ) );
+			}
+
+			
+			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 2 );
+			movingPlats.push_back( mt );
+		}
+
 		int numLights;
 		is >> numLights;
 		for( int i = 0; i < numLights; ++i )

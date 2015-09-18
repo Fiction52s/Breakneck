@@ -7938,8 +7938,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( e->Normal().y == -1 )
 		{
-			cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
-				e->v1.x << ", " << e->v1.y << endl;
+			//cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
+			//	e->v1.x << ", " << e->v1.y << endl;
 		}
 
 		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + -currMovingTerrain->vel );

@@ -528,6 +528,7 @@ bool EditSession::OpenFile( string fileName )
 			TerrainPolygon *poly = new TerrainPolygon;
 			polygons.push_back( poly );
 			is >> poly->material;
+
 			int polyPoints;
 			is >> polyPoints;
 			
@@ -542,6 +543,43 @@ bool EditSession::OpenFile( string fileName )
 
 			poly->Finalize();
 		}
+
+		int movingPlatformNum;
+		is >> movingPlatformNum;
+		for( int i = 0; i < movingPlatformNum; ++i )
+		{
+			TerrainPolygon *poly = new TerrainPolygon;
+			polygons.push_back( poly );
+			is >> poly->material;
+
+			int polyPoints;
+			is >> polyPoints;
+			
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				int x,y;
+				is >> x;
+				is >> y;
+				poly->points.push_back( pair<Vector2i,bool>( Vector2i(x,y), false ) );
+			}
+
+			poly->Finalize();
+
+			int pathPoints;
+			is >> pathPoints;
+
+			if( pathPoints > 0 )
+				poly->path.push_back( Vector2i( 0, 0 ) );
+
+			for( int i = 0; i < pathPoints; ++i )
+			{
+				int x,y;
+				is >> x;
+				is >> y;
+				poly->path.push_back( Vector2i( x, y ) );
+			}
+		}
+		
 
 		//lights here
 		int numLights;
@@ -868,10 +906,16 @@ void EditSession::WriteFile(string fileName)
 	of.open( fileName + ".brknk" );
 
 	int pointCount = 0;
+	int movingPlatCount = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		pointCount += (*it)->points.size();
+		if( (*it)->path.size() == 0 )
+			pointCount += (*it)->points.size();
+		else
+			movingPlatCount++;
 	}
+
+	
 
 	of << pointCount << endl;
 	of << playerPosition.x << " " << playerPosition.y << endl;
@@ -879,15 +923,57 @@ void EditSession::WriteFile(string fileName)
 	int writeIndex = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->writeIndex = writeIndex;
-		++writeIndex;
-
-		of << (*it)->material << " " << (*it)->points.size() << endl;
-		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+		if( (*it)->path.size() < 2 )
 		{
-			of << (*it2).first.x << " " << (*it2).first.y << endl;
+			(*it)->writeIndex = writeIndex;
+			++writeIndex;
+
+			of << (*it)->material << endl;
+
+			of <<  (*it)->points.size() << endl;
+
+			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			{
+				of << (*it2).first.x << " " << (*it2).first.y << endl;
+			}
 		}
 	}
+
+	
+
+	of << movingPlatCount << endl;
+
+	writeIndex = 0;
+	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		if( (*it)->path.size() > 1 )
+		{
+			(*it)->writeIndex = writeIndex;
+			++writeIndex;
+
+			of << (*it)->material << endl;
+			
+			of <<  (*it)->points.size() << endl;
+
+			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			{
+				of << (*it2).first.x << " " << (*it2).first.y << endl;
+			}
+
+
+			of << (*it)->path.size() - 1 << endl;
+		
+			list<Vector2i>::iterator pathit = (*it)->path.begin();
+			++pathit;
+
+			for( ; pathit != (*it)->path.end(); ++pathit )
+			{
+				of << (*pathit).x << " " << (*pathit).y << endl;
+			}	
+		}
+	}
+
+	
 
 	of << lights.size() << endl;
 	for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
@@ -2378,6 +2464,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == Keyboard::Space )
 							{
+								if( selectedPolygons.front()->path.size() == 1 )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										(*it)->path.pop_back();
+									}
+								}
 								showPanel = terrainOptionsPanel;
 								mode = EDIT;
 							}
@@ -4015,10 +4108,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				if( (*it)->left < left )
 					left = (*it)->left;
+
 				if( (*it)->right > right )
-					right = (*it)->left;
+					right = (*it)->right;
+
 				if( (*it)->top < top )
 					top = (*it)->top;
+
 				if( (*it)->bottom > bottom )
 					bottom = (*it)->bottom;
 
