@@ -433,8 +433,8 @@ bool GameSession::OpenFile( string fileName )
 
 			Edge * testEdge = edges[currentEdgeIndex];
 
-			int size = 8;
-			double inward = 8;
+			double size = 16;
+			double inward = 16;
 			double spacing = 2;
 			
 
@@ -452,12 +452,48 @@ bool GameSession::OpenFile( string fileName )
 
 			//testEdge = edges[currentEdgeIndex];
 			
+			int innerPolyPoints = 0;
+			do
+			{
+				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				V2d adjv0 = testEdge->v0 - bisector0 * inward;
+				V2d adjv1 = testEdge->v1 - bisector1 * inward;
 
+				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+
+
+				//double remainder = length( adjv1 - adjv0 ) / size;
+				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				
+				//int num = remainder / size;
+
+				//remainder = remainder - floor( remainder );
+
+				//double eachAdd = remainder / num;
+
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+				
+
+				innerPolyPoints += num;
+				
+
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
 			
 		
 			//double amount = totalPerimeter / spacing;
 
-			va = new VertexArray( sf::Quads, polyPoints * 4 );
+			va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
 			VertexArray & borderVa = *va;
 			double testQuantity = 0;
 
@@ -474,22 +510,79 @@ bool GameSession::OpenFile( string fileName )
 				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
 				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
 
-				//borderVa[i*4].color = Color::Red;
-				borderVa[i*4].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
-				borderVa[i*4].texCoords = Vector2f( 0, 0 );
+				//double remainder = length( adjv1 - adjv0 ) / size;
+				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				
+				//int num = remainder / size;
 
-				//borderVa[i*4+1].color = Color::Blue;
-				borderVa[i*4+1].position = Vector2f( adjv0.x, adjv0.y  );
-				borderVa[i*4+1].texCoords = Vector2f( 0, size );
+				//remainder = remainder - floor( remainder );
 
-				//borderVa[i*4+2].color = Color::Green;
-				borderVa[i*4+2].position = Vector2f( nadjv0.x, nadjv0.y  );
-				borderVa[i*4+2].texCoords = Vector2f( size, size );
+				//double eachAdd = remainder / num;
 
-				//borderVa[i*4+3].color = Color::Magenta;
-				borderVa[i*4+3].position = Vector2f( testEdge->edge1->v0.x, testEdge->edge1->v0.y  );
-				borderVa[i*4+3].texCoords = Vector2f( size, 0 );
-				++i;
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+
+				for( int j = 0; j < num; ++j )
+				{
+					if( j == 0 || j == num - 1 )
+					{
+
+					}
+
+					Vector2f surface( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)j / num, 
+						testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)j / num );
+					Vector2f inner( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
+						adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
+
+					Vector2f surfaceNext( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)(j+1) / num, 
+						testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)(j+1) / num );
+					Vector2f innerNext( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
+						adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+
+					
+					borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+					//borderVa[i*4].color.a = 10;
+					borderVa[i*4].position = surface;
+					borderVa[i*4].texCoords = Vector2f( 0, 0 );
+
+					borderVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].color.a = 10;
+					borderVa[i*4+1].position = inner;
+					borderVa[i*4+1].texCoords = Vector2f( 0, size );
+
+					borderVa[i*4+2].color = Color::Blue;
+					//borderVa[i*4+2].color.a = 10;
+					borderVa[i*4+2].position = innerNext;
+					borderVa[i*4+2].texCoords = Vector2f( size, size );
+
+					borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+					//borderVa[i*4+3].color.a = 10;
+					borderVa[i*4+3].position = surfaceNext;
+					borderVa[i*4+3].texCoords = Vector2f( size, 0 );
+					++i;
+
+					//borderVa[i*4].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
+					//borderVa[i*4].texCoords = Vector2f( 0, 0 );
+
+					////borderVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].position = Vector2f( adjv0.x, adjv0.y  );
+					//borderVa[i*4+1].texCoords = Vector2f( 0, size );
+
+					////borderVa[i*4+2].color = Color::Green;
+					//borderVa[i*4+2].position = Vector2f( nadjv0.x, nadjv0.y  );
+					//borderVa[i*4+2].texCoords = Vector2f( size, size );
+
+					////borderVa[i*4+3].color = Color::Magenta;
+					//borderVa[i*4+3].position = Vector2f( testEdge->edge1->v0.x, testEdge->edge1->v0.y  );
+					//borderVa[i*4+3].texCoords = Vector2f( size, 0 );
+					//++i;
+				}
+
+				
 
 				testEdge = testEdge->edge1;
 			}
@@ -1005,7 +1098,7 @@ int GameSession::Run( string fileName )
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
-	Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
+	Texture & borderTex = *GetTileset( "testpattern1.png", 16, 16 )->texture;
 
 	goalDestroyed = false;
 
@@ -1601,8 +1694,8 @@ int GameSession::Run( string fileName )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			preScreenTex->draw( *listVAIter->va, &borderTex );
-			//preScreenTex->draw( *listVAIter->va );
+			//preScreenTex->draw( *listVAIter->va, &borderTex );
+			preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
