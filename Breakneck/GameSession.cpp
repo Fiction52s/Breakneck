@@ -435,9 +435,7 @@ bool GameSession::OpenFile( string fileName )
 
 			
 
-			double size = 16;
-			double inward = 16;
-			double spacing = 2;
+			
 			
 
 			double grassSize = 22;
@@ -516,7 +514,7 @@ bool GameSession::OpenFile( string fileName )
 					//grassVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
 					grassVa[i*4+2].position = bottomRight;
-					grassVa[i*4+2].texCoords = Vector2f( size, grassSize );
+					grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
 
 					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
@@ -535,7 +533,9 @@ bool GameSession::OpenFile( string fileName )
 
 			//testEdge = edges[currentEdgeIndex];
 			
-			
+			double size = 16;
+			double inward = 16;
+			double spacing = 2;
 
 			int innerPolyPoints = 0;
 			do
@@ -629,22 +629,22 @@ bool GameSession::OpenFile( string fileName )
 						adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
 
 					
-					borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+					//borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
 					//borderVa[i*4].color.a = 10;
 					borderVa[i*4].position = surface;
 					borderVa[i*4].texCoords = Vector2f( 0, 0 );
 
-					borderVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
 					borderVa[i*4+1].position = inner;
 					borderVa[i*4+1].texCoords = Vector2f( 0, size );
 
-					borderVa[i*4+2].color = Color::Blue;
+					//borderVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
 					borderVa[i*4+2].position = innerNext;
 					borderVa[i*4+2].texCoords = Vector2f( size, size );
 
-					borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+					//borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
 					borderVa[i*4+3].position = surfaceNext;
 					borderVa[i*4+3].texCoords = Vector2f( size, 0 );
@@ -1081,14 +1081,18 @@ bool GameSession::OpenFile( string fileName )
 	}
 }
 
-int GameSession::Run( string fileName )
+int GameSession::Run( string fileN )
 {
+	
+	activeSequence = NULL;
+
+	fileName = fileN;
 	sf::Texture backTex;
 	backTex.loadFromFile( "bg01.png" );
-	sf::Sprite background( backTex );
+	background = Sprite( backTex );
 	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
 	background.setPosition( 0, 0 );
-	sf::View bgView( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
+	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
@@ -1184,7 +1188,7 @@ int GameSession::Run( string fileName )
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
-	Texture & borderTex = *GetTileset( "testpattern.png", 16, 16 )->texture;
+	Texture & borderTex = *GetTileset( "testpattern1.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
 
@@ -1205,7 +1209,13 @@ int GameSession::Run( string fileName )
 	////movingPlats.push_back( mt );
 	
 	
+	LevelSpecifics();
 	//lights.push_back( new Light( this ) );
+
+	View v;
+	v.setCenter( 0, 0 );
+	v.setSize( 1920/ 2, 1080 / 2 );
+	window->setView( v );
 
 	while( !quit )
 	{
@@ -1527,11 +1537,31 @@ int GameSession::Run( string fileName )
 
 			cam.Update( &player );
 
+			if( activeSequence != NULL )
+			{
+			cam.offset.x = 0;
+			cam.offset.y = 0;
+			cam.zoomFactor = 1;
+			cam.pos = Vector2f( player.position.x, player.position.y );
+			}
+
 			double camWidth = 960 * cam.GetZoom();
 			double camHeight = 540 * cam.GetZoom();
 			screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 			
 			
+			if( activeSequence != NULL && !activeSequence->Update() )
+			{
+
+				//leaks memory
+				activeSequence = NULL;
+			}
+			
+			
+		
+
+
+
 			/*sf::RectangleShape rs;
 			rs.setSize( sf::Vector2f(screenRect.width, screenRect.height ) );
 			rs.setPosition( screenRect.left, screenRect.top );
@@ -1683,6 +1713,10 @@ int GameSession::Run( string fileName )
 			lightListIter = lightListIter->next;
 		}
 
+		if( activeSequence != NULL )
+		{
+			activeSequence->Draw( preScreenTex );
+		}
 		
 		if( player.action != Actor::DEATH )
 			player.Draw( preScreenTex );
@@ -1785,8 +1819,8 @@ int GameSession::Run( string fileName )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			//preScreenTex->draw( *listVAIter->va, &borderTex );
-			preScreenTex->draw( *listVAIter->va );
+			preScreenTex->draw( *listVAIter->va, &borderTex );
+			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
@@ -1828,6 +1862,8 @@ int GameSession::Run( string fileName )
 			//(*it)->DebugDraw( preScreenTex );
 			(*it)->Draw( preScreenTex );
 		}
+
+		
 
 		DebugDrawActors();
 
@@ -2313,6 +2349,81 @@ void GameSession::rReset( QNode *node )
 	}
 }
 
+void GameSession::LevelSpecifics()
+{
+	if( fileName == "test3" )
+	{
+		GameStartMovie();
+		cout << "doing stuff here" << endl;
+	}
+	else
+	{
+	//	player.velocity.x = 60;
+	}
+}
+
+//theres a bug on the new slope for the movie where you hold dash and up and you glitch out on a /\ slope. prob priority
+void GameSession::GameStartMovie()
+{
+	startSeq = new GameStartSeq( this );
+	activeSequence = startSeq;
+
+	cout << "Starting movie" << endl;
+	bool quit = false;
+	//sf::View movieView( Vector2f( -460,  ), Vector2f( 960, 540 ) );
+	sf::View movieView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+
+	
+	startSeq->shipSprite.setPosition( 480, 270 );
+	sf::RectangleShape rs( Vector2f( 960, 540 ) );
+	rs.setPosition( Vector2f( 0, 0 ) );
+	rs.setFillColor( Color::Black );
+	
+
+	//View oldView = window->getView();
+
+	player.velocity.x = 60;
+	//player.velocity.y = 30;
+	player.hasDoubleJump = false;
+
+	window->setView( movieView );
+	while( !quit )
+	{
+		controller.UpdateState();
+		currInput = controller.GetState();
+
+		if( currInput.LRight() && !prevInput.LRight() )
+		{
+			break;
+		}
+
+		window->clear( Color::Black );
+
+		window->setView( bgView );
+
+		window->draw( background );
+
+		window->setView( movieView );
+
+		 
+		//preScreenTex->setView( view );
+
+		window->draw( rs );
+
+		startSeq->stormSprite.setPosition( 0, -440 );
+		window->draw( startSeq->stormSprite );
+		startSeq->stormSprite.setPosition( 0, 440 );
+		window->draw( startSeq->stormSprite );
+
+		window->draw( startSeq->shipSprite );
+		window->display();
+	}
+
+	//startSeq->shipSprite.setPosition( startSeq->startPos );
+	//startSeq->stormSprite.setPosition( Vector2f( startSeq->startPos.x, startSeq->startPos.y + 200 ) );
+	//window->setView( oldView );
+}
+
 PowerBar::PowerBar()
 {
 	pointsPerLayer = 100;
@@ -2503,4 +2614,102 @@ bool Grass::IsTouchingBox( Rect<double> &r )
 	}
 
 	return false;
+}
+
+GameSession::GameStartSeq::GameStartSeq( GameSession *own )
+	:stormVA( sf::Quads, 6 * 3 * 4 ) 
+{
+	owner = own;
+	shipTex.loadFromFile( "ship.png" );
+	shipSprite.setTexture( shipTex );
+	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, shipSprite.getLocalBounds().height / 2 );
+
+	stormTex.loadFromFile( "stormclouds.png" );
+	stormSprite.setTexture( stormTex );
+	
+	//shipSprite.setPosition( 250, 250 );
+	startPos = Vector2f( owner->player.position.x, owner->player.position.y );
+	frameCount = 180;
+	frame = 0;
+
+	int count = 6;
+	for( int i = 0; i < count; ++i )
+	{
+		Vector2f topLeft( startPos.x - 480, startPos.y - 270 );
+		topLeft.y -= 540;
+
+		topLeft.x += i * 960;
+
+		stormVA[i*4].position = topLeft;
+		stormVA[i*4].texCoords = Vector2f( 0, 0 );
+
+		stormVA[i*4+1].position = topLeft + Vector2f( 0, 540 );
+		stormVA[i*4+1].texCoords = Vector2f( 0, 540 );
+
+		stormVA[i*4+2].position = topLeft + Vector2f( 960, 540 );
+		stormVA[i*4+2].texCoords = Vector2f( 960, 540 );
+
+		stormVA[i*4+3].position = topLeft + Vector2f( 960, 0 );
+		stormVA[i*4+3].texCoords = Vector2f( 960, 0 );
+
+		
+		
+
+
+		topLeft.y += 440 + 540;
+
+		stormVA[i*4 + 4 * count].position = topLeft;
+		stormVA[i*4 + 4 * count].texCoords = Vector2f( 0, 0 );
+
+		stormVA[i*4+1+4 * count].position = topLeft + Vector2f( 0, 540 );
+		stormVA[i*4+1+4 * count].texCoords = Vector2f( 0, 540 );
+
+		stormVA[i*4+2+4 * count].position = topLeft + Vector2f( 960, 540 );
+		stormVA[i*4+2+4 * count].texCoords = Vector2f( 960, 540 );
+
+		stormVA[i*4+3+4 * count].position = topLeft + Vector2f( 960, 0 );
+		stormVA[i*4+3+4 * count].texCoords = Vector2f( 960, 0 );
+
+		topLeft.y += 540;
+		stormVA[i*4 + 4 * count * 2].position = topLeft;
+		stormVA[i*4 + 4 * count * 2].texCoords = Vector2f( 0, 0 );
+
+		stormVA[i*4+1 + 4 * count * 2].position = topLeft + Vector2f( 0, 540 );
+		stormVA[i*4+1 + 4 * count * 2].texCoords = Vector2f( 0, 540 );
+
+		stormVA[i*4+2 + 4 * count * 2].position = topLeft + Vector2f( 960, 540 );
+		stormVA[i*4+2 + 4 * count * 2].texCoords = Vector2f( 960, 540 );
+
+		stormVA[i*4+3 + 4 * count * 2].position = topLeft + Vector2f( 960, 0 );
+		stormVA[i*4+3 + 4 * count * 2].texCoords = Vector2f( 960, 0 );
+	}
+}
+
+bool GameSession::GameStartSeq::Update()
+{
+	if( frame < frameCount )
+	{
+		V2d vel( 60, -1 );
+
+		shipSprite.setPosition( startPos.x + frame * vel.x, startPos.y + frame * vel.y );
+		++frame;
+
+		return true;
+	}
+	else 
+		return false;
+}
+
+void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
+{
+	sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
+	rs.setPosition( Vector2f( startPos.x - 480, startPos.y - 270 ) );
+	rs.setFillColor( Color::Black );
+	target->draw( rs );
+
+
+	target->draw( stormVA, &stormTex );
+
+	target->draw( shipSprite );
+
 }

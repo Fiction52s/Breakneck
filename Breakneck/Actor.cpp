@@ -1123,6 +1123,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
+
 			/*if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
 			{
 			//	action = WIREHOLD;

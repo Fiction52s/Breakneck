@@ -69,11 +69,14 @@ struct GameSession : QuadTreeCollider
 	void rReset( QNode *node );
 	int CountActiveEnemies();
 	void UpdateTerrainShader();
+	void LevelSpecifics();
 
 	void DebugDrawActors();
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Pause( int frames );
+
+	void GameStartMovie();
 
 	void AllocateEffect();
 	BasicEffect * ActivateEffect( 
@@ -113,7 +116,8 @@ struct GameSession : QuadTreeCollider
 	std::list<sf::VertexArray*> polygonBorders;
 
 	sf::RenderTexture *preScreenTex;
-
+	sf::Sprite background;
+	sf::View bgView;
 	struct TestVA : QuadTreeEntrant
 	{
 		sf::VertexArray *va;
@@ -135,7 +139,7 @@ struct GameSession : QuadTreeCollider
 	sf::Vector2f lastViewCenter;
 	//EdgeQNode *testTree;
 	//EnemyQNode *enemyTree;
-
+	std::string fileName;
 	bool goalDestroyed;
 
 	Enemy *activeEnemyList;
@@ -172,7 +176,32 @@ struct GameSession : QuadTreeCollider
 	sf::Texture wipeTextures[17];
 	sf::Sprite wipeSprite;
 
-	//
+	struct Sequence
+	{
+		//Sequence *next;
+		//Sequence *prev;
+		int frameCount;
+		int frame;
+		virtual bool Update() = 0;
+		virtual void Draw( sf::RenderTarget *target ) = 0;
+	};
+
+	Sequence *activeSequence;
+
+	struct GameStartSeq : Sequence
+	{
+		GameStartSeq(GameSession *owner);
+		bool Update();
+		void Draw( sf::RenderTarget *target );
+		sf::Texture shipTex;
+		sf::Sprite shipSprite;
+		sf::Texture stormTex;
+		sf::Sprite stormSprite;
+		sf::VertexArray stormVA;
+		sf::Vector2f startPos;
+		GameSession *owner;
+	};
+	GameStartSeq *startSeq;
 
 
 	struct Stored
