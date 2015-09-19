@@ -59,6 +59,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	borderTree = new QuadTree( 1000000, 1000000 ); 
 
+	grassTree = new QuadTree( 1000000, 1000000 ); 
+
 	lightTree = new QuadTree( 1000000, 1000000 );
 
 	listVA = NULL;
@@ -431,13 +433,16 @@ bool GameSession::OpenFile( string fileName )
 
 			double totalPerimeter = 0;
 
-			Edge * testEdge = edges[currentEdgeIndex];
+			
 
 			double size = 16;
 			double inward = 16;
 			double spacing = 2;
 			
 
+			double grassSize = 22;
+			double grassSpacing = -5;
+			//double grassTopSize = 8;
 			/*do
 			{
 				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
@@ -449,9 +454,89 @@ bool GameSession::OpenFile( string fileName )
 				testEdge = testEdge->edge1;
 			}
 			while( testEdge != edges[currentEdgeIndex] );*/
+			
+
+			Edge * testEdge = edges[currentEdgeIndex];
+
+			int numGrassTotal = 0;
+			do
+			{
+				double remainder = length( testEdge->v1- testEdge->v0 ) / ( grassSize + grassSpacing );
+				
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+
+				numGrassTotal += num;
+				
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+
+			va = new VertexArray( sf::Quads, numGrassTotal * 4 );
+
+
+			VertexArray &grassVa = *va;
+
+			int i = 0;
+			do
+			{
+				double remainder = length( testEdge->v1- testEdge->v0 ) / ( grassSize + grassSpacing );
+
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+
+				for( int j = 0; j < num; ++j )
+				{
+					V2d posd = testEdge->v0 + (testEdge->v1 - testEdge->v0) * ((double)j / num);
+					Vector2f pos( posd.x, posd.y );
+
+					Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+					Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+					Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+					Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+
+					//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+					//borderVa[i*4].color.a = 10;
+					grassVa[i*4].position = topLeft;
+					grassVa[i*4].texCoords = Vector2f( 0, 0 );
+
+					//grassVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].color.a = 10;
+					grassVa[i*4+1].position = bottomLeft;
+					grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
+
+					//grassVa[i*4+2].color = Color::Blue;
+					//borderVa[i*4+2].color.a = 10;
+					grassVa[i*4+2].position = bottomRight;
+					grassVa[i*4+2].texCoords = Vector2f( size, grassSize );
+
+					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+					//borderVa[i*4+3].color.a = 10;
+					grassVa[i*4+3].position = topRight;
+					grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
+					++i;
+				}
+
+				
+
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+
+			VertexArray * grassVA = va;
 
 			//testEdge = edges[currentEdgeIndex];
 			
+			
+
 			int innerPolyPoints = 0;
 			do
 			{
@@ -497,7 +582,7 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray & borderVa = *va;
 			double testQuantity = 0;
 
-			int i = 0;
+			i = 0;
 			do
 			{
 				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
@@ -700,6 +785,7 @@ bool GameSession::OpenFile( string fileName )
 			testva->aabb.width = right - left;
 			testva->aabb.height = bottom - top;
 			testva->terrainVA = polygonVA;
+			testva->grassVA = grassVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
 			borderTree->Insert( testva );
@@ -1098,7 +1184,9 @@ int GameSession::Run( string fileName )
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
-	Texture & borderTex = *GetTileset( "testpattern1.png", 16, 16 )->texture;
+	Texture & borderTex = *GetTileset( "testpattern.png", 16, 16 )->texture;
+
+	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
 
 	goalDestroyed = false;
 
@@ -1684,6 +1772,9 @@ int GameSession::Run( string fileName )
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
+
+			preScreenTex->draw( *listVAIter->grassVA, &grassTex );
+
 			if( usePolyShader )
 			{
 				UpdateTerrainShader();
@@ -2390,4 +2481,26 @@ void PowerBar::Charge( int power )
 			points += power;
 		}
 	}
+}
+
+void Grass::HandleQuery( QuadTreeCollider *qtc )
+{
+	qtc->HandleEntrant( this );
+}
+
+bool Grass::IsTouchingBox( Rect<double> &r )
+{
+	double left = min( edge->v0.x, edge->v1.x );
+	double right = max( edge->v0.x, edge->v1.x );
+	double top = min( edge->v0.y, edge->v1.y );
+	double bottom = max( edge->v0.y, edge->v1.y );
+
+	Rect<double> er( left, top, right - left, bottom - top );
+
+	if( er.intersects( r ) )
+	{
+		return true;
+	}
+
+	return false;
 }

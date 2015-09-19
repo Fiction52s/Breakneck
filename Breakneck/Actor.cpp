@@ -3730,6 +3730,9 @@ bool Actor::ResolvePhysics( V2d vel )
 			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 	}
 
+	queryMode = "grass";
+	owner->grassTree->Query( this, r );
+
 
 	//if( minContact.edge != NULL )
 	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
@@ -8138,7 +8141,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 	}
-	
+	else if( queryMode == "grass" )
+	{
+		cout << "got some grass in here" << endl;
+	}
 	
 	++possibleEdgeCount;
 }

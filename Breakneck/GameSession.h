@@ -34,6 +34,16 @@ struct PowerBar
 	void Charge( int power );
 };
 
+struct Grass : QuadTreeEntrant
+{
+	Edge *edge;
+	bool edge1Grass;
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( sf::Rect<double> &r );
+
+	//bool prevGrass;
+};
+
 struct GameSession : QuadTreeCollider
 {
 	GameSession(GameController &c, sf::RenderWindow *rw, 
@@ -108,6 +118,7 @@ struct GameSession : QuadTreeCollider
 	{
 		sf::VertexArray *va;
 		sf::VertexArray *terrainVA;
+		sf::VertexArray *grassVA;
 		bool show;
 		//TestVA *prev;
 		TestVA *next;
@@ -138,6 +149,7 @@ struct GameSession : QuadTreeCollider
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 	QuadTree * lightTree;
+	QuadTree * grassTree;
 
 	bool usePolyShader;
 
