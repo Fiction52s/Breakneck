@@ -117,6 +117,126 @@ void TerrainPolygon::Finalize()
 	}
 	
 
+	/*double grassSize = 22;
+			double grassSpacing = -5;
+
+			Edge * testEdge = edges[currentEdgeIndex];
+
+			int numGrassTotal = 0;
+			do
+			{
+				double remainder = length( testEdge->v1- testEdge->v0 ) / ( grassSize + grassSpacing );
+				
+				int num = 1;
+				num = floor( remainder ) + 1;
+
+				numGrassTotal += num;
+				
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+
+			va = new VertexArray( sf::Quads, numGrassTotal * 4 );
+
+
+			VertexArray &grassVa = *va;
+
+			int i = 0;
+			do
+			{
+				double remainder = length( testEdge->v1- testEdge->v0 ) / ( grassSize + grassSpacing );
+
+				//this is super inefficient
+				int num = 1;
+				
+
+				num = floor( remainder ) + 1;
+
+				for( int j = 0; j < num; ++j )
+				{
+					V2d posd = testEdge->v0 + (testEdge->v1 - testEdge->v0) * ((double)j / num);
+					Vector2f pos( posd.x, posd.y );
+
+					Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+					Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+					Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+					Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+
+					//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+					//borderVa[i*4].color.a = 10;
+					grassVa[i*4].position = topLeft;
+					grassVa[i*4].texCoords = Vector2f( 0, 0 );
+
+					//grassVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].color.a = 10;
+					grassVa[i*4+1].position = bottomLeft;
+					grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
+
+					//grassVa[i*4+2].color = Color::Blue;
+					//borderVa[i*4+2].color.a = 10;
+					grassVa[i*4+2].position = bottomRight;
+					grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
+
+					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+					//borderVa[i*4+3].color.a = 10;
+					grassVa[i*4+3].position = topRight;
+					grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
+					++i;
+				}
+
+				
+
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+
+			VertexArray * grassVA = va;
+
+			//testEdge = edges[currentEdgeIndex];
+			
+			double size = 16;
+			double inward = 16;
+			double spacing = 2;
+
+			int innerPolyPoints = 0;
+			do
+			{
+				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				V2d adjv0 = testEdge->v0 - bisector0 * inward;
+				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+
+				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+
+
+				//double remainder = length( adjv1 - adjv0 ) / size;
+				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				
+				//int num = remainder / size;
+
+				//remainder = remainder - floor( remainder );
+
+				//double eachAdd = remainder / num;
+
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+				
+
+				innerPolyPoints += num;
+				
+
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );*/
+
+
 	//p2t::Sweep
 	//va = new VertexArray( sf::Triangles, points.size() * 3 );
 /*	vector<int> working_set;
@@ -554,8 +674,8 @@ bool EditSession::OpenFile( string fileName )
 				is >> numSegments;
 				for( int j = 0; j < numSegments; ++j )
 				{
-					int edgeQuantity;
-					is >> edgeQuantity;
+					int index;
+					is >> index;
 					int reps;
 					is >> reps;
 				}
@@ -967,8 +1087,8 @@ void EditSession::WriteFile(string fileName)
 			int edgesWithSegments = 0;
 			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 			{
-				(*it2).segments.push_back( GrassSeg( 0, 0 ) );
-				if( !(*it2).segments.empty() )
+				(*it2).grass.push_back( GrassSeg( 0, 0 ) );
+				if( !(*it2).grass.empty() )
 				{
 					edgesWithSegments++;
 				}
@@ -985,13 +1105,13 @@ void EditSession::WriteFile(string fileName)
 				//testing only
 				
 
-				int numSegments = (*it2).segments.size();
+				int numSegments = (*it2).grass.size();
 
 				of << edgeIndex << " " << numSegments << endl;
 
-				for( list<GrassSeg>::iterator git = (*it2).segments.begin(); git != (*it2).segments.end(); ++git )
+				for( list<GrassSeg>::iterator git = (*it2).grass.begin(); git != (*it2).grass.end(); ++git )
 				{
-					of << (*git).edgeQuantity << " " << (*git).reps << endl;
+					of << (*git).index << " " << (*git).reps << endl;
 				}
 
 				edgeIndex++;

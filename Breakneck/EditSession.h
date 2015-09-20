@@ -13,11 +13,11 @@ struct ActorParams;
 
 struct GrassSeg
 {
-	GrassSeg( int p_quantity, int p_reps )
-		:edgeQuantity( p_quantity ), reps( p_reps )
+	GrassSeg( int p_index, int p_reps )
+		:index( p_index ), reps( p_reps )
 	{
 	}
-	int edgeQuantity;
+	int index;
 	int reps; //negative means backwards in quantity
 };
 
@@ -26,7 +26,7 @@ struct TerrainPoint
 	TerrainPoint( sf::Vector2i &pos, bool selected );
 	sf::Vector2i pos;
 	bool selected;
-	std::list<GrassSeg> segments;
+	std::list<GrassSeg> grass;
 	//int special;
 };
 

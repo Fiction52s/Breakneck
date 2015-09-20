@@ -414,12 +414,12 @@ bool GameSession::OpenFile( string fileName )
 				is >> numSegments;
 				for( int j = 0; j < numSegments; ++j )
 				{
-					int edgeQuantity;
-					is >> edgeQuantity;
+					int index;
+					is >> index;
 					int reps;
 					is >> reps;
 
-					segments.push_back( GrassSegment( edgeIndex, edgeQuantity, reps ) );
+					segments.push_back( GrassSegment( edgeIndex, index, reps ) );
 				}
 			}
 
@@ -456,67 +456,43 @@ bool GameSession::OpenFile( string fileName )
 
 			double totalPerimeter = 0;
 
-			
-
-			
-			
 
 			double grassSize = 22;
 			double grassSpacing = -5;
-			//double grassTopSize = 8;
-			/*do
-			{
-				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-				V2d adjv0 = testEdge->v0 - bisector0 * inward;
-				V2d adjv1 = testEdge->v1 - bisector1 * inward;
-
-				totalPerimeter += length( adjv1 - adjv0 );
-				testEdge = testEdge->edge1;
-			}
-			while( testEdge != edges[currentEdgeIndex] );*/
-			
 
 			Edge * testEdge = edges[currentEdgeIndex];
 
 			int numGrassTotal = 0;
-			do
-			{
-				double remainder = length( testEdge->v1- testEdge->v0 ) / ( grassSize + grassSpacing );
-				
-				int num = 1;
-				while( remainder > 1.5 )
-				{
-					++num;
-					remainder -= 1;
-				}
 
-				numGrassTotal += num;
-				
-				testEdge = testEdge->edge1;
+			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{
+				numGrassTotal += (*it).reps + 1;
 			}
-			while( testEdge != edges[currentEdgeIndex] );
 
 			va = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
-
+			cout << "num grass total: " << numGrassTotal << endl;
 			VertexArray &grassVa = *va;
 
-			int i = 0;
-			do
-			{
-				double remainder = length( testEdge->v1- testEdge->v0 ) / ( grassSize + grassSpacing );
+			int segIndex = 0;
+			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{	
+				Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
+				V2d v0 = segEdge->v0;
+				V2d v1 = segEdge->v1;
 
-				int num = 1;
-				while( remainder > 1.5 )
-				{
-					++num;
-					remainder -= 1;
-				}
+				int start = (*it).index;
+				int end = (*it).index + (*it).reps;
 
-				for( int j = 0; j < num; ++j )
+				int grassCount = (*it).reps + 1;
+
+				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+				int num = floor( remainder ) + 1;
+
+				for( int i = 0; i < grassCount; ++i )
 				{
-					V2d posd = testEdge->v0 + (testEdge->v1 - testEdge->v0) * ((double)j / num);
+					V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
 					Vector2f pos( posd.x, posd.y );
 
 					Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
@@ -526,31 +502,27 @@ bool GameSession::OpenFile( string fileName )
 
 					//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
 					//borderVa[i*4].color.a = 10;
-					grassVa[i*4].position = topLeft;
-					grassVa[i*4].texCoords = Vector2f( 0, 0 );
+					grassVa[i*4 + segIndex * 4].position = topLeft;
+					grassVa[i*4 + segIndex * 4].texCoords = Vector2f( 0, 0 );
 
 					//grassVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
-					grassVa[i*4+1].position = bottomLeft;
-					grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
+					grassVa[i*4+1 + segIndex * 4].position = bottomLeft;
+					grassVa[i*4+1 + segIndex * 4].texCoords = Vector2f( 0, grassSize );
 
 					//grassVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
-					grassVa[i*4+2].position = bottomRight;
-					grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
+					grassVa[i*4+2 + segIndex * 4].position = bottomRight;
+					grassVa[i*4+2 + segIndex * 4].texCoords = Vector2f( grassSize, grassSize );
 
 					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
-					grassVa[i*4+3].position = topRight;
-					grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
-					++i;
+					grassVa[i*4+3 + segIndex * 4].position = topRight;
+					grassVa[i*4+3 + segIndex * 4].texCoords = Vector2f( grassSize, 0 );
+					//++i;
 				}
-
-				
-
-				testEdge = testEdge->edge1;
+				segIndex++;
 			}
-			while( testEdge != edges[currentEdgeIndex] );
 
 			VertexArray * grassVA = va;
 
@@ -605,7 +577,7 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray & borderVa = *va;
 			double testQuantity = 0;
 
-			i = 0;
+			int i = 0;
 			do
 			{
 				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
@@ -2643,7 +2615,7 @@ GameSession::GameStartSeq::GameStartSeq( GameSession *own )
 	
 	//shipSprite.setPosition( 250, 250 );
 	startPos = Vector2f( owner->player.position.x, owner->player.position.y );
-	frameCount = 180;
+	frameCount = 1;//180;
 	frame = 0;
 
 	int count = 6;

@@ -36,12 +36,12 @@ struct PowerBar
 
 struct GrassSegment
 {
-	GrassSegment( int edgeI, int edgeQ, int rep )
-		:edgeIndex( edgeI ), edgeQuantity( edgeQ ), 
+	GrassSegment( int edgeI, int grassIndex, int rep )
+		:edgeIndex( edgeI ), index( grassIndex ), 
 		reps (rep)
 	{}
 	int edgeIndex;
-	int edgeQuantity;
+	int index;
 	int reps;
 };
 
