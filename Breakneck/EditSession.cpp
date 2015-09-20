@@ -55,7 +55,7 @@ void TerrainPolygon::Finalize()
 	vector<p2t::Point*> polyline;
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
-		polyline.push_back( new p2t::Point((*it).first.x, (*it).first.y ) );
+		polyline.push_back( new p2t::Point((*it).pos.x, (*it).pos.y ) );
 	}
 
 	p2t::CDT * cdt = new p2t::CDT( polyline );
@@ -90,30 +90,30 @@ void TerrainPolygon::Finalize()
 	if( points.size() > 0 )
 	{
 		PointList::iterator it = points.begin(); 
-		lines[0] = sf::Vector2f( (*it).first.x, (*it).first.y );
-		lines[2 * points.size() - 1 ] = sf::Vector2f( (*it).first.x, (*it).first.y );
+		lines[0] = sf::Vector2f( (*it).pos.x, (*it).pos.y );
+		lines[2 * points.size() - 1 ] = sf::Vector2f( (*it).pos.x, (*it).pos.y );
 		++it;
 		++i;
 		while( it != points.end() )
 		{
-			lines[i] = sf::Vector2f( (*it).first.x, (*it).first.y );
-			lines[++i] = sf::Vector2f( (*it).first.x, (*it).first.y ); 
+			lines[i] = sf::Vector2f( (*it).pos.x, (*it).pos.y );
+			lines[++i] = sf::Vector2f( (*it).pos.x, (*it).pos.y ); 
 			++i;
 			++it;
 		}
 	}
 	PointList::iterator it = points.begin();
-	left = (*it).first.x;
-	right = (*it).first.x;
-	top = (*it).first.y;
-	bottom = (*it).first.y;
+	left = (*it).pos.x;
+	right = (*it).pos.x;
+	top = (*it).pos.y;
+	bottom = (*it).pos.y;
 	++it;
 	for( ; it != points.end(); ++it )
 	{
-		left = min( (*it).first.x, left );
-		right = max( (*it).first.x, right );
-		top = min( (*it).first.y, top );
-		bottom = max( (*it).first.y, bottom );
+		left = min( (*it).pos.x, left );
+		right = max( (*it).pos.x, right );
+		top = min( (*it).pos.y, top );
+		bottom = max( (*it).pos.y, bottom );
 	}
 	
 
@@ -158,7 +158,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	PointList::iterator it = temp.begin();
 	while( it != temp.end() )
 	{
-		if( (*it).second ) //selected
+		if( (*it).selected ) //selected
 		{
 			temp.erase( it++ );
 		}
@@ -190,12 +190,12 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt 
 			cs.setRadius( 8 * zoomMultiple );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
-			if( (*it).second )
+			if( (*it).selected )
 				cs.setFillColor( Color::Red );
 			else
 				cs.setFillColor( Color::Green );
 
-			cs.setPosition( (*it).first.x, (*it).first.y );
+			cs.setPosition( (*it).pos.x, (*it).pos.y );
 			rt->draw( cs );
 		}
 		rt->draw( lines, points.size() * 2, sf::Lines );
@@ -264,7 +264,7 @@ void TerrainPolygon::SetSelected( bool select )
 
 		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 		{
-			(*it).second = false;
+			(*it).selected = false;
 		}
 	}
 }
@@ -281,8 +281,8 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 	
 	for (; it != points.end(); jt = it++ ) 
 	{
-		Vector2f point((*it).first.x, (*it).first.y );
-		Vector2f pointJ((*jt).first.x, (*jt).first.y );
+		Vector2f point((*it).pos.x, (*it).pos.y );
+		Vector2f pointJ((*jt).pos.x, (*jt).pos.y );
 		if ( ((point.y > test.y ) != ( pointJ.y > test.y ) ) &&
 			(test.x < (pointJ.x-point.x) * (test.y-point.y) / (pointJ.y-point.y) + point.x) )
 				c = !c;
@@ -332,7 +332,7 @@ bool TerrainPolygon::IsClockwise()
 	int i = 0;
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
-		pointArray[i] = (*it).first;
+		pointArray[i] = (*it).pos;
 		++i;
 	}
 
@@ -374,7 +374,7 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 		//p->points.push_back( p->points.front() );
 
 		PointList::iterator it = points.begin();
-		Vector2i curr = (*it).first;
+		Vector2i curr = (*it).pos;
 		++it;
 		Vector2i next;
 		
@@ -386,11 +386,11 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 			if( it == points.end() )
 				it = points.begin();
 
-			next = (*it).first;
+			next = (*it).pos;
 
 
 			PointList::iterator pit = p->points.begin();
-			Vector2i pcurr = (*pit).first;
+			Vector2i pcurr = (*pit).pos;
 			++pit;
 			Vector2i pnext;// = (*pit);
 
@@ -399,7 +399,7 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 				if( pit == p->points.end() )
 					pit = p->points.begin();
 
-				pnext = (*pit).first;
+				pnext = (*pit).pos;
 			
 				LineIntersection li = EditSession::SegmentIntersect( curr, next, pcurr, pnext );	
 
@@ -411,12 +411,12 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 					return true;
 				}
 
-				pcurr = (*pit).first;
+				pcurr = (*pit).pos;
 
 				if( pit == p->points.begin() )
 					break;
 			}
-			curr = (*it).first;
+			curr = (*it).pos;
 
 			if( it == points.begin() )
 			{
@@ -502,7 +502,7 @@ void EditSession::Draw()
 		
 		for( PointList::iterator it = polygonInProgress->points.begin(); it != polygonInProgress->points.end(); ++it )
 		{
-			cs.setPosition( (*it).first.x, (*it).first.y );
+			cs.setPosition( (*it).pos.x, (*it).pos.y );
 			w->draw( cs );
 		}		
 	}
@@ -538,8 +538,31 @@ bool EditSession::OpenFile( string fileName )
 			{
 				is >> x;
 				is >> y;
-				poly->points.push_back( pair<Vector2i,bool>( Vector2i(x,y), false ) );
+				//is >> special;
+				poly->points.push_back( TerrainPoint( Vector2i(x,y), false ) );
 			}
+
+			int edgesWithSegments;
+			is >> edgesWithSegments;
+
+
+			for( int i = 0; i < edgesWithSegments; ++i )
+			{
+				int edgeIndex;
+				is >> edgeIndex;
+				int numSegments;
+				is >> numSegments;
+				for( int j = 0; j < numSegments; ++j )
+				{
+					int edgeQuantity;
+					is >> edgeQuantity;
+					int reps;
+					is >> reps;
+				}
+			}
+			
+
+			
 
 			poly->Finalize();
 		}
@@ -557,10 +580,11 @@ bool EditSession::OpenFile( string fileName )
 			
 			for( int i = 0; i < polyPoints; ++i )
 			{
-				int x,y;
+				int x,y, special;
 				is >> x;
 				is >> y;
-				poly->points.push_back( pair<Vector2i,bool>( Vector2i(x,y), false ) );
+				//is >> special;
+				poly->points.push_back( TerrainPoint( Vector2i(x,y), false ) );
 			}
 
 			poly->Finalize();
@@ -909,6 +933,9 @@ void EditSession::WriteFile(string fileName)
 	int movingPlatCount = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
+		
+		
+
 		if( (*it)->path.size() == 0 )
 			pointCount += (*it)->points.size();
 		else
@@ -934,12 +961,43 @@ void EditSession::WriteFile(string fileName)
 
 			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 			{
-				of << (*it2).first.x << " " << (*it2).first.y << endl;
+				of << (*it2).pos.x << " " << (*it2).pos.y << endl; // << " " << (int)(*it2).special << endl;
+			}
+
+			int edgesWithSegments = 0;
+			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			{
+				(*it2).segments.push_back( GrassSeg( 0, 0 ) );
+				if( !(*it2).segments.empty() )
+				{
+					edgesWithSegments++;
+				}
+				
+			}
+
+			of << edgesWithSegments << endl;
+
+
+
+			int edgeIndex = 0;
+			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			{
+				//testing only
+				
+
+				int numSegments = (*it2).segments.size();
+
+				of << edgeIndex << " " << numSegments << endl;
+
+				for( list<GrassSeg>::iterator git = (*it2).segments.begin(); git != (*it2).segments.end(); ++git )
+				{
+					of << (*git).edgeQuantity << " " << (*git).reps << endl;
+				}
+
+				edgeIndex++;
 			}
 		}
-	}
-
-	
+	}	
 
 	of << movingPlatCount << endl;
 
@@ -957,7 +1015,7 @@ void EditSession::WriteFile(string fileName)
 
 			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 			{
-				of << (*it2).first.x << " " << (*it2).first.y << endl;
+				of << (*it2).pos.x << " " << (*it2).pos.y << endl;
 			}
 
 
@@ -1010,9 +1068,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	for(; it != poly->points.end(); ++it )
 	{
-		if( !brush->ContainsPoint( Vector2f( (*it).first.x, (*it).first.y) ) )
+		if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
 		{
-			startPoint = (*it).first;
+			startPoint = (*it).pos;
 			startPointFound = true;
 			currentPoly = poly;
 			otherPoly = brush;
@@ -1025,9 +1083,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		it = brush->points.begin();
 		for(; it != brush->points.end(); ++it )
 		{
-			if( !poly->ContainsPoint( Vector2f( (*it).first.x, (*it).first.y) ) )
+			if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
 			{
-				startPoint = (*it).first;
+				startPoint = (*it).pos;
 				startPointFound = true;
 				currentPoly = brush;
 				otherPoly = poly;
@@ -1044,7 +1102,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	{
 		it = currentPoly->points.begin();
 	}
-	Vector2i nextPoint = (*it).first;
+	Vector2i nextPoint = (*it).pos;
 
 
 	//z.points.push_back( startPoint );
@@ -1088,12 +1146,12 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		
 
 		PointList::iterator bit = otherPoly->points.begin();
-		Vector2i bCurrPoint = (*bit).first;
+		Vector2i bCurrPoint = (*bit).pos;
 		++bit;
 		Vector2i bNextPoint;// = (*++bit);
 		Vector2i minPoint;
 		
-		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().first, bCurrPoint );
+		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().pos, bCurrPoint );
 		if( !li.parallel && (abs( li.position.x - currPoint.x ) >= 1 || abs( li.position.y - currPoint.y ) >= 1 ))
 		{
 			minIntersection.x = li.position.x;
@@ -1107,7 +1165,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 		for(; bit != otherPoly->points.end(); ++bit )
 		{
-			bNextPoint = (*bit).first;
+			bNextPoint = (*bit).pos;
 			LineIntersection li = SegmentIntersect( currPoint, nextPoint, bCurrPoint, bNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 			if( !li.parallel && length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
@@ -1158,10 +1216,10 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 			currPoint = minIntersection;
 
-			z.points.push_back( pair<Vector2i,bool>( currPoint, false ) );
+			z.points.push_back( TerrainPoint( currPoint, false ) );
 
 			
-			nextPoint = (*it).first;
+			nextPoint = (*it).pos;
 
 			
 		/*	if( nextPoint == startPoint )
@@ -1185,9 +1243,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		else
 		{
 
-			currPoint = (*it).first;
+			currPoint = (*it).pos;
 
-			z.points.push_back( pair<Vector2i,bool>( currPoint, false ) );
+			z.points.push_back( TerrainPoint( currPoint, false ) );
 
 		//	cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
@@ -1200,7 +1258,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			{
 				it = currentPoly->points.begin();
 			}
-			nextPoint = (*it).first;
+			nextPoint = (*it).pos;
 	//		cout << "nextpoing from adding: " << nextPoint.x << ", " << nextPoint.y << endl;
 		}
 		firstTime = false;
@@ -1539,7 +1597,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									//test final line
 
-									if( !PointValid( polygonInProgress->points.back().first, polygonInProgress->points.front().first ) )
+									if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
 										break;
 
 									list<TerrainPolygon*>::iterator it = polygons.begin();
@@ -1680,11 +1738,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( PointList::iterator it2 = (*it)->points.begin(); 
 										it2 != (*it)->points.end(); ++it2 )
 									{
-										if( length( worldPos - V2d( (*it2).first.x, (*it2).first.y ) ) < 8 * zoomMultiple )
+										if( length( worldPos - V2d( (*it2).pos.x, (*it2).pos.y ) ) < 8 * zoomMultiple )
 										{
-											if( (*it2).second ) //selected 
+											if( (*it2).selected ) //selected 
 											{
-												(*it2).second = false;
+												(*it2).selected = false;
 												emptySpace = false;
 												break;
 											}
@@ -1699,11 +1757,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													for( PointList::iterator tempIt = (*it)->points.begin();
 														tempIt != (*it)->points.end(); ++tempIt )
 													{
-														(*tempIt).second = false;
+														(*tempIt).selected = false;
 													}
 												}
 
-												(*it2).second = true;
+												(*it2).selected = true;
 												emptySpace = false;
 												break;
 
@@ -1889,6 +1947,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									rectStart = Vector2i( worldPos.x, worldPos.y );
 								}
 							}
+							else if( ev.key.code == Keyboard::R )
+							{
+								if( CountSelectedPoints() > 1 )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+										{
+											if( (*it2).selected ) //selected
+											{
+												
+											}
+										}
+									}
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
@@ -1955,16 +2029,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										for( PointList::iterator it2 = (*it)->points.begin(); 
 											it2 != (*it)->points.end(); ++it2 )
 										{
-											if( selectRect.contains( Vector2f( (*it2).first.x, (*it2).first.y ) ) )
+											if( selectRect.contains( Vector2f( (*it2).pos.x, (*it2).pos.y ) ) )
 											{
-												if( (*it2).second ) //selected 
+												if( (*it2).selected ) //selected 
 												{
 													if( Keyboard::isKeyPressed( Keyboard::LShift ) )
 													{
 													}
 													else
 													{
-														(*it2).second = false;
+														(*it2).selected = false;
 														emptySpace = false;
 													}
 													
@@ -1985,7 +2059,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														//}
 													}
 
-													(*it2).second = true;
+													(*it2).selected = true;
 													emptySpace = false;
 												//	break;
 
@@ -1998,10 +2072,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 
 									TerrainPolygon tempRectPoly;
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left, selectRect.top ), false ) );
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left + selectRect.width, selectRect.top ), false ) );
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left + selectRect.width, selectRect.top + selectRect.height ), false ) );
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left, selectRect.top + selectRect.height ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left, selectRect.top ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left + selectRect.width, selectRect.top ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left + selectRect.width, selectRect.top + selectRect.height ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left, selectRect.top + selectRect.height ), false ) );
 									tempRectPoly.Finalize();
 
 
@@ -2830,17 +2904,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( emptySpace )
 					{
 						Vector2i worldi( testPoint.x, testPoint.y );
-						if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().first.x, 
-							polygonInProgress->points.back().first.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+						if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
+							polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 						{
-							if( PointValid( polygonInProgress->points.back().first, worldi ) )
+							if( PointValid( polygonInProgress->points.back().pos, worldi ) )
 							{
-								polygonInProgress->points.push_back( pair<Vector2i,bool>( worldi, false ) );
+								polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
 							}
 						}
 						else if( polygonInProgress->points.empty() )
 						{
-							polygonInProgress->points.push_back( pair<Vector2i,bool>( worldi, false ) );
+							polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
 							
 						}
 					}
@@ -2875,9 +2949,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							for( PointList::iterator pointIt = points.begin();
 								pointIt != points.end(); ++pointIt )
 							{
-								if( (*pointIt).second ) //selected
+								if( (*pointIt).selected ) //selected
 								{
-									(*pointIt).first += pointGrabDelta;
+									(*pointIt).pos += pointGrabDelta;
 									affected = true;
 								}
 							}
@@ -2914,7 +2988,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						for( PointList::iterator pointIt = points.begin();
 							pointIt != points.end(); ++pointIt )
 						{
-							(*pointIt).first += polyGrabDelta;		
+							(*pointIt).pos += polyGrabDelta;		
 						}
 
 						PointList temp = (*it)->points;
@@ -2975,14 +3049,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									double dist = abs(
 										cross( 
-										V2d( testPoint.x - (*prevIt).first.x, testPoint.y - (*prevIt).first.y ), 
-										normalize( V2d( (*currIt).first.x - (*prevIt).first.x, (*currIt).first.y - (*prevIt).first.y ) ) ) );
+										V2d( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
+										normalize( V2d( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) ) );
 									double testQuantity =  dot( 
-											V2d( testPoint.x - (*prevIt).first.x, testPoint.y - (*prevIt).first.y ), 
-											normalize( V2d( (*currIt).first.x - (*prevIt).first.x, (*currIt).first.y - (*prevIt).first.y ) ) );
+											V2d( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
+											normalize( V2d( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) );
 
-									V2d pr( (*prevIt).first.x, (*prevIt).first.y );
-									V2d cu( (*currIt).first.x, (*currIt).first.y );
+									V2d pr( (*prevIt).pos.x, (*prevIt).pos.y );
+									V2d cu( (*currIt).pos.x, (*currIt).pos.y );
 									V2d te( testPoint.x, testPoint.y );
 									
 									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
@@ -3162,7 +3236,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				int progressSize = polygonInProgress->points.size();
 				if( progressSize > 0 )
 				{
-					Vector2i backPoint = polygonInProgress->points.back().first;
+					Vector2i backPoint = polygonInProgress->points.back().pos;
 			
 					Color validColor = Color::Green;
 					Color invalidColor = Color::Red;
@@ -3185,7 +3259,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						for( PointList::iterator it = polygonInProgress->points.begin(); 
 							it != polygonInProgress->points.end(); ++it )
 						{
-							v[i] = Vertex( Vector2f( (*it).first.x, (*it).first.y ) );
+							v[i] = Vertex( Vector2f( (*it).pos.x, (*it).pos.y ) );
 							++i;
 						}
 						w->draw( v );
@@ -3765,7 +3839,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	{
 		PointList::iterator it = polygonInProgress->points.begin();
 		//polygonInProgress->points.push_back( polygonInProgress->points.back() )
-		Vector2i pre = (*it).first;
+		Vector2i pre = (*it).pos;
 		++it;
 		
 		//minimum angle
@@ -3774,8 +3848,8 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			{
 				PointList::reverse_iterator rit = polygonInProgress->points.rbegin();
 				rit++;
-				double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->points.back().first.x, polygonInProgress->points.back().first.y ) )
-					, normalize( V2d((*rit).first.x, (*rit).first.y ) - V2d( polygonInProgress->points.back().first.x, polygonInProgress->points.back().first.y ) ) );
+				double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) )
+					, normalize( V2d((*rit).pos.x, (*rit).pos.y ) - V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) ) );
 				if( ff > minAngle )
 				{
 					//cout << "ff: " << ff << endl;
@@ -3787,7 +3861,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 		//return true;
 
 		//make sure I'm not too close to the very first point and that my line isn't too close to the first point either
-		if( point.x != polygonInProgress->points.front().first.x || point.y != polygonInProgress->points.front().first.y )
+		if( point.x != polygonInProgress->points.front().pos.x || point.y != polygonInProgress->points.front().pos.y )
 		{
 			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
 			if( separation < minimumEdgeLength )
@@ -3809,28 +3883,28 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 		//check for distance to point in the polygon and edge distances
 
-		if( point.x == polygonInProgress->points.front().first.x && point.y == polygonInProgress->points.front().first.y )
+		if( point.x == polygonInProgress->points.front().pos.x && point.y == polygonInProgress->points.front().pos.y )
 		{
-			pre = (*it).first;
+			pre = (*it).pos;
 			++it;
 		}
 
 		{
  		for( ; it != polygonInProgress->points.end(); ++it )
 		{
-			if( (*it) == polygonInProgress->points.back() )
+			if( (*it).pos == polygonInProgress->points.back().pos )
 				continue;
 
 			LineIntersection li = lineIntersection( V2d( prev.x, prev.y ), V2d( point.x, point.y ),
-						V2d( pre.x, pre.y ), V2d( (*it).first.x, (*it).first.y ) );
-			float tempLeft = min( pre.x, (*it).first.x ) - 0;
-			float tempRight = max( pre.x, (*it).first.x ) + 0;
-			float tempTop = min( pre.y, (*it).first.y ) - 0;
-			float tempBottom = max( pre.y, (*it).first.y ) + 0;
+						V2d( pre.x, pre.y ), V2d( (*it).pos.x, (*it).pos.y ) );
+			float tempLeft = min( pre.x, (*it).pos.x ) - 0;
+			float tempRight = max( pre.x, (*it).pos.x ) + 0;
+			float tempTop = min( pre.y, (*it).pos.y ) - 0;
+			float tempBottom = max( pre.y, (*it).pos.y ) + 0;
 			if( !li.parallel )
 			{
 				
-				double separation = length( V2d(point.x, point.y) - V2d((*it).first.x,(*it).first.y ) );
+				double separation = length( V2d(point.x, point.y) - V2d((*it).pos.x,(*it).pos.y ) );
 				
 				if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
 				{
@@ -3856,13 +3930,13 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				}
 
 				Vector2i ai = point - pre;
-				Vector2i bi = (*it).first - pre;
+				Vector2i bi = (*it).pos - pre;
 				V2d a(ai.x, ai.y);
 				V2d b(bi.x, bi.y);
 				double res = abs(cross( a, normalize( b )));
 				double des = dot( a, normalize( b ));
 
-				Vector2i ci = (*it).first - prev;
+				Vector2i ci = (*it).pos - prev;
 				Vector2i di = point - prev;
 				V2d c( ci.x, ci.y);
 				V2d d( di.x, di.y );
@@ -3872,7 +3946,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 				//cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
 
-				if( point.x == polygonInProgress->points.front().first.x && point.y == polygonInProgress->points.front().first.y )
+				if( point.x == polygonInProgress->points.front().pos.x && point.y == polygonInProgress->points.front().pos.y )
 				{
 				}
 				else
@@ -3888,7 +3962,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				//cout << "parallel" << endl;
 				//return false;
 			}
-			pre = (*it).first;
+			pre = (*it).pos;
 		}
 		}
 	}
@@ -3914,16 +3988,16 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	//	if( point.x <= p->right && point.x >= p->left && point.y >= p->top && point.y <= p->bottom )
 	//	{
 			PointList::iterator it2 = p->points.begin();
-			Vector2i prevPoint = (*it2).first;
+			Vector2i prevPoint = (*it2).pos;
 			++it2;
 			for( ; it2 != p->points.end(); ++it2 )
 			{
-				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d((*it2).first.x, (*it2).first.y),
+				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d((*it2).pos.x, (*it2).pos.y),
 					V2d( prev.x, prev.y ), V2d( point.x, point.y ) );
-				float tempLeft = min( prevPoint.x, (*it2).first.x );
-				float tempRight = max( prevPoint.x, (*it2).first.x );
-				float tempTop = min( prevPoint.y, (*it2).first.y );
-				float tempBottom = max( prevPoint.y, (*it2).first.y );
+				float tempLeft = min( prevPoint.x, (*it2).pos.x );
+				float tempRight = max( prevPoint.x, (*it2).pos.x );
+				float tempTop = min( prevPoint.y, (*it2).pos.y );
+				float tempBottom = max( prevPoint.y, (*it2).pos.y );
 				if( !li.parallel )
 				{
 					if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
@@ -3935,7 +4009,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 					}
 				}
-				prevPoint = (*it2).first;
+				prevPoint = (*it2).pos;
 				
 			}
 	}
@@ -4259,7 +4333,7 @@ int EditSession::CountSelectedPoints()
 	{
 		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 		{
-			if( (*it2).second ) //selected
+			if( (*it2).selected ) //selected
 			{
 				++count;
 			}
@@ -4355,8 +4429,8 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4419,8 +4493,8 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4484,8 +4558,8 @@ std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygo
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4536,8 +4610,8 @@ std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4621,4 +4695,9 @@ void ActorGroup::WriteFile( std::ofstream &of )
 	{
 		(*it)->WriteFile( of );
 	}
+}
+
+TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
+	:pos( p ), selected( s )
+{
 }

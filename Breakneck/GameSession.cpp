@@ -337,6 +337,7 @@ bool GameSession::OpenFile( string fileName )
 				int px, py;
 				is >> px;
 				is >> py;
+				//is >> spec;
 			
 				points[pointCounter].x = px;
 				points[pointCounter].y = py;
@@ -397,6 +398,25 @@ bool GameSession::OpenFile( string fileName )
 				{
 					ee->edge0 = edges[currentEdgeIndex + i - 1];
 					ee->edge1 = edges[currentEdgeIndex + i + 1];
+				}
+			}
+
+			int edgesWithSegments;
+			is >> edgesWithSegments;
+
+
+			for( int i = 0; i < edgesWithSegments; ++i )
+			{
+				int edgeIndex;
+				is >> edgeIndex;
+				int numSegments;
+				is >> numSegments;
+				for( int j = 0; j < numSegments; ++j )
+				{
+					int edgeQuantity;
+					is >> edgeQuantity;
+					int reps;
+					is >> reps;
 				}
 			}
 

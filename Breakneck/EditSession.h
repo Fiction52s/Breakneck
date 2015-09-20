@@ -10,7 +10,27 @@
 
 
 struct ActorParams;
-typedef std::list<std::pair<sf::Vector2i, bool>> PointList;
+
+struct GrassSeg
+{
+	GrassSeg( int p_quantity, int p_reps )
+		:edgeQuantity( p_quantity ), reps( p_reps )
+	{
+	}
+	int edgeQuantity;
+	int reps; //negative means backwards in quantity
+};
+
+struct TerrainPoint
+{
+	TerrainPoint( sf::Vector2i &pos, bool selected );
+	sf::Vector2i pos;
+	bool selected;
+	std::list<GrassSeg> segments;
+	//int special;
+};
+
+typedef std::list<TerrainPoint> PointList;
 
 struct TerrainPolygon
 {
