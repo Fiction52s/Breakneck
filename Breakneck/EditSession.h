@@ -46,12 +46,15 @@ struct TerrainPolygon
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
+	void UpdateGrass2();
+	void UpdateGrass( sf::Vector2<double> mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	bool IsTouching( TerrainPolygon *p );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	sf::VertexArray *grassVA;
+	int numGrassTotal;
 	sf::Texture *grassTex;
 	int vaSize;
 	bool selected;
@@ -62,6 +65,7 @@ struct TerrainPolygon
 	std::list<sf::Vector2i> path;
 	std::list<ActorParams*> enemies;
 	int writeIndex;
+	bool showGrass;
 
 };
 
@@ -138,7 +142,7 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
-
+	bool showGrass;
 	sf::Texture grassTex;
 	bool pointGrab;
 	sf::Vector2i pointGrabPos;
