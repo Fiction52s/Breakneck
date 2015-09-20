@@ -7,6 +7,7 @@
 #include <list>
 #include "VectorMath.h"
 #include "GUI.h"
+#include "Tileset.h"
 
 
 struct ActorParams;
@@ -34,7 +35,7 @@ typedef std::list<TerrainPoint> PointList;
 
 struct TerrainPolygon
 {
-	TerrainPolygon();
+	TerrainPolygon( sf::Texture *grassTex );
 	~TerrainPolygon();
 	
 	PointList points;
@@ -50,6 +51,8 @@ struct TerrainPolygon
 	bool IsTouching( TerrainPolygon *p );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
+	sf::VertexArray *grassVA;
+	sf::Texture *grassTex;
 	int vaSize;
 	bool selected;
 	int left;
@@ -59,6 +62,7 @@ struct TerrainPolygon
 	std::list<sf::Vector2i> path;
 	std::list<ActorParams*> enemies;
 	int writeIndex;
+
 };
 
 struct StaticLight
@@ -134,6 +138,8 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
+
+	sf::Texture grassTex;
 	bool pointGrab;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
