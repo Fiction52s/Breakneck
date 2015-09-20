@@ -34,6 +34,17 @@ struct PowerBar
 	void Charge( int power );
 };
 
+struct GrassSegment
+{
+	GrassSegment( int edgeI, int edgeQ, int rep )
+		:edgeIndex( edgeI ), edgeQuantity( edgeQ ), 
+		reps (rep)
+	{}
+	int edgeIndex;
+	int edgeQuantity;
+	int reps;
+};
+
 struct Grass : QuadTreeEntrant
 {
 	Edge *edge;

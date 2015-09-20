@@ -404,7 +404,8 @@ bool GameSession::OpenFile( string fileName )
 			int edgesWithSegments;
 			is >> edgesWithSegments;
 
-
+			
+			list<GrassSegment> segments;
 			for( int i = 0; i < edgesWithSegments; ++i )
 			{
 				int edgeIndex;
@@ -417,6 +418,8 @@ bool GameSession::OpenFile( string fileName )
 					is >> edgeQuantity;
 					int reps;
 					is >> reps;
+
+					segments.push_back( GrassSegment( edgeIndex, edgeQuantity, reps ) );
 				}
 			}
 
