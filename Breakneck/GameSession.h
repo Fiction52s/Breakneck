@@ -176,6 +176,8 @@ struct GameSession : QuadTreeCollider
 	sf::Texture wipeTextures[17];
 	sf::Sprite wipeSprite;
 
+	sf::View uiView;
+
 	struct Sequence
 	{
 		//Sequence *next;

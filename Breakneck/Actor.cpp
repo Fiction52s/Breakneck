@@ -68,6 +68,8 @@ Actor::Actor( GameSession *gs )
 		maxDespFrames = 120;
 		despCounter = 0;
 
+		holdJump = false;
+
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
@@ -647,6 +649,9 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	
+
+	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
 	for( int i = MAX_MOTION_GHOSTS-1; i > 0; --i )
 	{
 		motionGhosts[i] = motionGhosts[i-1];
@@ -2313,7 +2318,7 @@ void Actor::UpdatePrePhysics()
 	}
 	
 	currHitboxes = NULL;
-
+	//cout << "premidvel: " << velocity.x << ", " << velocity.y << endl;	
 //	hurtBody.isCircle = false;
 //	hurtBody.rw = 10;
 //	hurtBody.rh = normalHeight;
@@ -2456,6 +2461,8 @@ void Actor::UpdatePrePhysics()
 
 			if( framesInAir > 1 || velocity.y < 0 )
 				AirMovement();
+
+			//cout << "midvel : " << velocity.x << ", " << velocity.y << endl;	
 			/*if( currInput.LLeft() )
 			{
 				if( velocity.x > dashSpeed )
@@ -3202,6 +3209,8 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+
+	
 	if( blah || record > 1 )
 	{
 		int playback = recordedGhosts;
@@ -3479,6 +3488,8 @@ void Actor::UpdatePrePhysics()
 
 	touchEdgeWithLeftWire = false;
 	touchEdgeWithRightWire = false;
+
+	//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 }
 
 bool Actor::CheckWall( bool right )

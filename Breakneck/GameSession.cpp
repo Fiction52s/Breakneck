@@ -1113,7 +1113,7 @@ int GameSession::Run( string fileN )
 	preScreenTex->setView( view );
 	//window->setView( view );
 
-	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+	uiView = View( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 
 	window->setVerticalSyncEnabled( true );
 
@@ -1505,107 +1505,81 @@ int GameSession::Run( string fileN )
 				}
 			}
 
-			player.UpdatePrePhysics();
-
-			
-
-			UpdateEnemiesPrePhysics();
-			
-			//cout << "enemies updated" << endl;
-			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-
-			//colMode = 
-
-			//Rect<double> qrect( player.position.x + player.b.offset.x - player.b.rw, 
-			//	player.position.y + player.b.offset.y -player.b.rh, player.b.rw, player.b.rh );
-			//Query( &player, testTree, qrect );
-
-			for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+			if( activeSequence != NULL && activeSequence == startSeq )
 			{
-				(*it)->UpdatePhysics();
-			}
-
-			player.UpdatePhysics( );
-
-			UpdateEnemiesPhysics();
-
-
-			player.UpdatePostPhysics();
-
-			UpdateEnemiesPostPhysics();
-			
-
-			cam.Update( &player );
-
-			if( activeSequence != NULL )
-			{
-			cam.offset.x = 0;
-			cam.offset.y = 0;
-			cam.zoomFactor = 1;
-			cam.pos = Vector2f( player.position.x, player.position.y );
-			}
-
-			double camWidth = 960 * cam.GetZoom();
-			double camHeight = 540 * cam.GetZoom();
-			screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-			
-			
-			if( activeSequence != NULL && !activeSequence->Update() )
-			{
-
-				//leaks memory
-				activeSequence = NULL;
-			}
-			
-			
-		
-
-
-
-			/*sf::RectangleShape rs;
-			rs.setSize( sf::Vector2f(screenRect.width, screenRect.height ) );
-			rs.setPosition( screenRect.left, screenRect.top );
-			//rs.setSize( Vector2f(64, 64) );
-			//rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
-			//rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
-			rs.setFillColor( sf::Color( 0, 0, 255, 100 ) );
-			window->draw( rs );*/
-
-			queryMode = "enemy";
-
-			tempSpawnRect = screenRect;
-			enemyTree->Query( this, screenRect );
-
-			if( player.blah || player.record > 1 )
-			{
-				int playback = player.recordedGhosts;
-				if( player.record > 1 )
-					playback--;
-
-				for( int i = 0; i < playback; ++i )
+				if( !activeSequence->Update() )
 				{
-					PlayerGhost *g = player.ghosts[i];
-					if( player.ghostFrame < g->totalRecorded )
+					activeSequence = NULL;	
+				}
+				else
+				{
+					
+				}
+			}
+			else
+			{
+				player.UpdatePrePhysics();
+
+			
+
+				UpdateEnemiesPrePhysics();
+
+
+				for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+				{
+					(*it)->UpdatePhysics();
+				}
+
+				player.UpdatePhysics( );
+
+				UpdateEnemiesPhysics();
+
+
+				player.UpdatePostPhysics();
+
+				UpdateEnemiesPostPhysics();
+			
+
+				cam.Update( &player );
+
+				
+
+				double camWidth = 960 * cam.GetZoom();
+				double camHeight = 540 * cam.GetZoom();
+				screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+			
+			
+				
+				queryMode = "enemy";
+
+				tempSpawnRect = screenRect;
+				enemyTree->Query( this, screenRect );
+
+				if( player.blah || player.record > 1 )
+				{
+					int playback = player.recordedGhosts;
+					if( player.record > 1 )
+						playback--;
+
+					for( int i = 0; i < playback; ++i )
 					{
-						//cout << "querying! " << player.ghostFrame << endl;
-						tempSpawnRect = g->states[player.ghostFrame].screenRect;
-						enemyTree->Query( this, g->states[player.ghostFrame].screenRect );
+						PlayerGhost *g = player.ghosts[i];
+						if( player.ghostFrame < g->totalRecorded )
+						{
+							//cout << "querying! " << player.ghostFrame << endl;
+							tempSpawnRect = g->states[player.ghostFrame].screenRect;
+							enemyTree->Query( this, g->states[player.ghostFrame].screenRect );
+						}
 					}
+				}
+			
+				if( player.record > 0 )
+				{
+					player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
+						screenRect;
 				}
 			}
 			
-			if( player.record > 0 )
-			{
-				player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
-					screenRect;
-			}
-			
-			
-	
-
-		
-		//	cout << "query for: " << numBorders << endl;
-			//Query( this, enemyTree, screenRect );
 
 			accumulator -= TIMESTEP;
 		}
@@ -1640,7 +1614,22 @@ int GameSession::Run( string fileN )
 		
 		
 		
+		if( activeSequence != NULL && activeSequence == startSeq )
+		{
+			activeSequence->Draw( preScreenTex );
+			
+
+			preScreenTex->display();
+			const Texture &preTex = preScreenTex->getTexture();
 		
+			Sprite preTexSprite( preTex );
+			preTexSprite.setPosition( -960 / 2, -540 / 2 );
+			preTexSprite.setScale( .5, .5 );		
+
+			window->draw( preTexSprite  );
+		}
+		else
+		{
 
 
 		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
@@ -1916,7 +1905,7 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
 		window->draw( preTexSprite, &cloneShader );
-
+		}
 
 
 		window->display();
@@ -2353,7 +2342,9 @@ void GameSession::LevelSpecifics()
 {
 	if( fileName == "test3" )
 	{
-		GameStartMovie();
+		startSeq = new GameStartSeq( this );
+		activeSequence = startSeq;
+		//GameStartMovie();
 		cout << "doing stuff here" << endl;
 	}
 	else
@@ -2383,7 +2374,7 @@ void GameSession::GameStartMovie()
 	//View oldView = window->getView();
 
 	player.velocity.x = 60;
-	//player.velocity.y = 30;
+	player.velocity.y = 0;
 	player.hasDoubleJump = false;
 
 	window->setView( movieView );
@@ -2689,7 +2680,10 @@ bool GameSession::GameStartSeq::Update()
 {
 	if( frame < frameCount )
 	{
-		V2d vel( 60, -1 );
+		
+		V2d vel( 60, 0 );
+		//if( frame > 60 )
+			//vel.y = -20;
 
 		shipSprite.setPosition( startPos.x + frame * vel.x, startPos.y + frame * vel.y );
 		++frame;
@@ -2702,14 +2696,22 @@ bool GameSession::GameStartSeq::Update()
 
 void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 {
-	sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
+	target->setView( owner->bgView );
+	target->draw( owner->background );
+	target->setView( owner->view );
+
+	target->setView( owner->uiView );
+	owner->powerBar.Draw( target );
+
+	target->setView( owner->view );
+	/*sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
 	rs.setPosition( Vector2f( startPos.x - 480, startPos.y - 270 ) );
 	rs.setFillColor( Color::Black );
-	target->draw( rs );
+	target->draw( rs );*/
 
 
-	target->draw( stormVA, &stormTex );
+	//target->draw( stormVA, &stormTex );
 
-	target->draw( shipSprite );
+	//target->draw( shipSprite );
 
 }
