@@ -1713,8 +1713,7 @@ int GameSession::Run( string fileN )
 			activeSequence->Draw( preScreenTex );
 		}
 		
-		if( player.action != Actor::DEATH )
-			player.Draw( preScreenTex );
+		
 
 		UpdateEnemiesDraw();
 
@@ -1826,6 +1825,9 @@ int GameSession::Run( string fileN )
 	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
 	//	}
 		
+
+		if( player.action != Actor::DEATH )
+			player.Draw( preScreenTex );
 
 		if( player.action != Actor::GRINDBALL )
 		{

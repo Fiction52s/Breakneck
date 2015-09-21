@@ -602,7 +602,7 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 
 void TerrainPolygon::ShowGrass( bool show )
 {
-	isGrassShowing = true;
+	
 	VertexArray & grassVa = *grassVA;
 	for( int i = 0; i < numGrassTotal; ++i )
 	{
@@ -615,6 +615,7 @@ void TerrainPolygon::ShowGrass( bool show )
 				grassVa[i*4+2].color.a = 50;
 				grassVa[i*4+3].color.a = 50;
 			}
+			isGrassShowing = true;
 		}
 		else 
 		{
@@ -625,6 +626,7 @@ void TerrainPolygon::ShowGrass( bool show )
 				grassVa[i*4+2].color.a = 0;
 				grassVa[i*4+3].color.a = 0;
 			}
+			isGrassShowing = false;
 		}
 		/*(else if( grassVa[i*4].color.a == 255 )
 		{
@@ -2420,10 +2422,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
 									
-									showGrass = true;
+									//showGrass = true;
 									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 									{
-										(*it)->ShowGrass( true );
+										(*it)->ShowGrass( false );
 									}
 								}
 							}
