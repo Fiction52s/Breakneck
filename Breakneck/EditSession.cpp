@@ -253,7 +253,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( true );
 }
 
-void TerrainPolygon::UpdateGrass( V2d mousePos )
+void TerrainPolygon::SwitchGrass( V2d mousePos )
 {
 	
 	VertexArray &grassVa = *grassVA;
@@ -262,74 +262,7 @@ void TerrainPolygon::UpdateGrass( V2d mousePos )
 	double grassSpacing = -5;
 
 	int i = 0;
-	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
-	{
-		Vector2i next;
 
-		PointList::iterator temp = it;
-		if( ++temp == points.end() )
-		{
-			next = points.front().pos;
-		}
-		else
-		{
-			next = (*temp).pos;
-		}
-
-		V2d v0( (*it).pos.x, (*it).pos.y );
-		V2d v1( next.x, next.y );
-
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-
-		int num = floor( remainder ) + 1;
-
-		for( list<GrassSeg>::iterator git = (*it).grass.begin(); git != (*it).grass.end(); ++git )
-		{
-			GrassSeg & gs = (*git);
-
-			i+= gs.index;
-
-			for( int j = 0; j < gs.reps + 1; ++j )
-			{
-				V2d pos = v0 + (v1- v0) * ((double)(gs.index + j )/ num);
-
-				//Vector2f pos( posd.x, posd.y );
-				
-				if( length( pos - mousePos ) <= radius )
-				{
-					if( grassVa[i*4].color.a == 50 )
-					{
-						grassVa[i*4].color.a = 255;
-						grassVa[i*4+1].color.a = 255;
-						grassVa[i*4+2].color.a = 255;
-						grassVa[i*4+3].color.a = 255;
-						cout << "making full: " << i << endl;
-					}
-					else
-					{
-						grassVa[i*4].color.a = 50;
-						grassVa[i*4+1].color.a = 50;
-						grassVa[i*4+2].color.a = 50;
-						grassVa[i*4+3].color.a = 50;
-						cout << "making seethru: " << i << endl;
-					}
-				}
-				++i;
-			}
-
-			i += ( num - gs.index - (gs.reps + 1) );
-		}
-	}
-}
-
-void TerrainPolygon::UpdateGrass2()
-{
-	
-	double grassSize = 22;
-	double grassSpacing = -5;
-
-	int i = 0;
-	VertexArray & grassVa = *grassVA;
 
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
@@ -347,7 +280,6 @@ void TerrainPolygon::UpdateGrass2()
 
 		V2d v0( (*it).pos.x, (*it).pos.y );
 		V2d v1( next.x, next.y );
-
 
 		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
@@ -355,37 +287,53 @@ void TerrainPolygon::UpdateGrass2()
 
 		for( int j = 0; j < num; ++j )
 		{
-			V2d posd = v0 + (v1- v0) * ((double)j / num);
-			Vector2f pos( posd.x, posd.y );
+			V2d pos = v0 + (v1- v0) * ((double)(j )/ num);
 
-			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
-			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
-			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
-			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
-
-			//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-			grassVa[i*4].color.a = 10;
-			grassVa[i*4].position = topLeft;
-			grassVa[i*4].texCoords = Vector2f( 0, 0 );
-
-			//grassVa[i*4+1].color = Color::Blue;
-			grassVa[i*4+1].color.a = 10;
-			grassVa[i*4+1].position = bottomLeft;
-			grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
-
-			//grassVa[i*4+2].color = Color::Blue;
-			grassVa[i*4+2].color.a = 10;
-			grassVa[i*4+2].position = bottomRight;
-			grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
-
-			//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
-			grassVa[i*4+3].color.a = 10;
-			grassVa[i*4+3].position = topRight;
-			grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
+			//Vector2f pos( posd.x, posd.y );
+				
+			if( length( pos - mousePos ) <= radius )
+			{
+				if( grassVa[i*4].color.a == 50 )
+				{
+					grassVa[i*4].color.a = 254;
+					grassVa[i*4+1].color.a = 254;
+					grassVa[i*4+2].color.a = 254;
+					grassVa[i*4+3].color.a = 254;
+					//cout << "making full: " << i << endl;
+				}
+				else if( grassVa[i*4].color.a == 255 )
+				{
+					grassVa[i*4].color.a = 49;
+					grassVa[i*4+1].color.a = 49;
+					grassVa[i*4+2].color.a = 49;
+					grassVa[i*4+3].color.a = 49;
+					//cout << "making seethru: " << i << endl;
+				}
+			}
 			++i;
 		}
-		
-	
+	}
+}
+
+void TerrainPolygon::UpdateGrass()
+{
+	VertexArray & grassVa = *grassVA;
+	for( int i = 0; i < numGrassTotal; ++i )
+	{
+		if( grassVa[i*4].color.a == 49 )
+		{
+			grassVa[i*4].color.a = 50;
+			grassVa[i*4+1].color.a = 50;
+			grassVa[i*4+2].color.a = 50;
+			grassVa[i*4+3].color.a = 50;
+		}
+		else if( grassVa[i*4].color.a == 254 )
+		{
+			grassVa[i*4].color.a = 255;
+			grassVa[i*4+1].color.a = 255;
+			grassVa[i*4+2].color.a = 255;
+			grassVa[i*4+3].color.a = 255;
+		}
 	}
 }
 
@@ -1188,7 +1136,7 @@ void EditSession::WriteFile(string fileName)
 			}
 
 			int edgesWithSegments = 0;
-			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			/*for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 			{
 				(*it2).grass.push_back( GrassSeg( 0, 0 ) );
 				if( !(*it2).grass.empty() )
@@ -1196,8 +1144,8 @@ void EditSession::WriteFile(string fileName)
 					edgesWithSegments++;
 				}
 				
-			}
-
+			}*/
+			
 			of << edgesWithSegments << endl;
 
 
@@ -1208,14 +1156,15 @@ void EditSession::WriteFile(string fileName)
 				//testing only
 				
 
-				int numSegments = (*it2).grass.size();
+				//int numSegments = (*it2).grass.size();
+				int numSegments = 0;
 
 				of << edgeIndex << " " << numSegments << endl;
 
-				for( list<GrassSeg>::iterator git = (*it2).grass.begin(); git != (*it2).grass.end(); ++git )
-				{
-					of << (*git).index << " " << (*git).reps << endl;
-				}
+				//for( list<GrassSeg>::iterator git = (*it2).grass.begin(); git != (*it2).grass.end(); ++git )
+			//	{
+			//		of << (*git).index << " " << (*git).reps << endl;
+			//	}
 
 				edgeIndex++;
 			}
@@ -1761,7 +1710,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	{
 		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 		{
-			(*it2).grass.push_back( GrassSeg( 0, 0 ) );
+			//(*it2).grass.push_back( GrassSeg( 0, 0 ) );
 		}
 	}
 
@@ -2107,7 +2056,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
+									break;
 								}
+
+								if( showGrass )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										(*it)->UpdateGrass();
+									}
+									//showGrass = false;
+								}
+
+
 
 								grabPlayer = false;
 								selectedActorGrabbed = false;
@@ -3250,11 +3211,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						if( (*it)->showGrass )
 						{
 							
-							(*it)->UpdateGrass( worldPos );
+							(*it)->SwitchGrass( worldPos );
 							
 						}
 					}
 				}
+				
 				
 
 				break;

@@ -27,7 +27,7 @@ struct TerrainPoint
 	TerrainPoint( sf::Vector2i &pos, bool selected );
 	sf::Vector2i pos;
 	bool selected;
-	std::list<GrassSeg> grass;
+	std::list<int> grass;
 	//int special;
 };
 
@@ -46,8 +46,8 @@ struct TerrainPolygon
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
-	void UpdateGrass2();
-	void UpdateGrass( sf::Vector2<double> mousePos );
+	void UpdateGrass();
+	void SwitchGrass( sf::Vector2<double> mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	bool IsTouching( TerrainPolygon *p );
