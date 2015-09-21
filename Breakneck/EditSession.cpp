@@ -29,7 +29,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	lines = NULL;
 	selected = false;
 	grassVA = NULL;
-	showGrass = false;
+	isGrassShowing = false;
 }
 
 TerrainPolygon::~TerrainPolygon()
@@ -47,7 +47,7 @@ TerrainPolygon::~TerrainPolygon()
 
 void TerrainPolygon::Finalize()
 {
-	showGrass = false;
+	isGrassShowing = false;
 	material = "mat";
 	lines = new sf::Vertex[points.size()*2+1];
 	
@@ -198,22 +198,25 @@ void TerrainPolygon::Finalize()
 			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
 
 			//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-			//borderVa[i*4].color.a = 10;
+			grassVa[i*4].color.a = 0;
 			grassVa[i*4].position = topLeft;
 			grassVa[i*4].texCoords = Vector2f( 0, 0 );
 
 			//grassVa[i*4+1].color = Color::Blue;
 			//borderVa[i*4+1].color.a = 10;
+			grassVa[i*4+1].color.a = 0;
 			grassVa[i*4+1].position = bottomLeft;
 			grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
 
 			//grassVa[i*4+2].color = Color::Blue;
 			//borderVa[i*4+2].color.a = 10;
+			grassVa[i*4+2].color.a = 0;
 			grassVa[i*4+2].position = bottomRight;
 			grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
 
 			//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 			//borderVa[i*4+3].color.a = 10;
+			grassVa[i*4+3].color.a = 0;
 			grassVa[i*4+3].position = topRight;
 			grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
 			++i;
@@ -339,7 +342,7 @@ void TerrainPolygon::UpdateGrass()
 
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt )
 {
-	if( grassVA != NULL && showGrass )
+	if( grassVA != NULL )
 		rt->draw( *grassVA, grassTex );
 
 	if( va != NULL )
@@ -349,7 +352,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt 
 
 	if( selected )
 	{
-		if( !showGrass )
+		if( !isGrassShowing )
 		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 		{
 			CircleShape cs;
@@ -595,6 +598,42 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 	//p->points.pop_back();
 
 	return false;
+}
+
+void TerrainPolygon::ShowGrass( bool show )
+{
+	isGrassShowing = true;
+	VertexArray & grassVa = *grassVA;
+	for( int i = 0; i < numGrassTotal; ++i )
+	{
+		if( show )
+		{
+			if( grassVa[i*4].color.a == 0 )
+			{
+				grassVa[i*4].color.a = 50;
+				grassVa[i*4+1].color.a = 50;
+				grassVa[i*4+2].color.a = 50;
+				grassVa[i*4+3].color.a = 50;
+			}
+		}
+		else 
+		{
+			if( grassVa[i*4].color.a == 50 )
+			{
+				grassVa[i*4].color.a = 0;
+				grassVa[i*4+1].color.a = 0;
+				grassVa[i*4+2].color.a = 0;
+				grassVa[i*4+3].color.a = 0;
+			}
+		}
+		/*(else if( grassVa[i*4].color.a == 255 )
+		{
+			grassVa[i*4].color.a = 255;
+			grassVa[i*4+1].color.a = 255;
+			grassVa[i*4+2].color.a = 255;
+			grassVa[i*4+3].color.a = 255;
+		}*/
+	}
 }
 
 StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos )
@@ -1159,7 +1198,8 @@ void EditSession::WriteFile(string fileName)
 				//int numSegments = (*it2).grass.size();
 				int numSegments = 0;
 
-				of << edgeIndex << " " << numSegments << endl;
+				if( numSegments > 0 )
+					of << edgeIndex << " " << numSegments << endl;
 
 				//for( list<GrassSeg>::iterator git = (*it2).grass.begin(); git != (*it2).grass.end(); ++git )
 			//	{
@@ -2149,7 +2189,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								showGrass = true;
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
-									(*it)->showGrass = true;
+									(*it)->ShowGrass( true );
 								}
 							}
 							break;
@@ -2380,7 +2420,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
 									
-									(*it)->showGrass = false;
+									showGrass = true;
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										(*it)->ShowGrass( true );
+									}
 								}
 							}
 							break;
@@ -3208,12 +3252,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 					{
-						if( (*it)->showGrass )
-						{
-							
-							(*it)->SwitchGrass( worldPos );
-							
-						}
+						(*it)->SwitchGrass( worldPos );
 					}
 				}
 				

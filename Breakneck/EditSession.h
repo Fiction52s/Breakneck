@@ -47,6 +47,7 @@ struct TerrainPolygon
 	void FixWinding();
 	bool IsClockwise();
 	void UpdateGrass();
+	void ShowGrass( bool show );
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
@@ -65,7 +66,7 @@ struct TerrainPolygon
 	std::list<sf::Vector2i> path;
 	std::list<ActorParams*> enemies;
 	int writeIndex;
-	bool showGrass;
+	bool isGrassShowing;
 
 };
 

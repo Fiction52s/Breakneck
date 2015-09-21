@@ -469,6 +469,9 @@ bool GameSession::OpenFile( string fileName )
 				numGrassTotal += (*it).reps + 1;
 			}
 
+			
+			if( numGrassTotal > 0 )
+			{
 			va = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
 			cout << "num grass total: " << numGrassTotal << endl;
@@ -522,6 +525,11 @@ bool GameSession::OpenFile( string fileName )
 					//++i;
 				}
 				segIndex++;
+			}
+			}
+			else
+			{
+				va = NULL;
 			}
 
 			VertexArray * grassVA = va;
@@ -680,7 +688,7 @@ bool GameSession::OpenFile( string fileName )
 			borderVa[i*2+1].position = Vector2f( adjv0.x, adjv0.y  );*/
 			
 
-
+				cout << "loaded to here" << endl;
 			//double left, right, bottom, top;
 			bool first = true;
 			
@@ -797,12 +805,13 @@ bool GameSession::OpenFile( string fileName )
 			//	delete tris[i];
 			}
 
-
+			cout << "loaded to here" << endl;
 			++polyCounter;
 		}
 		//cout << "insertCount: " << insertCount << endl;
 		//cout << "polyCOUNTER: " << polyCounter << endl;
 		
+			cout << "loaded to here" << endl;
 		int numMovingPlats;
 		is >> numMovingPlats;
 		for( int i = 0; i < numMovingPlats; ++i )
@@ -890,6 +899,8 @@ bool GameSession::OpenFile( string fileName )
 			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ) );
 			lightTree->Insert( light );
 		}
+		cout << "loaded to here" << endl;
+
 
 		int numGroups;
 		is >> numGroups;
@@ -1291,7 +1302,7 @@ int GameSession::Run( string fileN )
 				oneFrameMode = true;
 
 
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead )
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead || ( currInput.back && !prevInput.back ) )
 			{
 				if( player.record > 1 )
 				{
@@ -1790,8 +1801,8 @@ int GameSession::Run( string fileN )
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
-
-			preScreenTex->draw( *listVAIter->grassVA, &grassTex );
+			if( listVAIter->grassVA != NULL )
+				preScreenTex->draw( *listVAIter->grassVA, &grassTex );
 
 			if( usePolyShader )
 			{
@@ -1849,7 +1860,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		preScreenTex->setView( uiView );
 		//window->setView( uiView );
