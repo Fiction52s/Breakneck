@@ -61,7 +61,7 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 		{
 			for( int i = 0; i < n->objCount; ++i )
 			{
-				//if( n->entrants[i]->IsTouchingBox( r ) )
+				if( n->entrants[i]->IsTouchingBox( r ) )
 				{
 				//qtc->HandleEntrant( n->entrants[i] );
 					n->entrants[i]->HandleQuery( qtc );
@@ -79,7 +79,7 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
 			{
 				sf::Rect<double> r2 = r;
-			//	if( (*it)->IsTouchingBox( r2 ) )
+				if( (*it)->IsTouchingBox( r2 ) )
 				{
 					(*it)->HandleQuery( qtc );
 				}

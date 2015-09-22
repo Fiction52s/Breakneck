@@ -516,7 +516,7 @@ bool GameSession::OpenFile( string fileName )
 			{
 			va = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
-			cout << "num grass total: " << numGrassTotal << endl;
+			//cout << "num grass total: " << numGrassTotal << endl;
 			VertexArray &grassVa = *va;
 
 			int segIndex = 0;
@@ -539,7 +539,7 @@ bool GameSession::OpenFile( string fileName )
 
 				for( int i = 0; i < grassCount; ++i )
 				{
-					cout << "indexing at: " << i*4 + segIndex * 4 << endl;
+					//cout << "indexing at: " << i*4 + segIndex * 4 << endl;
 					V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
 					Vector2f pos( posd.x, posd.y );
 
@@ -2142,11 +2142,6 @@ void GameSession::UpdateTerrainShader()
 
 	//Vector2i vi = Mouse::getPosition();
 	//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-	//owner->preScreenTex->map
-	Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-	Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
-	Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-
 
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
@@ -2154,24 +2149,16 @@ void GameSession::UpdateTerrainShader()
 	pos1.y = 1 - pos1.y;
 	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
 	pos2.y = 1 - pos2.y;*/
-
-	Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
-	pos0.y = 1 - pos0.y;
-	Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
-	pos1.y = 1 - pos1.y;
-	Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
-	pos2.y = 1 - pos2.y;
-
-	Color c0 = touchedLights[0]->color;
-	Color c1 = touchedLights[1]->color;
-	Color c2 = touchedLights[2]->color;
-	
 	bool on0 = false;
 	bool on1 = false;
 	bool on2 = false;
 
 	if( lightsAtOnce > 0 )
 	{
+		Vector2i vi0 = Vector2i( preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) ) );
+		Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+			pos0.y = 1 - pos0.y;
+		Color c0 = touchedLights[0]->color;
 		//sh.setParameter( "On0", true );
 		on0 = true;
 		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
@@ -2180,6 +2167,10 @@ void GameSession::UpdateTerrainShader()
 	}
 	if( lightsAtOnce > 1 )
 	{
+		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
+		Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
+			pos1.y = 1 - pos1.y;
+		Color c1 = touchedLights[1]->color;
 		on1 = true;
 		//sh.setParameter( "On1", true );
 		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
@@ -2188,6 +2179,10 @@ void GameSession::UpdateTerrainShader()
 	}
 	if( lightsAtOnce > 2 )
 	{
+		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
+		Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
+			pos2.y = 1 - pos2.y;
+		Color c2 = touchedLights[2]->color;
 		on2 = true;
 		//sh.setParameter( "On2", true );
 		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
