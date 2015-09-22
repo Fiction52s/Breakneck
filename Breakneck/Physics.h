@@ -15,7 +15,7 @@ struct Edge : QuadTreeEntrant
 	double GetQuantityGivenX( double x );
 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<double> &r );
 
 	sf::Vector2<double> v0;
 	sf::Vector2<double> v1;
@@ -192,6 +192,14 @@ void RayCast( RayCastHandler *handler, QNode *node,
 
 bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 );
 
+bool isQuadTouchingQuad(  sf::Vector2<double> & A0, 
+						 sf::Vector2<double> & B0, 
+						 sf::Vector2<double> & C0, 
+						 sf::Vector2<double> & D0, 
+						 sf::Vector2<double> & A1, 
+						 sf::Vector2<double> & B1, 
+						 sf::Vector2<double> & C1, 
+						 sf::Vector2<double> & D1 );
 //struct QuadTree
 //{
 //};

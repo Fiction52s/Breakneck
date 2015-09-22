@@ -265,7 +265,7 @@ struct Actor : QuadTreeCollider,
 	int slowCounter;
 
 	sf::Vector2<double> wallNormal;
-
+	int testGrassCount;
 	Action action;
 	int frame;
 	sf::Vector2<double> position;

@@ -423,6 +423,48 @@ bool GameSession::OpenFile( string fileName )
 				}
 			}
 
+			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{
+				V2d A,B,C,D;
+				Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
+				V2d v0 = currE->v0;
+				V2d v1 = currE->v1;
+
+				double grassSize = 22;
+				double grassSpacing = -5;
+
+				double edgeLength = length( v1 - v0 );
+				double remainder = edgeLength / ( grassSize + grassSpacing );
+
+				double num = floor( remainder ) + 1;
+
+				int reps = (*it).reps;
+
+				V2d edgeDir = normalize( v1 - v0 );
+				
+				//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
+				V2d ABmin = v0 + edgeDir * ( edgeLength * (double)(*it).index / num - grassSize / 2 );
+				V2d ABmax = v0 + edgeDir * ( edgeLength * (double)( (*it).index + reps )/ num + grassSize / 2 );
+				double height = grassSize / 2;
+				V2d normal = normalize( v1 - v0 );
+				double temp = -normal.x;
+				normal.x = normal.y;
+				normal.y = temp;
+
+				A = ABmin + normal * height;
+				B = ABmax + normal * height;
+				C = ABmax;
+				D = ABmin;
+				
+				Grass * g = new Grass;
+				g->A = A;
+				g->B = B;
+				g->C = C;
+				g->D = D;
+
+				grassTree->Insert( g );
+			}
+
 			vector<p2t::Point*> polyline;
 			for( int i = 0; i < polyPoints; ++i )
 			{
@@ -1862,7 +1904,9 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
+		//grassTree->DebugDraw( preScreenTex );
+
 
 		preScreenTex->setView( uiView );
 		//window->setView( uiView );
@@ -1878,6 +1922,7 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( window );
 
+		
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
 	//	enemyTree->DebugDraw( window );
@@ -2053,7 +2098,7 @@ void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool GameSession::TestVA::IsTouchingBox( sf::Rect<double> &r )
+bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( aabb, r );
 }
@@ -2598,9 +2643,14 @@ void Grass::HandleQuery( QuadTreeCollider *qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Grass::IsTouchingBox( Rect<double> &r )
+bool Grass::IsTouchingBox( const Rect<double> &r )
 {
-	double left = min( edge->v0.x, edge->v1.x );
+	return isQuadTouchingQuad( V2d( r.left, r.top ), V2d( r.left + r.width, r.top ), 
+		V2d( r.left + r.width, r.top + r.height ), V2d( r.left, r.top + r.height ),
+		A, B, C, D );
+
+
+	/*double left = min( edge->v0.x, edge->v1.x );
 	double right = max( edge->v0.x, edge->v1.x );
 	double top = min( edge->v0.y, edge->v1.y );
 	double bottom = max( edge->v0.y, edge->v1.y );
@@ -2610,9 +2660,7 @@ bool Grass::IsTouchingBox( Rect<double> &r )
 	if( er.intersects( r ) )
 	{
 		return true;
-	}
-
-	return false;
+	}*/
 }
 
 GameSession::GameStartSeq::GameStartSeq( GameSession *own )

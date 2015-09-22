@@ -3743,9 +3743,11 @@ bool Actor::ResolvePhysics( V2d vel )
 	}
 
 	queryMode = "grass";
+	testGrassCount = 0;
 	owner->grassTree->Query( this, r );
 
-
+	//need to fix the quad tree but this works!
+	cout << "test grass count: " << testGrassCount << endl;
 	//if( minContact.edge != NULL )
 	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 
@@ -8155,7 +8157,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "grass" )
 	{
-		cout << "got some grass in here" << endl;
+		//cout << "got some grass in here" << endl;
+		Grass *g = (Grass*)qte;
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+		if( g->IsTouchingBox( r ) )
+		{
+			++testGrassCount;
+		}
 	}
 	
 	++possibleEdgeCount;

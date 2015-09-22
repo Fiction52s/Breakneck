@@ -1988,6 +1988,97 @@ bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
 	return length( pos1 - pos0 ) <= rad_0 + rad_1;
 }
 
+bool IsEdgeTouchingCircle( V2d v0, V2d v1, V2d pos, double rad )
+{
+	double dist = cross( pos - v0, normalize( v1 - v0 ) );
+	double q = dot( pos - v0, normalize( v1 - v0 ) );
+	double edgeLength = length( v1 - v0 );
+
+
+	if( q < 0 )
+	{
+		if( length( v0 - pos ) < rad )
+		{
+			return true;
+		}
+	}
+	else if( q > edgeLength )
+	{
+		if( length( v1 - pos ) < rad )
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if( dist < rad )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool IsQuadTouchingCircle( V2d A, V2d B, V2d C, V2d D, V2d pos, double rad )
+{
+	if( IsEdgeTouchingCircle( A,B, pos, rad ) 
+		|| IsEdgeTouchingCircle( B,C, pos, rad ) 
+		|| IsEdgeTouchingCircle( C,D, pos, rad ) 
+		|| IsEdgeTouchingCircle( D,A, pos, rad ) )
+	{
+		return true;
+	}
+	return false;
+}
+//top left is A then clockwise
+bool isQuadTouchingQuad( V2d &A0, V2d &B0, V2d &C0, V2d &D0, V2d &A1, V2d &B1, V2d &C1, V2d &D1 )
+{
+	double AB = length( B0 - A0 );
+	double AD = length( D0 - A0 );
+
+	V2d normalizeAB = normalize( B0 - A0 );
+	V2d normalizeAD = normalize( D0 - A0 );
+	
+
+	double min1AB = min( dot( A1 - A0, normalizeAB ), min( dot( B1 - A0, normalizeAB ), min( dot( C1 - A0, normalizeAB ),
+		dot( D1 - A0, normalizeAB ) ) ) );
+	double max1AB = max( dot( A1 - A0, normalizeAB ), max( dot( B1 - A0, normalizeAB ), max( dot( C1 - A0, normalizeAB ),
+		dot( D1 - A0, normalizeAB ) ) ) );
+
+	double min1AD = min( dot( A1 - A0, normalizeAD ), min( dot( B1 - A0, normalizeAD ), min( dot( C1 - A0, normalizeAD ),
+		dot( D1 - A0, normalizeAD ) ) ) );
+	double max1AD = max( dot( A1 - A0, normalizeAD ), max( dot( B1 - A0, normalizeAD ), max( dot( C1 - A0, normalizeAD ),
+		dot( D1 - A0, normalizeAD ) ) ) );
+
+	
+	double AB1 = length( B1 - A1 );
+	double AD1 = length( D1 - A1 );
+
+	V2d normalizeAB1 = normalize( B1 - A1 );
+	V2d normalizeAD1 = normalize( D1 - A1 );
+
+	double min0AB = min( dot( A0 - A1, normalizeAB1 ), min( dot( B0 - A1, normalizeAB1 ), min( dot( C0 - A1, normalizeAB1 ),
+		dot( D0 - A1, normalizeAB1 ) ) ) );
+	double max0AB = max( dot( A0 - A1, normalizeAB1 ), max( dot( B0 - A1, normalizeAB1 ), max( dot( C0 - A1, normalizeAB1 ),
+		dot( D0 - A1, normalizeAB1 ) ) ) );
+
+	double min0AD = min( dot( A0 - A1, normalizeAD1 ), min( dot( B0 - A1, normalizeAD1 ), min( dot( C0 - A1, normalizeAD1 ),
+		dot( D0 - A1, normalizeAD1 ) ) ) );
+	double max0AD = max( dot( A0 - A1, normalizeAD1 ), max( dot( B0 - A1, normalizeAD1 ), max( dot( C0 - A1, normalizeAD1 ),
+		dot( D0 - A1, normalizeAD1 ) ) ) );
+
+	if( min1AB <= AB && max1AB >= 0 && min1AD <= AD && max1AD >= 0 
+		&& min0AB <= AB1 && max0AB >= 0 && min0AB <= AB1 && max0AD >= 0 )
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 EdgeQNode *Insert( EdgeQNode *node, Edge* e )
 {
 	if( node->leaf )
@@ -2280,7 +2371,7 @@ void Edge::HandleQuery( QuadTreeCollider * qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Edge::IsTouchingBox( sf::Rect<double> &r )
+bool Edge::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsEdgeTouchingBox( this, r );
 }

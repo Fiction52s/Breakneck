@@ -30,7 +30,7 @@ void Light::HandleQuery( QuadTreeCollider * qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Light::IsTouchingBox( sf::Rect<double> &r )
+bool Light::IsTouchingBox( const sf::Rect<double> &r )
 {
 	sf::FloatRect bounds = cs.getGlobalBounds();
 	sf::Rect<double> r2( bounds.left, bounds.top, bounds.width, bounds.height );

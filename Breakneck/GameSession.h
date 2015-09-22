@@ -47,10 +47,12 @@ struct GrassSegment
 
 struct Grass : QuadTreeEntrant
 {
-	Edge *edge;
-	bool edge1Grass;
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D; 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<double> &r );
 
 	//bool prevGrass;
 };
@@ -139,7 +141,7 @@ struct GameSession : QuadTreeCollider
 		TestVA *next;
 		sf::Rect<double> aabb;
 		void HandleQuery( QuadTreeCollider * qtc );
-		bool IsTouchingBox( sf::Rect<double> &r );
+		bool IsTouchingBox( const sf::Rect<double> &r );
 	};
 	TestVA *listVA;
 	std::string queryMode;
@@ -165,6 +167,7 @@ struct GameSession : QuadTreeCollider
 	QuadTree * enemyTree;
 	QuadTree * lightTree;
 	QuadTree * grassTree;
+	
 
 	bool usePolyShader;
 
