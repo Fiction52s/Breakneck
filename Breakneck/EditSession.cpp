@@ -726,6 +726,11 @@ bool EditSession::OpenFile( string fileName )
 
 	ifstream is;
 	is.open( fileName + ".brknk" );
+
+	double grassSize = 22;
+	double radius = grassSize / 2;
+	double grassSpacing = -5;
+
 	if( is.is_open() )
 	{
 		int numPoints;
@@ -752,29 +757,90 @@ bool EditSession::OpenFile( string fileName )
 				poly->points.push_back( TerrainPoint( Vector2i(x,y), false ) );
 			}
 
+
 			int edgesWithSegments;
 			is >> edgesWithSegments;
 
 
+			list<GrassSeg> segments;
 			for( int i = 0; i < edgesWithSegments; ++i )
 			{
 				int edgeIndex;
 				is >> edgeIndex;
+
 				int numSegments;
 				is >> numSegments;
+
 				for( int j = 0; j < numSegments; ++j )
 				{
 					int index;
 					is >> index;
 					int reps;
 					is >> reps;
+					segments.push_back( GrassSeg( edgeIndex, index, reps ) );
+
 				}
 			}
-			
-
-			
 
 			poly->Finalize();
+
+
+			int grassIndex = 0;
+			VertexArray &grassVa = *poly->grassVA;
+			int numEdges = poly->points.size();
+			int *indexArray = new int[numEdges];
+			int edgeIndex = 0;
+
+			int iai = 0;
+
+			for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+			{
+				indexArray[edgeIndex] = grassIndex;
+
+				Vector2i next;
+
+				PointList::iterator temp = it;
+				if( ++temp == poly->points.end() )
+				{
+					next = poly->points.front().pos;
+				}
+				else
+				{
+					next = (*temp).pos;
+				}
+
+				V2d v0( (*it).pos.x, (*it).pos.y );
+				V2d v1( next.x, next.y );
+
+				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+				int num = floor( remainder ) + 1;
+
+				grassIndex += num;
+
+				++edgeIndex;
+			}
+
+			for( list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{
+				int vaIndex = indexArray[(*it).edgeIndex];
+
+				for( int extra = 0; extra <= (*it).reps; ++extra )
+				{
+					grassVa[( vaIndex + (*it).index + extra ) * 4 ].color.a = 255;
+					grassVa[( vaIndex + (*it).index + extra ) * 4 + 1 ].color.a = 255;
+					grassVa[( vaIndex + (*it).index + extra ) * 4 + 2 ].color.a = 255;
+					grassVa[( vaIndex + (*it).index + extra ) * 4 + 3 ].color.a = 255;
+				}
+			}
+
+			delete [] indexArray;
+			
+
+
+			
+
+			
 		}
 
 		int movingPlatformNum;
@@ -1176,40 +1242,7 @@ void EditSession::WriteFile(string fileName)
 				of << (*it2).pos.x << " " << (*it2).pos.y << endl; // << " " << (int)(*it2).special << endl;
 			}
 
-			int edgesWithSegments = 0;
-			/*for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
-			{
-				(*it2).grass.push_back( GrassSeg( 0, 0 ) );
-				if( !(*it2).grass.empty() )
-				{
-					edgesWithSegments++;
-				}
-				
-			}*/
-			
-			of << edgesWithSegments << endl;
-
-
-
-			int edgeIndex = 0;
-			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
-			{
-				//testing only
-				
-
-				//int numSegments = (*it2).grass.size();
-				int numSegments = 0;
-
-				if( numSegments > 0 )
-					of << edgeIndex << " " << numSegments << endl;
-
-				//for( list<GrassSeg>::iterator git = (*it2).grass.begin(); git != (*it2).grass.end(); ++git )
-			//	{
-			//		of << (*git).index << " " << (*git).reps << endl;
-			//	}
-
-				edgeIndex++;
-			}
+			WriteGrass( (*it), of );
 		}
 	}	
 
@@ -1265,6 +1298,103 @@ void EditSession::WriteFile(string fileName)
 	//enemies here
 
 
+}
+
+void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
+{
+	int edgesWithSegments = 0;
+
+	VertexArray &grassVa = *poly->grassVA;
+	double grassSize = 22;
+	double radius = grassSize / 2;
+	double grassSpacing = -5;
+
+	int edgeIndex = 0;
+	int i = 0;
+	list<list<GrassSeg>> grassListList;
+	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+	{
+		Vector2i next;
+
+		PointList::iterator temp = it;
+		if( ++temp == poly->points.end() )
+		{
+			next = poly->points.front().pos;
+		}
+		else
+		{
+			next = (*temp).pos;
+		}
+
+		V2d v0( (*it).pos.x, (*it).pos.y );
+		V2d v1( next.x, next.y );
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+		int num = floor( remainder ) + 1;
+
+		grassListList.push_back( list<GrassSeg>() );
+
+		list<GrassSeg> &grassList = grassListList.back();
+		
+		GrassSeg *gPtr = NULL;
+		bool hasGrass = false;
+		for( int j = 0; j < num; ++j )
+		{
+			//V2d pos = v0 + (v1 - v0) * ((double)(j )/ num);
+
+			if( grassVa[i*4].color.a == 255 || grassVa[i*4].color.a == 254 )
+			{
+				hasGrass = true;
+				if( gPtr == NULL )
+				{
+					grassList.push_back( GrassSeg( edgeIndex, j, 0 ) );
+					gPtr = &grassList.back();
+				}
+				else
+				{
+					grassList.back().reps++;
+				}
+			}
+			else
+			{
+				if( gPtr != NULL )
+					gPtr = NULL;
+			}
+			
+			++i;
+		}
+
+		if( hasGrass )
+		{
+			++edgesWithSegments;
+		}
+
+		++edgeIndex;
+
+	}
+
+	//cout << "saving edges with segments: " << edgesWithSegments << endl;
+	of << edgesWithSegments << endl;
+
+	for( list<list<GrassSeg>>::iterator it = grassListList.begin(); it != grassListList.end(); ++it )
+	{
+		int numSegments = (*it).size();
+
+		if( numSegments > 0 )
+		{
+			int edgeIndex = (*it).front().edgeIndex;
+			of << edgeIndex << " " << numSegments << endl;
+
+			for( list<GrassSeg>::iterator it2 = (*it).begin(); it2 != (*it).end(); ++it2 )
+			{
+				of << (*it2).index << " "<< (*it2).reps << endl;
+				//cout << "index: " << (*it2).index << ", reps: " << (*it2).reps << endl;
+			}
+		}
+		
+		
+	}
 }
 
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
@@ -4595,6 +4725,8 @@ int EditSession::CountSelectedPoints()
 	}
 	return count;
 }
+
+
 
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )

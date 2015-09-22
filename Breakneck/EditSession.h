@@ -14,12 +14,13 @@ struct ActorParams;
 
 struct GrassSeg
 {
-	GrassSeg( int p_index, int p_reps )
-		:index( p_index ), reps( p_reps )
-	{
-	}
+	GrassSeg( int edgeI, int grassIndex, int rep )
+		:edgeIndex( edgeI ), index( grassIndex ), 
+		reps (rep)
+	{}
+	int edgeIndex;
 	int index;
-	int reps; //negative means backwards in quantity
+	int reps;
 };
 
 struct TerrainPoint
@@ -208,7 +209,7 @@ struct EditSession : GUIHandler
 	bool trackingEnemyDown;
 
 	Panel *CreateOptionsPanel( const std::string &name );
-
+	void WriteGrass( TerrainPolygon * p, std::ofstream &of );
 	int CountSelectedPoints();
 
 	std::list<sf::Vector2i> patrolPath;
