@@ -81,7 +81,7 @@ struct GameSession : QuadTreeCollider
 	void ResetEnemies();
 	void rReset( QNode *node );
 	int CountActiveEnemies();
-	void UpdateTerrainShader();
+	void UpdateTerrainShader( const sf::Rect<double> &aabb );
 	void LevelSpecifics();
 
 	void DebugDrawActors();

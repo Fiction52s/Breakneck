@@ -319,7 +319,8 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 
 void MovingTerrain::Draw( RenderTarget *target )
 {
-	owner->UpdateTerrainShader();
+	sf::Rect<double> realRect( left + position.x, top + position.y, right - left, bottom - top );
+	owner->UpdateTerrainShader( realRect );
 	owner->polyShader.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2 - ( position.x - path[0].x ),
 			owner->view.getCenter().y - owner->view.getSize().y / 2 - ( position.y - path[0].y ) );
 	target->draw( *polygonVA, &owner->polyShader );
@@ -1772,9 +1773,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 
 				currentContact->collisionPriority = pri;//100;
 
-				//cout << "EDGE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
-				//	" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
-				//	" vel: " << vel.x << ", " << vel.y << endl;
+				cout << "EDGE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
+					" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
+					" vel: " << vel.x << ", " << vel.y << endl;
 
 	
 				//currentContact->collisionPriority = pri;
@@ -1827,9 +1828,9 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 			currentContact->edge = e;
 
 
-			//cout << "SURFACE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
-			//	" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
-			//	" vel: " << vel.x << ", " << vel.y << endl;
+			cout << "SURFACE pri: " << currentContact->collisionPriority << " normal: " << edgeNormal.x << ", " << edgeNormal.y << 
+				" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
+				" vel: " << vel.x << ", " << vel.y << endl;
 
 			return currentContact;
 

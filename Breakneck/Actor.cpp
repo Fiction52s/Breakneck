@@ -423,7 +423,7 @@ Actor::Actor( GameSession *gs )
 		holdDashAccel = .05;
 
 		dashHeight = 10;
-		normalHeight = 23;
+		normalHeight = 20;
 		doubleJumpHeight = 10;
 		sprintHeight = 16;
 
@@ -7832,19 +7832,18 @@ void Actor::UpdatePostPhysics()
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
 	//owner->preScreenTex->map
-	Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
-	Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) );
-	Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
+	
+	
+	
 
 
 	//vi0 = vi1 = vi2 = vi;
-	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
-	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
-	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+	
 
-	Color c0 = owner->touchedLights[0]->color;
-	Color c1 = owner->touchedLights[1]->color;
-	Color c2 = owner->touchedLights[2]->color;
+	
+	
+	
+	
 
 	//cout << "lights captured!: " << owner->lightsAtOnce << endl;
 	//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
@@ -7857,6 +7856,9 @@ void Actor::UpdatePostPhysics()
 
 	if( owner->lightsAtOnce > 0 )
 	{
+		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
+		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 );
+		Color c0 = owner->touchedLights[0]->color;
 		//sh.setParameter( "On0", true );
 		on0 = true;
 		sh.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
@@ -7865,6 +7867,9 @@ void Actor::UpdatePostPhysics()
 	}
 	if( owner->lightsAtOnce > 1 )
 	{
+		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) ); 
+		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+		Color c1 = owner->touchedLights[1]->color;
 		on1 = true;
 		//sh.setParameter( "On1", true );
 		sh.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
@@ -7873,6 +7878,9 @@ void Actor::UpdatePostPhysics()
 	}
 	if( owner->lightsAtOnce > 2 )
 	{
+		Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
+		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+		Color c2 = owner->touchedLights[2]->color;
 		on2 = true;
 		//sh.setParameter( "On2", true );
 		sh.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );

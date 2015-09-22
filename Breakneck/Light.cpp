@@ -43,5 +43,6 @@ bool Light::IsTouchingBox( const sf::Rect<double> &r )
 void Light::Draw( RenderTarget *target )
 {
 	sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
-	//target->draw( cs, &sh );
+	target->draw( cs );
+
 }

@@ -1851,7 +1851,13 @@ int GameSession::Run( string fileN )
 
 			if( usePolyShader )
 			{
-				UpdateTerrainShader();
+				UpdateTerrainShader( listVAIter->aabb );
+				sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
+				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
+				rs.setOutlineColor( Color::Red );
+				rs.setOutlineThickness( 3 );
+				rs.setFillColor( Color::Transparent );
+				preScreenTex->draw( rs );
 				preScreenTex->draw( *listVAIter->terrainVA, &polyShader );
 			}
 			else
@@ -2132,13 +2138,13 @@ void GameSession::RespawnPlayer()
 	player.receivedHit = NULL;
 }
 
-void GameSession::UpdateTerrainShader()
+void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 {
 	lightsAtOnce = 0;
 	tempLightLimit = 3;
 
 	queryMode = "lights"; 
-	lightTree->Query( this, screenRect );
+	lightTree->Query( this, aabb );
 
 	//Vector2i vi = Mouse::getPosition();
 	//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
