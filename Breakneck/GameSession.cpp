@@ -520,6 +520,7 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray &grassVa = *va;
 
 			int segIndex = 0;
+			int totalGrass = 0;
 			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
 			{	
 				Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
@@ -530,6 +531,7 @@ bool GameSession::OpenFile( string fileName )
 				int end = (*it).index + (*it).reps;
 
 				int grassCount = (*it).reps + 1;
+				//cout << "Grasscount: " << grassCount << endl;
 
 				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
@@ -537,6 +539,7 @@ bool GameSession::OpenFile( string fileName )
 
 				for( int i = 0; i < grassCount; ++i )
 				{
+					cout << "indexing at: " << i*4 + segIndex * 4 << endl;
 					V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
 					Vector2f pos( posd.x, posd.y );
 
@@ -547,25 +550,26 @@ bool GameSession::OpenFile( string fileName )
 
 					//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
 					//borderVa[i*4].color.a = 10;
-					grassVa[i*4 + segIndex * 4].position = topLeft;
-					grassVa[i*4 + segIndex * 4].texCoords = Vector2f( 0, 0 );
+					grassVa[(i+totalGrass)*4].position = topLeft;
+					grassVa[(i+totalGrass)*4].texCoords = Vector2f( 0, 0 );
 
 					//grassVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
-					grassVa[i*4+1 + segIndex * 4].position = bottomLeft;
-					grassVa[i*4+1 + segIndex * 4].texCoords = Vector2f( 0, grassSize );
+					grassVa[(i+totalGrass)*4+1].position = bottomLeft;
+					grassVa[(i+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
 
 					//grassVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
-					grassVa[i*4+2 + segIndex * 4].position = bottomRight;
-					grassVa[i*4+2 + segIndex * 4].texCoords = Vector2f( grassSize, grassSize );
+					grassVa[(i+totalGrass)*4+2].position = bottomRight;
+					grassVa[(i+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
 
 					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
-					grassVa[i*4+3 + segIndex * 4].position = topRight;
-					grassVa[i*4+3 + segIndex * 4].texCoords = Vector2f( grassSize, 0 );
+					grassVa[(i+totalGrass)*4+3].position = topRight;
+					grassVa[(i+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
 					//++i;
 				}
+				totalGrass += grassCount;
 				segIndex++;
 			}
 			}
