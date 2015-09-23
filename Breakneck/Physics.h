@@ -127,6 +127,11 @@ struct Collider
 		sf::Vector2<double> position, 
 		const CollisionBox &b, Edge *e, 
 		const sf::Vector2<double> &vel );
+
+	Contact *collideEdgeREAL( 
+		sf::Vector2<double> position, 
+		const CollisionBox &b, Edge *e, 
+		const sf::Vector2<double> &vel );
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
 

@@ -3711,10 +3711,23 @@ bool Actor::CheckStandUp()
 bool Actor::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
+	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	position += vel;
 	
-	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	minContact.collisionPriority = 1000000;
+	
+	double oldRight = oldR.left + oldR.width;
+	double right = newR.left + newR.width;
+
+	double oldBottom = oldR.top + oldR.height;
+	double bottom = newR.top + newR.height;
+
+	double maxRight = max( right, oldRight );
+	double maxBottom = max( oldBottom, bottom );
+	double minLeft = min( oldR.left, newR.left );
+	double minTop = min( oldR.top, newR.top );
+	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
 
 	col = false;
 
@@ -3727,6 +3740,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	//cout << "Start resolve" << endl;
 	owner->terrainTree->Query( this, r );
 
+
+
 	queryMode = "moving_resolve";
 	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
 	{
@@ -3734,7 +3749,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		(*it)->Query( this, r );
 	}
 
-	if( false )//if( col )
+	if( col )
 	{
 		cout << "performing: " << endl 
 			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
@@ -3747,7 +3762,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	owner->grassTree->Query( this, r );
 
 	//need to fix the quad tree but this works!
-	cout << "test grass count: " << testGrassCount << endl;
+	//cout << "test grass count: " << testGrassCount << endl;
 	//if( minContact.edge != NULL )
 	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 
@@ -5322,13 +5337,15 @@ void Actor::UpdatePhysics()
 						extraDir = V2d( -1, 0 );
 					}
 				}
-
+				
 
 
 				//V2d extraDir =  V2d( -minContact.normal.y, minContact.normal.x );//normalize( minContact.edge->v1 - minContact.edge->v0 );
-
+				
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
+				
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+				cout << "newVel: " << newVel.x << ", " << newVel.y << endl;
 			//	newVel = V2d( 0, 0 );
 			//	extraVel = V2d( 0, 0 );
 				
@@ -5353,6 +5370,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( length( stealVec ) == 0 )
 			{
+
 				movementVec.x = 0;
 				movementVec.y = 0;
 			}
@@ -5604,7 +5622,12 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
+				cout << "setting newvel" << endl;
 				velocity = newVel;
+			}
+			else
+			{
+				cout << "no temp collision" << endl;
 			}
 
 			if( length( extraVel ) > 0 )
@@ -8012,11 +8035,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
-					if( length(c->resolution) > length(minContact.resolution) )
+					if(( c->normal.x == 0 && c->normal.y == 0 ))
+					//if( length(c->resolution) > length(minContact.resolution) )
 					{
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;

@@ -1918,6 +1918,8 @@ int GameSession::Run( string fileN )
 		//grassTree->DebugDraw( preScreenTex );
 
 
+		coll.DebugDraw( preScreenTex );
+
 		preScreenTex->setView( uiView );
 		//window->setView( uiView );
 	//	window->draw( healthSprite );
@@ -1930,7 +1932,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//coll.DebugDraw( window );
+		
 
 		
 		//terrainTree->DebugDraw( window );

@@ -1378,7 +1378,7 @@ Contact *Collider::collideEdge2( sf::Vector2<double> position, const CollisionBo
 	return NULL;
 }
 
-Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel )
+Contact * Collider::collideEdgeREAL( V2d position, const CollisionBox &b, Edge *e, const V2d &vel )
 {
 	if( b.isCircle )
 	{
@@ -1838,6 +1838,460 @@ Contact * Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, c
 	}
 
 	return NULL;
+	}
+}
+
+Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel )
+{
+	if( b.isCircle )
+	{
+	}
+	else
+	{
+		Vector2<double> oldPosition = position - vel;
+		double left = position.x - b.rw;
+		double right = position.x + b.rw;
+		double top = position.y - b.rh;
+		double bottom = position.y + b.rh;
+
+	
+
+		double oldLeft = oldPosition.x - b.rw;
+		double oldRight = oldPosition.x + b.rw;
+		double oldTop = oldPosition.y - b.rh;
+		double oldBottom = oldPosition.y + b.rh;
+
+
+		double edgeLeft = min( e->v0.x, e->v1.x );
+		double edgeRight = max( e->v0.x, e->v1.x ); 
+		double edgeTop = min( e->v0.y, e->v1.y ); 
+		double edgeBottom = max( e->v0.y, e->v1.y ); 
+
+		V2d en = e->Normal();
+		V2d prevEn = e->edge0->Normal();
+		V2d point = e->v0;
+		//V2d v1 = e->v1;
+		//check for point collisions first
+
+		//bool pointInRect = point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;		
+
+		bool pointInRect = point.x >= min( left, oldLeft ) && point.x <= max( right, oldRight ) && point.y >= min( top, oldTop ) && point.y <= max( bottom, oldBottom );		
+
+		double leftTime = 1, rightTime = 1, bottomTime = 1, topTime = 1; // one whole timestep
+		
+		V2d intersect;
+
+		double pointMinTime = 100;
+		int type = 0;
+		V2d pointNormal(0,0);
+		
+		//if( pointInRect )
+		{
+			bool rightCond0 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0);
+			bool rightCond1 = ( prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y < 0 );
+			bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x > 0 && en.y < 0 );
+			bool rightCond3 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y == 0 );
+
+			bool leftCond0 = (prevEn.x > 0 && prevEn.y < 0 && en.x > 0 && en.y > 0);
+			bool leftCond1 = ( prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0 );
+			bool leftCond2 = ( prevEn.x > 0 && prevEn.y < 0 && en.x < 0 && en.y > 0 );
+			bool leftCond3 = (prevEn.x > 0 && prevEn.y == 0 && en.x > 0 && en.y > 0 );
+
+			bool topCond0 = (prevEn.y > 0 && prevEn.x > 0 && en.y > 0 && en.x < 0);
+			bool topCond1 = ( prevEn.y < 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
+			bool topCond2 = ( prevEn.y > 0 && prevEn.x > 0 && en.y < 0 && en.x > 0 );
+
+			bool bottomCond0 = (prevEn.y < 0 && prevEn.x < 0 && en.y < 0 && en.x > 0);
+			bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y < 0 && en.x > 0 );
+			bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y > 0 && en.x > 0 );
+
+			/*rightCond0 = true;
+			rightCond1 = true;
+			rightCond2 = true;
+
+			leftCond0 = true;
+			leftCond1 = true;
+			leftCond2 = true;
+
+			topCond0 = true;
+			topCond1 = true;
+			topCond2 = true;
+
+			bottomCond0 = true;
+			bottomCond1 = true;
+			bottomCond2 = true; */
+			//cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
+			cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
+			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x && right >= point.x  )
+			{
+				cout << "right " << endl;
+				pointMinTime = ( point.x - oldRight ) / abs(vel.x);
+				pointNormal.x = -1;
+			}
+			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x && left <= point.x  )
+			{
+				cout << "left" << endl;
+				pointMinTime = ( oldLeft - point.x ) / abs( vel.x );
+				pointNormal.x = 1;
+			}
+			
+			if( en.y != 0 && (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y && bottom >= point.y )
+			{
+				cout << "bottom" << endl;
+				bottomTime = ( point.y - oldBottom ) / abs( vel.y );
+				if( bottomTime < pointMinTime )
+				{
+					pointMinTime = bottomTime;
+					pointNormal.x = 0;
+					pointNormal.y = -1;
+				}
+				//pointMinTime = min( bottomTime, pointMinTime );
+			}
+			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y && top <= point.y )
+			{
+				cout << "top" << endl;
+				topTime = ( oldTop - point.y ) / abs( vel.y );
+				if( topTime < pointMinTime )
+				{
+					pointMinTime = topTime;
+					pointNormal.x = 0;
+					pointNormal.y = 1;
+				}
+			}
+
+		}
+
+		double time = 100;
+		if( en.x == 0 )
+		{
+			double edgeYPos = edgeTop;
+			if( en.y > 0 ) //down
+			{
+				if( vel.y < 0 && oldTop >= edgeYPos && top <= edgeYPos )
+				{
+					time = ( oldTop - edgeYPos ) / abs( vel.y );
+
+					intersect.y = edgeYPos;
+					if( left >= edgeLeft && right <= edgeRight )
+					{
+						intersect.x = (right + left ) / 2.0;
+					}
+					else if( left >= edgeLeft )
+					{
+						intersect.x = left;
+					}
+					else if( right <= edgeRight )
+					{
+						intersect.y = right;
+					}
+
+					
+				}
+			}
+			else //up
+			{
+				if( vel.y > 0 && oldBottom <= edgeYPos && bottom >= edgeYPos )
+				{
+				//	cout << "this one: " << oldBottom << ", bottom: " << bottom << ", eyp: " << edgeYPos << endl;
+					time = ( edgeYPos - oldBottom ) / abs( vel.y );
+
+					intersect.y = edgeYPos;
+					if( left >= edgeLeft && right <= edgeRight )
+					{
+						intersect.x = (right + left ) / 2.0;
+					}
+					else if( left >= edgeLeft )
+					{
+						intersect.x = left;
+					}
+					else if( right <= edgeRight )
+					{
+						intersect.y = right;
+					}
+				}
+			}
+
+		}
+		else if( en.y == 0 )
+		{
+			double edgeXPos = edgeLeft;
+			if( en.x > 0 ) //right
+			{
+				if( vel.x < 0 && oldLeft >= edgeXPos && left <= edgeXPos )
+				{
+					time = ( oldLeft - edgeXPos ) / abs( vel.x);
+				
+				
+					intersect.x = edgeXPos;
+					bool a = top >= edgeTop;
+					bool b = bottom <= edgeBottom;
+					if( a && b )
+					{
+						intersect.y = (top + bottom ) / 2.0;
+					}
+					else if( a )
+					{
+						intersect.y = top;
+					}
+					else if( b )
+					{
+						intersect.y = bottom;
+					}
+					else
+					{
+						intersect.y = (top + bottom ) / 2.0;
+						cout << "stupid: " << top << ", " << bottom << ": edgetop: " << edgeTop << ", edgeBottom: " << edgeBottom << endl;
+					}
+				}
+			}
+			else //left
+			{
+				if( vel.x > 0 && oldRight <= edgeXPos && right >= edgeXPos )
+				{
+					time = ( edgeXPos - oldRight ) / abs( vel.x );
+					//cout << "Right: " << time << endl;
+
+					intersect.x = edgeXPos;
+					if( top >= edgeTop && bottom <= edgeBottom )
+					{
+						intersect.y = (top + bottom ) / 2.0;
+					}
+					else if( top >= edgeTop )
+					{
+						intersect.y = top;
+					}
+					else if( bottom <= edgeBottom )
+					{
+						intersect.y = bottom;
+					}
+				}
+				
+				
+
+			}
+
+		
+			
+			
+			//return NULL;
+				
+		}
+		else
+		{
+			Vector2<double> corner(0,0);
+			V2d opp;
+			if( en.x > 0 )
+			{
+				corner.x = left;
+				opp.x = right;
+			}
+			else if( en.x < 0 )
+			{
+				corner.x = right;
+				opp.x = left;
+			}
+			
+			if( en.y > 0 )
+			{
+				corner.y = top;
+				opp.y = bottom;
+			}
+			else if( en.y < 0 )
+			{
+				corner.y = bottom;
+				opp.y = top;
+			}
+
+			double res = cross( corner - e->v0, e->v1 - e->v0 );
+			double resOpp = cross( opp - e->v0, e->v1 - e->v0 );
+			//might remove the opp thing soon
+
+			double measureNormal = dot( en, normalize(-vel) );
+
+			bool test = res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
+
+			
+			
+			if( res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
+			{
+
+				LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
+				double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
+				if( li.parallel || abs( testing ) == 1 )
+				{
+					//cout << "returning null1" << endl;
+					return NULL;
+				}
+				intersect = li.position;
+
+				double intersectQuantity = e->GetQuantity( intersect );
+
+				cout << "test: " << test << " normal: " << en.x << ", " << en.y << " q: " << intersectQuantity << "len: " << length( e->v1 - e->v0 ) << endl;
+				//if( intersectQuantity < 0 )
+				//	intersectQuantity = 0;
+				//if( intersectQuantity >length( e->v1 - e->v0 ) )
+				//	intersectQuantity = length( e->v1 - e->v0 );
+				if( intersectQuantity < 0 || intersectQuantity > length( e->v1 - e->v0 ) )
+				{
+					cout << "bad: " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
+					if( intersectQuantity <= 0 )
+					{
+					//	point = e->v0;
+					//	cout << "adjusting" << endl;
+					}
+					else
+					{
+					//	point = e->v1;
+					}
+
+		
+					//bool rightCond0 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0);
+					//bool rightCond1 = ( prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y < 0 );
+					//bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x > 0 && en.y < 0 );
+
+					//bool leftCond0 = (prevEn.x >= 0 && prevEn.y <= 0 && en.x > 0 && en.y > 0);
+					//bool leftCond1 = ( prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0 );
+					//bool leftCond2 = ( prevEn.x > 0 && prevEn.y < 0 && en.x < 0 && en.y > 0 );
+
+					//bool topCond0 = (prevEn.y > 0 && prevEn.x > 0 && en.y > 0 && en.x < 0);
+					//bool topCond1 = ( prevEn.y < 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
+					//bool topCond2 = ( prevEn.y > 0 && prevEn.x > 0 && en.y < 0 && en.x > 0 );
+
+					//bool bottomCond0 = (prevEn.y < 0 && prevEn.x < 0 && en.y < 0 && en.x > 0);
+					//bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y < 0 && en.x > 0 );
+					//bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y > 0 && en.x > 0 );
+					//cout << "oldLeft: " << oldLeft << ", left: " << left << "point: " << point.x << ", " << point.y << endl;
+					//if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x && right >= point.x  )
+					//{
+					//	rightTime = ( point.x - oldRight ) / abs(vel.x);
+					//	if( rightTime < pointMinTime )
+					//	{
+					//		pointMinTime = rightTime;
+					//		pointNormal.x = -1;
+					//		pointNormal.y = 0;
+					//	}
+					//}
+					//else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x && left <= point.x  )
+					//{
+					//	
+					//	leftTime = ( oldLeft - point.x ) / abs( vel.x );
+					//	cout << "left try" << leftTime << "pointMinTime: " << pointMinTime << endl;
+					//	if( leftTime < pointMinTime )
+					//	{
+					//		
+					//		pointMinTime = leftTime;
+					//		pointNormal.x = 1;
+					//		pointNormal.y = 0;
+					//	}
+					//}
+			
+					//if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y && bottom >= point.y )
+					//{
+					////	cout << "bottom" << endl;
+					//	bottomTime = ( point.y - oldBottom ) / abs( vel.y );
+					//	if( bottomTime < pointMinTime )
+					//	{
+					//		pointMinTime = bottomTime;
+					//		pointNormal.x = 0;
+					//		pointNormal.y = -1;
+					//	}
+					//	//pointMinTime = min( bottomTime, pointMinTime );
+					//}
+					//else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y && top <= point.y )
+					//{
+					//	topTime = ( oldTop - point.y ) / abs( vel.y );
+					//	if( topTime < pointMinTime )
+					//	{
+					//		pointMinTime = topTime;
+					//		pointNormal.x = 0;
+					//		pointNormal.y = 1;
+					//	}
+					//}
+				}
+				else
+				{
+
+
+					//this is prob wrong
+					double tempTime = dot( intersect - ( corner - vel ), normalize( vel ) );
+					tempTime /= length( vel );
+					//cout << "tempTime: " << tempTime << endl;
+					//if( tempTime >= -4 )
+					{
+
+						//if( tempTime < 0 )
+						//	tempTime = 0;
+						time = tempTime;
+						
+					//		cout << "time: " << time << " normal: " << en.x << ", " << en.y << 
+			//" vel: " << vel.x << ", " << vel.y << ", q: " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
+					}
+						
+					
+						
+					
+				}
+			}
+
+
+		}
+		//aabb's already collide
+
+		if( pointMinTime <= time )
+		{
+			time = pointMinTime;
+			currentContact->position = point;
+			currentContact->normal = pointNormal;
+
+			if( time == 100 )
+			return NULL;
+
+			CircleShape *cs = new CircleShape;
+			cs->setFillColor( Color::Yellow );
+			cs->setRadius( 5 );
+			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+			cs->setPosition( point.x, point.y );
+
+			progressDraw.push_back( cs );	
+
+			cout << "point " << endl;
+		}
+		else
+		{
+			currentContact->position = intersect;
+			currentContact->normal = V2d( 0, 0 );
+
+			CircleShape *cs = new CircleShape;
+			cs->setFillColor( Color::Yellow );
+			cs->setRadius( 5 );
+			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+			cs->setPosition( intersect.x, intersect.y );
+
+			progressDraw.push_back( cs );
+		}
+
+		if( time == 100 )
+			return NULL;
+		
+		if( time < 0 )
+			time = 0;
+		if( approxEquals( time, 0 ) )
+			time = 0;
+		currentContact->collisionPriority = time;
+		currentContact->edge = e;
+		currentContact->movingPlat = NULL;
+		
+		currentContact->resolution = -vel * ( 1 - time );
+
+		cout << "pri: " << currentContact->collisionPriority << " normal: " << en.x << ", " << en.y << 
+			" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<
+			" vel: " << vel.x << ", " << vel.y << ", pos: " << currentContact->position.x << ", " << currentContact->position.y
+			<< "old: " << oldPosition.x << ", " << oldPosition.y << endl;
+
+		return currentContact;
+
+		//cout << "pri: " << currentContact->collisionPriority << " normal: " << en.x << ", " << en.y << endl;
+		
 	}
 }
 
