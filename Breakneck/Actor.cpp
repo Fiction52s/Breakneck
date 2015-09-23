@@ -3727,6 +3727,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	double maxBottom = max( oldBottom, bottom );
 	double minLeft = min( oldR.left, newR.left );
 	double minTop = min( oldR.top, newR.top );
+	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
 	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
 
 	col = false;
@@ -3734,6 +3735,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	tempVel = vel;
 	minContact.edge = NULL;
 
+
+	cout << "---STARTING QUERY--- vel: " << vel.x << ", " << vel.y << endl;
 	queryMode = "resolve";
 //	Query( this, owner->testTree, r );
 
@@ -3754,7 +3757,8 @@ bool Actor::ResolvePhysics( V2d vel )
 		cout << "performing: " << endl 
 			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
 			<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
-			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y
+			<< "vel: " << tempVel.x << ", " << tempVel.y << endl;
 	}
 
 	queryMode = "grass";
@@ -5260,6 +5264,8 @@ void Actor::UpdatePhysics()
 
 				V2d extraDir =  normalize( minContact.edge->v1 - minContact.edge->v0 );
 
+				
+
 				if( (minContact.position == e->v0 && en.x < 0 && en.y < 0 ) )
 				{
 					V2d te = e0->v0 - e0->v1;
@@ -5338,14 +5344,22 @@ void Actor::UpdatePhysics()
 					}
 				}
 				
-
+				if( minContact.normal.x != 0 || minContact.normal.y != 0 )
+				{
+					wallNormal = minContact.normal;
+					
+					//V2d v = v1 - v0;
+					//V2d temp = normalize( v );
+					//return V2d( temp.y, -temp.x );
+					extraDir = V2d( minContact.normal.y, -minContact.normal.x );
+				}
 
 				//V2d extraDir =  V2d( -minContact.normal.y, minContact.normal.x );//normalize( minContact.edge->v1 - minContact.edge->v0 );
 				
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-				cout << "newVel: " << newVel.x << ", " << newVel.y << endl;
+				//cout << "newVel: " << newVel.x << ", " << newVel.y << endl;
 			//	newVel = V2d( 0, 0 );
 			//	extraVel = V2d( 0, 0 );
 				
@@ -5603,7 +5617,7 @@ void Actor::UpdatePhysics()
 					}
 				}
 
-				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
+				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
 
 				movement = 0;
 			
@@ -5622,12 +5636,12 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
-				cout << "setting newvel" << endl;
+				//cout << "setting newvel" << endl;
 				velocity = newVel;
 			}
 			else
 			{
-				cout << "no temp collision" << endl;
+				//cout << "no temp collision" << endl;
 			}
 
 			if( length( extraVel ) > 0 )
@@ -8034,24 +8048,43 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		
+		
+		cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		
+
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+		{
+			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
+			{
+				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			}
+			else //point
+			{
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			}
+
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
+				
+
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
 					if(( c->normal.x == 0 && c->normal.y == 0 ))
 					//if( length(c->resolution) > length(minContact.resolution) )
 					{
+						cout << "now the min" << endl;
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;
 						minContact.resolution = c->resolution;
 						minContact.position = c->position;
+						minContact.normal = c->normal;
 						minContact.movingPlat = NULL;
 						col = true;
 					}
 				}
 				else
 				{
+					cout << "now the min" << endl;
 					//if( minContact.edge != NULL )
 					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
 					//	<< e->Normal().x << ", " << e->Normal().y << endl;
@@ -8060,11 +8093,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.edge = e;
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
+					minContact.normal = c->normal;
 					minContact.movingPlat = NULL;
 					col = true;
 					
 				}
 			}
+		}
 		
 	}
 	else if( queryMode == "check" )
