@@ -3780,7 +3780,7 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		if( col )
+		if( col )//if( false )////if( col )//
 		{
 			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
 			cout << "performing: " << endl 
@@ -5521,11 +5521,12 @@ void Actor::UpdatePhysics()
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
-
-				if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
-				{
-					minContact.edge = minContact.edge->edge0;
-				}
+				assert( !(minContact.normal.x == 0 && minContact.normal.y == 0 ) );
+				cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+				//if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
+				//{
+				//	minContact.edge = minContact.edge->edge0;
+				//}
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				movingGround = minContact.movingPlat;
@@ -6052,26 +6053,28 @@ void Actor::UpdatePostPhysics()
 			ground->v1 = oldv1;
 		}
 		
+		//cout << "groundPoint : " << groundPoint.x << ", " << groundPoint.y << endl;
+		
 		position = groundPoint;
 		
 		position.x += offsetX + b.offset.x;
 
 		if( reversed )
 		{
-			if( gn.y > 0 )
+			if( gn.y > 0 || abs( offsetX ) != b.rw )
 			{
 				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
 			}
 		}
 		else
 		{
-			if( gn.y < 0 )
+			if( gn.y < 0 || abs( offsetX ) != b.rw )
 			{
 				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
 				//cout << "offset: " << b.offset.y << endl;
 			}
 		}
-
+		cout << "pos tho: " << position.x << ", " << position.y << endl;
 
 		if( reversed )
 		{
