@@ -1900,7 +1900,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x < 0);
 			bool topCond1 = ( prevEn.y <= 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
-			bool topCond2 = ( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x > 0 );
+			bool topCond2 = ( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
 
 			bool bottomCond0 = (prevEn.y <= 0 && prevEn.x < 0 && en.y < 0 && en.x > 0);
 			bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y <= 0 && en.x > 0 );
@@ -1941,8 +1941,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			bottomCond1 = true;
 			bottomCond2 = true; */
 			//cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
-			cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
-			cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
+			//cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
+			//cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
 			//cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x && right >= point.x  )
 			{
@@ -1974,10 +1974,15 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 						okay = true;
 					}
 				}
+				else
+				{
+					okay = true;
+				}
+
 				bottomTime = ( point.y - oldBottom ) / abs( vel.y );
 				if( okay && bottomTime < pointMinTime )
 				{
-					cout << "bottomtime: " << bottomTime << endl;
+					//cout << "bottomtime: " << bottomTime << endl;
 					pointMinTime = bottomTime;
 					pointNormal.x = 0;
 					pointNormal.y = -1;
@@ -2094,11 +2099,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double edgeXPos = edgeLeft;
 			if( en.x > 0 ) //right
 			{
-				if( vel.x < 0 && oldLeft >= edgeXPos && left <= edgeXPos )
+				cout << "trying!: oldLeft: " << oldLeft << ", edgeXPos: " << edgeXPos <<", left: " << left << ", vel: " << vel.x << ", " << vel.y << endl;
+				cout << "blah: " << (vel.x < 0 ) << ", " << (oldLeft >= edgeXPos ) << ", " << (left <= edgeXPos ) << endl;
+				if( vel.x < 0 && oldLeft >= edgeXPos - .001 && left <= edgeXPos )
 				{
 					bool a = top >= edgeTop && top <= edgeBottom;
 					bool b = bottom >= edgeTop && bottom <= edgeBottom;
 					//cout << "edge l/r: " << edgetop << ", " << edgebottom << ", l/r: " << top << ", " << bottom << endl;
+					cout << "in here: " << a << ", " << b << endl;
 					bool hit = true;
 
 					if( a && b )
@@ -2120,7 +2128,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					}
 					else
 					{
-						//cout << "miss: 1 0: " << edgeTop << ", " << edgeBottom << ", l/r: " << top << ", " << bottom << endl;
+						cout << "miss: 1 0: " << edgeTop << ", " << edgeBottom << ", l/r: " << top << ", " << bottom << endl;
 						hit = false;
 					} 
 
@@ -2215,10 +2223,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double measureNormal = dot( en, normalize(-vel) );
 			//cout << "oldRes : " << oldRes << endl;
 			bool test = res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
-
+			cout << "res: " << res << ", " << oldRes << ", " << resOpp << ", " << measureNormal << endl;
 			
-			
-			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 )  )	
+			cout << "baz: " << (res < 0 ) <<", " << ( oldRes >= -.001 ) << ", " << (resOpp > 0 ) << ", " << (measureNormal > -.001 ) << endl;
+			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
+			//if( res < .001 && /*oldRes >= -.001 &&*/ resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			{
 
 				LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
@@ -2241,7 +2250,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				if( intersectQuantity < 0 || intersectQuantity > len )
 				{
 					
-					cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
+				//	cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
 					if( intersectQuantity <= 0 )
 					{
 					//	point = e->v0;
@@ -2319,19 +2328,31 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				else
 				{
 					bool okay = true;
-					if( intersectQuantity == 0 || intersectQuantity == len )
+					bool a = intersectQuantity == 0 ;
+					bool b = intersectQuantity == len;
+					if( a || b  )
 					{
 						okay = false;
-						double t = cross( e->v1 - e->v0, e->edge0->v0 - e->v0 );
+						double t;
+						if( a )
+						{
+							t = cross( e->v1 - e->v0, e->edge0->v0 - e->v0 );
+						}
+						else
+						{
+							t = -cross( e->edge1->v1 - e->v1, e->v1 - e->v0 ); 
+						}
+						
 						if( t < 0 )
 						{
 							okay = true;
 						}
+						cout << "t: " << t << endl;
 					}
 
 					if( okay )
 					{
-					cout << "using: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
+				//	cout << "using: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
 					//this is prob wrong
 					double tempTime = dot( intersect - ( corner - vel ), normalize( vel ) );
 					tempTime /= length( vel );

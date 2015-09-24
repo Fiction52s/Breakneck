@@ -3262,6 +3262,39 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					showGraph = true;
 				}
 
+				if( polygonInProgress->points.size() > 0 )
+				{
+							
+					V2d backPoint = V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y );
+					V2d tPoint( testPoint.x, testPoint.y );
+					V2d extreme( 0, 0 );
+					V2d vec = tPoint - backPoint;
+					V2d normVec = normalize( vec );
+					double limit = .99;
+					if( normVec.x > limit )
+						extreme.x = 1;
+					else if( normVec.x < -limit )
+						extreme.x = -1;
+					if( normVec.y > limit )
+						extreme.y = 1;
+					else if( normVec.y < -limit )
+						extreme.y = -1;
+
+					//extreme = normalize( extreme );
+
+					if( !( extreme.x == 0 && extreme.y == 0 ) )
+					{
+						//double test = abs( cross( normalize( V2d( testPoint.x, testPoint.y ) - backPoint ), extreme ) );
+						//cout << "test: " << test << endl;
+						//if( test  < 1 )
+						{
+						//	cout << "ADJUSTING TESTPOINt BLAH STRAIGHT : " << extreme.x  << ", " << extreme.y << endl;
+							testPoint = Vector2f( backPoint + extreme * length( vec ) );
+						}
+					}
+							
+				}
+
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
 					bool emptySpace = true;

@@ -3736,7 +3736,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	minContact.edge = NULL;
 
 
-	cout << "---STARTING QUERY--- vel: " << vel.x << ", " << vel.y << endl;
+	//cout << "---STARTING QUERY--- vel: " << vel.x << ", " << vel.y << endl;
 	queryMode = "resolve";
 
 	Edge *oldGround = ground;
@@ -3782,12 +3782,12 @@ bool Actor::ResolvePhysics( V2d vel )
 
 		if( col )
 		{
-		cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
-		cout << "performing: " << endl 
-			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
-			<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
-			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y
-			<< "vel: " << tempVel.x << ", " << tempVel.y << endl;
+			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
+			cout << "performing: " << endl 
+				<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
+				<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
+				<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y
+				<< "vel: " << tempVel.x << ", " << tempVel.y << endl;
 		}
 	}
 
@@ -5577,7 +5577,7 @@ void Actor::UpdatePhysics()
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
-				cout << "offsetX: " << offsetX << endl;
+				//cout << "offsetX: " << offsetX << endl;
 				//cout << "offset now!: " << offsetX << endl;
 				//V2d gn = ground->Normal();
 				
@@ -8115,7 +8115,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if(( c->normal.x == 0 && c->normal.y == 0 ))
 					//if( length(c->resolution) > length(minContact.resolution) )
 					{
-						cout << "now the min" << endl;
+					//	cout << "now the min" << endl;
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;
 						minContact.resolution = c->resolution;
@@ -8127,7 +8127,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
-					cout << "now the min" << endl;
+					//cout << "now the min" << endl;
 					//if( minContact.edge != NULL )
 					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
 					//	<< e->Normal().x << ", " << e->Normal().y << endl;
