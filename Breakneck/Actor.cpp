@@ -3738,6 +3738,10 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	cout << "---STARTING QUERY--- vel: " << vel.x << ", " << vel.y << endl;
 	queryMode = "resolve";
+
+	Edge *oldGround = ground;
+	double oldGs = groundSpeed;
+	
 //	Query( this, owner->testTree, r );
 
 	//cout << "Start resolve" << endl;
@@ -3754,11 +3758,37 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( col )
 	{
+		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+		{
+			
+			minContact.normal = minContact.edge->Normal();
+			//cout << "setting the normal to: " << minContact.normal.x << ", " <<minContact.normal.y << endl;
+		}
+		else
+		{
+			if( oldGround != NULL )
+			{
+				if( oldGs > 0 && minContact.edge == oldGround->edge0 
+
+					|| ( oldGs > 0 && minContact.edge == oldGround->edge1 ) 
+					|| minContact.edge == oldGround )
+				{
+					col = false;
+					cout << "setting false" << endl;
+				}
+			}
+			
+		}
+
+		if( col )
+		{
+		cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
 		cout << "performing: " << endl 
 			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
 			<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
 			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y
 			<< "vel: " << tempVel.x << ", " << tempVel.y << endl;
+		}
 	}
 
 	queryMode = "grass";
@@ -4966,6 +4996,7 @@ void Actor::UpdatePhysics()
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
+							//cout << "change hit" << endl;
 						if( down)
 						{
 							V2d eNorm = minContact.edge->Normal();
@@ -5413,6 +5444,11 @@ void Actor::UpdatePhysics()
 			bool bounceOkay = true;
 			if( tempCollision )
 			{
+				//cout << "min: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+			}
+
+			if( tempCollision )
+			{
 				V2d en = minContact.edge->Normal();
 				
 				if( en.y <= 0 && en.y > -steepThresh )
@@ -5479,8 +5515,14 @@ void Actor::UpdatePhysics()
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
 			}
-			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
+
+				if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
+				{
+					minContact.edge = minContact.edge->edge0;
+				}
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				movingGround = minContact.movingPlat;
@@ -5505,7 +5547,7 @@ void Actor::UpdatePhysics()
 				
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-				V2d gNorm = ground->Normal();
+				V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
 				
 
 				//if( gNorm.y <= -steepThresh )
@@ -5535,6 +5577,7 @@ void Actor::UpdatePhysics()
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+				cout << "offsetX: " << offsetX << endl;
 				//cout << "offset now!: " << offsetX << endl;
 				//V2d gn = ground->Normal();
 				
