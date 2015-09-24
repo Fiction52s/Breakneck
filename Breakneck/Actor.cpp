@@ -4110,7 +4110,10 @@ void Actor::UpdateReversePhysics()
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
-						V2d eNorm = minContact.edge->Normal();
+						V2d eNorm = minContact.normal;//minContact.edge->Normal();
+						//eNorm = -eNorm;
+						m = -m;
+						cout << "eNorm: " << eNorm.x << ", " << eNorm.y << ", m: " << m << endl;
 						if( eNorm.y > 0 )
 						{
 
@@ -4357,9 +4360,9 @@ void Actor::UpdateReversePhysics()
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
-						V2d eNorm = minContact.edge->Normal();
+						V2d eNorm = minContact.normal;//minContact.edge->Normal();
 						eNorm = -eNorm;
-						if( minContact.position.y < position.y + b.offset.y - b.rh + 5 && eNorm.y >= 0 )
+						/*if( minContact.position.y < position.y + b.offset.y - b.rh + 5 && eNorm.y >= 0 )
 						{
 							if( minContact.position == minContact.edge->v0 ) 
 							{
@@ -4385,7 +4388,7 @@ void Actor::UpdateReversePhysics()
 									eNorm = -eNorm;
 								}
 							}
-						}
+						}*/
 						
 						//cout<< "blah" << endl;
 						if( eNorm.y < 0 )
@@ -4999,8 +5002,8 @@ void Actor::UpdatePhysics()
 							//cout << "change hit" << endl;
 						if( down)
 						{
-							V2d eNorm = minContact.edge->Normal();
-							if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && eNorm.y >= 0 )
+							V2d eNorm = minContact.normal;//minContact.edge->Normal();
+							/*if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && eNorm.y >= 0 )
 							{
 								if( minContact.position == minContact.edge->v0 ) 
 								{
@@ -5018,7 +5021,7 @@ void Actor::UpdatePhysics()
 										eNorm = minContact.edge->Normal();
 									}
 								}
-							}
+							}*/
 
 
 
@@ -5074,7 +5077,7 @@ void Actor::UpdatePhysics()
 											ground->v0 = oldv0;
 											ground->v1 = oldv1;
 										}
-										V2d eNorm = minContact.edge->Normal();			
+										V2d eNorm = minContact.normal;//minContact.edge->Normal();			
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 									}
 

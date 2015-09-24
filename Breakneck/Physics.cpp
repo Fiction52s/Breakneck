@@ -2223,9 +2223,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double measureNormal = dot( en, normalize(-vel) );
 			//cout << "oldRes : " << oldRes << endl;
 			bool test = res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
-			cout << "res: " << res << ", " << oldRes << ", " << resOpp << ", " << measureNormal << endl;
 			
-			cout << "baz: " << (res < 0 ) <<", " << ( oldRes >= -.001 ) << ", " << (resOpp > 0 ) << ", " << (measureNormal > -.001 ) << endl;
 			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			//if( res < .001 && /*oldRes >= -.001 &&*/ resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			{
@@ -2250,7 +2248,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				if( intersectQuantity < 0 || intersectQuantity > len )
 				{
 					
-				//	cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
+					cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
 					if( intersectQuantity <= 0 )
 					{
 					//	point = e->v0;
@@ -2373,6 +2371,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 						
 					
 				}
+			}
+			else
+			{
+				cout << "res: " << res << ", " << oldRes << ", " << resOpp << ", " << measureNormal << endl;
+			
+				cout << "baz: " << (res < 0 ) <<", " << ( oldRes >= -.001 ) << ", " << (resOpp > 0 ) << ", " << (measureNormal > -.001 ) << endl;
 			}
 
 
