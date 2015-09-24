@@ -1940,24 +1940,25 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			bottomCond0 = true;
 			bottomCond1 = true;
 			bottomCond2 = true; */
-			//cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
-			cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
+			cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
+			cout << "leftconds: " << leftCond0 << ", " << leftCond1 << ", " << leftCond2 << endl;
+			//cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
 			//cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
 			//cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
-			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x && right >= point.x  )
+			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
 			//	cout << "right " << endl;
 				pointMinTime = ( point.x - oldRight ) / abs(vel.x);
 				pointNormal.x = -1;
 			}
-			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x && left <= point.x  )
+			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x - .001 && left <= point.x  )
 			{
 				cout << "left" << endl;
 				pointMinTime = ( oldLeft - point.x ) / abs( vel.x );
 				pointNormal.x = 1;
 			}
 			
-			if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y && bottom >= point.y )
+			if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y + .001 && bottom >= point.y )
 			{
 				bool okay = false;
 				if( vel.x > 0 )
@@ -1991,7 +1992,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 				//pointMinTime = min( bottomTime, pointMinTime );
 			}
-			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y && top <= point.y )
+			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y - .001 && top <= point.y )
 			{
 		//		cout << "top" << endl;
 				topTime = ( oldTop - point.y ) / abs( vel.y );

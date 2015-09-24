@@ -3780,7 +3780,7 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		if( false )//if( col )//if( false )////if( col )//
+		if( col )//if( false )////if( col )//
 		{
 			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
 			cout << "performing: " << endl 
@@ -6127,7 +6127,6 @@ void Actor::UpdatePostPhysics()
 				//cout << "offset: " << b.offset.y << endl;
 			}
 		}
-		cout << "pos tho: " << position.x << ", " << position.y << endl;
 
 		if( reversed )
 		{
@@ -8151,18 +8150,18 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		
 		
-		//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
 		
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 			else //point
 			{
-			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
