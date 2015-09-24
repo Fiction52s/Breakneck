@@ -2242,7 +2242,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 				double intersectQuantity = e->GetQuantity( intersect );
 
-				cout << "test: " << test << " normal: " << en.x << ", " << en.y << " q: " << intersectQuantity << "len: " << length( e->v1 - e->v0 ) << endl;
+				//cout << "test: " << test << " normal: " << en.x << ", " << en.y << " q: " << intersectQuantity << "len: " << length( e->v1 - e->v0 ) << endl;
 				//if( intersectQuantity < 0 )
 				//	intersectQuantity = 0;
 				//if( intersectQuantity >length( e->v1 - e->v0 ) )

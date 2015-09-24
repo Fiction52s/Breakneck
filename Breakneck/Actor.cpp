@@ -3780,7 +3780,7 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		if( col )//if( false )////if( col )//
+		if( false )//if( col )//if( false )////if( col )//
 		{
 			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
 			cout << "performing: " << endl 
@@ -4790,6 +4790,20 @@ void Actor::UpdatePhysics()
 					{
 					
 						V2d eNorm = minContact.edge->Normal();
+
+						/*if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
+						{
+							if( minContact.position == minContact.edge->v0 ) 
+							{
+								if( minContact.edge->edge0->Normal().y <= 0 )
+								{
+									minContact.edge = minContact.edge->edge0;
+									//eNorm = minContact.edge->Normal();
+								}
+							}
+							//cout << "here" << endl;
+						}*/
+
 						if( eNorm.y < 0 )
 						{
 
@@ -5002,26 +5016,32 @@ void Actor::UpdatePhysics()
 							//cout << "change hit" << endl;
 						if( down)
 						{
-							V2d eNorm = minContact.normal;//minContact.edge->Normal();
-							/*if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && eNorm.y >= 0 )
+							V2d eNorm = minContact.normal;
+							
+							if( minContact.position == minContact.edge->v0 )
+							{
+
+							}
+							//minContact.edge->Normal();
+							if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
 							{
 								if( minContact.position == minContact.edge->v0 ) 
 								{
 									if( minContact.edge->edge0->Normal().y <= 0 )
 									{
 										minContact.edge = minContact.edge->edge0;
-										eNorm = minContact.edge->Normal();
+										//eNorm = minContact.edge->Normal();
 									}
 								}
-								else if( minContact.position == minContact.edge->v1 )
+								/*else if( minContact.position == minContact.edge->v1 )
 								{
 									if( minContact.edge->edge1->Normal().y <= 0 )
 									{
 										minContact.edge = minContact.edge->edge1;
 										eNorm = minContact.edge->Normal();
 									}
-								}
-							}*/
+								}*/
+							}
 
 
 
@@ -5282,7 +5302,18 @@ void Actor::UpdatePhysics()
 				V2d e0n = e0->Normal();
 				V2d e1n = e1->Normal();
 
-				
+				if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
+				{
+					if( minContact.position == minContact.edge->v0 ) 
+					{
+						if( minContact.edge->edge0->Normal().y <= 0 )
+						{
+							minContact.edge = minContact.edge->edge0;
+							//eNorm = minContact.edge->Normal();
+						}
+					}
+					//cout << "here" << endl;
+				}
 
 				//if( abs(minContact.edge->Normal().x) > wallThresh )//approxEquals(minContact.edge->Normal().x,1) || approxEquals(minContact.edge->Normal().x,-1) )
 				//{
@@ -5452,7 +5483,7 @@ void Actor::UpdatePhysics()
 
 			if( tempCollision )
 			{
-				V2d en = minContact.edge->Normal();
+				V2d en = minContact.normal;//minContact.edge->Normal();
 				
 				if( en.y <= 0 && en.y > -steepThresh )
 				{
@@ -5597,10 +5628,32 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( hasPowerGravReverse && hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.edge->Normal().y > 0 && abs( minContact.edge->Normal().x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( hasPowerGravReverse && hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
-				
-
+				if( minContact.edge->Normal().y <= 0 )
+				{
+					if( minContact.position == minContact.edge->v0 ) 
+					{
+						if( minContact.edge->edge0->Normal().y >= 0 )
+						{
+							minContact.edge = minContact.edge->edge0;
+							//eNorm = minContact.edge->Normal();
+						}
+					}
+					//cout << "here" << endl;
+				}
+				/*if(  minContact.edge->Normal().y  0 )
+				{
+					if( minContact.position == minContact.edge->v0 ) 
+					{
+						if( minContact.edge->edge0->Normal().y <= 0 )
+						{
+							minContact.edge = minContact.edge->edge0;
+							//eNorm = minContact.edge->Normal();
+						}
+					}
+					//cout << "here" << endl;
+				}*/
 
 				hasGravReverse = false;
 				hasAirDash = true;
@@ -8098,18 +8151,18 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		
 		
-		cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
 		
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
