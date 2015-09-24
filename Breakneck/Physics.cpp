@@ -1959,9 +1959,23 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			
 			if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y && bottom >= point.y )
 			{
-		
+				bool okay = false;
+				if( vel.x > 0 )
+				{
+					if( oldLeft < edgeRight )
+					{
+						okay = true;
+					}
+				}
+				else if( vel.x < 0 )
+				{
+					if( oldRight > edgeLeft )
+					{
+						okay = true;
+					}
+				}
 				bottomTime = ( point.y - oldBottom ) / abs( vel.y );
-				if( bottomTime < pointMinTime )
+				if( okay && bottomTime < pointMinTime )
 				{
 					cout << "bottomtime: " << bottomTime << endl;
 					pointMinTime = bottomTime;

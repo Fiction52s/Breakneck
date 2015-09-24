@@ -3773,8 +3773,8 @@ bool Actor::ResolvePhysics( V2d vel )
 					|| ( oldGs > 0 && minContact.edge == oldGround->edge1 ) 
 					|| minContact.edge == oldGround )
 				{
-					col = false;
-					cout << "setting false" << endl;
+					//col = false;
+					//cout << "setting false" << endl;
 				}
 			}
 			
