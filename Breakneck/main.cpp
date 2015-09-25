@@ -208,9 +208,10 @@ int main()
 
 	window->display();
 
-
 	LevelSelector ls;
-	ls.ListFolder();
+	//ls.UpdateMapList( "/Maps");
+	ls.UpdateMapList();
+	ls.Print();
 	//cout << "beginning input loop" << endl;
 	while( !quit )
 	{
