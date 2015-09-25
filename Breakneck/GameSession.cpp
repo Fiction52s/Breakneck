@@ -734,7 +734,7 @@ bool GameSession::OpenFile( string fileName )
 			borderVa[i*2+1].position = Vector2f( adjv0.x, adjv0.y  );*/
 			
 
-				cout << "loaded to here" << endl;
+				//cout << "loaded to here" << endl;
 			//double left, right, bottom, top;
 			bool first = true;
 			
@@ -851,7 +851,7 @@ bool GameSession::OpenFile( string fileName )
 			//	delete tris[i];
 			}
 
-			cout << "loaded to here" << endl;
+			//cout << "loaded to here" << endl;
 			++polyCounter;
 		}
 		//cout << "insertCount: " << insertCount << endl;
@@ -1852,12 +1852,13 @@ int GameSession::Run( string fileN )
 			if( usePolyShader )
 			{
 				UpdateTerrainShader( listVAIter->aabb );
-				sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
+				/*sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
 				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
 				rs.setOutlineColor( Color::Red );
 				rs.setOutlineThickness( 3 );
 				rs.setFillColor( Color::Transparent );
-				preScreenTex->draw( rs );
+				preScreenTex->draw( rs );*/
+
 				preScreenTex->draw( *listVAIter->terrainVA, &polyShader );
 			}
 			else

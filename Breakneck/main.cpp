@@ -14,6 +14,7 @@
 #include "Actor.h"
 #include "Tileset.h"
 #include "GameSession.h"
+#include "LevelSelector.h"
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -129,6 +130,9 @@ void LoadMenus()
 int main()
 {
 	
+	
+
+
 	preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 960 * 2, 540 * 2 );
 	preScreenTexture->clear();
@@ -204,6 +208,9 @@ int main()
 
 	window->display();
 
+
+	LevelSelector ls;
+	ls.ListFolder();
 	//cout << "beginning input loop" << endl;
 	while( !quit )
 	{

@@ -3780,7 +3780,7 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		if( col )//if( false )////if( col )//
+		if( false )////if( col )//
 		{
 			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
 			cout << "performing: " << endl 
@@ -5553,7 +5553,7 @@ void Actor::UpdatePhysics()
 			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
 				assert( !(minContact.normal.x == 0 && minContact.normal.y == 0 ) );
-				cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+				//cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 				//if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
 				//{
 				//	minContact.edge = minContact.edge->edge0;
@@ -5579,9 +5579,10 @@ void Actor::UpdatePhysics()
 					ground->v1 = oldv1;
 				}
 
+				V2d alongVel = V2d( minContact.normal.y, -minContact.normal.x );
 				
 				double groundLength = length( ground->v1 - ground->v0 );
-				groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+				groundSpeed = dot( velocity, alongVel );//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
 				
 
@@ -8150,18 +8151,18 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		
 		
-		cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
 		
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
