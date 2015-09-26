@@ -112,7 +112,7 @@ void WorldSelectMenu()
 			if( cs.LDown() )
 			{
 				worldSel++;
-				cout << "worldSel: " << worldSel << endl;
+				//cout << "worldSel: " << worldSel << endl;
 			}
 		}
 		window->draw( worldMapSpr );
@@ -127,27 +127,169 @@ void LoadMenus()
 	worldMapSpr.setTexture( worldMapTex );
 }
 
+struct TestHandler : GUIHandler 
+{
+	LevelSelector &ls;
+	bool optionChosen;
+
+	TestHandler( LevelSelector &levelSelector )
+		:ls( levelSelector ), optionChosen( false )
+	{
+	}
+
+	
+	void ButtonCallback( Button *b, const std::string & e )
+	{
+		if( ls.text[ls.selectedIndex].getColor() != Color::Red )
+		{
+			if( b->name == "Play" )
+			{
+				optionChosen = true;
+				GameEditLoop2( ls.localPaths[ls.selectedIndex] );//ls.text[ls.selectedIndex].getString() );
+			}
+			else if( b->name == "Edit" )
+			{
+				optionChosen = true;
+				GameEditLoop( ls.localPaths[ls.selectedIndex] );//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
+			}
+			else if( b->name == "Create New" )
+			{
+				optionChosen = true;
+				
+				if( ls.text[ls.selectedIndex].getColor() == Color::Red )
+				{
+					//ls.paths[
+					//string dirName= ls.text[ls.selectedIndex].getString();
+
+				}
+				//ofstream of;
+				//of.open(  + ".brknk" );
+
+				/*
+				0
+				0 0
+				0
+				0
+				0
+				*/
+
+				//GameEditLoop( ls.text[ls.selectedIndex].getString() );
+			}
+		}
+	}
+
+	void TextBoxCallback( TextBox *tb, const std::string & e )
+	{
+	}
+
+	void GridSelectorCallback( GridSelector *gs, const std::string & e )
+	{
+	}
+
+	void CheckBoxCallback( CheckBox *cb, const std::string & e )
+	{
+	}
+};
+
+void CustomMapMenu( LevelSelector &ls )
+{
+	sf::Event ev;
+	window->setView( uiView );
+	bool quit = false;
+
+	TestHandler customMapHandler( ls );
+
+	Panel p( "custom maps", 960 - ls.width, 540, &customMapHandler );
+	p.pos.x += ls.width;
+	p.AddButton( "Play", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "PLAY" );
+	p.AddButton( "Edit", Vector2i( 100, 100 ), Vector2f( 100, 50 ), "EDIT" );
+	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 150, 50 ), "CREATE NEW" );
+	ls.UpdateMapList();
+
+
+	while( !quit )
+	{
+		window->clear();
+		
+		
+		Vector2i mousePos = sf::Mouse::getPosition( *window );
+		//mousePos /= 2;
+		ls.MouseUpdate( mousePos );
+
+		while( window->pollEvent( ev ) )
+		{
+		//	cout << "some input" << endl;
+			switch( ev.type )
+			{
+			case sf::Event::KeyPressed:
+				{
+					break;
+				}
+			case sf::Event::MouseButtonPressed:
+				{
+					if( ev.mouseButton.button == Mouse::Button::Left )
+					{
+						p.Update( true, mousePos.x /2, mousePos.y/2 );
+						//cout << "blah: " << mousePos.x << ", " << mousePos.y << endl;
+						ls.LeftClick( true, mousePos );
+					}
+					break;
+				}
+			case sf::Event::MouseButtonReleased:
+				{
+					if( ev.mouseButton.button == Mouse::Button::Left )
+					{
+						p.Update( false, mousePos.x/2, mousePos.y/2 );
+						
+						ls.LeftClick( false, mousePos );
+					}
+					break;
+				}
+			}
+		}
+
+		if( customMapHandler.optionChosen )
+		{
+			window->setView( v );
+			return;
+		}
+
+		p.Draw( window );
+		ls.Draw( window );
+		window->display();
+	}
+	window->setView( v );
+}
+
 int main()
 {
-	
-	
-
-
 	preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 960 * 2, 540 * 2 );
 	preScreenTexture->clear();
 
-	LoadMenus();
+	sf::Font arial;
+	arial.loadFromFile( "arial.ttf" );
 
-	cout << "starting program" << endl;
+	std::cout << "starting program" << endl;
 	bool fullWindow = true;
 
+	int windowWidth = 1920;
+	int windowHeight = 1080;
+
+	LevelSelector ls( arial );
+	ls.windowStretch = Vector2f( windowWidth / 960.0, windowHeight / 540.0 );
+	LoadMenus();
+
 	if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
+	{
 		fullWindow = false;
+		windowWidth /= 2;
+		windowHeight /= 2;
+	}
 	if( !fullWindow )
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-			sf::VideoMode( 1920 / 2, 1080 / 2), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+			sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 		window->setPosition( Vector2i(800, 0 ));
 	}
 	else
@@ -170,7 +312,7 @@ int main()
 	titleMusic.setVolume( 0 );
 	titleMusic.play();
 
-	cout << "opened window" << endl;
+	std::cout << "opened window" << endl;
 	sf::Texture t;
 	t.loadFromFile( "title.png" );
 	
@@ -189,8 +331,7 @@ int main()
 	menu.setString( "\t\tPress any button to start \nFor help and information check README.txt");
 	menu.setCharacterSize( 20 );
 	menu.setColor( Color::Red );
-	sf::Font arial;
-	arial.loadFromFile( "arial.ttf" );
+	
 	menu.setFont( arial );
 	menu.setOrigin( menu.getLocalBounds().width / 2, menu.getLocalBounds().height / 2 );
 	menu.setPosition( 0, 0 );
@@ -208,16 +349,17 @@ int main()
 
 	window->display();
 
-	LevelSelector ls;
-	//ls.UpdateMapList( "/Maps");
-	ls.UpdateMapList();
-	ls.Print();
+	
+	CustomMapMenu( ls );
+	//ls.UpdateMapList();
+	//ls.Print();
+	
 	//cout << "beginning input loop" << endl;
 	while( !quit )
 	{
 		window->clear();
 		
-
+		//ls.MouseUpdate( sf::Mouse::getPosition( *window ) ); 
 
 		while( window->pollEvent( ev ) )
 		{
@@ -262,11 +404,26 @@ int main()
 					else
 					{
 						titleMusic.stop();
-						GameEditLoop2( "test3" );
+						GameEditLoop2( "test3.brknk" );
 						window->setView( v );
 						titleMusic.play();
 					}
-
+					break;
+				}
+			case sf::Event::MouseButtonPressed:
+				{
+					if( ev.mouseButton.button == Mouse::Button::Left )
+					{
+				//		ls.LeftClick( true, sf::Mouse::getPosition( *window ) );
+					}
+					break;
+				}
+			case sf::Event::MouseButtonReleased:
+				{
+					if( ev.mouseButton.button == Mouse::Button::Left )
+					{
+				//		ls.LeftClick( false, sf::Mouse::getPosition( *window ) );
+					}
 					break;
 				}
 			}
@@ -277,14 +434,20 @@ int main()
 			ControllerState cs = controller.GetState();
 			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
 			{
-				GameEditLoop2( "test3" );
+				GameEditLoop2( "test3.brknk" );
 				window->setView( v );
 			}
 		}
 
 		window->setView( v );
 		window->draw( titleSprite );
-		window->draw( menu );		
+		window->draw( menu );	
+
+		window->setView( uiView );
+
+		
+
+		//window->setView( v
 
 		window->display();
 	}

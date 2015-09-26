@@ -299,7 +299,7 @@ bool GameSession::OpenFile( string fileName )
 	currentFile = fileName;
 	int insertCount = 0;
 	ifstream is;
-	is.open( fileName + ".brknk" );
+	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
 		is >> numPoints;

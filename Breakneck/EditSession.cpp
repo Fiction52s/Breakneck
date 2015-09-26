@@ -725,7 +725,7 @@ bool EditSession::OpenFile( string fileName )
 	currentFile = fileName;
 
 	ifstream is;
-	is.open( fileName + ".brknk" );
+	is.open( fileName );
 
 	double grassSize = 22;
 	double radius = grassSize / 2;
@@ -1172,6 +1172,7 @@ bool EditSession::OpenFile( string fileName )
 	{
 
 		//new file
+		cout << "filename: " << fileName << endl;
 		assert( false && "error getting file to edit " );
 	}
 
@@ -1205,7 +1206,7 @@ void EditSession::WriteFile(string fileName)
 
 
 	ofstream of;
-	of.open( fileName + ".brknk" );
+	of.open( fileName );//+ ".brknk" );
 
 	int pointCount = 0;
 	int movingPlatCount = 0;

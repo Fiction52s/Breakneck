@@ -130,6 +130,8 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 
 void Panel::Update( bool mouseDown, int posx, int posy )
 {
+	posx -= pos.x;
+	posy -= pos.y;
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for( std::map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
@@ -541,7 +543,7 @@ void TextBox::Draw( sf::RenderTarget *target )
 	//rs.setSize( Vector2f( 300, characterHeight + verticalBorder) );
 	rs.setSize( Vector2f( width, characterHeight + verticalBorder ) );
 	rs.setFillColor( Color::White );
-	rs.setPosition( pos.x, pos.y );
+	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );
 
 	target->draw( rs );
 
@@ -559,7 +561,7 @@ Button::Button( const string &n, int posx, int posy, int width, int height, sf::
 	text.setFont( f );
 	text.setColor( Color::White );
 	text.setCharacterSize( characterHeight );
-	text.setPosition( pos.x + width / 2 - text.getLocalBounds().width / 2, pos.y + height / 2 - text.getLocalBounds().height / 2);
+	text.setPosition( owner->pos.x + pos.x + width / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + height / 2 - text.getLocalBounds().height / 2);
 }
 
 bool Button::Update( bool mouseDown, int posx, int posy )
@@ -597,7 +599,7 @@ void Button::Draw( RenderTarget *target )
 {
 	sf::RectangleShape rs;
 	rs.setSize( size );
-	rs.setPosition( pos.x, pos.y );
+	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );
 	if( clickedDown )
 		rs.setFillColor( Color::Green );
 	else
@@ -658,7 +660,7 @@ void CheckBox::Draw( RenderTarget *target )
 {
 	sf::RectangleShape rs;
 	rs.setSize( sf::Vector2f( SIZE, SIZE ) );
-	rs.setPosition( pos.x, pos.y );
+	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );
 
 	if( clickedDown )
 	{
