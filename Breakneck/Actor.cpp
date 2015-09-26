@@ -5579,10 +5579,11 @@ void Actor::UpdatePhysics()
 					ground->v1 = oldv1;
 				}
 
-				V2d alongVel = V2d( minContact.normal.y, -minContact.normal.x );
+				V2d alongVel = V2d( -minContact.normal.y, minContact.normal.x );
 				
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = dot( velocity, alongVel );//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+				//cout << "setting groundSpeed: " << groundSpeed << endl;
 				V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
 				
 
