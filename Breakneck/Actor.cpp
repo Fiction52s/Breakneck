@@ -3780,7 +3780,7 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		if( false )////if( col )//
+		if( false )//if( col )//if( false )////if( col )//
 		{
 			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
 			cout << "performing: " << endl 
@@ -5515,6 +5515,8 @@ void Actor::UpdatePhysics()
 				}
 			}
 
+			//cout << "framesInAir: " << framesInAir << endl;
+
 			if( action == BOUNCEAIR && tempCollision && bounceOkay )
 			{
 				
@@ -5550,8 +5552,9 @@ void Actor::UpdatePhysics()
 			//	cout << "bouncing" << endl;
 			}
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
-			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
+				//cout << "LANDINGGGGGG------" << endl;
 				assert( !(minContact.normal.x == 0 && minContact.normal.y == 0 ) );
 				//cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 				//if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
@@ -8159,11 +8162,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 			else //point
 			{
-				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
@@ -8172,7 +8175,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
-					if(( c->normal.x == 0 && c->normal.y == 0 ))
+					if(( c->normal.x == 0 && c->normal.y == 0 ) )//|| minContact.normal.y  0 )
 					//if( length(c->resolution) > length(minContact.resolution) )
 					{
 					//	cout << "now the min" << endl;

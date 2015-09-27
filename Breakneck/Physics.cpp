@@ -2229,9 +2229,9 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double measureNormal = dot( en, normalize(-vel) );
 			//cout << "oldRes : " << oldRes << endl;
 			bool test = res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
-			
+			cout << "res: " << res << endl;
 			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
-			//if( res < .001 && /*oldRes >= -.001 &&*/ resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
+			//if( res < .001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			{
 
 				LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
