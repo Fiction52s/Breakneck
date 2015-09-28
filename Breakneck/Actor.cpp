@@ -821,6 +821,8 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+	//cout << "can stand up: " << canStandUp << endl;
+
 	switch( action )
 	{
 	case STAND:
@@ -2773,14 +2775,16 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINT:
 		{
-			b.rh = sprintHeight;
-			
-			
+			if( b.rh > sprintHeight || canStandUp )
+			{
+				b.rh = sprintHeight;
+				b.offset.y = (normalHeight - sprintHeight);
 
-			b.offset.y = (normalHeight - sprintHeight);
+				if( reversed )
+					b.offset.y = -b.offset.y;
+			}
 
-			if( reversed )
-				b.offset.y = -b.offset.y;
+			
 
 			if( currInput.LLeft() )
 			{
@@ -5411,12 +5415,20 @@ void Actor::UpdatePhysics()
 				
 				if( minContact.normal.x != 0 || minContact.normal.y != 0 )
 				{
-					wallNormal = minContact.normal;
+					if( abs( minContact.normal.x ) > wallThresh || ( minContact.normal.y > 0 && abs( minContact.normal.x ) > .9 ) )
+					{
+						wallNormal = minContact.normal;
+					}
+					
 					
 					//V2d v = v1 - v0;
 					//V2d temp = normalize( v );
 					//return V2d( temp.y, -temp.x );
 					extraDir = V2d( minContact.normal.y, -minContact.normal.x );
+				}
+				else
+				{
+					//wallNormal = V2d( 0, 0 );
 				}
 
 				//V2d extraDir =  V2d( -minContact.normal.y, minContact.normal.x );//normalize( minContact.edge->v1 - minContact.edge->v0 );
@@ -5478,6 +5490,7 @@ void Actor::UpdatePhysics()
 			bool bounceOkay = true;
 			if( tempCollision )
 			{
+				framesInAir = maxJumpHeightFrame + 1;
 				//cout << "min: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 			}
 
@@ -5554,6 +5567,15 @@ void Actor::UpdatePhysics()
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
+				if( b.rh == doubleJumpHeight )
+				{
+					b.offset.y = (normalHeight - doubleJumpHeight);
+				}
+				//b.rh = dashHeight;
+				
+				//if( reversed )
+				//	b.offset.y = -b.offset.y;
+
 				//cout << "LANDINGGGGGG------" << endl;
 				assert( !(minContact.normal.x == 0 && minContact.normal.y == 0 ) );
 				//cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
@@ -5635,6 +5657,16 @@ void Actor::UpdatePhysics()
 			}
 			else if( hasPowerGravReverse && hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
+				if( b.rh == doubleJumpHeight )
+				{
+					b.offset.y = (normalHeight - doubleJumpHeight);
+				}
+				//b.rh = dashHeight;
+				
+				//if( reversed )
+					//b.offset.y = -b.offset.y;
+
+
 				if( minContact.edge->Normal().y <= 0 )
 				{
 					if( minContact.position == minContact.edge->v0 ) 
@@ -6220,6 +6252,7 @@ void Actor::UpdatePostPhysics()
 				bool stopWallClinging = false;
 				if( collision && length( wallNormal ) > 0 )
 				{
+					//cout << "wallNormal: " << wallNormal.x << ", " << wallNormal.y << endl;
 					if( wallNormal.x > 0 )
 					{
 						if( !currInput.LLeft() )

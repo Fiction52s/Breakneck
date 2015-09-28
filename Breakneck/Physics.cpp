@@ -1898,7 +1898,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			bool leftCond2 = ( prevEn.x >= 0 && prevEn.y < 0 && en.x <= 0 && en.y > 0 );
 			//cout << "blah: " << (prevEn.x > 0) << ", " << (prevEn.y <= 0) << ", " << (en.x < 0 )<< ", " << (en.y > 0) << endl;
 
-			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x < 0);
+			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x <= 0);
 			bool topCond1 = ( prevEn.y <= 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
 			bool topCond2 = ( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
 
@@ -2229,7 +2229,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double measureNormal = dot( en, normalize(-vel) );
 			//cout << "oldRes : " << oldRes << endl;
 			bool test = res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
-			cout << "res: " << res << endl;
+			//cout << "res: " << res << endl;
 			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			//if( res < .001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			{
@@ -2264,70 +2264,6 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					{
 					//	point = e->v1;
 					}
-
-		
-					//bool rightCond0 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0);
-					//bool rightCond1 = ( prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y < 0 );
-					//bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x > 0 && en.y < 0 );
-
-					//bool leftCond0 = (prevEn.x >= 0 && prevEn.y <= 0 && en.x > 0 && en.y > 0);
-					//bool leftCond1 = ( prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0 );
-					//bool leftCond2 = ( prevEn.x > 0 && prevEn.y < 0 && en.x < 0 && en.y > 0 );
-
-					//bool topCond0 = (prevEn.y > 0 && prevEn.x > 0 && en.y > 0 && en.x < 0);
-					//bool topCond1 = ( prevEn.y < 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
-					//bool topCond2 = ( prevEn.y > 0 && prevEn.x > 0 && en.y < 0 && en.x > 0 );
-
-					//bool bottomCond0 = (prevEn.y < 0 && prevEn.x < 0 && en.y < 0 && en.x > 0);
-					//bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y < 0 && en.x > 0 );
-					//bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y > 0 && en.x > 0 );
-					//cout << "oldLeft: " << oldLeft << ", left: " << left << "point: " << point.x << ", " << point.y << endl;
-					//if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x && right >= point.x  )
-					//{
-					//	rightTime = ( point.x - oldRight ) / abs(vel.x);
-					//	if( rightTime < pointMinTime )
-					//	{
-					//		pointMinTime = rightTime;
-					//		pointNormal.x = -1;
-					//		pointNormal.y = 0;
-					//	}
-					//}
-					//else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x && left <= point.x  )
-					//{
-					//	
-					//	leftTime = ( oldLeft - point.x ) / abs( vel.x );
-					//	cout << "left try" << leftTime << "pointMinTime: " << pointMinTime << endl;
-					//	if( leftTime < pointMinTime )
-					//	{
-					//		
-					//		pointMinTime = leftTime;
-					//		pointNormal.x = 1;
-					//		pointNormal.y = 0;
-					//	}
-					//}
-			
-					//if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y && bottom >= point.y )
-					//{
-					////	cout << "bottom" << endl;
-					//	bottomTime = ( point.y - oldBottom ) / abs( vel.y );
-					//	if( bottomTime < pointMinTime )
-					//	{
-					//		pointMinTime = bottomTime;
-					//		pointNormal.x = 0;
-					//		pointNormal.y = -1;
-					//	}
-					//	//pointMinTime = min( bottomTime, pointMinTime );
-					//}
-					//else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y && top <= point.y )
-					//{
-					//	topTime = ( oldTop - point.y ) / abs( vel.y );
-					//	if( topTime < pointMinTime )
-					//	{
-					//		pointMinTime = topTime;
-					//		pointNormal.x = 0;
-					//		pointNormal.y = 1;
-					//	}
-					//}
 				}
 				else
 				{
