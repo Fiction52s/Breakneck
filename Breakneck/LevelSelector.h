@@ -37,6 +37,7 @@ struct LevelSelector
 	sf::Font font;
 	sf::Text * text;
 	std::string * localPaths;
+	TreeNode **dirNode;
 	int mouseOverIndex;
 	int selectedIndex;
 	sf::Vector2f position;
@@ -49,6 +50,7 @@ struct LevelSelector
 	int xspacing;
 	int yspacing;
 	sf::Vector2f windowStretch;
+	std::string newLevelName;
 
 	sf::RenderTexture drawPanel;
 };

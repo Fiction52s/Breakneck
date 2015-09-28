@@ -270,7 +270,7 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 }
 
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
-	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n )
+	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n ), owner( p )
 {
 	focused = false;
 	leftBorder = 3;
@@ -286,8 +286,8 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	cursor.setColor( Color::Red );
 	cursor.setCharacterSize( characterHeight );
 	
-	cursor.setPosition( pos.x + text.getLocalBounds().width + leftBorder, pos.y );
-	text.setPosition( pos.x + leftBorder, pos.y );
+	cursor.setPosition( owner->pos.x + pos.x + text.getLocalBounds().width + leftBorder, owner->pos.y + pos.y );
+	text.setPosition( owner->pos.x + pos.x + leftBorder, owner->pos.y + pos.y );
 }
 
 void TextBox::SendKey( Keyboard::Key k, bool shift )
@@ -470,7 +470,7 @@ void TextBox::SendKey( Keyboard::Key k, bool shift )
 	sf::Text test;
 	test = text;
 	test.setString( test.getString().substring( 0, cursorIndex) );
-	cursor.setPosition( pos.x + test.getLocalBounds().width, pos.y);
+	cursor.setPosition( owner->pos.x + pos.x + test.getLocalBounds().width, owner->pos.y + pos.y);
 }
 
 bool TextBox::Update( bool mouseDown, int posx, int posy )

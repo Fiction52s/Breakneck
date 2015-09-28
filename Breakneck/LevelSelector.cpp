@@ -49,6 +49,7 @@ LevelSelector::LevelSelector( Font & p_font )
 	mouseDownIndex = -1;
 	localPaths = NULL;
 	mouseDown = false;
+	dirNode = NULL;
 	//entries = new TreeNode;
 	//entries->name = "Maps";
 	//entries->next = NULL;
@@ -63,6 +64,8 @@ void LevelSelector::UpdateMapList()
 	text = new Text[numTotalEntries];
 
 	localPaths = new string[numTotalEntries];
+
+	dirNode = new TreeNode*[numTotalEntries];
 
 	Tex( 0, 0, entries );
 }
@@ -119,12 +122,14 @@ void LevelSelector::LeftClick( bool click, sf::Vector2i mousePos )
 				if( mouseDownIndex == testIndex )
 				{
 					selectedIndex = testIndex;
+					cout << "selected index: " << selectedIndex << endl;
 				}
 				//cout << "selectedIndex: " << selectedIndex << endl;
 			}
 			else
 			{
-				selectedIndex = -1;
+				cout << "negative!" << endl;
+				//selectedIndex = -1;
 			}
 
 			mouseDown = false;
@@ -142,7 +147,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 	t0.setColor( Color::Red );
 	t0.setPosition( level * xspacing, index * yspacing );
 	localPaths[index] = entry->GetLocalPath();//entry->filePath;
-
+	dirNode[index] = NULL;
 	++index; //1 for me
 	for( list<TreeNode*>::iterator it = entry->dirs.begin(); it != entry->dirs.end(); ++it )
 	{
@@ -163,6 +168,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 		t.setColor( Color::Blue );
 		t.setPosition( (level + 1) * xspacing, index * yspacing );
 		localPaths[index] = (entry->GetLocalPath() / (*it).filename()).string();
+		dirNode[index] = entry;
 
 		++index; //1 for each file
 	}
@@ -189,6 +195,9 @@ void LevelSelector::ClearEntries()
 	{
 		delete [] localPaths;
 	}
+
+	if( dirNode != NULL  )
+		delete [] dirNode;
 }
 
 void LevelSelector::ClearEntries(TreeNode *n)
