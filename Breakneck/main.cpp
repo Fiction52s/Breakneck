@@ -159,6 +159,11 @@ struct CustomMapsHandler : GUIHandler
 				GameEditLoop( ls.localPaths[ls.selectedIndex] );//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
 				window->setView( uiView );
 			}
+			else if( b->name == "Delete" )
+			{	
+				boost::filesystem::remove(ls.localPaths[ls.selectedIndex]);
+				ls.UpdateMapList();
+			}
 		}
 		else
 		{
@@ -179,6 +184,7 @@ struct CustomMapsHandler : GUIHandler
 			ls.newLevelName = b->owner->textBoxes["name"]->text.getString().toAnsiString();
 				
 		}
+		
 	}
 
 	void TextBoxCallback( TextBox *tb, const std::string & e )
@@ -206,7 +212,8 @@ void CustomMapsOption( LevelSelector &ls )
 	p.pos.x += ls.width;
 	p.AddButton( "Play", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "PLAY" );
 	p.AddButton( "Edit", Vector2i( 100, 100 ), Vector2f( 100, 50 ), "EDIT" );
-	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 150, 50 ), "CREATE NEW" );
+	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 175, 50 ), "CREATE NEW" );
+	p.AddButton( "Delete", Vector2i( 100, 300 ), Vector2f( 150, 50 ), "DELETE" );
 
 	Panel namePopup( "name popup", 300, 200, &customMapHandler );
 	namePopup.pos = Vector2i( 960 / 2, 540 / 2 );
@@ -282,7 +289,7 @@ void CustomMapsOption( LevelSelector &ls )
 									{
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
-										cout << "copying to: " << to.string() << endl;
+										//cout << "copying to: " << to.string() << endl;
 										GameEditLoop( to.string() );
 
 										ls.UpdateMapList();
@@ -362,7 +369,6 @@ void CustomMapsOption( LevelSelector &ls )
 									{
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
-										cout << "copying to: " << to.string() << endl;
 										GameEditLoop( to.string() );
 
 										ls.UpdateMapList();
@@ -382,15 +388,20 @@ void CustomMapsOption( LevelSelector &ls )
 						{
 							p.Update( false, mousePos.x/2, mousePos.y/2 );
 							ls.LeftClick( false, mousePos );
+							if( ls.text[ls.selectedIndex].getColor() == Color::Red )
+							{
+								p.buttons["Create New"]->text.setString( "CREATE NEW" );
+							}
+							else
+							{
+								p.buttons["Create New"]->text.setString( "CREATE COPY" );
+							}
 						}
 					}
 					break;
 				}
 			}
 		}
-
-			
-		
 
 		p.Draw( window );
 		ls.Draw( window );

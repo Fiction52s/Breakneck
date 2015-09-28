@@ -32,7 +32,7 @@ string TreeNode::GetLocalPath()
 
 LevelSelector::LevelSelector( Font & p_font )
 {		
-	width = 100;
+	width = 200;
 	height = 540;
 	drawPanel.create( width, height );
 	drawPanel.clear();
@@ -42,7 +42,7 @@ LevelSelector::LevelSelector( Font & p_font )
 	text = NULL;
 	mouseOverIndex = -1;
 	position = Vector2f( 0, 0 );
-	selectedIndex = -1;
+	selectedIndex = 0;
 	fontHeight = 12;
 	xspacing = 20;
 	yspacing = 20;
@@ -178,7 +178,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 
 void LevelSelector::ClearEntries()
 {
-	selectedIndex = -1;
+	selectedIndex = 0;
 	mouseOverIndex = -1;
 	numTotalEntries = 0;
 	if( entries != NULL )
