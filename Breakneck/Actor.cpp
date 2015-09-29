@@ -3239,8 +3239,94 @@ void Actor::UpdatePrePhysics()
 	
 	//if( false )
 	Wire *wire = rightWire;
-	//while( wire != leftWire )	
-	if( wire->state == wire->PULLING  )
+	//while( wire != leftWire )
+
+	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
+	{
+		//cout << "pulling right" << endl;
+		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
+		if( wire->numPoints > 0 )
+			wirePoint = wire->points[wire->numPoints-1].pos;
+			//wirePoint = wirePoints[pointNum-1].pos;
+
+		V2d tes =  normalize( position - wirePoint );
+		double temp = tes.x;
+		tes.x = tes.y;
+		tes.y = -temp;
+
+		double val = dot( velocity, normalize( wirePoint - position ) );
+		V2d otherTes;
+		if( val > 0 )
+		{
+			otherTes = val * normalize( wirePoint - position );
+		}
+		 
+
+		V2d old = velocity;
+		V2d newVel1 = velocity;
+		
+
+		//velocity.y *= 10;
+	
+		velocity = dot( velocity, tes ) * tes;
+		velocity += otherTes;
+
+		V2d future = position + velocity;
+		
+		V2d diff = wirePoint - future;
+		
+		if( length( diff ) > wire->segmentLength )
+		{
+			//position += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			future += normalize(diff) * ( length( diff ) - wire->segmentLength );
+
+			newVel1 = future - position;
+			//velocity += normalize(diff) * ( length( diff ) - maxLength );
+		}
+
+
+		V2d newVel2 = velocity;
+		wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
+		if( wire->numPoints > 0 )
+			wirePoint = wire->points[wire->numPoints-1].pos;
+			//wirePoint = wirePoints[pointNum-1].pos;
+
+		tes =  normalize( position - wirePoint );
+		temp = tes.x;
+		tes.x = tes.y;
+		tes.y = -temp;
+
+		val = dot( velocity, normalize( wirePoint - position ) );
+		if( val > 0 )
+		{
+			otherTes = val * normalize( wirePoint - position );
+		}
+		 
+
+		old = velocity;
+
+		//velocity.y *= 10;
+	
+		velocity = dot( velocity, tes ) * tes;
+		velocity += otherTes;
+
+		future = position + velocity;
+		
+		diff = wirePoint - future;
+		
+		if( length( diff ) > wire->segmentLength )
+		{
+			//position += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			future += normalize(diff) * ( length( diff ) - wire->segmentLength );
+
+			newVel2 = future - position;
+			//velocity += normalize(diff) * ( length( diff ) - maxLength );
+		}
+
+		velocity = (newVel1 + newVel2) / 2.0;
+	}
+
+	else if( rightWire->state == Wire::PULLING )
 	{
 		//cout << "pulling right" << endl;
 		V2d wirePoint = wire->anchor.pos;//wireEdge->GetPoint( wireQuant );
@@ -3270,12 +3356,14 @@ void Actor::UpdatePrePhysics()
 
 		V2d future = position + velocity;
 		
+		V2d seg = wirePoint - position;
+		double segLength = length( seg );
 		V2d diff = wirePoint - future;
 		
-		if( length( diff ) > wire->segmentLength )
+		if( length( diff ) > segLength )
 		{
 			//position += normalize(diff) * ( length( diff ) - wire->segmentLength );
-			future += normalize(diff) * ( length( diff ) - wire->segmentLength );
+			future += normalize(diff) * ( length( diff ) - segLength );
 
 			velocity = future - position;
 			//velocity += normalize(diff) * ( length( diff ) - maxLength );
@@ -3327,6 +3415,8 @@ void Actor::UpdatePrePhysics()
 
 		//cout << "old vel: " << old.x << ", " << old.y <<  " new vel: " << velocity.x << ", " << velocity.y << endl;
 	}
+
+
 	
 	
 

@@ -207,21 +207,24 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			bool shrinkInput = false;
 
 			
+			if( wn.y <= 0 )
+			{
+				if( wn.x < 0 )
+				{
+					shrinkInput = currInput.LLeft() && currInput.LUp();
+				}
+				else if( wn.x > 0 )
+				{
+					shrinkInput = currInput.LRight() && currInput.LUp();
+				}
 
-			if( wn.x > 0 )
-			{
-				shrinkInput = currInput.LRight();
+				shrinkInput |= currInput.LUp();
 			}
-			else if( wn.x < 0 )
+			else if( wn.y > 0 )
 			{
-				shrinkInput = currInput.LLeft();
-			}
-			else
-			{
-				shrinkInput = currInput.LUp();
 			}
 
-			shrinkInput = true;
+			//shrinkInput = true;
 
 			if( shrinkInput && triggerDown && player->ground == NULL )
 			//if( false )
@@ -229,12 +232,12 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//totalLength -= pullStrength;
 
 				
-				double segmentChange = pullStrength;
+				/*double segmentChange = pullStrength;
 				if( segmentLength - pullStrength < minSegmentLength )
 					segmentChange = minSegmentLength - (segmentLength - pullStrength);
 
 				totalLength -= segmentChange;
-				segmentLength -= segmentChange;
+				segmentLength -= segmentChange;*/
 			}
 			break;
 		}	
