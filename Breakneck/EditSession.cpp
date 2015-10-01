@@ -38,6 +38,9 @@ TerrainPolygon::~TerrainPolygon()
 		delete [] lines;
 	if( va != NULL )
 		delete va;
+
+	if( grassVA != NULL )
+		delete grassVA;
 	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
 		(*it)->group->actors.remove( (*it ) );
@@ -225,6 +228,10 @@ void TerrainPolygon::Finalize()
 	
 	}
 
+	if( grassVA != NULL )
+	{
+		delete grassVA;
+	}
 	grassVA = gva;
 }
 

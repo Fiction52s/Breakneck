@@ -2251,7 +2251,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				//if( intersectQuantity >length( e->v1 - e->v0 ) )
 				//	intersectQuantity = length( e->v1 - e->v0 );
 				double len = length( e->v1 - e->v0 );
-				if( intersectQuantity < 0 || intersectQuantity > len )
+				if( intersectQuantity < -.0001 || intersectQuantity > len + .0001 )
 				{
 					
 					//cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;

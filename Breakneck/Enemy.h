@@ -127,8 +127,7 @@ struct Patroller : Enemy
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
-	Tileset * ts_bottom;
-	Tileset * ts_top;
+	Tileset * ts_death;
 	//std::list<sf::Vector2i> path;
 	sf::Vector2i *path; //global
 	int pathLength;
@@ -197,7 +196,8 @@ struct Crawler : Enemy
 	void LoadEnemyState();
 
 	sf::Sprite sprite;
-	Tileset *ts;
+	Tileset *ts_walk;
+	Tileset *ts_roll;
 
 	bool clockwise;
 	double groundSpeed;
@@ -218,6 +218,19 @@ struct Crawler : Enemy
 
 	Edge *startGround;
 	double startQuant;
+
+	int frame;
+	bool roll;
+	bool dead;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
 };
 
 struct BasicTurret : Enemy

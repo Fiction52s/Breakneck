@@ -1837,7 +1837,7 @@ int GameSession::Run( string fileN )
 		
 		
 
-		UpdateEnemiesDraw();
+		
 
 
 		
@@ -1953,7 +1953,7 @@ int GameSession::Run( string fileN )
 	//	{
 	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
 	//	}
-		
+		UpdateEnemiesDraw();
 
 		if( player.action != Actor::DEATH )
 			player.Draw( preScreenTex );
@@ -1991,7 +1991,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 		//grassTree->DebugDraw( preScreenTex );
 
 
@@ -2554,11 +2554,12 @@ void GameSession::GameStartMovie()
 
 PowerBar::PowerBar()
 {
-	pointsPerLayer = 100;
-	points = pointsPerLayer;
-	layer = 0;
-	maxLayer = 0;
-	minUse = 50;
+	pointsPerLayer = 240 * 10;
+	maxLayer = 6;
+	points = pointsPerLayer;//pointsPerLayer * ( maxLayer + 1 );
+	layer = maxLayer;
+	
+	minUse = 1;
 	
 	panelTex.loadFromFile( "lifebar.png" );
 	panelSprite.setTexture( panelTex );
@@ -2578,7 +2579,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 {
 	//0x99a9b9
 	Color c;
-	switch( layer )
+	/*switch( layer )
 	{
 	case 0:
 		c = Color( 0, 0xee, 0xff );
@@ -2606,17 +2607,17 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	case 7:
 		c = Color( 0xff, 0xff, 0xff );
 		break;
-	}
-
+	}*/
+	c = Color( 0, 0xee, 0xff );
 
 	double diffz = (double)points / (double)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
-	diffz *= 59 * 4;
+	diffz *= 60 * 4;
 
 	sf::RectangleShape rs;
 	rs.setPosition( 42, 108 + diffz );
-	rs.setSize( sf::Vector2f( 4 * 4, 59 * 4 - diffz ) );
+	rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
 	rs.setFillColor( c );
 
 	target->draw( panelSprite );

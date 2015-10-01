@@ -9,8 +9,8 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 80 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
-	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
+	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 {
 }
 
@@ -90,7 +90,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				hitStallCounter = framesFiring;
 			}
 
-			if( framesFiring * fireRate > maxTotalLength )
+			if( framesFiring * fireRate > 10000 )
 			{
 				state = IDLE;
 				framesFiring = 0;
@@ -100,7 +100,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	case HIT:
 		{
 			double total = 0;
-			total += length( anchor.pos - player->position );
+			
 			if( numPoints > 0 )
 			{
 				total += length( points[0].pos - anchor.pos );
@@ -108,6 +108,10 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				{
 					total += length( points[i].pos - points[i-1].pos );
 				}
+			}
+			else
+			{
+				total += length( anchor.pos - player->position );
 			}
 			totalLength = total;
 
@@ -178,7 +182,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	case PULLING:
 		{
 			double total = 0;
-			total += length( anchor.pos - player->position );
+			
 			if( numPoints > 0 )
 			{
 				total += length( points[0].pos - anchor.pos );
@@ -186,24 +190,38 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				{
 					total += length( points[i].pos - points[i-1].pos );
 				}
+				total += length( points[numPoints-1].pos - player->position );
+				cout << "multi: " << "numPoints: " << numPoints << " , " << total << endl;
 			}
-			if( total < totalLength )
+			else
+			{
+				total += length( anchor.pos - player->position );
+				cout << "single: " << total << endl;
+			}
+			//totalLength = total;
+			//if( total < totalLength )
 				totalLength = total;
-
 
 			V2d wn;
 
 			if( numPoints == 0 )
 			{
-				segmentLength = totalLength;
+				//if( totalLength < segmentLength )
+					segmentLength = totalLength;
 				wn = normalize( anchor.pos - player->position );
+				cout << "segment length single: " << segmentLength << endl;
 			}
 			else
 			{
-				segmentLength = length( points[numPoints-1].pos - player->position );
+				double temp = length( points[numPoints-1].pos - player->position );
+				//if( temp < segmentLength )
+				{
+					segmentLength = temp;
+				}
 				wn = normalize( points[numPoints-1].pos - player->position );
+				cout << "segment length multi: " << segmentLength << endl;
 			}
-
+			
 			bool shrinkInput = false;
 
 			
@@ -211,20 +229,43 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				if( wn.x < 0 )
 				{
-					shrinkInput = currInput.LLeft() && currInput.LUp();
+					shrinkInput = currInput.LLeft();
 				}
 				else if( wn.x > 0 )
 				{
-					shrinkInput = currInput.LRight() && currInput.LUp();
+					shrinkInput = currInput.LRight();
 				}
 
 				shrinkInput |= currInput.LUp();
 			}
 			else if( wn.y > 0 )
 			{
+				if( wn.x < 0 )
+				{
+					shrinkInput = currInput.LLeft();
+				}
+				else if( wn.x > 0 )
+				{
+					shrinkInput = currInput.LRight();
+				}
+
+				shrinkInput |= currInput.LDown();
 			}
 
-			//shrinkInput = true;
+			shrinkInput = false;
+
+			if( currInput.B )
+			{
+				shrinkInput = true;
+			}
+			else if( currInput.Y )
+			{
+				if( triggerDown && player->ground == NULL )
+				{
+						segmentLength += pullStrength;
+						totalLength += pullStrength;
+				}
+			}
 
 			if( shrinkInput && triggerDown && player->ground == NULL )
 			//if( false )
@@ -232,12 +273,12 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//totalLength -= pullStrength;
 
 				
-				/*double segmentChange = pullStrength;
+				double segmentChange = pullStrength;
 				if( segmentLength - pullStrength < minSegmentLength )
 					segmentChange = minSegmentLength - (segmentLength - pullStrength);
 
 				totalLength -= segmentChange;
-				segmentLength -= segmentChange;*/
+				segmentLength -= segmentChange;
 			}
 			break;
 		}	
@@ -341,7 +382,7 @@ void Wire::UpdateAnchors( V2d vel )
 {
 	if( state == HIT || state == PULLING )
 	{
-		cout << "updating anchors" << endl;
+		//cout << "updating anchors" << endl;
 	//	rayCastMode = "check";
 		//rcEdge = NULL;
 
@@ -415,7 +456,7 @@ void Wire::UpdateAnchors( V2d vel )
 				radius = radius - length( oldAnchor - realAnchor );
 				oldPos = realAnchor + normalize( realAnchor - oldAnchor ) * radius;
 
-				cout << "point added!: " << numPoints << endl;
+				cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
 				counter++;
 			}
 			else
@@ -461,6 +502,8 @@ void Wire::UpdateAnchors( V2d vel )
 			}
 		}
 	}
+
+	//UpdateState( false );
 }
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
