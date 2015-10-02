@@ -22,12 +22,14 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-TerrainPolygon::TerrainPolygon()
+TerrainPolygon::TerrainPolygon( sf::Texture *gt)
+	:grassTex( gt )
 {
 	va = NULL;
 	lines = NULL;
 	selected = false;
-	
+	grassVA = NULL;
+	isGrassShowing = false;
 }
 
 TerrainPolygon::~TerrainPolygon()
@@ -45,9 +47,10 @@ TerrainPolygon::~TerrainPolygon()
 
 void TerrainPolygon::Finalize()
 {
+	isGrassShowing = false;
 	material = "mat";
 	lines = new sf::Vertex[points.size()*2+1];
-	int i = 0;
+	
 
 	FixWinding();
 	//cout << "points size: " << points.size() << endl;
@@ -55,7 +58,7 @@ void TerrainPolygon::Finalize()
 	vector<p2t::Point*> polyline;
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
-		polyline.push_back( new p2t::Point((*it).first.x, (*it).first.y ) );
+		polyline.push_back( new p2t::Point((*it).pos.x, (*it).pos.y ) );
 	}
 
 	p2t::CDT * cdt = new p2t::CDT( polyline );
@@ -89,64 +92,140 @@ void TerrainPolygon::Finalize()
 
 	if( points.size() > 0 )
 	{
+		int i = 0;
 		PointList::iterator it = points.begin(); 
-		lines[0] = sf::Vector2f( (*it).first.x, (*it).first.y );
-		lines[2 * points.size() - 1 ] = sf::Vector2f( (*it).first.x, (*it).first.y );
+		lines[0] = sf::Vector2f( (*it).pos.x, (*it).pos.y );
+		lines[2 * points.size() - 1 ] = sf::Vector2f( (*it).pos.x, (*it).pos.y );
 		++it;
 		++i;
 		while( it != points.end() )
 		{
-			lines[i] = sf::Vector2f( (*it).first.x, (*it).first.y );
-			lines[++i] = sf::Vector2f( (*it).first.x, (*it).first.y ); 
+			lines[i] = sf::Vector2f( (*it).pos.x, (*it).pos.y );
+			lines[++i] = sf::Vector2f( (*it).pos.x, (*it).pos.y ); 
 			++i;
 			++it;
 		}
 	}
-	PointList::iterator it = points.begin();
-	left = (*it).first.x;
-	right = (*it).first.x;
-	top = (*it).first.y;
-	bottom = (*it).first.y;
-	++it;
-	for( ; it != points.end(); ++it )
+
 	{
-		left = min( (*it).first.x, left );
-		right = max( (*it).first.x, right );
-		top = min( (*it).first.y, top );
-		bottom = max( (*it).first.y, bottom );
+		PointList::iterator it = points.begin();
+		left = (*it).pos.x;
+		right = (*it).pos.x;
+		top = (*it).pos.y;
+		bottom = (*it).pos.y;
+		++it;
+		for( ; it != points.end(); ++it )
+		{
+			left = min( (*it).pos.x, left );
+			right = max( (*it).pos.x, right );
+			top = min( (*it).pos.y, top );
+			bottom = max( (*it).pos.y, bottom );
+		}
 	}
 	
 
-	//p2t::Sweep
-	//va = new VertexArray( sf::Triangles, points.size() * 3 );
-/*	vector<int> working_set;
-	list<vector<int>> monotone_poly_list;
+	double grassSize = 22;
+	double grassSpacing = -5;
+
+	numGrassTotal = 0;
+	int inds = 0;
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		Vector2i next;
+
+		PointList::iterator temp = it;
+		if( ++temp == points.end() )
+		{
+			next = points.front().pos;
+		}
+		else
+		{
+			//++temp;
+			next = (*temp).pos;
+			//--temp;
+		}
+
+		V2d v0( (*it).pos.x, (*it).pos.y );
+		V2d v1( next.x, next.y );
+
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+				
+		int num = floor( remainder ) + 1;
+
+		numGrassTotal += num;
+		//cout << "plus: " << v0.x << ", " << v0.y << " " << v1.x << ", " << v1.y << endl;
+		++inds;
+	}
+	//assert( numGrassTotal !=  0 );
+	//cout << "total grass: " << numGrassTotal << endl;
+	VertexArray *gva = new VertexArray( sf::Quads, numGrassTotal * 4 );
+
+
+	VertexArray &grassVa = *gva;
+
 	int i = 0;
-	for( int i = 0; i < points.size(); ++i )
-		working_set.push_back( i++ );
-
-	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
+		Vector2i next;
+
+		PointList::iterator temp = it;
+		if( ++temp == points.end() )
+		{
+			next = points.front().pos;
+		}
+		else
+		{
+			next = (*temp).pos;
+		}
+
+		V2d v0( (*it).pos.x, (*it).pos.y );
+		V2d v1( next.x, next.y );
+
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+		int num = floor( remainder ) + 1;
+
+		for( int j = 0; j < num; ++j )
+		{
+			V2d posd = v0 + (v1- v0) * ((double)j / num);
+			Vector2f pos( posd.x, posd.y );
+
+			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+
+			//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+			grassVa[i*4].color.a = 0;
+			grassVa[i*4].position = topLeft;
+			grassVa[i*4].texCoords = Vector2f( 0, 0 );
+
+			//grassVa[i*4+1].color = Color::Blue;
+			//borderVa[i*4+1].color.a = 10;
+			grassVa[i*4+1].color.a = 0;
+			grassVa[i*4+1].position = bottomLeft;
+			grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
+
+			//grassVa[i*4+2].color = Color::Blue;
+			//borderVa[i*4+2].color.a = 10;
+			grassVa[i*4+2].color.a = 0;
+			grassVa[i*4+2].position = bottomRight;
+			grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
+
+			//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+			//borderVa[i*4+3].color.a = 10;
+			grassVa[i*4+3].color.a = 0;
+			grassVa[i*4+3].position = topRight;
+			grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
+			++i;
+		}
 		
+	
 	}
 
-	while( true )
-	{
-		vector<int> sorted_vertex_list;
-		int n = 0;
-		for( int i = 0, 
-	}*/
-
-
-
-	
-	/*for( ; it != points.end(); ++it )
-	{
-		lines[i] = sf::Vertex((*it));
-		lines[i*2+1] = sf::Vertex((*it));
-		++i;
-		
-	}*/
+	grassVA = gva;
 }
 
 void TerrainPolygon::RemoveSelectedPoints()
@@ -158,7 +237,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	PointList::iterator it = temp.begin();
 	while( it != temp.end() )
 	{
-		if( (*it).second ) //selected
+		if( (*it).selected ) //selected
 		{
 			temp.erase( it++ );
 		}
@@ -177,28 +256,157 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( true );
 }
 
-void TerrainPolygon::Draw( double zoomMultiple, RenderTarget *rt )
+void TerrainPolygon::SwitchGrass( V2d mousePos )
 {
+	
+	VertexArray &grassVa = *grassVA;
+	double grassSize = 22;
+	double radius = grassSize / 2;
+	double grassSpacing = -5;
+
+	int i = 0;
+
+
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		Vector2i next;
+
+		PointList::iterator temp = it;
+		if( ++temp == points.end() )
+		{
+			next = points.front().pos;
+		}
+		else
+		{
+			next = (*temp).pos;
+		}
+
+		V2d v0( (*it).pos.x, (*it).pos.y );
+		V2d v1( next.x, next.y );
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+		int num = floor( remainder ) + 1;
+
+		for( int j = 0; j < num; ++j )
+		{
+			V2d pos = v0 + (v1- v0) * ((double)(j )/ num);
+
+			//Vector2f pos( posd.x, posd.y );
+				
+			if( length( pos - mousePos ) <= radius )
+			{
+				if( grassVa[i*4].color.a == 50 )
+				{
+					grassVa[i*4].color.a = 254;
+					grassVa[i*4+1].color.a = 254;
+					grassVa[i*4+2].color.a = 254;
+					grassVa[i*4+3].color.a = 254;
+					//cout << "making full: " << i << endl;
+				}
+				else if( grassVa[i*4].color.a == 255 )
+				{
+					grassVa[i*4].color.a = 49;
+					grassVa[i*4+1].color.a = 49;
+					grassVa[i*4+2].color.a = 49;
+					grassVa[i*4+3].color.a = 49;
+					//cout << "making seethru: " << i << endl;
+				}
+			}
+			++i;
+		}
+	}
+}
+
+void TerrainPolygon::UpdateGrass()
+{
+	VertexArray & grassVa = *grassVA;
+	for( int i = 0; i < numGrassTotal; ++i )
+	{
+		if( grassVa[i*4].color.a == 49 )
+		{
+			grassVa[i*4].color.a = 50;
+			grassVa[i*4+1].color.a = 50;
+			grassVa[i*4+2].color.a = 50;
+			grassVa[i*4+3].color.a = 50;
+		}
+		else if( grassVa[i*4].color.a == 254 )
+		{
+			grassVa[i*4].color.a = 255;
+			grassVa[i*4+1].color.a = 255;
+			grassVa[i*4+2].color.a = 255;
+			grassVa[i*4+3].color.a = 255;
+		}
+	}
+}
+
+void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt )
+{
+	if( grassVA != NULL )
+		rt->draw( *grassVA, grassTex );
+
 	if( va != NULL )
 	rt->draw( *va );
 
+
+
 	if( selected )
 	{
+		if( !isGrassShowing )
 		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 		{
 			CircleShape cs;
 			cs.setRadius( 8 * zoomMultiple );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
-			if( (*it).second )
+			if( (*it).selected )
 				cs.setFillColor( Color::Red );
 			else
 				cs.setFillColor( Color::Green );
 
-			cs.setPosition( (*it).first.x, (*it).first.y );
+			cs.setPosition( (*it).pos.x, (*it).pos.y );
 			rt->draw( cs );
 		}
 		rt->draw( lines, points.size() * 2, sf::Lines );
+	}
+
+	Vector2i center( (right + left) / 2, (bottom + top) / 2 );
+
+
+	if( showPath )
+	{
+		for( list<Vector2i>::iterator it = path.begin(); it != path.end(); ++it )
+		{
+			CircleShape cs;
+			cs.setRadius( 5 * zoomMultiple );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+			cs.setFillColor( Color::Magenta );
+			cs.setPosition( center.x + (*it).x, center.y + (*it).y );
+			rt->draw( cs );
+	
+		}
+
+
+		if( path.size() > 1 )
+		{
+			list<Vector2i>::iterator prev = path.begin();
+			list<Vector2i>::iterator curr = path.begin();
+			++curr;
+			while( curr != path.end() )
+			{
+				sf::Vertex activePreview[2] =
+				{
+					sf::Vertex(sf::Vector2<float>(center.x + (*prev).x, center.y + (*prev).y), Color::White ),
+					sf::Vertex(sf::Vector2<float>(center.x + (*curr).x, center.y + (*curr).y), Color::White )
+				};
+				rt->draw( activePreview, 2, sf::Lines );
+
+				prev = curr;
+				++curr;
+			}
+		
+		}
 	}
 }
 
@@ -225,7 +433,7 @@ void TerrainPolygon::SetSelected( bool select )
 
 		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 		{
-			(*it).second = false;
+			(*it).selected = false;
 		}
 	}
 }
@@ -242,8 +450,8 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 	
 	for (; it != points.end(); jt = it++ ) 
 	{
-		Vector2f point((*it).first.x, (*it).first.y );
-		Vector2f pointJ((*jt).first.x, (*jt).first.y );
+		Vector2f point((*it).pos.x, (*it).pos.y );
+		Vector2f pointJ((*jt).pos.x, (*jt).pos.y );
 		if ( ((point.y > test.y ) != ( pointJ.y > test.y ) ) &&
 			(test.x < (pointJ.x-point.x) * (test.y-point.y) / (pointJ.y-point.y) + point.x) )
 				c = !c;
@@ -293,7 +501,7 @@ bool TerrainPolygon::IsClockwise()
 	int i = 0;
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
-		pointArray[i] = (*it).first;
+		pointArray[i] = (*it).pos;
 		++i;
 	}
 
@@ -335,7 +543,7 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 		//p->points.push_back( p->points.front() );
 
 		PointList::iterator it = points.begin();
-		Vector2i curr = (*it).first;
+		Vector2i curr = (*it).pos;
 		++it;
 		Vector2i next;
 		
@@ -347,11 +555,11 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 			if( it == points.end() )
 				it = points.begin();
 
-			next = (*it).first;
+			next = (*it).pos;
 
 
 			PointList::iterator pit = p->points.begin();
-			Vector2i pcurr = (*pit).first;
+			Vector2i pcurr = (*pit).pos;
 			++pit;
 			Vector2i pnext;// = (*pit);
 
@@ -360,7 +568,7 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 				if( pit == p->points.end() )
 					pit = p->points.begin();
 
-				pnext = (*pit).first;
+				pnext = (*pit).pos;
 			
 				LineIntersection li = EditSession::SegmentIntersect( curr, next, pcurr, pnext );	
 
@@ -372,12 +580,12 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 					return true;
 				}
 
-				pcurr = (*pit).first;
+				pcurr = (*pit).pos;
 
 				if( pit == p->points.begin() )
 					break;
 			}
-			curr = (*it).first;
+			curr = (*it).pos;
 
 			if( it == points.begin() )
 			{
@@ -390,6 +598,44 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 	//p->points.pop_back();
 
 	return false;
+}
+
+void TerrainPolygon::ShowGrass( bool show )
+{
+	
+	VertexArray & grassVa = *grassVA;
+	for( int i = 0; i < numGrassTotal; ++i )
+	{
+		if( show )
+		{
+			if( grassVa[i*4].color.a == 0 )
+			{
+				grassVa[i*4].color.a = 50;
+				grassVa[i*4+1].color.a = 50;
+				grassVa[i*4+2].color.a = 50;
+				grassVa[i*4+3].color.a = 50;
+			}
+			isGrassShowing = true;
+		}
+		else 
+		{
+			if( grassVa[i*4].color.a == 50 )
+			{
+				grassVa[i*4].color.a = 0;
+				grassVa[i*4+1].color.a = 0;
+				grassVa[i*4+2].color.a = 0;
+				grassVa[i*4+3].color.a = 0;
+			}
+			isGrassShowing = false;
+		}
+		/*(else if( grassVa[i*4].color.a == 255 )
+		{
+			grassVa[i*4].color.a = 255;
+			grassVa[i*4+1].color.a = 255;
+			grassVa[i*4+2].color.a = 255;
+			grassVa[i*4+3].color.a = 255;
+		}*/
+	}
 }
 
 StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos )
@@ -430,8 +676,9 @@ void StaticLight::WriteFile( std::ofstream &of )
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
-
+	showTerrainPath = false;
 	minAngle = .99;
+
 	//	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
 }
@@ -447,9 +694,11 @@ EditSession::~EditSession()
 
 void EditSession::Draw()
 {
+	
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->Draw( zoomMultiple, w );
+		
+		(*it)->Draw( showTerrainPath, zoomMultiple, w );
 	}
 
 	int psize = polygonInProgress->points.size();
@@ -463,7 +712,7 @@ void EditSession::Draw()
 		
 		for( PointList::iterator it = polygonInProgress->points.begin(); it != polygonInProgress->points.end(); ++it )
 		{
-			cs.setPosition( (*it).first.x, (*it).first.y );
+			cs.setPosition( (*it).pos.x, (*it).pos.y );
 			w->draw( cs );
 		}		
 	}
@@ -477,6 +726,11 @@ bool EditSession::OpenFile( string fileName )
 
 	ifstream is;
 	is.open( fileName + ".brknk" );
+
+	double grassSize = 22;
+	double radius = grassSize / 2;
+	double grassSpacing = -5;
+
 	if( is.is_open() )
 	{
 		int numPoints;
@@ -486,9 +740,10 @@ bool EditSession::OpenFile( string fileName )
 
 		while( numPoints > 0 )
 		{
-			TerrainPolygon *poly = new TerrainPolygon;
+			TerrainPolygon *poly = new TerrainPolygon( &grassTex );
 			polygons.push_back( poly );
 			is >> poly->material;
+
 			int polyPoints;
 			is >> polyPoints;
 			
@@ -498,11 +753,133 @@ bool EditSession::OpenFile( string fileName )
 			{
 				is >> x;
 				is >> y;
-				poly->points.push_back( pair<Vector2i,bool>( Vector2i(x,y), false ) );
+				//is >> special;
+				poly->points.push_back( TerrainPoint( Vector2i(x,y), false ) );
+			}
+
+
+			int edgesWithSegments;
+			is >> edgesWithSegments;
+
+
+			list<GrassSeg> segments;
+			for( int i = 0; i < edgesWithSegments; ++i )
+			{
+				int edgeIndex;
+				is >> edgeIndex;
+
+				int numSegments;
+				is >> numSegments;
+
+				for( int j = 0; j < numSegments; ++j )
+				{
+					int index;
+					is >> index;
+					int reps;
+					is >> reps;
+					segments.push_back( GrassSeg( edgeIndex, index, reps ) );
+
+				}
 			}
 
 			poly->Finalize();
+
+
+			int grassIndex = 0;
+			VertexArray &grassVa = *poly->grassVA;
+			int numEdges = poly->points.size();
+			int *indexArray = new int[numEdges];
+			int edgeIndex = 0;
+
+			int iai = 0;
+
+			for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+			{
+				indexArray[edgeIndex] = grassIndex;
+
+				Vector2i next;
+
+				PointList::iterator temp = it;
+				if( ++temp == poly->points.end() )
+				{
+					next = poly->points.front().pos;
+				}
+				else
+				{
+					next = (*temp).pos;
+				}
+
+				V2d v0( (*it).pos.x, (*it).pos.y );
+				V2d v1( next.x, next.y );
+
+				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+				int num = floor( remainder ) + 1;
+
+				grassIndex += num;
+
+				++edgeIndex;
+			}
+
+			for( list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{
+				int vaIndex = indexArray[(*it).edgeIndex];
+
+				for( int extra = 0; extra <= (*it).reps; ++extra )
+				{
+					grassVa[( vaIndex + (*it).index + extra ) * 4 ].color.a = 255;
+					grassVa[( vaIndex + (*it).index + extra ) * 4 + 1 ].color.a = 255;
+					grassVa[( vaIndex + (*it).index + extra ) * 4 + 2 ].color.a = 255;
+					grassVa[( vaIndex + (*it).index + extra ) * 4 + 3 ].color.a = 255;
+				}
+			}
+
+			delete [] indexArray;
+			
+
+
+			
+
+			
 		}
+
+		int movingPlatformNum;
+		is >> movingPlatformNum;
+		for( int i = 0; i < movingPlatformNum; ++i )
+		{
+			TerrainPolygon *poly = new TerrainPolygon( &grassTex );
+			polygons.push_back( poly );
+			is >> poly->material;
+
+			int polyPoints;
+			is >> polyPoints;
+			
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				int x,y, special;
+				is >> x;
+				is >> y;
+				//is >> special;
+				poly->points.push_back( TerrainPoint( Vector2i(x,y), false ) );
+			}
+
+			poly->Finalize();
+
+			int pathPoints;
+			is >> pathPoints;
+
+			if( pathPoints > 0 )
+				poly->path.push_back( Vector2i( 0, 0 ) );
+
+			for( int i = 0; i < pathPoints; ++i )
+			{
+				int x,y;
+				is >> x;
+				is >> y;
+				poly->path.push_back( Vector2i( x, y ) );
+			}
+		}
+		
 
 		//lights here
 		int numLights;
@@ -797,6 +1174,8 @@ bool EditSession::OpenFile( string fileName )
 		//new file
 		assert( false && "error getting file to edit " );
 	}
+
+	grassTex.loadFromFile( "newgrass2.png" );
 	
 }
 
@@ -829,10 +1208,19 @@ void EditSession::WriteFile(string fileName)
 	of.open( fileName + ".brknk" );
 
 	int pointCount = 0;
+	int movingPlatCount = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		pointCount += (*it)->points.size();
+		
+		
+
+		if( (*it)->path.size() == 0 )
+			pointCount += (*it)->points.size();
+		else
+			movingPlatCount++;
 	}
+
+	
 
 	of << pointCount << endl;
 	of << playerPosition.x << " " << playerPosition.y << endl;
@@ -840,15 +1228,57 @@ void EditSession::WriteFile(string fileName)
 	int writeIndex = 0;
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->writeIndex = writeIndex;
-		++writeIndex;
-
-		of << (*it)->material << " " << (*it)->points.size() << endl;
-		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+		if( (*it)->path.size() < 2 )
 		{
-			of << (*it2).first.x << " " << (*it2).first.y << endl;
+			(*it)->writeIndex = writeIndex;
+			++writeIndex;
+
+			of << (*it)->material << endl;
+
+			of <<  (*it)->points.size() << endl;
+
+			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			{
+				of << (*it2).pos.x << " " << (*it2).pos.y << endl; // << " " << (int)(*it2).special << endl;
+			}
+
+			WriteGrass( (*it), of );
+		}
+	}	
+
+	of << movingPlatCount << endl;
+
+	writeIndex = 0;
+	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		if( (*it)->path.size() > 1 )
+		{
+			(*it)->writeIndex = writeIndex;
+			++writeIndex;
+
+			of << (*it)->material << endl;
+			
+			of <<  (*it)->points.size() << endl;
+
+			for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+			{
+				of << (*it2).pos.x << " " << (*it2).pos.y << endl;
+			}
+
+
+			of << (*it)->path.size() - 1 << endl;
+		
+			list<Vector2i>::iterator pathit = (*it)->path.begin();
+			++pathit;
+
+			for( ; pathit != (*it)->path.end(); ++pathit )
+			{
+				of << (*pathit).x << " " << (*pathit).y << endl;
+			}	
 		}
 	}
+
+	
 
 	of << lights.size() << endl;
 	for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
@@ -870,10 +1300,107 @@ void EditSession::WriteFile(string fileName)
 
 }
 
+void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
+{
+	int edgesWithSegments = 0;
+
+	VertexArray &grassVa = *poly->grassVA;
+	double grassSize = 22;
+	double radius = grassSize / 2;
+	double grassSpacing = -5;
+
+	int edgeIndex = 0;
+	int i = 0;
+	list<list<GrassSeg>> grassListList;
+	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+	{
+		Vector2i next;
+
+		PointList::iterator temp = it;
+		if( ++temp == poly->points.end() )
+		{
+			next = poly->points.front().pos;
+		}
+		else
+		{
+			next = (*temp).pos;
+		}
+
+		V2d v0( (*it).pos.x, (*it).pos.y );
+		V2d v1( next.x, next.y );
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+		int num = floor( remainder ) + 1;
+
+		grassListList.push_back( list<GrassSeg>() );
+
+		list<GrassSeg> &grassList = grassListList.back();
+		
+		GrassSeg *gPtr = NULL;
+		bool hasGrass = false;
+		for( int j = 0; j < num; ++j )
+		{
+			//V2d pos = v0 + (v1 - v0) * ((double)(j )/ num);
+
+			if( grassVa[i*4].color.a == 255 || grassVa[i*4].color.a == 254 )
+			{
+				hasGrass = true;
+				if( gPtr == NULL )
+				{
+					grassList.push_back( GrassSeg( edgeIndex, j, 0 ) );
+					gPtr = &grassList.back();
+				}
+				else
+				{
+					grassList.back().reps++;
+				}
+			}
+			else
+			{
+				if( gPtr != NULL )
+					gPtr = NULL;
+			}
+			
+			++i;
+		}
+
+		if( hasGrass )
+		{
+			++edgesWithSegments;
+		}
+
+		++edgeIndex;
+
+	}
+
+	//cout << "saving edges with segments: " << edgesWithSegments << endl;
+	of << edgesWithSegments << endl;
+
+	for( list<list<GrassSeg>>::iterator it = grassListList.begin(); it != grassListList.end(); ++it )
+	{
+		int numSegments = (*it).size();
+
+		if( numSegments > 0 )
+		{
+			int edgeIndex = (*it).front().edgeIndex;
+			of << edgeIndex << " " << numSegments << endl;
+
+			for( list<GrassSeg>::iterator it2 = (*it).begin(); it2 != (*it).end(); ++it2 )
+			{
+				of << (*it2).index << " "<< (*it2).reps << endl;
+				//cout << "index: " << (*it2).index << ", reps: " << (*it2).reps << endl;
+			}
+		}
+		
+		
+	}
+}
+
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 {
 
-	TerrainPolygon z;
+	TerrainPolygon z( &grassTex );
 	//1: choose start point
 
 	Vector2i startPoint;
@@ -885,9 +1412,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	for(; it != poly->points.end(); ++it )
 	{
-		if( !brush->ContainsPoint( Vector2f( (*it).first.x, (*it).first.y) ) )
+		if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
 		{
-			startPoint = (*it).first;
+			startPoint = (*it).pos;
 			startPointFound = true;
 			currentPoly = poly;
 			otherPoly = brush;
@@ -900,9 +1427,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		it = brush->points.begin();
 		for(; it != brush->points.end(); ++it )
 		{
-			if( !poly->ContainsPoint( Vector2f( (*it).first.x, (*it).first.y) ) )
+			if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
 			{
-				startPoint = (*it).first;
+				startPoint = (*it).pos;
 				startPointFound = true;
 				currentPoly = brush;
 				otherPoly = poly;
@@ -919,7 +1446,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	{
 		it = currentPoly->points.begin();
 	}
-	Vector2i nextPoint = (*it).first;
+	Vector2i nextPoint = (*it).pos;
 
 
 	//z.points.push_back( startPoint );
@@ -963,12 +1490,12 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		
 
 		PointList::iterator bit = otherPoly->points.begin();
-		Vector2i bCurrPoint = (*bit).first;
+		Vector2i bCurrPoint = (*bit).pos;
 		++bit;
 		Vector2i bNextPoint;// = (*++bit);
 		Vector2i minPoint;
 		
-		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().first, bCurrPoint );
+		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().pos, bCurrPoint );
 		if( !li.parallel && (abs( li.position.x - currPoint.x ) >= 1 || abs( li.position.y - currPoint.y ) >= 1 ))
 		{
 			minIntersection.x = li.position.x;
@@ -982,7 +1509,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 		for(; bit != otherPoly->points.end(); ++bit )
 		{
-			bNextPoint = (*bit).first;
+			bNextPoint = (*bit).pos;
 			LineIntersection li = SegmentIntersect( currPoint, nextPoint, bCurrPoint, bNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 			if( !li.parallel && length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
@@ -1033,10 +1560,10 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 			currPoint = minIntersection;
 
-			z.points.push_back( pair<Vector2i,bool>( currPoint, false ) );
+			z.points.push_back( TerrainPoint( currPoint, false ) );
 
 			
-			nextPoint = (*it).first;
+			nextPoint = (*it).pos;
 
 			
 		/*	if( nextPoint == startPoint )
@@ -1060,9 +1587,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		else
 		{
 
-			currPoint = (*it).first;
+			currPoint = (*it).pos;
 
-			z.points.push_back( pair<Vector2i,bool>( currPoint, false ) );
+			z.points.push_back( TerrainPoint( currPoint, false ) );
 
 		//	cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
@@ -1075,7 +1602,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			{
 				it = currentPoly->points.begin();
 			}
-			nextPoint = (*it).first;
+			nextPoint = (*it).pos;
 	//		cout << "nextpoing from adding: " << nextPoint.x << ", " << nextPoint.y << endl;
 		}
 		firstTime = false;
@@ -1136,6 +1663,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
+	showGrass = false;
+
 	pointGrab = false;
 	polyGrab = false;
 	makingRect = false;
@@ -1167,6 +1696,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
+	Panel *terrainOptionsPanel = CreateOptionsPanel( "terrain" );
 
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
@@ -1260,9 +1790,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
 		view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
 
-	mode = "neutral";
+	//mode = "neutral";
 	bool quit = false;
-	polygonInProgress = new TerrainPolygon();
+	polygonInProgress = new TerrainPolygon(&grassTex );
 	zoomMultiple = 1;
 	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
@@ -1323,7 +1853,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	V2d menuDownPos;
 	Emode menuDownStored;
 
-	Emode mode = CREATE_TERRAIN;
+	mode = CREATE_TERRAIN;
 	Emode stored = mode;
 	bool canCreatePoint = true;
 	gs.active = true;
@@ -1347,6 +1877,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	selectedPlayer = false;
 	selectedActorGrabbed = false;
+
+	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
+		{
+			//(*it2).grass.push_back( GrassSeg( 0, 0 ) );
+		}
+	}
 
 	while( !quit )
 	{
@@ -1413,7 +1951,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									//test final line
 
-									if( !PointValid( polygonInProgress->points.back().first, polygonInProgress->points.front().first ) )
+									if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
 										break;
 
 									list<TerrainPolygon*>::iterator it = polygons.begin();
@@ -1457,7 +1995,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										polygonInProgress->Finalize();
 										polygons.push_back( polygonInProgress );
-										polygonInProgress = new TerrainPolygon();
+										polygonInProgress = new TerrainPolygon(&grassTex );
 									}
 									else
 									{
@@ -1523,9 +2061,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( showPanel != NULL )
 								{	
+									//cout << "edit mouse update" << endl;
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
+
+									
+
 									break;
 								}
+
+								if( showGrass )
+									break;
 
 								if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
 								{
@@ -1550,11 +2095,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( PointList::iterator it2 = (*it)->points.begin(); 
 										it2 != (*it)->points.end(); ++it2 )
 									{
-										if( length( worldPos - V2d( (*it2).first.x, (*it2).first.y ) ) < 8 * zoomMultiple )
+										if( length( worldPos - V2d( (*it2).pos.x, (*it2).pos.y ) ) < 8 * zoomMultiple )
 										{
-											if( (*it2).second ) //selected 
+											if( (*it2).selected ) //selected 
 											{
-												(*it2).second = false;
+												(*it2).selected = false;
 												emptySpace = false;
 												break;
 											}
@@ -1569,11 +2114,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													for( PointList::iterator tempIt = (*it)->points.begin();
 														tempIt != (*it)->points.end(); ++tempIt )
 													{
-														(*tempIt).second = false;
+														(*tempIt).selected = false;
 													}
 												}
 
-												(*it2).second = true;
+												(*it2).selected = true;
 												emptySpace = false;
 												break;
 
@@ -1683,7 +2228,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
+									break;
 								}
+
+								if( showGrass )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										(*it)->UpdateGrass();
+									}
+									//showGrass = false;
+								}
+
+
 
 								grabPlayer = false;
 								selectedActorGrabbed = false;
@@ -1759,6 +2316,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									rectStart = Vector2i( worldPos.x, worldPos.y );
 								}
 							}
+							else if( ev.key.code == Keyboard::R )
+							{
+								showGrass = true;
+								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								{
+									(*it)->ShowGrass( true );
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
@@ -1825,16 +2390,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										for( PointList::iterator it2 = (*it)->points.begin(); 
 											it2 != (*it)->points.end(); ++it2 )
 										{
-											if( selectRect.contains( Vector2f( (*it2).first.x, (*it2).first.y ) ) )
+											if( selectRect.contains( Vector2f( (*it2).pos.x, (*it2).pos.y ) ) )
 											{
-												if( (*it2).second ) //selected 
+												if( (*it2).selected ) //selected 
 												{
 													if( Keyboard::isKeyPressed( Keyboard::LShift ) )
 													{
 													}
 													else
 													{
-														(*it2).second = false;
+														(*it2).selected = false;
 														emptySpace = false;
 													}
 													
@@ -1855,7 +2420,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														//}
 													}
 
-													(*it2).second = true;
+													(*it2).selected = true;
 													emptySpace = false;
 												//	break;
 
@@ -1867,11 +2432,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 
-									TerrainPolygon tempRectPoly;
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left, selectRect.top ), false ) );
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left + selectRect.width, selectRect.top ), false ) );
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left + selectRect.width, selectRect.top + selectRect.height ), false ) );
-									tempRectPoly.points.push_back( pair<Vector2i,bool>(Vector2i( selectRect.left, selectRect.top + selectRect.height ), false ) );
+									TerrainPolygon tempRectPoly(&grassTex );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left, selectRect.top ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left + selectRect.width, selectRect.top ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left + selectRect.width, selectRect.top + selectRect.height ), false ) );
+									tempRectPoly.points.push_back( TerrainPoint(Vector2i( selectRect.left, selectRect.top + selectRect.height ), false ) );
 									tempRectPoly.Finalize();
 
 
@@ -1980,6 +2545,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									selectedActorGrabbed = false;
 								}*/
 							}
+							}
+							else if( ev.key.code == Keyboard::R )
+							{
+								showGrass = false;
+								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								{
+									
+									//showGrass = true;
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										(*it)->ShowGrass( false );
+									}
+								}
 							}
 							break;
 						}
@@ -2177,7 +2755,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								menuSelection = "none";
 							}
 
-							if( menuDownStored == EDIT && menuSelection != "none" )
+							if( menuDownStored == EDIT && menuSelection != "none" && menuSelection != "top" )
 							{
 								selectedPlayer = false;
 								selectedActor = NULL;
@@ -2196,7 +2774,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							cout << "menu: " << menuSelection << endl;
 							if( menuSelection == "top" )
 							{
-								mode = EDIT;
+								if( menuDownStored == EDIT && selectedPolygons.size() > 0 )
+								{
+									showPanel = terrainOptionsPanel;
+									mode = menuDownStored;
+								}
+								else
+								{
+									mode = EDIT;
+								}
 							}
 							else if( menuSelection == "upperleft" )
 							{
@@ -2297,7 +2883,62 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					break;
 				}
+			case CREATE_TERRAIN_PATH:
+				{
+					minimumPathEdgeLength = 16;
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
 
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
+							{
+								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								{
+									(*it)->path.pop_back();
+								}
+							}
+							else if( ev.key.code == Keyboard::Space )
+							{
+								if( selectedPolygons.front()->path.size() == 1 )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										(*it)->path.pop_back();
+									}
+								}
+								showPanel = terrainOptionsPanel;
+								mode = EDIT;
+							}
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+					break;
+				}
 			case CREATE_LIGHTS:
 				{
 					switch( ev.type )
@@ -2363,6 +3004,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					break;
 				}
 			}
+
+			
 
 			//ones that aren't specific to mode
 			
@@ -2517,10 +3160,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		}
 
+		
+
 		if( quit )
 			break;
 
 		showGraph = false;
+
+		showTerrainPath = true;
 
 		switch( mode )
 		{
@@ -2631,17 +3278,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( emptySpace )
 					{
 						Vector2i worldi( testPoint.x, testPoint.y );
-						if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().first.x, 
-							polygonInProgress->points.back().first.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+						if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
+							polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 						{
-							if( PointValid( polygonInProgress->points.back().first, worldi ) )
+							if( PointValid( polygonInProgress->points.back().pos, worldi ) )
 							{
-								polygonInProgress->points.push_back( pair<Vector2i,bool>( worldi, false ) );
+								polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
 							}
 						}
 						else if( polygonInProgress->points.empty() )
 						{
-							polygonInProgress->points.push_back( pair<Vector2i,bool>( worldi, false ) );
+							polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
 							
 						}
 					}
@@ -2676,9 +3323,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							for( PointList::iterator pointIt = points.begin();
 								pointIt != points.end(); ++pointIt )
 							{
-								if( (*pointIt).second ) //selected
+								if( (*pointIt).selected ) //selected
 								{
-									(*pointIt).first += pointGrabDelta;
+									(*pointIt).pos += pointGrabDelta;
 									affected = true;
 								}
 							}
@@ -2715,7 +3362,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						for( PointList::iterator pointIt = points.begin();
 							pointIt != points.end(); ++pointIt )
 						{
-							(*pointIt).first += polyGrabDelta;		
+							(*pointIt).pos += polyGrabDelta;		
 						}
 
 						PointList temp = (*it)->points;
@@ -2731,6 +3378,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						(*it)->SetSelected( true );
 					}
 				}
+				
+
+				if( showGrass && Mouse::isButtonPressed( Mouse::Button::Left ) )
+				{
+					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+					{
+						(*it)->SwitchGrass( worldPos );
+					}
+				}
+				
 				
 
 				break;
@@ -2776,14 +3433,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									double dist = abs(
 										cross( 
-										V2d( testPoint.x - (*prevIt).first.x, testPoint.y - (*prevIt).first.y ), 
-										normalize( V2d( (*currIt).first.x - (*prevIt).first.x, (*currIt).first.y - (*prevIt).first.y ) ) ) );
+										V2d( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
+										normalize( V2d( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) ) );
 									double testQuantity =  dot( 
-											V2d( testPoint.x - (*prevIt).first.x, testPoint.y - (*prevIt).first.y ), 
-											normalize( V2d( (*currIt).first.x - (*prevIt).first.x, (*currIt).first.y - (*prevIt).first.y ) ) );
+											V2d( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
+											normalize( V2d( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) );
 
-									V2d pr( (*prevIt).first.x, (*prevIt).first.y );
-									V2d cu( (*currIt).first.x, (*currIt).first.y );
+									V2d pr( (*prevIt).pos.x, (*prevIt).pos.y );
+									V2d cu( (*currIt).pos.x, (*currIt).pos.y );
 									V2d te( testPoint.x, testPoint.y );
 									
 									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
@@ -2888,6 +3545,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				break;
 			}
+		case CREATE_TERRAIN_PATH:
+			{
+				showTerrainPath = false;
+				if( showPanel != NULL )
+					break;
+
+				
+				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.0, fullRect.top + fullRect.height / 2.0 );
+				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
+				{
+					if( length( ( worldPos - V2d( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<double>(selectedPolygons.front()->path.back().x, 
+						selectedPolygons.front()->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					{
+						Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
+
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+						{
+							(*it)->path.push_back( worldi );
+						}
+					}					
+				}
+				break;
+			}
 		}
 
 		//cout << "here before crash" << endl;
@@ -2932,6 +3612,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			(*it).second->Draw( w );
 		}
 
+		
 		switch( mode )
 		{
 		case CREATE_TERRAIN:
@@ -2939,7 +3620,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				int progressSize = polygonInProgress->points.size();
 				if( progressSize > 0 )
 				{
-					Vector2i backPoint = polygonInProgress->points.back().first;
+					Vector2i backPoint = polygonInProgress->points.back().pos;
 			
 					Color validColor = Color::Green;
 					Color invalidColor = Color::Red;
@@ -2962,7 +3643,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						for( PointList::iterator it = polygonInProgress->points.begin(); 
 							it != polygonInProgress->points.end(); ++it )
 						{
-							v[i] = Vertex( Vector2f( (*it).first.x, (*it).first.y ) );
+							v[i] = Vertex( Vector2f( (*it).pos.x, (*it).pos.y ) );
 							++i;
 						}
 						w->draw( v );
@@ -3087,6 +3768,88 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			
 
 				break;
+			}
+		case CREATE_TERRAIN_PATH:
+			{
+				
+				int pathSize = selectedPolygons.front()->path.size();
+
+				sf::FloatRect bounds;
+				bounds.left = fullRect.left;
+				bounds.top = fullRect.top;
+				bounds.width = fullRect.width;
+				bounds.height = fullRect.height;
+
+				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
+				
+				rs.setOutlineColor( Color::Cyan );				
+				rs.setFillColor( Color::Transparent );
+				rs.setOutlineThickness( 5 );
+				rs.setPosition( bounds.left, bounds.top );
+
+				w->draw( rs );
+
+				Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
+				if( pathSize > 0 )
+				{
+					Vector2i backPoint = selectedPolygons.front()->path.back();
+					backPoint += fullCenter;
+			
+					Color validColor = Color::Magenta;
+					Color invalidColor = Color::Red;
+					Color colorSelection;
+					if( true )
+					{
+						colorSelection = validColor;
+					}
+					sf::Vertex activePreview[2] =
+					{
+						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
+						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+					};
+					w->draw( activePreview, 2, sf::Lines );
+
+					if( pathSize > 1 )
+					{
+						VertexArray v( sf::LinesStrip, pathSize );
+						int i = 0;
+
+						for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
+							it != selectedPolygons.front()->path.end(); ++it )
+						{
+							v[i] = Vertex( Vector2f( (*it).x + fullCenter.x, (*it).y + fullCenter.y) );
+							++i;
+						}
+						w->draw( v );
+					}
+				}
+				
+				if( pathSize >= 0 ) //always
+				{
+					CircleShape cs;
+					cs.setRadius( 5 * zoomMultiple  );
+					cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+					cs.setFillColor( Color::Magenta );
+
+					//Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
+
+					for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
+							it != selectedPolygons.front()->path.end(); ++it )
+					{
+						//cout << "drawing" << endl;
+						cs.setPosition( (*it).x + fullCenter.x, (*it).y + fullCenter.y );
+						w->draw( cs );
+					}		
+				}
+
+/*				CircleShape cs;
+				cs.setRadius( 5 * zoomMultiple  );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setFillColor( Color::Magenta );
+				cs.setPosition( fullCenter.x, fullCenter.y );
+				w->draw( cs );*/
+				
+
 			}
 		}
 		
@@ -3405,6 +4168,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						textmag.setString( "EDIT\nENEMY" );
 					}
+					else if( menuDownStored == EditSession::EDIT && selectedPolygons.size() > 0 )
+					{
+						textmag.setString( "TERRAIN\nOPTIONS" );
+					}
 					else
 					{
 						textmag.setString( "EDIT" );
@@ -3456,7 +4223,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	{
 		PointList::iterator it = polygonInProgress->points.begin();
 		//polygonInProgress->points.push_back( polygonInProgress->points.back() )
-		Vector2i pre = (*it).first;
+		Vector2i pre = (*it).pos;
 		++it;
 		
 		//minimum angle
@@ -3465,8 +4232,8 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			{
 				PointList::reverse_iterator rit = polygonInProgress->points.rbegin();
 				rit++;
-				double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->points.back().first.x, polygonInProgress->points.back().first.y ) )
-					, normalize( V2d((*rit).first.x, (*rit).first.y ) - V2d( polygonInProgress->points.back().first.x, polygonInProgress->points.back().first.y ) ) );
+				double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) )
+					, normalize( V2d((*rit).pos.x, (*rit).pos.y ) - V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) ) );
 				if( ff > minAngle )
 				{
 					//cout << "ff: " << ff << endl;
@@ -3478,7 +4245,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 		//return true;
 
 		//make sure I'm not too close to the very first point and that my line isn't too close to the first point either
-		if( point.x != polygonInProgress->points.front().first.x || point.y != polygonInProgress->points.front().first.y )
+		if( point.x != polygonInProgress->points.front().pos.x || point.y != polygonInProgress->points.front().pos.y )
 		{
 			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
 			if( separation < minimumEdgeLength )
@@ -3500,28 +4267,28 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 		//check for distance to point in the polygon and edge distances
 
-		if( point.x == polygonInProgress->points.front().first.x && point.y == polygonInProgress->points.front().first.y )
+		if( point.x == polygonInProgress->points.front().pos.x && point.y == polygonInProgress->points.front().pos.y )
 		{
-			pre = (*it).first;
+			pre = (*it).pos;
 			++it;
 		}
 
 		{
  		for( ; it != polygonInProgress->points.end(); ++it )
 		{
-			if( (*it) == polygonInProgress->points.back() )
+			if( (*it).pos == polygonInProgress->points.back().pos )
 				continue;
 
 			LineIntersection li = lineIntersection( V2d( prev.x, prev.y ), V2d( point.x, point.y ),
-						V2d( pre.x, pre.y ), V2d( (*it).first.x, (*it).first.y ) );
-			float tempLeft = min( pre.x, (*it).first.x ) - 0;
-			float tempRight = max( pre.x, (*it).first.x ) + 0;
-			float tempTop = min( pre.y, (*it).first.y ) - 0;
-			float tempBottom = max( pre.y, (*it).first.y ) + 0;
+						V2d( pre.x, pre.y ), V2d( (*it).pos.x, (*it).pos.y ) );
+			float tempLeft = min( pre.x, (*it).pos.x ) - 0;
+			float tempRight = max( pre.x, (*it).pos.x ) + 0;
+			float tempTop = min( pre.y, (*it).pos.y ) - 0;
+			float tempBottom = max( pre.y, (*it).pos.y ) + 0;
 			if( !li.parallel )
 			{
 				
-				double separation = length( V2d(point.x, point.y) - V2d((*it).first.x,(*it).first.y ) );
+				double separation = length( V2d(point.x, point.y) - V2d((*it).pos.x,(*it).pos.y ) );
 				
 				if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
 				{
@@ -3547,13 +4314,13 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				}
 
 				Vector2i ai = point - pre;
-				Vector2i bi = (*it).first - pre;
+				Vector2i bi = (*it).pos - pre;
 				V2d a(ai.x, ai.y);
 				V2d b(bi.x, bi.y);
 				double res = abs(cross( a, normalize( b )));
 				double des = dot( a, normalize( b ));
 
-				Vector2i ci = (*it).first - prev;
+				Vector2i ci = (*it).pos - prev;
 				Vector2i di = point - prev;
 				V2d c( ci.x, ci.y);
 				V2d d( di.x, di.y );
@@ -3563,7 +4330,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 				//cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
 
-				if( point.x == polygonInProgress->points.front().first.x && point.y == polygonInProgress->points.front().first.y )
+				if( point.x == polygonInProgress->points.front().pos.x && point.y == polygonInProgress->points.front().pos.y )
 				{
 				}
 				else
@@ -3579,7 +4346,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				//cout << "parallel" << endl;
 				//return false;
 			}
-			pre = (*it).first;
+			pre = (*it).pos;
 		}
 		}
 	}
@@ -3605,16 +4372,16 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	//	if( point.x <= p->right && point.x >= p->left && point.y >= p->top && point.y <= p->bottom )
 	//	{
 			PointList::iterator it2 = p->points.begin();
-			Vector2i prevPoint = (*it2).first;
+			Vector2i prevPoint = (*it2).pos;
 			++it2;
 			for( ; it2 != p->points.end(); ++it2 )
 			{
-				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d((*it2).first.x, (*it2).first.y),
+				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d((*it2).pos.x, (*it2).pos.y),
 					V2d( prev.x, prev.y ), V2d( point.x, point.y ) );
-				float tempLeft = min( prevPoint.x, (*it2).first.x );
-				float tempRight = max( prevPoint.x, (*it2).first.x );
-				float tempTop = min( prevPoint.y, (*it2).first.y );
-				float tempBottom = max( prevPoint.y, (*it2).first.y );
+				float tempLeft = min( prevPoint.x, (*it2).pos.x );
+				float tempRight = max( prevPoint.x, (*it2).pos.x );
+				float tempTop = min( prevPoint.y, (*it2).pos.y );
+				float tempBottom = max( prevPoint.y, (*it2).pos.y );
 				if( !li.parallel )
 				{
 					if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
@@ -3626,7 +4393,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 					}
 				}
-				prevPoint = (*it2).first;
+				prevPoint = (*it2).pos;
 				
 			}
 	}
@@ -3738,7 +4505,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			trackingEnemy = NULL;
 		}
 	}
-
 	else if( p->name == "map_options" )
 	{
 		if( b->name == "ok" );
@@ -3765,6 +4531,67 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 
 			minimumEdgeLength = minEdgeSize;
+			showPanel = NULL;
+		}
+	}
+	else if( p->name == "terrain_options" )
+	{
+		if( b->name == "ok" )
+		{
+			showPanel = NULL;
+		}
+		else if( b->name == "create_path" )
+		{
+			cout << "setting mode to create path terrain" << endl;
+			mode = CREATE_TERRAIN_PATH;
+			//patrolPath.clear();
+
+			
+
+			assert( selectedPolygons.size() > 0 );
+
+			int left, right, top, bottom;
+			list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+			left = (*it)->left;
+			right = (*it)->right;
+			top = (*it)->top;
+			bottom = (*it)->bottom;
+			(*it)->path.clear();
+			(*it)->path.push_back( Vector2i( 0, 0 ) );
+			++it;
+
+			for(  ;it != selectedPolygons.end(); ++it )
+			{
+				(*it)->path.clear();
+
+				if( (*it)->left < left )
+					left = (*it)->left;
+
+				if( (*it)->right > right )
+					right = (*it)->right;
+
+				if( (*it)->top < top )
+					top = (*it)->top;
+
+				if( (*it)->bottom > bottom )
+					bottom = (*it)->bottom;
+
+				(*it)->path.push_back( Vector2i( 0, 0 ) );
+			}
+
+			fullRect.left = left;
+			fullRect.top = top;
+			fullRect.width = right - left;
+			fullRect.height = bottom - top;
+
+
+			for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+			{
+				//it doesnt need to push this cuz its just storing the locals. draw from the center of the entire bounding box!
+
+			//	(*it)->path.push_back( Vector2i( ((*it)->right + (*it)->left) / 2.0, ((*it)->bottom - (*it)->top) / 2.0 ) );
+			}
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 			showPanel = NULL;
 		}
 	}
@@ -3864,6 +4691,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		return p;
 	}
+	else if( name == "terrain" )
+	{
+		Panel *p = new Panel( "terrain_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
+		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
+		
+		return p;
+	}
 	else if( name == "light" )
 	{
 		Panel *p = new Panel( "light_options", 200, 400, this );
@@ -3880,7 +4717,7 @@ int EditSession::CountSelectedPoints()
 	{
 		for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end(); ++it2 )
 		{
-			if( (*it2).second ) //selected
+			if( (*it2).selected ) //selected
 			{
 				++count;
 			}
@@ -3888,6 +4725,8 @@ int EditSession::CountSelectedPoints()
 	}
 	return count;
 }
+
+
 
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )
@@ -3976,8 +4815,8 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4040,8 +4879,8 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4105,8 +4944,8 @@ std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygo
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4157,8 +4996,8 @@ std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).first.x, (*prev).first.y );
-			V2d cu( (*curr).first.x, (*curr).first.y );
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
 			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
@@ -4242,4 +5081,9 @@ void ActorGroup::WriteFile( std::ofstream &of )
 	{
 		(*it)->WriteFile( of );
 	}
+}
+
+TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
+	:pos( p ), selected( s )
+{
 }

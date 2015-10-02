@@ -18,7 +18,7 @@ struct Light : QuadTreeEntrant
 	sf::Color color;
 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<double> &r );
 };
 
 #endif

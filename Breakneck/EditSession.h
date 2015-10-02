@@ -7,14 +7,36 @@
 #include <list>
 #include "VectorMath.h"
 #include "GUI.h"
+#include "Tileset.h"
 
 
 struct ActorParams;
-typedef std::list<std::pair<sf::Vector2i, bool>> PointList;
+
+struct GrassSeg
+{
+	GrassSeg( int edgeI, int grassIndex, int rep )
+		:edgeIndex( edgeI ), index( grassIndex ), 
+		reps (rep)
+	{}
+	int edgeIndex;
+	int index;
+	int reps;
+};
+
+struct TerrainPoint
+{
+	TerrainPoint( sf::Vector2i &pos, bool selected );
+	sf::Vector2i pos;
+	bool selected;
+	std::list<int> grass;
+	//int special;
+};
+
+typedef std::list<TerrainPoint> PointList;
 
 struct TerrainPolygon
 {
-	TerrainPolygon();
+	TerrainPolygon( sf::Texture *grassTex );
 	~TerrainPolygon();
 	
 	PointList points;
@@ -22,23 +44,31 @@ struct TerrainPolygon
 	void RemoveSelectedPoints();
 	void Finalize();
 	void Reset();
-	void Draw( double zoomMultiple, sf::RenderTarget * rt);
+	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt);
 	void FixWinding();
 	bool IsClockwise();
+	void UpdateGrass();
+	void ShowGrass( bool show );
+	void SwitchGrass( sf::Vector2<double> mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	bool IsTouching( TerrainPolygon *p );
 	sf::Vertex *lines;
 	sf::VertexArray *va;
+	sf::VertexArray *grassVA;
+	int numGrassTotal;
+	sf::Texture *grassTex;
 	int vaSize;
 	bool selected;
 	int left;
 	int right;
 	int top;
 	int bottom;
-	
+	std::list<sf::Vector2i> path;
 	std::list<ActorParams*> enemies;
 	int writeIndex;
+	bool isGrassShowing;
+
 };
 
 struct StaticLight
@@ -114,6 +144,8 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
+	bool showGrass;
+	sf::Texture grassTex;
 	bool pointGrab;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
@@ -123,8 +155,9 @@ struct EditSession : GUIHandler
 
 	bool makingRect;
 	sf::Vector2i rectStart;
-
-	std::string mode;
+	
+	bool showTerrainPath;
+	
 	sf::RenderWindow *w;
 	sf::Vector2i playerPosition;
 	//sf::Vector2i goalPosition;
@@ -176,11 +209,14 @@ struct EditSession : GUIHandler
 	bool trackingEnemyDown;
 
 	Panel *CreateOptionsPanel( const std::string &name );
-
+	void WriteGrass( TerrainPolygon * p, std::ofstream &of );
 	int CountSelectedPoints();
 
 	std::list<sf::Vector2i> patrolPath;
 	double minimumPathEdgeLength;
+
+	sf::IntRect fullRect;
+	
 
 	enum Emode
 	{
@@ -194,9 +230,11 @@ struct EditSession : GUIHandler
 		PAUSED,
 		CREATE_ENEMY,
 		DRAW_PATROL_PATH,
+		CREATE_TERRAIN_PATH,
 		CREATE_LIGHTS
 	};
 
+	Emode mode;
 	
 };
 

@@ -68,6 +68,8 @@ Actor::Actor( GameSession *gs )
 		maxDespFrames = 120;
 		despCounter = 0;
 
+		holdJump = false;
+
 		offsetX = 0;
 		sprite = new Sprite;
 		velocity = Vector2<double>( 0, 0 );
@@ -421,7 +423,7 @@ Actor::Actor( GameSession *gs )
 		holdDashAccel = .05;
 
 		dashHeight = 10;
-		normalHeight = 23;
+		normalHeight = 20;
 		doubleJumpHeight = 10;
 		sprintHeight = 16;
 
@@ -647,6 +649,9 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	
+
+	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
 	for( int i = MAX_MOTION_GHOSTS-1; i > 0; --i )
 	{
 		motionGhosts[i] = motionGhosts[i-1];
@@ -757,11 +762,11 @@ void Actor::UpdatePrePhysics()
 	if( ground != NULL )
 		gNorm = ground->Normal();
 
-	if( receivedHit != NULL )
+	if( receivedHit != NULL && action != DEATH )
 	{
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
-		invincibleFrames = receivedHit->damage;
+		invincibleFrames = 30;//receivedHit->damage;
 		
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
@@ -1123,6 +1128,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
+
 			/*if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
 			{
 			//	action = WIREHOLD;
@@ -2312,7 +2318,7 @@ void Actor::UpdatePrePhysics()
 	}
 	
 	currHitboxes = NULL;
-
+	//cout << "premidvel: " << velocity.x << ", " << velocity.y << endl;	
 //	hurtBody.isCircle = false;
 //	hurtBody.rw = 10;
 //	hurtBody.rh = normalHeight;
@@ -2455,6 +2461,8 @@ void Actor::UpdatePrePhysics()
 
 			if( framesInAir > 1 || velocity.y < 0 )
 				AirMovement();
+
+			//cout << "midvel : " << velocity.x << ", " << velocity.y << endl;	
 			/*if( currInput.LLeft() )
 			{
 				if( velocity.x > dashSpeed )
@@ -3201,6 +3209,8 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+
+	
 	if( blah || record > 1 )
 	{
 		int playback = recordedGhosts;
@@ -3478,6 +3488,8 @@ void Actor::UpdatePrePhysics()
 
 	touchEdgeWithLeftWire = false;
 	touchEdgeWithRightWire = false;
+
+	//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 }
 
 bool Actor::CheckWall( bool right )
@@ -3699,10 +3711,23 @@ bool Actor::CheckStandUp()
 bool Actor::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
+	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	position += vel;
 	
-	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	minContact.collisionPriority = 1000000;
+	
+	double oldRight = oldR.left + oldR.width;
+	double right = newR.left + newR.width;
+
+	double oldBottom = oldR.top + oldR.height;
+	double bottom = newR.top + newR.height;
+
+	double maxRight = max( right, oldRight );
+	double maxBottom = max( oldBottom, bottom );
+	double minLeft = min( oldR.left, newR.left );
+	double minTop = min( oldR.top, newR.top );
+	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
 
 	col = false;
 
@@ -3715,6 +3740,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	//cout << "Start resolve" << endl;
 	owner->terrainTree->Query( this, r );
 
+
+
 	queryMode = "moving_resolve";
 	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
 	{
@@ -3722,7 +3749,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		(*it)->Query( this, r );
 	}
 
-	if( false )//if( col )
+	if( col )
 	{
 		cout << "performing: " << endl 
 			<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
@@ -3730,7 +3757,12 @@ bool Actor::ResolvePhysics( V2d vel )
 			<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 	}
 
+	queryMode = "grass";
+	testGrassCount = 0;
+	owner->grassTree->Query( this, r );
 
+	//need to fix the quad tree but this works!
+	//cout << "test grass count: " << testGrassCount << endl;
 	//if( minContact.edge != NULL )
 	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
 
@@ -4623,7 +4655,7 @@ void Actor::UpdatePhysics()
 				
 			if( transferLeft )
 			{
-				cout << "transfer left "<< endl;
+				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
 				{
@@ -4685,7 +4717,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				cout << "slide: " << q << ", " << offsetX << endl;
+				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -4807,7 +4839,7 @@ void Actor::UpdatePhysics()
 			}
 			else
 			{
-				cout << "other" << endl;
+				//cout << "other" << endl;
 				if( movement > 0 )
 				{	
 					extra = (q + movement) - groundLength;
@@ -5050,7 +5082,7 @@ void Actor::UpdatePhysics()
 									storedBounceGroundSpeed = groundSpeed;
 									groundedWallBounce = true;
 								}
-								cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 
 								V2d oldv0 = ground->v0;
 								V2d oldv1 = ground->v1;
@@ -5305,13 +5337,15 @@ void Actor::UpdatePhysics()
 						extraDir = V2d( -1, 0 );
 					}
 				}
-
+				
 
 
 				//V2d extraDir =  V2d( -minContact.normal.y, minContact.normal.x );//normalize( minContact.edge->v1 - minContact.edge->v0 );
-
+				
 				extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
+				
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+				cout << "newVel: " << newVel.x << ", " << newVel.y << endl;
 			//	newVel = V2d( 0, 0 );
 			//	extraVel = V2d( 0, 0 );
 				
@@ -5336,6 +5370,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( length( stealVec ) == 0 )
 			{
+
 				movementVec.x = 0;
 				movementVec.y = 0;
 			}
@@ -5587,7 +5622,12 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
+				cout << "setting newvel" << endl;
 				velocity = newVel;
+			}
+			else
+			{
+				cout << "no temp collision" << endl;
 			}
 
 			if( length( extraVel ) > 0 )
@@ -7815,19 +7855,18 @@ void Actor::UpdatePostPhysics()
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
 	//owner->preScreenTex->map
-	Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
-	Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) );
-	Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
+	
+	
+	
 
 
 	//vi0 = vi1 = vi2 = vi;
-	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
-	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
-	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+	
 
-	Color c0 = owner->touchedLights[0]->color;
-	Color c1 = owner->touchedLights[1]->color;
-	Color c2 = owner->touchedLights[2]->color;
+	
+	
+	
+	
 
 	//cout << "lights captured!: " << owner->lightsAtOnce << endl;
 	//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
@@ -7840,6 +7879,9 @@ void Actor::UpdatePostPhysics()
 
 	if( owner->lightsAtOnce > 0 )
 	{
+		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
+		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 );
+		Color c0 = owner->touchedLights[0]->color;
 		//sh.setParameter( "On0", true );
 		on0 = true;
 		sh.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
@@ -7848,6 +7890,9 @@ void Actor::UpdatePostPhysics()
 	}
 	if( owner->lightsAtOnce > 1 )
 	{
+		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) ); 
+		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+		Color c1 = owner->touchedLights[1]->color;
 		on1 = true;
 		//sh.setParameter( "On1", true );
 		sh.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
@@ -7856,6 +7901,9 @@ void Actor::UpdatePostPhysics()
 	}
 	if( owner->lightsAtOnce > 2 )
 	{
+		Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
+		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+		Color c2 = owner->touchedLights[2]->color;
 		on2 = true;
 		//sh.setParameter( "On2", true );
 		sh.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
@@ -7938,8 +7986,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( e->Normal().y == -1 )
 		{
-			cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
-				e->v1.x << ", " << e->v1.y << endl;
+			//cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
+			//	e->v1.x << ", " << e->v1.y << endl;
 		}
 
 		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + -currMovingTerrain->vel );
@@ -7987,11 +8035,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
 		
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
-					if( length(c->resolution) > length(minContact.resolution) )
+					if(( c->normal.x == 0 && c->normal.y == 0 ))
+					//if( length(c->resolution) > length(minContact.resolution) )
 					{
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;
@@ -8138,7 +8187,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 	}
-	
+	else if( queryMode == "grass" )
+	{
+		//cout << "got some grass in here" << endl;
+		Grass *g = (Grass*)qte;
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+		if( g->IsTouchingBox( r ) )
+		{
+			++testGrassCount;
+		}
+	}
 	
 	++possibleEdgeCount;
 }

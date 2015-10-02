@@ -59,6 +59,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	borderTree = new QuadTree( 1000000, 1000000 ); 
 
+	grassTree = new QuadTree( 1000000, 1000000 ); 
+
 	lightTree = new QuadTree( 1000000, 1000000 );
 
 	listVA = NULL;
@@ -321,9 +323,9 @@ bool GameSession::OpenFile( string fileName )
 
 		while( pointCounter < numPoints )
 		{
-			
 			string matStr;
 			is >> matStr;
+
 			int polyPoints;
 			is >> polyPoints;
 
@@ -335,12 +337,14 @@ bool GameSession::OpenFile( string fileName )
 				int px, py;
 				is >> px;
 				is >> py;
+				//is >> spec;
 			
 				points[pointCounter].x = px;
 				points[pointCounter].y = py;
 				++pointCounter;
 			}
 
+			double left, right, top, bottom;
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				Edge *ee = new Edge();
@@ -353,6 +357,25 @@ bool GameSession::OpenFile( string fileName )
 					ee->v1 = points[currentEdgeIndex];
 
 				terrainTree->Insert( ee );
+
+				double localLeft = min( ee->v0.x, ee->v1.x );
+				double localRight = max( ee->v0.x, ee->v1.x );
+				double localTop = min( ee->v0.y, ee->v1.y );
+				double localBottom = max( ee->v0.y, ee->v1.y ); 
+				if( i == 0 )
+				{
+					left = localLeft;
+					right = localRight;
+					top = localTop;
+					bottom = localBottom;
+				}
+				else
+				{
+					left = min( left, localLeft );
+					right = max( right, localRight );
+					top = min( top, localTop);
+					bottom = max( bottom, localBottom);
+				}
 
 			}
 
@@ -376,6 +399,70 @@ bool GameSession::OpenFile( string fileName )
 					ee->edge0 = edges[currentEdgeIndex + i - 1];
 					ee->edge1 = edges[currentEdgeIndex + i + 1];
 				}
+			}
+
+			int edgesWithSegments;
+			is >> edgesWithSegments;
+
+			
+			list<GrassSegment> segments;
+			for( int i = 0; i < edgesWithSegments; ++i )
+			{
+				int edgeIndex;
+				is >> edgeIndex;
+				int numSegments;
+				is >> numSegments;
+				for( int j = 0; j < numSegments; ++j )
+				{
+					int index;
+					is >> index;
+					int reps;
+					is >> reps;
+
+					segments.push_back( GrassSegment( edgeIndex, index, reps ) );
+				}
+			}
+
+			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{
+				V2d A,B,C,D;
+				Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
+				V2d v0 = currE->v0;
+				V2d v1 = currE->v1;
+
+				double grassSize = 22;
+				double grassSpacing = -5;
+
+				double edgeLength = length( v1 - v0 );
+				double remainder = edgeLength / ( grassSize + grassSpacing );
+
+				double num = floor( remainder ) + 1;
+
+				int reps = (*it).reps;
+
+				V2d edgeDir = normalize( v1 - v0 );
+				
+				//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
+				V2d ABmin = v0 + edgeDir * ( edgeLength * (double)(*it).index / num - grassSize / 2 );
+				V2d ABmax = v0 + edgeDir * ( edgeLength * (double)( (*it).index + reps )/ num + grassSize / 2 );
+				double height = grassSize / 2;
+				V2d normal = normalize( v1 - v0 );
+				double temp = -normal.x;
+				normal.x = normal.y;
+				normal.y = temp;
+
+				A = ABmin + normal * height;
+				B = ABmax + normal * height;
+				C = ABmax;
+				D = ABmin;
+				
+				Grass * g = new Grass;
+				g->A = A;
+				g->B = B;
+				g->C = C;
+				g->D = D;
+
+				grassTree->Insert( g );
 			}
 
 			vector<p2t::Point*> polyline;
@@ -410,41 +497,262 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *polygonVA = va;
 
 			double totalPerimeter = 0;
+
+
+			double grassSize = 22;
+			double grassSpacing = -5;
+
 			Edge * testEdge = edges[currentEdgeIndex];
 
+			int numGrassTotal = 0;
+
+			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{
+				numGrassTotal += (*it).reps + 1;
+			}
+
+			
+			if( numGrassTotal > 0 )
+			{
+			va = new VertexArray( sf::Quads, numGrassTotal * 4 );
+
+			//cout << "num grass total: " << numGrassTotal << endl;
+			VertexArray &grassVa = *va;
+
+			int segIndex = 0;
+			int totalGrass = 0;
+			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			{	
+				Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
+				V2d v0 = segEdge->v0;
+				V2d v1 = segEdge->v1;
+
+				int start = (*it).index;
+				int end = (*it).index + (*it).reps;
+
+				int grassCount = (*it).reps + 1;
+				//cout << "Grasscount: " << grassCount << endl;
+
+				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+				int num = floor( remainder ) + 1;
+
+				for( int i = 0; i < grassCount; ++i )
+				{
+					//cout << "indexing at: " << i*4 + segIndex * 4 << endl;
+					V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
+					Vector2f pos( posd.x, posd.y );
+
+					Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+					Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+					Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+					Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+
+					//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+					//borderVa[i*4].color.a = 10;
+					grassVa[(i+totalGrass)*4].position = topLeft;
+					grassVa[(i+totalGrass)*4].texCoords = Vector2f( 0, 0 );
+
+					//grassVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].color.a = 10;
+					grassVa[(i+totalGrass)*4+1].position = bottomLeft;
+					grassVa[(i+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
+
+					//grassVa[i*4+2].color = Color::Blue;
+					//borderVa[i*4+2].color.a = 10;
+					grassVa[(i+totalGrass)*4+2].position = bottomRight;
+					grassVa[(i+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
+
+					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+					//borderVa[i*4+3].color.a = 10;
+					grassVa[(i+totalGrass)*4+3].position = topRight;
+					grassVa[(i+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
+					//++i;
+				}
+				totalGrass += grassCount;
+				segIndex++;
+			}
+			}
+			else
+			{
+				va = NULL;
+			}
+
+			VertexArray * grassVA = va;
+
+			//testEdge = edges[currentEdgeIndex];
+			
+			double size = 16;
+			double inward = 16;
+			double spacing = 2;
+
+			int innerPolyPoints = 0;
 			do
 			{
-				totalPerimeter += length( testEdge->v1 - testEdge->v0 );
+				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				V2d adjv0 = testEdge->v0 - bisector0 * inward;
+				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+
+				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+
+
+				//double remainder = length( adjv1 - adjv0 ) / size;
+				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				
+				//int num = remainder / size;
+
+				//remainder = remainder - floor( remainder );
+
+				//double eachAdd = remainder / num;
+
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+				
+
+				innerPolyPoints += num;
+				
+
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+			
+		
+			//double amount = totalPerimeter / spacing;
+
+			va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
+			VertexArray & borderVa = *va;
+			double testQuantity = 0;
+
+			int i = 0;
+			do
+			{
+				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				V2d adjv0 = testEdge->v0 - bisector0 * inward;
+				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+
+				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+
+				//double remainder = length( adjv1 - adjv0 ) / size;
+				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				
+				//int num = remainder / size;
+
+				//remainder = remainder - floor( remainder );
+
+				//double eachAdd = remainder / num;
+
+				int num = 1;
+				while( remainder > 1.5 )
+				{
+					++num;
+					remainder -= 1;
+				}
+
+				for( int j = 0; j < num; ++j )
+				{
+					if( j == 0 || j == num - 1 )
+					{
+
+					}
+
+					Vector2f surface( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)j / num, 
+						testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)j / num );
+					Vector2f inner( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
+						adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
+
+					Vector2f surfaceNext( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)(j+1) / num, 
+						testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)(j+1) / num );
+					Vector2f innerNext( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
+						adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+
+					
+					//borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+					//borderVa[i*4].color.a = 10;
+					borderVa[i*4].position = surface;
+					borderVa[i*4].texCoords = Vector2f( 0, 0 );
+
+					//borderVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].color.a = 10;
+					borderVa[i*4+1].position = inner;
+					borderVa[i*4+1].texCoords = Vector2f( 0, size );
+
+					//borderVa[i*4+2].color = Color::Blue;
+					//borderVa[i*4+2].color.a = 10;
+					borderVa[i*4+2].position = innerNext;
+					borderVa[i*4+2].texCoords = Vector2f( size, size );
+
+					//borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+					//borderVa[i*4+3].color.a = 10;
+					borderVa[i*4+3].position = surfaceNext;
+					borderVa[i*4+3].texCoords = Vector2f( size, 0 );
+					++i;
+
+					//borderVa[i*4].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
+					//borderVa[i*4].texCoords = Vector2f( 0, 0 );
+
+					////borderVa[i*4+1].color = Color::Blue;
+					//borderVa[i*4+1].position = Vector2f( adjv0.x, adjv0.y  );
+					//borderVa[i*4+1].texCoords = Vector2f( 0, size );
+
+					////borderVa[i*4+2].color = Color::Green;
+					//borderVa[i*4+2].position = Vector2f( nadjv0.x, nadjv0.y  );
+					//borderVa[i*4+2].texCoords = Vector2f( size, size );
+
+					////borderVa[i*4+3].color = Color::Magenta;
+					//borderVa[i*4+3].position = Vector2f( testEdge->edge1->v0.x, testEdge->edge1->v0.y  );
+					//borderVa[i*4+3].texCoords = Vector2f( size, 0 );
+					//++i;
+				}
+
+				
+
 				testEdge = testEdge->edge1;
 			}
 			while( testEdge != edges[currentEdgeIndex] );
 
-			double spacing = 8;
-			double amount = totalPerimeter / spacing;
-		//	cout << "total perimeter: " << totalPerimeter << endl;
-		//	cout << "num vertexes: " << (int)amount * 4 << endl;
 
-			va = new VertexArray( sf::Quads, (int)amount * 4 + 4 );
+			/*V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+			V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+			V2d adjv0 = testEdge->v0 - bisector0 * inward;
+			V2d adjv1 = testEdge->v1 - bisector1 * inward;
 
-			double testQuantity = 0;
+			borderVa[i*2].color = Color::Red;
+			borderVa[i*2].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
+			borderVa[i*2+1].color = Color::Red;
+			borderVa[i*2+1].position = Vector2f( adjv0.x, adjv0.y  );*/
+			
 
-			testEdge = edges[currentEdgeIndex];
-
-
-			double left, right, bottom, top;
+				cout << "loaded to here" << endl;
+			//double left, right, bottom, top;
 			bool first = true;
 			
-			for( int i = 0; i < amount; ++i )
+			/*for( int i = 0; i < amount; ++i )
 			{
 				double movement = spacing;
 				while( movement > 0 )
 				{
 					testQuantity += movement;
-					double testLength = length( testEdge->v1 - testEdge->v0 );
+					double testLength = length( adjv1 - adjv0 );
 					if( testQuantity > testLength )
 					{
 						movement = testQuantity - testLength;
 						testEdge = testEdge->edge1;
+						bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+						bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+						adjv0 = testEdge->v0 - bisector0 * inward;
+						adjv1 = testEdge->v1 - bisector1 * inward;
 						testQuantity = 0;
 					}
 					else
@@ -453,11 +761,13 @@ bool GameSession::OpenFile( string fileName )
 					}
 				}
 
-				V2d spriteCenter = testEdge->GetPoint( testQuantity );
+				V2d spriteCenter = adjv0 + (adjv1 - adjv0) * testQuantity / length( testEdge->v1 - testEdge->v0 );//testEdge->GetPoint( testQuantity );
 				spriteCenter.x = floor( spriteCenter.x + .5 );
 				spriteCenter.y = floor( spriteCenter.y + .5 );
+			//	spriteCenter.y -= 8 * testEdge->Normal().y;
+			//	spriteCenter.x += 8 * testEdge->Normal().x;
 				VertexArray & testVa = (*va);
-				int size = 8;
+				
 				int halfSize = size / 2;
 				testVa[i*4].position = Vector2f( spriteCenter.x - halfSize, spriteCenter.y - halfSize );
 				testVa[i*4+1].position = Vector2f( spriteCenter.x + halfSize, spriteCenter.y - halfSize );
@@ -512,6 +822,9 @@ bool GameSession::OpenFile( string fileName )
 				//polygonBorders.push_back( va );
 
 			}
+			*/
+
+			
 
 			TestVA * testva = new TestVA;
 			testva->next = NULL;
@@ -521,6 +834,7 @@ bool GameSession::OpenFile( string fileName )
 			testva->aabb.width = right - left;
 			testva->aabb.height = bottom - top;
 			testva->terrainVA = polygonVA;
+			testva->grassVA = grassVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
 			borderTree->Insert( testva );
@@ -537,12 +851,86 @@ bool GameSession::OpenFile( string fileName )
 			//	delete tris[i];
 			}
 
-
+			cout << "loaded to here" << endl;
 			++polyCounter;
 		}
 		//cout << "insertCount: " << insertCount << endl;
 		//cout << "polyCOUNTER: " << polyCounter << endl;
 		
+			cout << "loaded to here" << endl;
+		int numMovingPlats;
+		is >> numMovingPlats;
+		for( int i = 0; i < numMovingPlats; ++i )
+		{
+			string matStr;
+			is >> matStr;
+
+
+			int polyPoints;
+			is >> polyPoints;
+
+			list<Vector2i> poly;
+
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				int px, py;
+				is >> px;
+				is >> py;
+			
+				poly.push_back( Vector2i( px, py ) );
+			}
+
+
+			
+			list<Vector2i>::iterator it = poly.begin();
+			int left = (*it).x;
+			int right = (*it).x;
+			int top = (*it).y;
+			int bottom = (*it).y;
+			
+			for( ;it != poly.end(); ++it )
+			{
+				if( (*it).x < left )
+					left = (*it).x;
+
+				if( (*it).x > right )
+					right = (*it).x;
+
+				if( (*it).y < top )
+					top = (*it).y;
+
+				if( (*it).y > bottom )
+					bottom = (*it).y;
+			}
+
+
+			//might need to round for perfect accuracy here
+			Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
+
+			for( it = poly.begin(); it != poly.end(); ++it )
+			{
+				(*it).x -= center.x;
+				(*it).y -= center.y;
+			}
+
+			int pathPoints;
+			is >> pathPoints;
+
+			list<Vector2i> path;
+
+			for( int i = 0; i < pathPoints; ++i )
+			{
+				int x,y;
+				is >> x;
+				is >> y;
+				path.push_back( Vector2i( x, y ) );
+			}
+
+			
+			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 2 );
+			movingPlats.push_back( mt );
+		}
+
 		int numLights;
 		is >> numLights;
 		for( int i = 0; i < numLights; ++i )
@@ -557,6 +945,8 @@ bool GameSession::OpenFile( string fileName )
 			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ) );
 			lightTree->Insert( light );
 		}
+		cout << "loaded to here" << endl;
+
 
 		int numGroups;
 		is >> numGroups;
@@ -743,14 +1133,18 @@ bool GameSession::OpenFile( string fileName )
 	}
 }
 
-int GameSession::Run( string fileName )
+int GameSession::Run( string fileN )
 {
+	
+	activeSequence = NULL;
+
+	fileName = fileN;
 	sf::Texture backTex;
 	backTex.loadFromFile( "bg01.png" );
-	sf::Sprite background( backTex );
+	background = Sprite( backTex );
 	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
 	background.setPosition( 0, 0 );
-	sf::View bgView( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
+	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
@@ -771,7 +1165,7 @@ int GameSession::Run( string fileName )
 	preScreenTex->setView( view );
 	//window->setView( view );
 
-	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+	uiView = View( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 
 	window->setVerticalSyncEnabled( true );
 
@@ -846,26 +1240,34 @@ int GameSession::Run( string fileName )
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
-	Texture & borderTex = *GetTileset( "testpattern.png", 8, 8 )->texture;
+	Texture & borderTex = *GetTileset( "testpattern1.png", 16, 16 )->texture;
+
+	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
 
 	goalDestroyed = false;
 
-	list<Vector2i> pathTest;
-	list<Vector2i> pointsTest;
-	pathTest.push_back( Vector2i( 200, 0 ) );
-	//pathTest.push_back( Vector2i( 0, 100 ) );
-	//pathTest.push_back( Vector2i( 100, 100 ) );
+	//list<Vector2i> pathTest;
+	//list<Vector2i> pointsTest;
+	//pathTest.push_back( Vector2i( 200, 0 ) );
+	////pathTest.push_back( Vector2i( 0, 100 ) );
+	////pathTest.push_back( Vector2i( 100, 100 ) );
+	
+	//pointsTest.push_back( Vector2i(-100, -100) );
+	//pointsTest.push_back( Vector2i(300, 100) );
+	//pointsTest.push_back( Vector2i(300, 200) );
+	//pointsTest.push_back( Vector2i(-100, 200) );
 
-	pointsTest.push_back( Vector2i(-100, -100) );
-	pointsTest.push_back( Vector2i(300, 100) );
-	pointsTest.push_back( Vector2i(300, 200) );
-	pointsTest.push_back( Vector2i(-100, 200) );
-
-	MovingTerrain *mt = new MovingTerrain( this, Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
-	movingPlats.push_back( mt );
+	////MovingTerrain *mt = new MovingTerrain( this, Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
+	////movingPlats.push_back( mt );
 	
 	
+	LevelSpecifics();
 	//lights.push_back( new Light( this ) );
+
+	View v;
+	v.setCenter( 0, 0 );
+	v.setSize( 1920/ 2, 1080 / 2 );
+	window->setView( v );
 
 	while( !quit )
 	{
@@ -946,7 +1348,7 @@ int GameSession::Run( string fileName )
 				oneFrameMode = true;
 
 
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead )
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead || ( currInput.back && !prevInput.back ) )
 			{
 				if( player.record > 1 )
 				{
@@ -1155,87 +1557,81 @@ int GameSession::Run( string fileName )
 				}
 			}
 
-			player.UpdatePrePhysics();
-
-			
-
-			UpdateEnemiesPrePhysics();
-			
-			//cout << "enemies updated" << endl;
-			//Vector2<double> rCenter( r.getPosition().x + r.getLocalBounds().width / 2, r.getPosition().y + r.getLocalBounds().height / 2 );
-
-			//colMode = 
-
-			//Rect<double> qrect( player.position.x + player.b.offset.x - player.b.rw, 
-			//	player.position.y + player.b.offset.y -player.b.rh, player.b.rw, player.b.rh );
-			//Query( &player, testTree, qrect );
-
-			for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+			if( activeSequence != NULL && activeSequence == startSeq )
 			{
-				(*it)->UpdatePhysics();
-			}
-
-			player.UpdatePhysics( );
-
-			UpdateEnemiesPhysics();
-
-
-			player.UpdatePostPhysics();
-
-			UpdateEnemiesPostPhysics();
-			
-
-			cam.Update( &player );
-
-			double camWidth = 960 * cam.GetZoom();
-			double camHeight = 540 * cam.GetZoom();
-			screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-			
-			
-			/*sf::RectangleShape rs;
-			rs.setSize( sf::Vector2f(screenRect.width, screenRect.height ) );
-			rs.setPosition( screenRect.left, screenRect.top );
-			//rs.setSize( Vector2f(64, 64) );
-			//rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
-			//rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
-			rs.setFillColor( sf::Color( 0, 0, 255, 100 ) );
-			window->draw( rs );*/
-
-			queryMode = "enemy";
-
-			tempSpawnRect = screenRect;
-			enemyTree->Query( this, screenRect );
-
-			if( player.blah || player.record > 1 )
-			{
-				int playback = player.recordedGhosts;
-				if( player.record > 1 )
-					playback--;
-
-				for( int i = 0; i < playback; ++i )
+				if( !activeSequence->Update() )
 				{
-					PlayerGhost *g = player.ghosts[i];
-					if( player.ghostFrame < g->totalRecorded )
+					activeSequence = NULL;	
+				}
+				else
+				{
+					
+				}
+			}
+			else
+			{
+				player.UpdatePrePhysics();
+
+			
+
+				UpdateEnemiesPrePhysics();
+
+
+				for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+				{
+					(*it)->UpdatePhysics();
+				}
+
+				player.UpdatePhysics( );
+
+				UpdateEnemiesPhysics();
+
+
+				player.UpdatePostPhysics();
+
+				UpdateEnemiesPostPhysics();
+			
+
+				cam.Update( &player );
+
+				
+
+				double camWidth = 960 * cam.GetZoom();
+				double camHeight = 540 * cam.GetZoom();
+				screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+			
+			
+				
+				queryMode = "enemy";
+
+				tempSpawnRect = screenRect;
+				enemyTree->Query( this, screenRect );
+
+				if( player.blah || player.record > 1 )
+				{
+					int playback = player.recordedGhosts;
+					if( player.record > 1 )
+						playback--;
+
+					for( int i = 0; i < playback; ++i )
 					{
-						//cout << "querying! " << player.ghostFrame << endl;
-						tempSpawnRect = g->states[player.ghostFrame].screenRect;
-						enemyTree->Query( this, g->states[player.ghostFrame].screenRect );
+						PlayerGhost *g = player.ghosts[i];
+						if( player.ghostFrame < g->totalRecorded )
+						{
+							//cout << "querying! " << player.ghostFrame << endl;
+							tempSpawnRect = g->states[player.ghostFrame].screenRect;
+							enemyTree->Query( this, g->states[player.ghostFrame].screenRect );
+						}
 					}
+				}
+			
+				if( player.record > 0 )
+				{
+					player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
+						screenRect;
 				}
 			}
 			
-			if( player.record > 0 )
-			{
-				player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
-					screenRect;
-			}
-			
-			
-	
-
-		
-		//	cout << "query for: " << numBorders << endl;
-			//Query( this, enemyTree, screenRect );
 
 			accumulator -= TIMESTEP;
 		}
@@ -1270,7 +1666,22 @@ int GameSession::Run( string fileName )
 		
 		
 		
+		if( activeSequence != NULL && activeSequence == startSeq )
+		{
+			activeSequence->Draw( preScreenTex );
+			
+
+			preScreenTex->display();
+			const Texture &preTex = preScreenTex->getTexture();
 		
+			Sprite preTexSprite( preTex );
+			preTexSprite.setPosition( -960 / 2, -540 / 2 );
+			preTexSprite.setScale( .5, .5 );		
+
+			window->draw( preTexSprite  );
+		}
+		else
+		{
 
 
 		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
@@ -1343,9 +1754,12 @@ int GameSession::Run( string fileName )
 			lightListIter = lightListIter->next;
 		}
 
+		if( activeSequence != NULL )
+		{
+			activeSequence->Draw( preScreenTex );
+		}
 		
-		if( player.action != Actor::DEATH )
-			player.Draw( preScreenTex );
+		
 
 		UpdateEnemiesDraw();
 
@@ -1432,9 +1846,18 @@ int GameSession::Run( string fileName )
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
+			if( listVAIter->grassVA != NULL )
+				preScreenTex->draw( *listVAIter->grassVA, &grassTex );
+
 			if( usePolyShader )
 			{
-				UpdateTerrainShader();
+				UpdateTerrainShader( listVAIter->aabb );
+				sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
+				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
+				rs.setOutlineColor( Color::Red );
+				rs.setOutlineThickness( 3 );
+				rs.setFillColor( Color::Transparent );
+				preScreenTex->draw( rs );
 				preScreenTex->draw( *listVAIter->terrainVA, &polyShader );
 			}
 			else
@@ -1442,7 +1865,8 @@ int GameSession::Run( string fileName )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			//preScreenTex->draw( *listVAIter->va, &borderTex );
+			preScreenTex->draw( *listVAIter->va, &borderTex );
+			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
@@ -1453,6 +1877,9 @@ int GameSession::Run( string fileName )
 	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
 	//	}
 		
+
+		if( player.action != Actor::DEATH )
+			player.Draw( preScreenTex );
 
 		if( player.action != Actor::GRINDBALL )
 		{
@@ -1478,6 +1905,20 @@ int GameSession::Run( string fileName )
 			currFX->Draw( window );
 			currFX = currFX->next;
 		}*/
+		
+		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+		{
+			//(*it)->DebugDraw( preScreenTex );
+			(*it)->Draw( preScreenTex );
+		}
+
+		
+
+		DebugDrawActors();
+		//grassTree->DebugDraw( preScreenTex );
+
+
+		coll.DebugDraw( preScreenTex );
 
 		preScreenTex->setView( uiView );
 		//window->setView( uiView );
@@ -1487,16 +1928,13 @@ int GameSession::Run( string fileName )
 		preScreenTex->setView( view );
 		//window->setView( view );
 
-		DebugDrawActors();
+		
 
-		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
-		{
-			//(*it)->DebugDraw( preScreenTex );
-			(*it)->Draw( preScreenTex );
-		}
+		
 
-		//coll.DebugDraw( window );
+		
 
+		
 		//terrainTree->DebugDraw( window );
 		//DebugDrawQuadTree( window, enemyTree );
 	//	enemyTree->DebugDraw( window );
@@ -1532,7 +1970,7 @@ int GameSession::Run( string fileName )
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
 		window->draw( preTexSprite, &cloneShader );
-
+		}
 
 
 		window->display();
@@ -1672,7 +2110,7 @@ void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool GameSession::TestVA::IsTouchingBox( sf::Rect<double> &r )
+bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( aabb, r );
 }
@@ -1699,23 +2137,19 @@ void GameSession::RespawnPlayer()
 	player.record = 0;
 	player.recordedGhosts = 0;
 	player.blah = false;
+	player.receivedHit = NULL;
 }
 
-void GameSession::UpdateTerrainShader()
+void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 {
 	lightsAtOnce = 0;
 	tempLightLimit = 3;
 
 	queryMode = "lights"; 
-	lightTree->Query( this, screenRect );
+	lightTree->Query( this, aabb );
 
 	//Vector2i vi = Mouse::getPosition();
 	//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-	//owner->preScreenTex->map
-	Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-	Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
-	Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-
 
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
@@ -1723,24 +2157,16 @@ void GameSession::UpdateTerrainShader()
 	pos1.y = 1 - pos1.y;
 	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
 	pos2.y = 1 - pos2.y;*/
-
-	Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
-	pos0.y = 1 - pos0.y;
-	Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
-	pos1.y = 1 - pos1.y;
-	Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
-	pos2.y = 1 - pos2.y;
-
-	Color c0 = touchedLights[0]->color;
-	Color c1 = touchedLights[1]->color;
-	Color c2 = touchedLights[2]->color;
-	
 	bool on0 = false;
 	bool on1 = false;
 	bool on2 = false;
 
 	if( lightsAtOnce > 0 )
 	{
+		Vector2i vi0 = Vector2i( preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) ) );
+		Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+			pos0.y = 1 - pos0.y;
+		Color c0 = touchedLights[0]->color;
 		//sh.setParameter( "On0", true );
 		on0 = true;
 		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
@@ -1749,6 +2175,10 @@ void GameSession::UpdateTerrainShader()
 	}
 	if( lightsAtOnce > 1 )
 	{
+		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
+		Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
+			pos1.y = 1 - pos1.y;
+		Color c1 = touchedLights[1]->color;
 		on1 = true;
 		//sh.setParameter( "On1", true );
 		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
@@ -1757,6 +2187,10 @@ void GameSession::UpdateTerrainShader()
 	}
 	if( lightsAtOnce > 2 )
 	{
+		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
+		Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
+			pos2.y = 1 - pos2.y;
+		Color c2 = touchedLights[2]->color;
 		on2 = true;
 		//sh.setParameter( "On2", true );
 		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
@@ -1964,6 +2398,83 @@ void GameSession::rReset( QNode *node )
 	}
 }
 
+void GameSession::LevelSpecifics()
+{
+	if( fileName == "test3" )
+	{
+		startSeq = new GameStartSeq( this );
+		activeSequence = startSeq;
+		//GameStartMovie();
+		cout << "doing stuff here" << endl;
+	}
+	else
+	{
+	//	player.velocity.x = 60;
+	}
+}
+
+//theres a bug on the new slope for the movie where you hold dash and up and you glitch out on a /\ slope. prob priority
+void GameSession::GameStartMovie()
+{
+	startSeq = new GameStartSeq( this );
+	activeSequence = startSeq;
+
+	cout << "Starting movie" << endl;
+	bool quit = false;
+	//sf::View movieView( Vector2f( -460,  ), Vector2f( 960, 540 ) );
+	sf::View movieView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+
+	
+	startSeq->shipSprite.setPosition( 480, 270 );
+	sf::RectangleShape rs( Vector2f( 960, 540 ) );
+	rs.setPosition( Vector2f( 0, 0 ) );
+	rs.setFillColor( Color::Black );
+	
+
+	//View oldView = window->getView();
+
+	player.velocity.x = 60;
+	player.velocity.y = 0;
+	player.hasDoubleJump = false;
+
+	window->setView( movieView );
+	while( !quit )
+	{
+		controller.UpdateState();
+		currInput = controller.GetState();
+
+		if( currInput.LRight() && !prevInput.LRight() )
+		{
+			break;
+		}
+
+		window->clear( Color::Black );
+
+		window->setView( bgView );
+
+		window->draw( background );
+
+		window->setView( movieView );
+
+		 
+		//preScreenTex->setView( view );
+
+		window->draw( rs );
+
+		startSeq->stormSprite.setPosition( 0, -440 );
+		window->draw( startSeq->stormSprite );
+		startSeq->stormSprite.setPosition( 0, 440 );
+		window->draw( startSeq->stormSprite );
+
+		window->draw( startSeq->shipSprite );
+		window->display();
+	}
+
+	//startSeq->shipSprite.setPosition( startSeq->startPos );
+	//startSeq->stormSprite.setPosition( Vector2f( startSeq->startPos.x, startSeq->startPos.y + 200 ) );
+	//window->setView( oldView );
+}
+
 PowerBar::PowerBar()
 {
 	pointsPerLayer = 100;
@@ -2132,4 +2643,138 @@ void PowerBar::Charge( int power )
 			points += power;
 		}
 	}
+}
+
+void Grass::HandleQuery( QuadTreeCollider *qtc )
+{
+	qtc->HandleEntrant( this );
+}
+
+bool Grass::IsTouchingBox( const Rect<double> &r )
+{
+	return isQuadTouchingQuad( V2d( r.left, r.top ), V2d( r.left + r.width, r.top ), 
+		V2d( r.left + r.width, r.top + r.height ), V2d( r.left, r.top + r.height ),
+		A, B, C, D );
+
+
+	/*double left = min( edge->v0.x, edge->v1.x );
+	double right = max( edge->v0.x, edge->v1.x );
+	double top = min( edge->v0.y, edge->v1.y );
+	double bottom = max( edge->v0.y, edge->v1.y );
+
+	Rect<double> er( left, top, right - left, bottom - top );
+
+	if( er.intersects( r ) )
+	{
+		return true;
+	}*/
+}
+
+GameSession::GameStartSeq::GameStartSeq( GameSession *own )
+	:stormVA( sf::Quads, 6 * 3 * 4 ) 
+{
+	owner = own;
+	shipTex.loadFromFile( "ship.png" );
+	shipSprite.setTexture( shipTex );
+	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, shipSprite.getLocalBounds().height / 2 );
+
+	stormTex.loadFromFile( "stormclouds.png" );
+	stormSprite.setTexture( stormTex );
+	
+	//shipSprite.setPosition( 250, 250 );
+	startPos = Vector2f( owner->player.position.x, owner->player.position.y );
+	frameCount = 1;//180;
+	frame = 0;
+
+	int count = 6;
+	for( int i = 0; i < count; ++i )
+	{
+		Vector2f topLeft( startPos.x - 480, startPos.y - 270 );
+		topLeft.y -= 540;
+
+		topLeft.x += i * 960;
+
+		stormVA[i*4].position = topLeft;
+		stormVA[i*4].texCoords = Vector2f( 0, 0 );
+
+		stormVA[i*4+1].position = topLeft + Vector2f( 0, 540 );
+		stormVA[i*4+1].texCoords = Vector2f( 0, 540 );
+
+		stormVA[i*4+2].position = topLeft + Vector2f( 960, 540 );
+		stormVA[i*4+2].texCoords = Vector2f( 960, 540 );
+
+		stormVA[i*4+3].position = topLeft + Vector2f( 960, 0 );
+		stormVA[i*4+3].texCoords = Vector2f( 960, 0 );
+
+		
+		
+
+
+		topLeft.y += 440 + 540;
+
+		stormVA[i*4 + 4 * count].position = topLeft;
+		stormVA[i*4 + 4 * count].texCoords = Vector2f( 0, 0 );
+
+		stormVA[i*4+1+4 * count].position = topLeft + Vector2f( 0, 540 );
+		stormVA[i*4+1+4 * count].texCoords = Vector2f( 0, 540 );
+
+		stormVA[i*4+2+4 * count].position = topLeft + Vector2f( 960, 540 );
+		stormVA[i*4+2+4 * count].texCoords = Vector2f( 960, 540 );
+
+		stormVA[i*4+3+4 * count].position = topLeft + Vector2f( 960, 0 );
+		stormVA[i*4+3+4 * count].texCoords = Vector2f( 960, 0 );
+
+		topLeft.y += 540;
+		stormVA[i*4 + 4 * count * 2].position = topLeft;
+		stormVA[i*4 + 4 * count * 2].texCoords = Vector2f( 0, 0 );
+
+		stormVA[i*4+1 + 4 * count * 2].position = topLeft + Vector2f( 0, 540 );
+		stormVA[i*4+1 + 4 * count * 2].texCoords = Vector2f( 0, 540 );
+
+		stormVA[i*4+2 + 4 * count * 2].position = topLeft + Vector2f( 960, 540 );
+		stormVA[i*4+2 + 4 * count * 2].texCoords = Vector2f( 960, 540 );
+
+		stormVA[i*4+3 + 4 * count * 2].position = topLeft + Vector2f( 960, 0 );
+		stormVA[i*4+3 + 4 * count * 2].texCoords = Vector2f( 960, 0 );
+	}
+}
+
+bool GameSession::GameStartSeq::Update()
+{
+	if( frame < frameCount )
+	{
+		
+		V2d vel( 60, 0 );
+		//if( frame > 60 )
+			//vel.y = -20;
+
+		shipSprite.setPosition( startPos.x + frame * vel.x, startPos.y + frame * vel.y );
+		++frame;
+
+		return true;
+	}
+	else 
+		return false;
+}
+
+void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
+{
+	target->setView( owner->bgView );
+	target->draw( owner->background );
+	target->setView( owner->view );
+
+	target->setView( owner->uiView );
+	owner->powerBar.Draw( target );
+
+	target->setView( owner->view );
+	/*sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
+	rs.setPosition( Vector2f( startPos.x - 480, startPos.y - 270 ) );
+	rs.setFillColor( Color::Black );
+	target->draw( rs );*/
+
+
+	//target->draw( stormVA, &stormTex );
+
+	//target->draw( shipSprite );
+
 }

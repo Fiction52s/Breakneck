@@ -49,7 +49,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool spawnedByClone;
 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<double> &r );
 
 	struct Stored
 	{
