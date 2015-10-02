@@ -299,7 +299,7 @@ bool GameSession::OpenFile( string fileName )
 	currentFile = fileName;
 	int insertCount = 0;
 	ifstream is;
-	is.open( fileName + ".brknk" );
+	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
 		is >> numPoints;
@@ -610,7 +610,7 @@ bool GameSession::OpenFile( string fileName )
 				//double eachAdd = remainder / num;
 
 				int num = 1;
-				while( remainder > 1.5 )
+				while( remainder > 1 )
 				{
 					++num;
 					remainder -= 1;
@@ -635,18 +635,39 @@ bool GameSession::OpenFile( string fileName )
 			do
 			{
 				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				double q = cross( normalize( testEdge->v1 - testEdge->v0 ), normalize(testEdge->edge0->v0 - testEdge->v0) );
+				if( q > 0 )
+				{
+				//	bisector0 *= ( q );
+				}
+				
 				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-				V2d adjv0 = testEdge->v0 - bisector0 * inward;
-				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+				V2d adjv0 = testEdge->v0 - testEdge->Normal() * inward;//testEdge->v0 - bisector0 * inward;//V2d( testEdge->v0.x, testEdge->v0.y + inward );//
+				V2d adjv1 = testEdge->v1 - testEdge->Normal() * inward;//testEdge->v1 - bisector1 * inward;//V2d( testEdge->v1.x, testEdge->v1.y + inward );
+
+				V2d adje0v0 = testEdge->edge0->v0 - testEdge->edge0->Normal() * inward;
+				V2d adje0v1 = testEdge->edge0->v1 - testEdge->edge0->Normal() * inward;
+
+				V2d adje1v0 = testEdge->edge1->v0 - testEdge->edge1->Normal() * inward;
+				V2d adje1v1 = testEdge->edge1->v1 - testEdge->edge1->Normal() * inward;
+
 
 				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
 				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
 				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
 				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
 
+				LineIntersection li0 = lineIntersection( adjv0, adjv1, adje0v0, adje0v1 );
+				LineIntersection li1 = lineIntersection( adjv0, adjv1, adje1v0, adje1v1 );
+				cout << "li0: " << li0.position.x << ", " << li0.position.y << endl;
+
 				//double remainder = length( adjv1 - adjv0 ) / size;
 				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
 				
+
+				
+				bool clockwiseAngle0 = cross( testEdge->edge0->v0 - testEdge->v0, testEdge->v1 - testEdge->v0 ) > 0;
+				bool clockwiseAngle1 = cross( testEdge->v0 - testEdge->v1, testEdge->edge1->v1 - testEdge->v1 ) > 0;
 				//int num = remainder / size;
 
 				//remainder = remainder - floor( remainder );
@@ -654,7 +675,7 @@ bool GameSession::OpenFile( string fileName )
 				//double eachAdd = remainder / num;
 
 				int num = 1;
-				while( remainder > 1.5 )
+				while( remainder > 1 )
 				{
 					++num;
 					remainder -= 1;
@@ -662,20 +683,75 @@ bool GameSession::OpenFile( string fileName )
 
 				for( int j = 0; j < num; ++j )
 				{
+					Vector2f surface, inner, surfaceNext, innerNext;
+
+
+					surface = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)j / num, 
+							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)j / num );
+					surfaceNext = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)(j+1) / num, 
+							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)(j+1) / num );
+
 					if( j == 0 || j == num - 1 )
 					{
+						if( j == 0 && j == num - 1 )
+						{
+							V2d v00 = testEdge->v0 - bisector0 * inward;
+						
 
+							//inner = Vector2f( v00.x, v00.y );
+							if( !li0.parallel )
+								inner = Vector2f( li0.position.x, li0.position.y );
+							else
+								inner = Vector2f( v00.x, v00.y );
+
+							V2d v11 = testEdge->v1 - bisector1 * inward;
+
+							//innerNext = Vector2f( v11.x, v11.y );
+							if( !li1.parallel )
+								innerNext = Vector2f( li1.position.x, li1.position.y );
+							else
+								innerNext = Vector2f( v11.x, v11.y );
+						}
+						else if( j == 0 )
+						{
+							V2d v00 = testEdge->v0 - bisector0 * inward;
+						
+
+							//inner = Vector2f( v00.x, v00.y );
+
+							if( !li0.parallel )
+								inner = Vector2f( li0.position.x, li0.position.y );
+							else
+								inner = Vector2f( v00.x, v00.y );
+
+						
+							innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
+								adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+						}
+						else if( j == num - 1 )
+						{
+							V2d v11 = testEdge->v1 - bisector1 * inward;
+
+							inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
+								adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
+
+							//innerNext = Vector2f( v11.x, v11.y );
+							if( !li1.parallel )
+								innerNext = Vector2f( li1.position.x, li1.position.y );
+							else
+								innerNext = Vector2f( v11.x, v11.y );
+						}
 					}
+					else
+					{
+						
+						inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
+							adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
 
-					Vector2f surface( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)j / num, 
-						testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)j / num );
-					Vector2f inner( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
-						adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
-
-					Vector2f surfaceNext( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)(j+1) / num, 
-						testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)(j+1) / num );
-					Vector2f innerNext( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
-						adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+						
+						innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
+							adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+					}
 
 					
 					//borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
@@ -734,7 +810,7 @@ bool GameSession::OpenFile( string fileName )
 			borderVa[i*2+1].position = Vector2f( adjv0.x, adjv0.y  );*/
 			
 
-				cout << "loaded to here" << endl;
+				//cout << "loaded to here" << endl;
 			//double left, right, bottom, top;
 			bool first = true;
 			
@@ -851,7 +927,7 @@ bool GameSession::OpenFile( string fileName )
 			//	delete tris[i];
 			}
 
-			cout << "loaded to here" << endl;
+			//cout << "loaded to here" << endl;
 			++polyCounter;
 		}
 		//cout << "insertCount: " << insertCount << endl;
@@ -1761,7 +1837,7 @@ int GameSession::Run( string fileN )
 		
 		
 
-		UpdateEnemiesDraw();
+		
 
 
 		
@@ -1852,12 +1928,13 @@ int GameSession::Run( string fileN )
 			if( usePolyShader )
 			{
 				UpdateTerrainShader( listVAIter->aabb );
-				sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
+				/*sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
 				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
 				rs.setOutlineColor( Color::Red );
 				rs.setOutlineThickness( 3 );
 				rs.setFillColor( Color::Transparent );
-				preScreenTex->draw( rs );
+				preScreenTex->draw( rs );*/
+
 				preScreenTex->draw( *listVAIter->terrainVA, &polyShader );
 			}
 			else
@@ -1876,7 +1953,7 @@ int GameSession::Run( string fileN )
 	//	{
 	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
 	//	}
-		
+		UpdateEnemiesDraw();
 
 		if( player.action != Actor::DEATH )
 			player.Draw( preScreenTex );
@@ -1914,7 +1991,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 		//grassTree->DebugDraw( preScreenTex );
 
 
@@ -2477,11 +2554,12 @@ void GameSession::GameStartMovie()
 
 PowerBar::PowerBar()
 {
-	pointsPerLayer = 100;
-	points = pointsPerLayer;
-	layer = 0;
-	maxLayer = 0;
-	minUse = 50;
+	pointsPerLayer = 240 * 10;
+	maxLayer = 6;
+	points = pointsPerLayer;//pointsPerLayer * ( maxLayer + 1 );
+	layer = maxLayer;
+	
+	minUse = 1;
 	
 	panelTex.loadFromFile( "lifebar.png" );
 	panelSprite.setTexture( panelTex );
@@ -2501,7 +2579,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 {
 	//0x99a9b9
 	Color c;
-	switch( layer )
+	/*switch( layer )
 	{
 	case 0:
 		c = Color( 0, 0xee, 0xff );
@@ -2529,17 +2607,17 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	case 7:
 		c = Color( 0xff, 0xff, 0xff );
 		break;
-	}
-
+	}*/
+	c = Color( 0, 0xee, 0xff );
 
 	double diffz = (double)points / (double)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
-	diffz *= 59 * 4;
+	diffz *= 60 * 4;
 
 	sf::RectangleShape rs;
 	rs.setPosition( 42, 108 + diffz );
-	rs.setSize( sf::Vector2f( 4 * 4, 59 * 4 - diffz ) );
+	rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
 	rs.setFillColor( c );
 
 	target->draw( panelSprite );

@@ -13,12 +13,14 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
-	ts = owner->GetTileset( "crawler.png", 32, 32 );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
+	ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
+	sprite.setTexture( *ts_walk->texture );
+	sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
+	roll = false;
 
 	spawnRect = sf::Rect<double>( gPoint.x - 16, gPoint.y - 16, 16 * 2, 16 * 2 );
 
@@ -923,6 +925,7 @@ void Crawler::UpdatePostPhysics()
 	}
 	else if( gn.x == 0 )
 	{
+<<<<<<< HEAD
 		double offsetX = offsetX;
 		if( gn.y > 0 )
 		{
@@ -938,6 +941,14 @@ void Crawler::UpdatePostPhysics()
 		{
 		//	cout << "groundspeed: " << groundSpeed << ", edge: " << edgeQuantity << ", len: " << length( ground->v1 - ground->v0 ) << endl;
 		}
+=======
+		cout << "ROLLIN" << endl;
+		if( !roll )
+		{
+			roll = true;
+		}
+
+>>>>>>> origin/master
 	}
 	else
 	{
@@ -958,7 +969,8 @@ void Crawler::UpdatePostPhysics()
 	//V2d gn = ground->Normal();
 	if( !approxEquals( abs(offset.x), physBody.rw ) )
 	{
-		sprite.setTextureRect( ts->GetSubRect(0) );
+		sprite.setTexture( *ts_roll->texture );
+		sprite.setTextureRect( ts_roll->GetSubRect(0) );
 		angle = 0;
 		cout << "aaa" << endl;
 		//if( gn.y > 0 )
@@ -966,8 +978,8 @@ void Crawler::UpdatePostPhysics()
 	}
 	else if( !approxEquals( abs( offset.y ), physBody.rh ) )
 	{
-		sprite.setTextureRect( ts->GetSubRect( 0 )  );
-		angle = 0;
+		//////////sprite.setTextureRect( ts->GetSubRect( 0 )  );
+		angle = 0; 
 		cout << "bbb" << endl;
 		/*cout << "gn: " << gn.x << ", " << gn.y << endl;
 		if( gn.x > 0 )
@@ -986,7 +998,7 @@ void Crawler::UpdatePostPhysics()
 	else
 	{
 		cout << "ccccc" << endl;
-		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		/////////sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		atan2( gn.x, -gn.y );
 	}
 
@@ -1011,6 +1023,22 @@ void Crawler::UpdatePostPhysics()
 		cout << "three: " << angle << endl;
 		sprite.setPosition( pp.x, pp.y );
 
+	}
+
+	if( slowCounter == slowMultiple )
+	{
+		++frame;
+		slowCounter = 1;
+	
+		if( dead )
+		{
+			deathFrame++;
+		}
+
+	}
+	else
+	{
+		slowCounter++;
 	}
 
 	//sprite.setPosition( position );

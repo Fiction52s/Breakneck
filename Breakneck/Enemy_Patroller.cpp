@@ -38,7 +38,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 	animationFactor = 3;
 
-	ts = owner->GetTileset( "patroller.png", 64, 64 );
+	ts = owner->GetTileset( "patroller.png", 80, 80 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -73,8 +73,9 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 	dead = false;
 
-	ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
+	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
+	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
+	ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	deathPartingSpeed = .3;
 	deathVector = V2d( 1, -1 );
@@ -222,7 +223,7 @@ void Patroller::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 12 * animationFactor )
+	if( frame == 16 * animationFactor )
 	{
 		frame = 0;
 	}
@@ -238,14 +239,14 @@ void Patroller::UpdateSprite()
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 
-	botDeathSprite.setTexture( *ts_bottom->texture );
-	botDeathSprite.setTextureRect( ts_bottom->GetSubRect( 0 ) );
+	botDeathSprite.setTexture( *ts_death->texture );
+	botDeathSprite.setTextureRect( ts_death->GetSubRect( 1 ) );
 	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
-	topDeathSprite.setTexture( *ts_top->texture );
-	topDeathSprite.setTextureRect( ts_top->GetSubRect( 0 ) );
+	topDeathSprite.setTexture( *ts_death->texture );
+	topDeathSprite.setTextureRect( ts_death->GetSubRect( 0 ) );
 	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
@@ -267,6 +268,7 @@ void Patroller::Draw( sf::RenderTarget *target )
 			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
+			bloodSprite.setScale( 2, 2 );
 			target->draw( bloodSprite );
 		}
 		

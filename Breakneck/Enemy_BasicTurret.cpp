@@ -13,7 +13,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 ), dead( false )
 {
-	ts = owner->GetTileset( "basicturret.png", 48, 48 );
+	ts = owner->GetTileset( "basicturret.png", 64, 32 );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -51,7 +51,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	frame = 0;
 	deathFrame = 0;
-	animationFactor = 5;
+	animationFactor = 3;
 	//slowCounter = 1;
 	//slowMultiple = 1;
 
@@ -119,14 +119,14 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicTurret::UpdatePrePhysics()
 {
-	if( frame == 0 )
+	if( frame == 12 * animationFactor )
 	{
 		//cout << "firing" << endl;
 		Bullet *b = ActivateBullet();
 		if( b != NULL )
 		{
 			//cout << "firing bullet" << endl;
-			b->position = position;
+			b->position = position ;//+ ground->Normal() * 16.0;
 			b->slowCounter = 1;
 			b->slowMultiple = 1;
 		}
@@ -241,7 +241,7 @@ void BasicTurret::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 15 * animationFactor )
+	if( frame == 27 * animationFactor )
 	{
 		frame = 0;
 	}
@@ -256,9 +256,8 @@ void BasicTurret::UpdatePostPhysics()
 
 void BasicTurret::Draw(sf::RenderTarget *target )
 {
-	target->draw( sprite );
-
 	target->draw( bulletVA, ts_bullet->texture );
+	target->draw( sprite );
 }
 
 bool BasicTurret::IHitPlayer()

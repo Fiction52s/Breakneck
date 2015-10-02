@@ -34,6 +34,29 @@ struct PowerBar
 	void Charge( int power );
 };
 
+struct GrassSegment
+{
+	GrassSegment( int edgeI, int grassIndex, int rep )
+		:edgeIndex( edgeI ), index( grassIndex ), 
+		reps (rep)
+	{}
+	int edgeIndex;
+	int index;
+	int reps;
+};
+
+struct Grass : QuadTreeEntrant
+{
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D; 
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+
+	//bool prevGrass;
+};
+
 struct GameSession : QuadTreeCollider
 {
 	GameSession(GameController &c, sf::RenderWindow *rw, 
@@ -58,12 +81,15 @@ struct GameSession : QuadTreeCollider
 	void ResetEnemies();
 	void rReset( QNode *node );
 	int CountActiveEnemies();
-	void UpdateTerrainShader();
+	void UpdateTerrainShader( const sf::Rect<double> &aabb );
+	void LevelSpecifics();
 
 	void DebugDrawActors();
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Pause( int frames );
+
+	void GameStartMovie();
 
 	void AllocateEffect();
 	BasicEffect * ActivateEffect( 
@@ -103,17 +129,19 @@ struct GameSession : QuadTreeCollider
 	std::list<sf::VertexArray*> polygonBorders;
 
 	sf::RenderTexture *preScreenTex;
-
+	sf::Sprite background;
+	sf::View bgView;
 	struct TestVA : QuadTreeEntrant
 	{
 		sf::VertexArray *va;
 		sf::VertexArray *terrainVA;
+		sf::VertexArray *grassVA;
 		bool show;
 		//TestVA *prev;
 		TestVA *next;
 		sf::Rect<double> aabb;
 		void HandleQuery( QuadTreeCollider * qtc );
-		bool IsTouchingBox( sf::Rect<double> &r );
+		bool IsTouchingBox( const sf::Rect<double> &r );
 	};
 	TestVA *listVA;
 	std::string queryMode;
@@ -124,7 +152,7 @@ struct GameSession : QuadTreeCollider
 	sf::Vector2f lastViewCenter;
 	//EdgeQNode *testTree;
 	//EnemyQNode *enemyTree;
-
+	std::string fileName;
 	bool goalDestroyed;
 
 	Enemy *activeEnemyList;
@@ -138,6 +166,8 @@ struct GameSession : QuadTreeCollider
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 	QuadTree * lightTree;
+	QuadTree * grassTree;
+	
 
 	bool usePolyShader;
 
@@ -160,7 +190,34 @@ struct GameSession : QuadTreeCollider
 	sf::Texture wipeTextures[17];
 	sf::Sprite wipeSprite;
 
-	//
+	sf::View uiView;
+
+	struct Sequence
+	{
+		//Sequence *next;
+		//Sequence *prev;
+		int frameCount;
+		int frame;
+		virtual bool Update() = 0;
+		virtual void Draw( sf::RenderTarget *target ) = 0;
+	};
+
+	Sequence *activeSequence;
+
+	struct GameStartSeq : Sequence
+	{
+		GameStartSeq(GameSession *owner);
+		bool Update();
+		void Draw( sf::RenderTarget *target );
+		sf::Texture shipTex;
+		sf::Sprite shipSprite;
+		sf::Texture stormTex;
+		sf::Sprite stormSprite;
+		sf::VertexArray stormVA;
+		sf::Vector2f startPos;
+		GameSession *owner;
+	};
+	GameStartSeq *startSeq;
 
 
 	struct Stored

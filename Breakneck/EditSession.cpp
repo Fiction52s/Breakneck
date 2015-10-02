@@ -38,6 +38,9 @@ TerrainPolygon::~TerrainPolygon()
 		delete [] lines;
 	if( va != NULL )
 		delete va;
+
+	if( grassVA != NULL )
+		delete grassVA;
 	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
 		(*it)->group->actors.remove( (*it ) );
@@ -225,6 +228,10 @@ void TerrainPolygon::Finalize()
 	
 	}
 
+	if( grassVA != NULL )
+	{
+		delete grassVA;
+	}
 	grassVA = gva;
 }
 
@@ -725,7 +732,7 @@ bool EditSession::OpenFile( string fileName )
 	currentFile = fileName;
 
 	ifstream is;
-	is.open( fileName + ".brknk" );
+	is.open( fileName );
 
 	double grassSize = 22;
 	double radius = grassSize / 2;
@@ -1172,6 +1179,7 @@ bool EditSession::OpenFile( string fileName )
 	{
 
 		//new file
+		cout << "filename: " << fileName << endl;
 		assert( false && "error getting file to edit " );
 	}
 
@@ -1205,7 +1213,7 @@ void EditSession::WriteFile(string fileName)
 
 
 	ofstream of;
-	of.open( fileName + ".brknk" );
+	of.open( fileName );//+ ".brknk" );
 
 	int pointCount = 0;
 	int movingPlatCount = 0;
@@ -3260,6 +3268,39 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					
 					testPoint = Vector2f( adjX, adjY );
 					showGraph = true;
+				}
+
+				if( polygonInProgress->points.size() > 0 )
+				{
+							
+					V2d backPoint = V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y );
+					V2d tPoint( testPoint.x, testPoint.y );
+					V2d extreme( 0, 0 );
+					V2d vec = tPoint - backPoint;
+					V2d normVec = normalize( vec );
+					double limit = .99;
+					if( normVec.x > limit )
+						extreme.x = 1;
+					else if( normVec.x < -limit )
+						extreme.x = -1;
+					if( normVec.y > limit )
+						extreme.y = 1;
+					else if( normVec.y < -limit )
+						extreme.y = -1;
+
+					//extreme = normalize( extreme );
+
+					if( !( extreme.x == 0 && extreme.y == 0 ) )
+					{
+						//double test = abs( cross( normalize( V2d( testPoint.x, testPoint.y ) - backPoint ), extreme ) );
+						//cout << "test: " << test << endl;
+						//if( test  < 1 )
+						{
+						//	cout << "ADJUSTING TESTPOINt BLAH STRAIGHT : " << extreme.x  << ", " << extreme.y << endl;
+							testPoint = Vector2f( backPoint + extreme * length( vec ) );
+						}
+					}
+							
 				}
 
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )

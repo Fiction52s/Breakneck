@@ -142,7 +142,7 @@ void Camera::Update( Actor *player )
 	double zDiff = temp - zoomFactor;
 	if( zDiff > 0 )
 	{
-		zoomFactor += zDiff / 35.0 / player->slowMultiple;
+		zoomFactor += zDiff / 20.0/*35.0*/ / player->slowMultiple;
 	}
 	else if( zDiff < 0 )
 	{

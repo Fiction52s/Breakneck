@@ -340,6 +340,7 @@ struct Actor : QuadTreeCollider,
 		int framesInAir;
 		sf::Vector2<double> startAirDashVel;
 		Edge *ground;
+		Edge *lastGround;
 		bool hasAirDash;
 		bool hasGravReverse;
 
