@@ -194,7 +194,8 @@ struct Crawler : Enemy
 	
 	void SaveEnemyState();
 	void LoadEnemyState();
-
+	void UpdatePhysics2();
+	void UpdatePhysics3();
 	sf::Sprite sprite;
 	Tileset *ts_walk;
 	Tileset *ts_roll;
@@ -202,7 +203,7 @@ struct Crawler : Enemy
 	bool clockwise;
 	double groundSpeed;
 	Edge *ground;
-	sf::Vector2<double> offset;
+	//sf::Vector2<double> offset;
 	double edgeQuantity;
 
 	CollisionBox hurtBody;
@@ -218,11 +219,12 @@ struct Crawler : Enemy
 
 	Edge *startGround;
 	double startQuant;
-
+	sf::Vector2<double> offset;
 	int frame;
 	bool roll;
 	bool dead;
 	int deathFrame;
+	int crawlAnimationFactor;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
