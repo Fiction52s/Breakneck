@@ -72,10 +72,16 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel );
 
-		if( c != NULL && !( edgeQuantity == length( ground->v1 - ground->v0 ) && e == ground->edge1 ) )
+		if( c != NULL )
 		{
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
+
+				if( e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
+				{
+					return;
+				}
+
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
 					if(( c->normal.x == 0 && c->normal.y == 0 ) )

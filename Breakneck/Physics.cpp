@@ -1845,6 +1845,94 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 {
 	if( b.isCircle )
 	{
+		double pointMinTime = 100;
+
+		V2d oldPosition = position - vel;
+
+		V2d v0 = e->v0;
+		V2d v1 = e->v1;
+
+		double edgeLength = length( v1 - v0 );
+		double radius = b.rw;
+		V2d edgeNormal = e->Normal();
+
+		double lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
+		double dist = cross( position - v0, normalize( v1 - v0 ) );
+		
+		if( length( v0 - position ) <= radius )
+		{
+			V2d pointDir = normalize( v0 - position );
+			V2d velDir = normalize( vel );
+			bool hit = dot( vel, pointDir ) <= length( v0 - position );
+			if( hit )
+			{
+				currentContact->position = v0;
+				currentContact->edge = e;
+				currentContact->normal = V2d( 0, 0 );
+				currentContact->collisionPriority = 0;
+
+				CircleShape *cs = new CircleShape;
+				cs->setFillColor( Color::Cyan );
+				cs->setRadius( 10 );
+				cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+				cs->setPosition( v0.x, v0.y );
+
+				progressDraw.push_back( cs );
+
+				return currentContact;
+			}
+		}
+		if( dot( -vel, edgeNormal ) > 0 && dist >= 0 && dist <= radius )
+		{
+			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
+			{
+				LineIntersection li = lineIntersection( oldPosition + radius * -edgeNormal, position
+					+ radius * -edgeNormal, e->v0, e->v1 );
+
+
+				//double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
+				if( li.parallel )//|| abs( testing ) == 1 )
+				{
+					cout << "returning circle null1" << endl;
+					return NULL;
+				}
+
+
+				Vector2<double> intersect = li.position;
+
+
+				//double intersectQuantity = e->GetQuantity( intersect );
+
+
+				V2d newPosition = intersect + radius * edgeNormal;
+
+				currentContact->resolution = newPosition - position;
+				currentContact->edge = e;
+				currentContact->normal= edgeNormal;
+				currentContact->position = e->GetPoint( lineQuantity );
+				currentContact->collisionPriority = length( intersect - ( oldPosition + radius * -edgeNormal ) );
+
+				CircleShape *cs = new CircleShape;
+				cs->setFillColor( Color::Cyan );
+				cs->setRadius( 10 );
+				cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+				cs->setPosition( intersect.x, intersect.y );
+
+				progressDraw.push_back( cs );
+
+				return currentContact;
+			}
+			else //special side/hit case for colliding with points
+			{
+				//use right triangeles from the vertex to the circle point and cross product to figure out the y. then use
+				//radius and the y to find the x value which is the value along the velocity that you should go until you
+				//collide. thats how u get resolution here and other stuff. don't need it for this build so do it later
+				//if( 
+				return NULL;
+			}
+		}
+
+		return NULL;
 	}
 	else
 	{
@@ -1887,18 +1975,6 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		
 		if( pointInRect )
 		{
-<<<<<<< HEAD
-			bool rightCond0 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0);
-			bool rightCond1 = ( prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y < 0 );
-			bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x > 0 && en.y < 0 );
-		//	bool rightCond3 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y == 0 );
-
-			bool leftCond0 = (prevEn.x > 0 && prevEn.y < 0 && en.x > 0 && en.y > 0);
-			bool leftCond1 = ( prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0 );
-			bool leftCond2 = ( prevEn.x > 0 && prevEn.y < 0 && en.x < 0 && en.y > 0 );
-		//	bool leftCond3 = (prevEn.x > 0 && prevEn.y == 0 && en.x > 0 && en.y > 0 );
-=======
-
 			bool rightCond0 = (prevEn.x < 0 && prevEn.y >= 0 && en.x < 0 && en.y <= 0);
 			bool rightCond1 = ( prevEn.x >= 0 && prevEn.y > 0 && en.x <= 0 && en.y < 0 );
 			bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x >= 0 && en.y < 0 );
@@ -1916,42 +1992,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			bool bottomCond0 = (prevEn.y <= 0 && prevEn.x <= 0 && en.y < 0 && en.x >= 0);
 			bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y <= 0 && en.x > 0 );
 			bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y >= 0 && en.x > 0 );
-			/*bool rightCond0 = (prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0);
-			bool rightCond1 = ( prevEn.x >= 0 && prevEn.y >= 0 && en.x < 0 && en.y < 0 );
-			bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x >= 0 && en.y < 0 );
-			//bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x >= 0 && en.y < 0 );
-			bool rightCond3 = (prevEn.x == -1 && prevEn.y == 0 && en.x < 0 && en.y > 0 );
-
-			bool leftCond0 = (prevEn.x > 0 && prevEn.y < 0 && en.x > 0 && en.y > 0);
-			bool leftCond1 = ( prevEn.x <= 0 && prevEn.y <= 0 && en.x > 0 && en.y > 0 );
-			bool leftCond2 = ( prevEn.x > 0 && prevEn.y < 0 && en.x <= 0 && en.y >= 0 );
-			bool leftCond3 = ( prevEn.x == 1 && prevEn.y == 0 && en.x > 0 && en.y > 0 );
-			//bool leftCond3 = (prevEn.x > 0 && prevEn.y == 0 && en.x > 0 && en.y > 0 );
->>>>>>> origin/master
-
-			bool topCond0 = (prevEn.y > 0 && prevEn.x > 0 && en.y > 0 && en.x < 0);
-			bool topCond1 = ( prevEn.y < 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
-			bool topCond2 = ( prevEn.y > 0 && prevEn.x > 0 && en.y < 0 && en.x > 0 );
-
-			bool bottomCond0 = (prevEn.y < 0 && prevEn.x < 0 && en.y < 0 && en.x > 0);
-			bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y < 0 && en.x > 0 );
-			bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y > 0 && en.x > 0 );*/
-
-			/*rightCond0 = true;
-			rightCond1 = true;
-			rightCond2 = true;
-
-			leftCond0 = true;
-			leftCond1 = true;
-			leftCond2 = true;
-
-			topCond0 = true;
-			topCond1 = true;
-			topCond2 = true;
-
-			bottomCond0 = true;
-			bottomCond1 = true;
-			bottomCond2 = true; */
+			
 			
 			//cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
 			//cout << "leftconds: " << leftCond0 << ", " << leftCond1 << ", " << leftCond2 << endl;
@@ -1959,6 +2000,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
 			//cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
 			//cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
+
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
 			//	cout << "right " << endl;
