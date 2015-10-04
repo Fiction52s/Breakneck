@@ -211,7 +211,9 @@ struct Crawler : Enemy
 	CollisionBox physBody;
 	sf::Vector2<double> position;
 	sf::Vector2<double> tempVel;
+	
 
+	double rollFactor;
 	Contact minContact;
 	bool col;
 	std::string queryMode;
@@ -225,6 +227,7 @@ struct Crawler : Enemy
 	bool dead;
 	int deathFrame;
 	int crawlAnimationFactor;
+	int rollAnimationFactor;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
