@@ -257,7 +257,7 @@ void Crawler::UpdatePhysics()
 					}
 					if( m > arcDist )
 					{
-						cout << "m: " << m << ", arcDist: " << arcDist << endl;
+						//cout << "m: " << m << ", arcDist: " << arcDist << endl;
 						//double realMove = ;
 						m -= arcDist;
 						if( approxEquals( m, 0 ) )
@@ -300,7 +300,7 @@ void Crawler::UpdatePhysics()
 						
 						V2d newPos = ground->v1 + trueVec * physBody.rw;
 
-						cout << "current: " << rollCurrent << ", new: " << rollFactor << "total: " << totalAngleDist << ", arcdist: " << arcDist << endl;
+						//cout << "current: " << rollCurrent << ", new: " << rollFactor << "total: " << totalAngleDist << ", arcdist: " << arcDist << endl;
 						//cout << "other vel: " << (newPos-oldPos).x << ", " << (newPos-oldPos).y << endl;
 						bool hit = ResolvePhysics( newPos - oldPos );
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )

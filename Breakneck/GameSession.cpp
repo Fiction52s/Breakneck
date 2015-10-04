@@ -659,7 +659,7 @@ bool GameSession::OpenFile( string fileName )
 
 				LineIntersection li0 = lineIntersection( adjv0, adjv1, adje0v0, adje0v1 );
 				LineIntersection li1 = lineIntersection( adjv0, adjv1, adje1v0, adje1v1 );
-				cout << "li0: " << li0.position.x << ", " << li0.position.y << endl;
+				//cout << "li0: " << li0.position.x << ", " << li0.position.y << endl;
 
 				//double remainder = length( adjv1 - adjv0 ) / size;
 				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
@@ -756,23 +756,57 @@ bool GameSession::OpenFile( string fileName )
 					
 					//borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
 					//borderVa[i*4].color.a = 10;
+
+					Vector2f coordsTopLeft, coordsTopRight, coordsBottomLeft, coordsBottomRight;
+					V2d testN = testEdge->Normal();
+
+					int tileIndex = 0;
+					if( abs( testN.x ) > player.wallThresh )
+					{
+						tileIndex = 2;
+					}
+					else if( testN.y < 0 && testN.y >= -player.steepThresh ) //might be an equal or not equal prob here with checks for player
+					{
+						tileIndex = 3;
+					}
+					else if( testN.y > 0 && testN.y <= player.steepThresh )
+					{
+						tileIndex = 4;
+					}
+					else if( testN.y > 0 )
+					{
+						tileIndex = 1;
+					}
+					
+
+					int tileX = tileIndex % 3;
+					int tileY = tileIndex / 3;
+					
+					
+
+					coordsTopLeft = Vector2f( tileX * size, tileY * size );
+					coordsTopRight = Vector2f( (tileX + 1) * size, tileY * size );
+					coordsBottomLeft = Vector2f( tileX * size, (tileY+1) * size );
+					coordsBottomRight = Vector2f( (tileX+1) * size, (tileY+1) * size );
+					
+
 					borderVa[i*4].position = surface;
-					borderVa[i*4].texCoords = Vector2f( 0, 0 );
+					borderVa[i*4].texCoords = coordsTopLeft;
 
 					//borderVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
 					borderVa[i*4+1].position = inner;
-					borderVa[i*4+1].texCoords = Vector2f( 0, size );
+					borderVa[i*4+1].texCoords = coordsBottomLeft;
 
 					//borderVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
 					borderVa[i*4+2].position = innerNext;
-					borderVa[i*4+2].texCoords = Vector2f( size, size );
+					borderVa[i*4+2].texCoords = coordsBottomRight;
 
 					//borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
 					borderVa[i*4+3].position = surfaceNext;
-					borderVa[i*4+3].texCoords = Vector2f( size, 0 );
+					borderVa[i*4+3].texCoords = coordsTopRight;
 					++i;
 
 					//borderVa[i*4].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
@@ -1316,7 +1350,7 @@ int GameSession::Run( string fileN )
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
-	Texture & borderTex = *GetTileset( "testpattern1.png", 16, 16 )->texture;
+	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
 
@@ -1995,7 +2029,7 @@ int GameSession::Run( string fileN )
 		//grassTree->DebugDraw( preScreenTex );
 
 
-		coll.DebugDraw( preScreenTex );
+		//coll.DebugDraw( preScreenTex );
 
 		preScreenTex->setView( uiView );
 		//window->setView( uiView );

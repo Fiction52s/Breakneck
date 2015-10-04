@@ -69,7 +69,7 @@ void main()
 	
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );
 	
-	
+	bool noLights = true;
 	
 	for( int i = 0; i < numLights;  ++i )
 	{
@@ -94,6 +94,12 @@ void main()
 		
 		finalfinal += vec4( FinalColor, DiffuseColor.a );
 	}
+	if( noLights )
+	{
+		vec4 DiffuseColor = texture2D(u_texture, pos);
+		finalfinal = DiffuseColor;
+	}
+	
 	gl_FragColor =  gl_Color * finalfinal;//vec4(finalfinal, DiffuseColor.a);
 	
 	
