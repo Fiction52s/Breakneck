@@ -103,6 +103,7 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( c != NULL )
 	{
+		cout << "touched something at all" << endl;
 		if( !col )
 		{
 			minContact = *c;

@@ -1919,11 +1919,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				cs->setPosition( intersect.x, intersect.y );
 
 				progressDraw.push_back( cs );
-
+				//cout << "success dot: " << ( dot( -vel, edgeNormal ) > 0 ) << ", dist: " << dist << ", radius: " << radius << endl;
 				return currentContact;
 			}
 			else //special side/hit case for colliding with points
 			{
+			//	cout << "blah" << endl;
 				//use right triangeles from the vertex to the circle point and cross product to figure out the y. then use
 				//radius and the y to find the x value which is the value along the velocity that you should go until you
 				//collide. thats how u get resolution here and other stuff. don't need it for this build so do it later
@@ -1931,7 +1932,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				return NULL;
 			}
 		}
-
+		//cout << "dot: " << ( dot( -vel, edgeNormal ) > 0 ) << ", dist: " << dist << ", radius: " << radius << endl;
 		return NULL;
 	}
 	else

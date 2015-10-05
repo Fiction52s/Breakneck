@@ -816,6 +816,7 @@ void Actor::UpdatePrePhysics()
 		if( canStandUp )
 		{
 			b.rh = normalHeight;
+			cout << "setting to normal height" << endl;
 			b.offset.y = 0;
 		}
 	}
@@ -3703,7 +3704,8 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 
-	//cout << "groundspeed: " << groundSpeed << endl;
+	//if( ground != NULL )
+	//	cout << "groundspeed: " << groundSpeed << endl;
 
 	groundedWallBounce = false;
 
@@ -3715,7 +3717,9 @@ void Actor::UpdatePrePhysics()
 	touchEdgeWithLeftWire = false;
 	touchEdgeWithRightWire = false;
 
-//	cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
+	//if( ground == NULL )
+	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
+	
 }
 
 bool Actor::CheckWall( bool right )
@@ -3919,6 +3923,12 @@ bool Actor::CheckStandUp()
 		rs.setSize( Vector2f(r.width, r.height ));
 		rs.setFillColor( Color::Yellow );
 		rs.setPosition( r.left, r.top );
+		/*r.left -= 1;
+		r.width += 1;
+		r.top -= 1;
+		r.height += 1;*/
+		
+//		owner->preScreenTex->draw( rs );
 
 		//owner->window->draw( rs );
 
@@ -3926,7 +3936,7 @@ bool Actor::CheckStandUp()
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
 		owner->terrainTree->Query( this, r );
-	//	cout << "col number: " << possibleEdgeCount << endl;
+		cout << "col number: " << possibleEdgeCount << endl;
 		possibleEdgeCount = 0;
 		return checkValid;
 	}
@@ -4021,6 +4031,15 @@ bool Actor::ResolvePhysics( V2d vel )
 	testGrassCount = 0;
 	owner->grassTree->Query( this, r );
 
+	if( testGrassCount > 0 )
+	{
+		action = DEATH;
+		slowCounter = 1;
+		frame = 0;
+		owner->deathWipe = true;
+
+		owner->powerBar.Damage( 100000000 );
+	}
 	//need to fix the quad tree but this works!
 	//cout << "test grass count: " << testGrassCount << endl;
 	//if( minContact.edge != NULL )
@@ -8351,8 +8370,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 	assert( queryMode != "" );
 
-	if( ground == e )
-			return;
+	
 		
 	if( queryMode == "moving_resolve" )
 	{
@@ -8474,21 +8492,30 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "check" )
 	{
+		//if( ground == e )
+		//	return;
+
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if ( action != GRINDBALL )
-			if( ( e->Normal().y <= 0 && !reversed ) || ( e->Normal().y >= 0 && reversed ) )
-				return;
-		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
-		if( IsEdgeTouchingBox( e, r ) )
 		{
+			if( ( e->Normal().y <= 0 && !reversed && ground != NULL ) || ( e->Normal().y >= 0 && reversed && ground != NULL ) )
+			{
+				return;
+			}
+		}
+		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		//if( IsEdgeTouchingBox( e, r ) )
+		//{
 			checkValid = false;
 
-		}
+		//}
 	}
 	else if( queryMode == "checkwall" )
 	{
+		if( ground == e )
+			return;
 		Contact *c = owner->coll.collideEdge( position + tempVel , b, e, tempVel );
 		
 		if( c != NULL )
