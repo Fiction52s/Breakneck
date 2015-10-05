@@ -816,7 +816,7 @@ void Actor::UpdatePrePhysics()
 		if( canStandUp )
 		{
 			b.rh = normalHeight;
-			cout << "setting to normal height" << endl;
+			//cout << "setting to normal height" << endl;
 			b.offset.y = 0;
 		}
 	}
@@ -2221,15 +2221,26 @@ void Actor::UpdatePrePhysics()
 					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
 					if( bn.y > -steepThresh )
 					{
-						if( bn.x > 0 )// && storedBounceVel.x < 0 )
+						if( bn.x > 0  && storedBounceVel.x < 0 )
 						{
 							//cout << "A" << endl;
 							velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
 						}
-						else if( bn.x < 0 )
+						else if( bn.x < 0 && storedBounceVel.x > 0 )
 						{
 						//	cout << "B" << endl;
 							velocity = V2d( -abs(storedBounceVel.x), -abs(storedBounceVel.y) );
+						}
+						else
+						{
+							double lenVel = length( storedBounceVel );
+							double reflX = cross( normalize( -storedBounceVel ), bn );
+							double reflY = dot( normalize( -storedBounceVel ), bn );
+							V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
+							//velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
+							//cout << "reflx: " << reflX <<", refly: " << reflY << endl;
+							velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
+							//cout << "set vel: " << velocity.x << ", " << velocity.y << endl;
 						}
 						//if( 
 						//bounceNorm.y = -1;
@@ -2244,15 +2255,23 @@ void Actor::UpdatePrePhysics()
 				{
 					if( -bn.y > -steepThresh )
 					{
-						if( bn.x > 0 )//&& storedBounceVel.x < 0 )
+						if( bn.x > 0 && storedBounceVel.x < 0 )
 						{
 						//	cout << "C" << endl;
 							velocity = V2d( abs(storedBounceVel.x), storedBounceVel.y );
 						}
-						else if( bn.x < 0 )// && storedBounceVel.x > 0 )
+						else if( bn.x < 0 && storedBounceVel.x > 0 )
 						{
 						//	cout << "D" << endl;
 							velocity = V2d( -abs(storedBounceVel.x), storedBounceVel.y );
+						}
+						else
+						{
+							double lenVel = length( storedBounceVel );
+							double reflX = cross( normalize( -storedBounceVel ), bn );
+							double reflY = dot( normalize( -storedBounceVel ), bn );
+							V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
+							velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
 						}
 						
 						//if( 
@@ -3936,13 +3955,12 @@ bool Actor::CheckStandUp()
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
 		owner->terrainTree->Query( this, r );
-		cout << "col number: " << possibleEdgeCount << endl;
+		//cout << "col number: " << possibleEdgeCount << endl;
 		possibleEdgeCount = 0;
 		return checkValid;
 	}
 	
 }
-
 
 bool Actor::ResolvePhysics( V2d vel )
 {
@@ -6240,17 +6258,15 @@ void Actor::UpdatePostPhysics()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				if( storedBounceVel.x > 0 )
+				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
 				{
-
+					facingRight = !facingRight;
 				}
-				facingRight = !facingRight;
-
-				
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				facingRight = !facingRight;
+				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
+					facingRight = !facingRight;
 			}
 			else if( bn.y == 0  )
 			{
@@ -8043,12 +8059,18 @@ void Actor::UpdatePostPhysics()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				bounceFrame = 2;
+				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
+					bounceFrame = 0;
+				else
+					bounceFrame = 2;
 				//facingRight = !facingRight;
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				bounceFrame = 2;
+				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
+					bounceFrame = 4;
+				else
+					bounceFrame = 2;
 				//facingRight = !facingRight;
 			}
 			else if( bn.y == 0 )
@@ -8094,23 +8116,40 @@ void Actor::UpdatePostPhysics()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 
-			if( bn.y <= 0 && bn.y > -steepThresh )
+			if( abs( bn.x ) >= wallThresh )
 			{
-				if( facingRight )
+				sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+			}
+			else if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				if( bounceFrame == 0 )
 				{
-					//facingRight = false;
-
+					sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
 				}
-				sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
+				else
+				{
+					if( facingRight )
+					{
+						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+					}
+					else
+					{
+						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+					}
+					
+					//sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
+				}
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				
-				sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-			}
-			else if( bn.y == 0 )
-			{
-			//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				if( bounceFrame == 4 )
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+				}	
 			}
 			else if( bn.y < 0 )
 			{
@@ -8118,7 +8157,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( bn.y > 0 )
 			{
-		//		sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
 			}
 
 			
