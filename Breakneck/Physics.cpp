@@ -2001,7 +2001,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
 			//cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
 			//cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
-
+			//cout << "oldright: " << oldRight << ", " << point.x << endl;
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
 			//	cout << "right " << endl;
@@ -2159,14 +2159,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double edgeXPos = edgeLeft;
 			if( en.x > 0 ) //right
 			{
-				cout << "trying!: oldLeft: " << oldLeft << ", edgeXPos: " << edgeXPos <<", left: " << left << ", vel: " << vel.x << ", " << vel.y << endl;
-				cout << "blah: " << (vel.x < 0 ) << ", " << (oldLeft >= edgeXPos ) << ", " << (left <= edgeXPos ) << endl;
+				//cout << "trying!: oldLeft: " << oldLeft << ", edgeXPos: " << edgeXPos <<", left: " << left << ", vel: " << vel.x << ", " << vel.y << endl;
+				//cout << "blah: " << (vel.x < 0 ) << ", " << (oldLeft >= edgeXPos ) << ", " << (left <= edgeXPos ) << endl;
 				if( vel.x < 0 && oldLeft >= edgeXPos - .001 && left <= edgeXPos )
 				{
 					bool a = top >= edgeTop && top <= edgeBottom;
 					bool b = bottom >= edgeTop && bottom <= edgeBottom;
 					//cout << "edge l/r: " << edgetop << ", " << edgebottom << ", l/r: " << top << ", " << bottom << endl;
-					cout << "in here: " << a << ", " << b << endl;
+					//cout << "in here: " << a << ", " << b << endl;
 					bool hit = true;
 
 					if( a && b )
@@ -2342,7 +2342,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 						{
 							okay = true;
 						}
-						cout << "t: " << t << endl;
+						//cout << "t: " << t << endl;
 					}
 
 					if( okay )

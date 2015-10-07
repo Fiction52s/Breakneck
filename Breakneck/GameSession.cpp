@@ -788,24 +788,45 @@ bool GameSession::OpenFile( string fileName )
 					coordsTopRight = Vector2f( (tileX + 1) * size, tileY * size );
 					coordsBottomLeft = Vector2f( tileX * size, (tileY+1) * size );
 					coordsBottomRight = Vector2f( (tileX+1) * size, (tileY+1) * size );
-					
+					coordsBottomLeft.y -= 1;
+					coordsBottomRight.y -= 1;
 
-					borderVa[i*4].position = surface;
+					coordsBottomRight.x -= 1;
+					coordsTopRight.x -= 1;
+					
+					Vector2f adjSurface = surface;
+					//adjSurface.x = floor( adjSurface.x + .5 );
+					//adjSurface.y = floor( adjSurface.y + .5 );
+
+					Vector2f adjInner = inner;
+					//adjInner.x = floor( adjInner.x + .5 );
+					//adjInner.y = floor( adjInner.y + .5 );
+
+					Vector2f adjSurfaceNext = surfaceNext;
+					//adjSurfaceNext.x = floor( adjSurfaceNext.x + .5 );
+					//adjSurfaceNext.y = floor( adjSurfaceNext.y + .5 );
+
+					Vector2f adjInnerNext = innerNext;
+					//adjInnerNext.x = floor( adjInnerNext.x + .5 );
+					//adjInnerNext.y = floor( adjInnerNext.y + .5 );
+
+				//	borderVa[i*4].color = Color( 0x0d, 0, 0x80 );
+					borderVa[i*4].position = adjSurface;
 					borderVa[i*4].texCoords = coordsTopLeft;
 
-					//borderVa[i*4+1].color = Color::Blue;
+				//	borderVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
-					borderVa[i*4+1].position = inner;
+					borderVa[i*4+1].position = adjInner;
 					borderVa[i*4+1].texCoords = coordsBottomLeft;
 
-					//borderVa[i*4+2].color = Color::Blue;
+				//	borderVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
-					borderVa[i*4+2].position = innerNext;
+					borderVa[i*4+2].position = adjInnerNext;
 					borderVa[i*4+2].texCoords = coordsBottomRight;
 
-					//borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+				//	borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
-					borderVa[i*4+3].position = surfaceNext;
+					borderVa[i*4+3].position = adjSurfaceNext;
 					borderVa[i*4+3].texCoords = coordsTopRight;
 					++i;
 
@@ -1620,9 +1641,10 @@ int GameSession::Run( string fileN )
 				if( player.changingClone )
 				{
 					player.percentCloneChanged += player.percentCloneRate;
-					if( player.percentCloneChanged >= 1 )
+					//if( player.percentCloneChanged >= 1 )
 					{
-						player.percentCloneChanged = 1;
+						player.percentCloneChanged = 0;
+					//	player.percentCloneChanged = 1;
 						player.changingClone = false;
 						pauseFrames = 0;
 					}

@@ -55,6 +55,9 @@ Actor::Actor( GameSession *gs )
 		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
 		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
 
+		//Vector2i lightPos( position.x, position.y );
+		//Color lightColor = Color::Green;
+		//playerLight = new Light( owner, lightPos, lightColor );
 		//dashStartSound.setBuffer( testBuffer );
 		
 		slopeLaunchMinSpeed = 15;
@@ -1169,7 +1172,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( false ) )
 			{
-				cout << "special walljump right" << endl;
+				//cout << "special walljump right" << endl;
 				if( currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
@@ -1182,7 +1185,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{		
-				cout << "special walljump left" << endl;
+				//cout << "special walljump left" << endl;
 				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
 					
@@ -3516,7 +3519,7 @@ void Actor::UpdatePrePhysics()
 		//	velocity -= V2d( 0, gravity );
 		}
 		
-		double accel = 1;
+		double accel = .3;
 		double speed = dot( velocity, tes ); 
 
 		if( speed > 10 )
@@ -3527,6 +3530,67 @@ void Actor::UpdatePrePhysics()
 		{
 			speed -= accel;
 		}
+		else
+		{
+			
+		
+		}
+
+		V2d wireDir = normalize( wirePoint - position );
+		double otherAccel = .5;
+		if( abs( wireDir.x ) < .7 )
+			{
+				if( wireDir.y < 0 )
+				{
+					if( currInput.LLeft() )
+					{
+						speed -= otherAccel;
+					}
+					else if( currInput.LRight() )
+					{
+						speed += otherAccel;
+					}
+				}
+				else if( wireDir.y > 0 )
+				{
+					if( currInput.LLeft() )
+					{
+						speed += otherAccel;
+					}
+					else if( currInput.LRight() )
+					{
+						speed -= otherAccel;
+					}
+				}
+			}
+		else
+		{
+			if( wireDir.x > 0 )
+			{
+				if( currInput.LUp() )
+				{
+					speed -= otherAccel;
+				}
+				else if( currInput.LDown() )
+				{
+					speed += otherAccel;
+				}
+			}
+			else if( wireDir.x < 0 )
+			{
+				if( currInput.LUp() )
+				{
+					speed += otherAccel;
+				}
+				else if( currInput.LDown() )
+				{
+					speed -= otherAccel;
+				}
+			}
+
+			
+		}
+
 		velocity = speed * tes;
 		velocity += otherTes;
 		//velocity += otherTes;
@@ -5340,7 +5404,7 @@ void Actor::UpdatePhysics()
 									else
 									{	
 										
-										cout << "cxxxx" << endl;
+										//cout << "cxxxx" << endl;
 										ground = minContact.edge;
 										movingGround = minContact.movingPlat;
 
@@ -5818,7 +5882,7 @@ void Actor::UpdatePhysics()
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
 				movement = 0;
-				
+				cout << "bouncing: " << bounceQuant << endl;
 			//	cout << "offset now!: " << offsetX << endl;
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
@@ -6165,7 +6229,7 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-
+	
 	//rightWire->UpdateState( false );
 	if( rightWire->numPoints == 0 )
 	{
@@ -8118,7 +8182,14 @@ void Actor::UpdatePostPhysics()
 
 			if( abs( bn.x ) >= wallThresh )
 			{
-				sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				if( bn.x > 0 )
+				{
+					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+				}
 			}
 			else if( bn.y <= 0 && bn.y > -steepThresh )
 			{
@@ -8157,7 +8228,8 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( bn.y > 0 )
 			{
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+				//cout << "this one" << endl;
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
 			}
 
 			
@@ -8400,6 +8472,8 @@ void Actor::UpdatePostPhysics()
 		slowCounter++;
 
 	UpdateHitboxes();
+	//playerLight->pos.x = position.x;
+	//playerLight->pos.y = position.y;
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
@@ -8639,6 +8713,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if( queryMode == "lights" )
 	{
 		Light *light = (Light*)qte;
+
+		//if( light == playerLight )
+		//	return;
 
 		if( owner->lightsAtOnce < owner->tempLightLimit )
 		{

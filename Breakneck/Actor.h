@@ -10,6 +10,7 @@
 #include <SFML/Graphics.hpp>
 #include "Wire.h"
 
+
 struct GameSession;
 struct PlayerGhost;
 
@@ -83,7 +84,7 @@ struct Actor : QuadTreeCollider,
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
-
+	//Light *playerLight;
 	Tileset *normal[Count];
 
 	sf::Sprite gsdodeca;

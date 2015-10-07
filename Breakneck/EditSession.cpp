@@ -1405,6 +1405,7 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 	}
 }
 
+
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 {
 
@@ -1418,99 +1419,35 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	TerrainPolygon *otherPoly = NULL;
 	PointList::iterator it = poly->points.begin();
 
-	bool brushFound = false;
-	list<PointList::iterator> found;
 	for(; it != poly->points.end(); ++it )
 	{
 		if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
 		{
-			found.push_back( it );
-			//startPoint = (*it).pos;
-			//startPointFound = true;
-			//currentPoly = poly;
-			//otherPoly = brush;
-			//break;
+			startPoint = (*it).pos;
+			startPointFound = true;
+			currentPoly = poly;
+			otherPoly = brush;
+			break;
 		}
 	}
 
-	bool somethingFound = false;
-	if( !found.empty() )
-	{
-		somethingFound = true;
-		PointList::iterator lowestPoint = found.front();
-		list<PointList::iterator>::iterator foundIt = found.begin();
-		if( found.size() > 1 )
-		{
-			++foundIt;
-			for(  ;foundIt != found.end(); ++foundIt )
-			{
-				if( (*(*foundIt)).pos.y > (*lowestPoint).pos.y )
-					lowestPoint = (*foundIt);
-			}
-		}
-
-		it = (lowestPoint);
-		startPoint = (*lowestPoint).pos;
-		currentPoly = poly;
-		otherPoly = brush;
-	}
-
-	found.clear();
-	//if( found.empty() )//!startPointFound )
+	if( !startPointFound )
 	{
 		it = brush->points.begin();
 		for(; it != brush->points.end(); ++it )
 		{
 			if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
 			{
-				found.push_back( it );
-				//startPoint = (*it).pos;
-				//startPointFound = true;
-				//currentPoly = brush;
-				//otherPoly = poly;
-				//break;
-			}
-		}
-
-
-		if( !found.empty() )
-		{
-			PointList::iterator lowestPoint = found.front();
-			list<PointList::iterator>::iterator foundIt = found.begin();
-			if( found.size() > 1 )
-			{
-				++foundIt;
-				for(  ;foundIt != found.end(); ++foundIt )
-				{
-					if( (*(*foundIt)).pos.y > (*lowestPoint).pos.y )
-						lowestPoint = (*foundIt);
-				}
-			}
-
-			if( somethingFound )
-			{
-				if( (*lowestPoint).pos.y > startPoint.y )
-				{
-					it = (lowestPoint);
-					startPoint = (*lowestPoint).pos;
-					currentPoly = brush;
-					otherPoly = poly;
-				}
-			}
-			else
-			{
-				it = (lowestPoint);
-				startPoint = (*lowestPoint).pos;
+				startPoint = (*it).pos;
+				startPointFound = true;
 				currentPoly = brush;
 				otherPoly = poly;
-			}	
+				break;
+			}
 		}
-
 	}
 
-	//assert( startPointFound );
-
-
+	assert( startPointFound );
 	
 	Vector2i currPoint = startPoint;
 	++it;
