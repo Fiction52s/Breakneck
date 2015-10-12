@@ -9,6 +9,7 @@
 #include "VectorMath.h"
 #include "Camera.h"
 #include <sstream>
+#include <ctime>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -16,18 +17,21 @@
 using namespace std;
 using namespace sf;
 
-GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex )
+GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 {
 	usePolyShader = true;
-	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
+	minimapTex = miniTex;
+	
+
+	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
 		cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 		usePolyShader = false;
 	}
-
+	
 	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
@@ -1266,7 +1270,12 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
-	
+	bool showFrameRate = false;
+	sf::Font arial;
+	arial.loadFromFile( "arial.ttf" );
+
+	sf::Text frameRate( "00", arial, 30 );
+
 	activeSequence = NULL;
 
 	fileName = fileN;
@@ -1309,6 +1318,14 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
+	//parTest.setFillColor( Color::Red );
+	Texture tex;
+	tex.loadFromFile( "parallax1.png" );
+	parTest.setTexture( tex );
+	parTest.setPosition( 0, 0 );
+
+
 	cam.pos.x = player.position.x;
 	cam.pos.y = player.position.y;
 	
@@ -1400,6 +1417,11 @@ int GameSession::Run( string fileN )
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );
 
+	stringstream ss;
+
+	int frameCounterWait = 20;
+	int frameCounter = 0;
+	double total = 0;
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1409,9 +1431,31 @@ int GameSession::Run( string fileN )
 			frameTime = 0.25;	
         currentTime = newTime;
 
+		if( showFrameRate )
+		{
+			if( frameCounter == frameCounterWait )
+			{
+				double blah = 1.0 / frameTime;
+				total += blah;
+				ss << total / ( frameCounterWait + 1 ) ;
+				frameRate.setString( ss.str() );
+				ss.clear();
+				ss.str( "" );
+				frameCounter = 0;
+				total = 0;
+			}
+			else
+			{
+				double blah = 1.0 / frameTime;
+				total += blah;
+				++frameCounter;
+			}
+		}
+		
+
 		accumulator += frameTime;
 
-		window->clear();
+		
 		preScreenTex->clear();
 		preScreenTex->setSmooth( false );
 
@@ -1431,7 +1475,9 @@ int GameSession::Run( string fileN )
 				//con = controller.GetState();
 				
 				
-
+				bool tookScreenShot = false;
+				bool screenShot = false;
+				
 				while( true )
 				{
 					//prevInput = currInput;
@@ -1442,6 +1488,25 @@ int GameSession::Run( string fileN )
 					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 					
 					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
+					screenShot = Keyboard::isKeyPressed( sf::Keyboard::Num0 ) && !tookScreenShot;
+					
+					if( screenShot )
+					{
+						tookScreenShot = true;
+						Image im = window->capture();
+
+						 time_t now = time(0);
+						 char* dt = ctime(&now);
+						im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
+					}
+					else
+					{
+						if( skipInput )
+						{
+							tookScreenShot = false;
+						}
+					}
+					
 
 					if( !skipped && skipInput )//sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
 					{
@@ -1473,6 +1538,12 @@ int GameSession::Run( string fileN )
 					
 
 				}
+
+				window->clear();
+			}
+			else
+			{
+				window->clear();
 			}
 
 			if( skipInput )
@@ -1724,9 +1795,14 @@ int GameSession::Run( string fileN )
 				UpdateEnemiesPostPhysics();
 			
 
+				//Vector2f oldCam = cam.pos;
+				//float oldCamZoom = cam.GetZoom();
+
 				cam.Update( &player );
 
-				
+
+				//Vector2f diff = cam.pos - oldCam;
+
 
 				double camWidth = 960 * cam.GetZoom();
 				double camHeight = 540 * cam.GetZoom();
@@ -1835,8 +1911,12 @@ int GameSession::Run( string fileN )
 		preScreenTex->setView( view );
 		//window->setView( view );
 
-
-
+		Vector2f orig( originalPos.x, originalPos.y );
+		float depth = 3;
+		parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
+		float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
+		parTest.setScale( scale, scale );
+		preScreenTex->draw( parTest );
 		
 		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
@@ -1923,7 +2003,7 @@ int GameSession::Run( string fileN )
 		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-			view.getCenter().y - view.getSize().y / 2 );
+			view.getCenter().y + view.getSize().y / 2 );
 		
 		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
@@ -1959,6 +2039,7 @@ int GameSession::Run( string fileN )
 			listVA = t;
 		}
 
+		//listVA is null here
 		queryMode = "border";
 		numBorders = 0;
 		borderTree->Query( this, screenRect );
@@ -2047,7 +2128,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -2055,10 +2136,64 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( preScreenTex );
 
+		double minimapZoom = 15;
+
+		View vv;
+		vv.setCenter( player.position.x, player.position.y );
+		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
+		minimapTex->setView( vv );
+		minimapTex->clear( Color( 0, 0, 0, 191 ) );
+		
+		CircleShape cs;
+		cs.setFillColor( Color::Green );
+		cs.setRadius( 50 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( vv.getCenter().x, vv.getCenter().y );
+		
+
+
+		//vv.setSize( 1920 * 10, 1080 * 10 );
+		queryMode = "border";
+		numBorders = 0;
+		sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+			vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
+
+		borderTree->Query( this, minimapRect );
+
+		listVAIter = listVA;
+		while( listVAIter != NULL )
+		{
+			//if( listVAIter->grassVA != NULL )
+			//	minimapTex->draw( *listVAIter->grassVA, &grassTex );
+			
+			minimapTex->draw( *listVAIter->terrainVA );
+			//preScreenTex->draw( *listVAIter->va, &borderTex );
+			listVAIter = listVAIter->next;
+			//timesDraw++; 
+		}
+		
+		minimapTex->draw( cs );
+
+		minimapTex->display();
+		const Texture &miniTex = minimapTex->getTexture();
+
+		Sprite minimapSprite( miniTex );
+		minimapSprite.setPosition( preScreenTex->getSize().x / 2 - 150, preScreenTex->getSize().y / 2 - 150 );
+		minimapSprite.setScale( .5, .5 );
+		minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
+
 		preScreenTex->setView( uiView );
+		preScreenTex->draw( minimapSprite );
+
 		//window->setView( uiView );
 	//	window->draw( healthSprite );
 		powerBar.Draw( preScreenTex );
+
+		if( showFrameRate )
+		{
+			preScreenTex->draw( frameRate );
+		}
+		
 
 		preScreenTex->setView( view );
 		//window->setView( view );
@@ -2090,7 +2225,7 @@ int GameSession::Run( string fileN )
 		{
 			player.Draw( preScreenTex );
 		}
-
+	//	preScreenTex->setSmooth( true );
 		preScreenTex->display();
 		const Texture &preTex = preScreenTex->getTexture();
 		
@@ -2104,7 +2239,7 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "resolution", window->getSize().x, window->getSize().y);
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
-		window->draw( preTexSprite, &cloneShader );
+		window->draw( preTexSprite );//, &cloneShader );
 		}
 
 

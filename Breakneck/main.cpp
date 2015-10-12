@@ -32,6 +32,7 @@ using namespace boost::filesystem;
 GameController controller(0);
 
 RenderTexture *preScreenTexture;
+RenderTexture *minimapTexture;
 
 sf::Texture worldMapTex;
 sf::Sprite worldMapSpr;
@@ -72,7 +73,7 @@ void GameEditLoop( std::string filename)
 			break;
 
 		window->setView( v );
-		GameSession gs( controller, window, preScreenTexture );
+		GameSession gs( controller, window, preScreenTexture, minimapTexture );
 		
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
@@ -89,7 +90,7 @@ void GameEditLoop2( std::string filename)
 	while( result == 0 )
 	{
 		window->setView( v );
-		GameSession gs( controller, window, preScreenTexture );
+		GameSession gs( controller, window, preScreenTexture, minimapTexture );
 		result = gs.Run( filename );
 		lastViewCenter = gs.lastViewCenter;
 		lastViewSize = gs.lastViewSize;
@@ -149,7 +150,7 @@ struct CustomMapsHandler : GUIHandler
 			if( b->name == "Play" )
 			{
 				optionChosen = true;
-				GameSession gs( controller, window, preScreenTexture );
+				GameSession gs( controller, window, preScreenTexture, minimapTexture );
 				gs.Run( ls.localPaths[ls.selectedIndex] );
 				window->setView( uiView );
 			}
@@ -420,7 +421,7 @@ void CustomMapsOption( LevelSelector &ls )
 
 void NewCampaignOption()
 {
-	GameSession gs( controller, window, preScreenTexture );
+	GameSession gs( controller, window, preScreenTexture, minimapTexture );
 	gs.Run( "test3.brknk" );
 }
 
@@ -444,6 +445,10 @@ int main()
 	preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 960 * 2, 540 * 2 );
 	preScreenTexture->clear();
+
+	minimapTexture = new RenderTexture;
+	minimapTexture->create( 300, 300 );
+	minimapTexture->clear();
 
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
@@ -482,7 +487,7 @@ int main()
 		window = new sf::RenderWindow( i.front(), "Breakneck", sf::Style::None );
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
-
+	window->setVerticalSyncEnabled( true );
 	//test.clear();
 
 	sf::Music titleMusic;

@@ -506,15 +506,15 @@ Actor::Actor( GameSession *gs )
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 
-		hasPowerAirDash = true;
-		hasPowerGravReverse = true;
-		hasPowerBounce = true;
-		hasPowerGrindBall = true;
-		hasPowerTimeSlow = true;
+		hasPowerAirDash = false;
+		hasPowerGravReverse = false;
+		hasPowerBounce = false;
+		hasPowerGrindBall = false;
+		hasPowerTimeSlow = false;
 
 		//wire still under development
-		hasPowerLeftWire = true;
-		hasPowerRightWire = true;
+		hasPowerLeftWire = false;
+		hasPowerRightWire = false;
 
 
 		//do this a little later.
@@ -3382,11 +3382,17 @@ void Actor::UpdatePrePhysics()
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
-	leftWire->ClearDebug();
-	leftWire->UpdateState( touchEdgeWithLeftWire );
+	if( hasPowerLeftWire )
+	{
+		leftWire->ClearDebug();
+		leftWire->UpdateState( touchEdgeWithLeftWire );
+	}
 
-	rightWire->ClearDebug();
-	rightWire->UpdateState( touchEdgeWithRightWire );
+	if( hasPowerRightWire )
+	{
+		rightWire->ClearDebug();
+		rightWire->UpdateState( touchEdgeWithRightWire );
+	}
 	
 
 	if( ground == NULL && bounceEdge == NULL && action != DEATH )

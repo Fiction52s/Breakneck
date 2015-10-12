@@ -970,7 +970,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing goal" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1074,7 +1074,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing crawler" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1117,7 +1117,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing basicturret" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1154,7 +1154,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing foottrap" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1687,6 +1687,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
+
+
 
 	sf::Texture playerZoomIconTex;
 	playerZoomIconTex.loadFromFile( "playerzoomicon.png" );
@@ -3645,6 +3647,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 
 		w->setView( view );
+
+		sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
+		parTest.setFillColor( Color::Red );
+		parTest.setPosition( 0, 0 );
+		w->draw( parTest );
+
 		w->draw(border, 8, sf::Lines);
 
 		Draw();
@@ -4642,7 +4650,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "ok" )
 		{
 			//cout << "OKAY!!!" << endl;
-			lights.push_back( new StaticLight( Color::Blue, lightPos ) );
+			lights.push_back( new StaticLight( Color::Green, lightPos ) );
 			showPanel = NULL;
 		}
 	}

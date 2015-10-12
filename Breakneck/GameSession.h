@@ -60,7 +60,8 @@ struct Grass : QuadTreeEntrant
 struct GameSession : QuadTreeCollider
 {
 	GameSession(GameController &c, sf::RenderWindow *rw, 
-		sf::RenderTexture *preTex );
+		sf::RenderTexture *preTex,
+		sf::RenderTexture *miniTex);
 	~GameSession();
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
@@ -129,8 +130,12 @@ struct GameSession : QuadTreeCollider
 	std::list<sf::VertexArray*> polygonBorders;
 
 	sf::RenderTexture *preScreenTex;
+	sf::RenderTexture *minimapTex;
 	sf::Sprite background;
 	sf::View bgView;
+
+	sf::Sprite parTest;
+
 	struct TestVA : QuadTreeEntrant
 	{
 		sf::VertexArray *va;
