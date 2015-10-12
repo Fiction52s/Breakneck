@@ -2441,7 +2441,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		on0 = true;
 		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff0", Vector3f( 2, 3, 20 ) );
+		polyShader.setParameter( "Falloff0", Vector3f( .001, 3, 20 ) );
 	}
 	if( lightsAtOnce > 1 )
 	{

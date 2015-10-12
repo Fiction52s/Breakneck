@@ -18,7 +18,7 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
 	sh.setParameter( "pos", 0, 0 );
 	//sh.setParameter( "lightpos", 0, -300 );
 
-	cs.setRadius( 100 );
+	cs.setRadius( 10000 );
 	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	//cs.setPosition( 0, -300 );
@@ -42,7 +42,7 @@ bool Light::IsTouchingBox( const sf::Rect<double> &r )
 
 void Light::Draw( RenderTarget *target )
 {
-	sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
-	target->draw( cs );
+	//sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
+	//target->draw( cs );
 
 }
