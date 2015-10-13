@@ -167,7 +167,7 @@ void main() {
 		//calculate attenuation
 		float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
 		//Attenuation = 100;
-		Attenuation = Attenuation * 20 / zoom;
+		Attenuation = Attenuation * 2 / zoom;
 		//the calculation which brings it all together
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		

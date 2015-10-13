@@ -68,6 +68,8 @@ void main()
 	lights[2].color = LightColor2; //vec4( 0, 0, 1, 1 );
 	lights[2].falloff = Falloff2;
 	
+
+	
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );
 	
 	
@@ -91,7 +93,7 @@ void main()
 		vec3 Diffuse = (lights[i].color.rgb * lights[i].color.a) * max(dot(N, L), 0.0);
 		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLights ;
 		float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
-		Attenuation = Attenuation * 2;
+		Attenuation = Attenuation * 2 / zoom;
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		vec3 FinalColor = DiffuseColor.rgb * Intensity;
 		

@@ -2418,8 +2418,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	queryMode = "lights"; 
 	lightTree->Query( this, aabb );
 
-	//Vector2i vi = Mouse::getPosition();
-	//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+	Vector2i vi = Mouse::getPosition();
+	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
 
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
@@ -2433,39 +2433,53 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 
 	if( lightsAtOnce > 0 )
 	{
+		float depth0 = touchedLights[0]->depth;
 		Vector2i vi0 = Vector2i( preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) ) );
-		Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
-			pos0.y = 1 - pos0.y;
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+		Vector3f pos0( vi0.x / (float)window->getSize().x, -1 + vi0.y / (float)window->getSize().y, depth0 );
+			//pos0.y = 1 - pos0.y;
+		//Vector3f pos0( vi0.x, vi0.y, .015 );
+		//cout << pos0.x << ", " << pos0.y << endl;
 		Color c0 = touchedLights[0]->color;
+
+		Vector3f falloff0 = touchedLights[0]->falloff;
+
+		
 		//sh.setParameter( "On0", true );
 		on0 = true;
 		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff0", Vector3f( .001, 3, 20 ) );
+		polyShader.setParameter( "Falloff0", falloff0 );
 	}
 	if( lightsAtOnce > 1 )
 	{
+		float depth1 = touchedLights[1]->depth;
 		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
-		Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
-			pos1.y = 1 - pos1.y;
+		Vector3f pos1( vi1.x / (float)window->getSize().x, -1 + vi1.y / (float)window->getSize().y, depth1 ); 
+		//	pos1.y = 1 - pos1.y;
 		Color c1 = touchedLights[1]->color;
+		Vector3f falloff1 = touchedLights[1]->falloff;
+		
 		on1 = true;
 		//sh.setParameter( "On1", true );
 		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff1", Vector3f( .4, 3, 20 ) );
+		polyShader.setParameter( "Falloff1", falloff1 );
 	}
 	if( lightsAtOnce > 2 )
 	{
+		float depth2 = touchedLights[2]->depth;
 		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
-			pos2.y = 1 - pos2.y;
+		Vector3f pos2( vi2.x / (float)window->getSize().x, -1 + vi2.y / (float)window->getSize().y, depth2 ); 
+		//	pos2.y = 1 - pos2.y;
 		Color c2 = touchedLights[2]->color;
+		Vector3f falloff2 = touchedLights[2]->falloff;
+		
 		on2 = true;
 		//sh.setParameter( "On2", true );
 		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff2", Vector3f( .4, 3, 20 ) );
+		polyShader.setParameter( "Falloff2", falloff2 );
 	}
 	
 	polyShader.setParameter( "On0", on0 );

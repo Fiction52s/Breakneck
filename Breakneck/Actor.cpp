@@ -8399,36 +8399,42 @@ void Actor::UpdatePostPhysics()
 
 	if( owner->lightsAtOnce > 0 )
 	{
+		float depth0 = owner->touchedLights[0]->depth;
 		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
-		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 );
+		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, depth0 );
 		Color c0 = owner->touchedLights[0]->color;
+		Vector3f falloff0 = owner->touchedLights[0]->falloff;
 		//sh.setParameter( "On0", true );
 		on0 = true;
 		sh.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
 		sh.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		sh.setParameter( "Falloff0", Vector3f( 2, 3, 20 ) );
+		sh.setParameter( "Falloff0", falloff0 );
 	}
 	if( owner->lightsAtOnce > 1 )
 	{
+		float depth1 = owner->touchedLights[1]->depth;
 		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, depth1 ); 
 		Color c1 = owner->touchedLights[1]->color;
+		Vector3f falloff1 = owner->touchedLights[1]->falloff;
 		on1 = true;
 		//sh.setParameter( "On1", true );
 		sh.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
 		sh.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		sh.setParameter( "Falloff1", Vector3f( .4, 3, 20 ) );
+		sh.setParameter( "Falloff1", falloff1 );
 	}
 	if( owner->lightsAtOnce > 2 )
 	{
+		float depth2 = owner->touchedLights[2]->depth;
 		Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, depth2 ); 
 		Color c2 = owner->touchedLights[2]->color;
+		Vector3f falloff2 = owner->touchedLights[2]->falloff;
 		on2 = true;
 		//sh.setParameter( "On2", true );
 		sh.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
 		sh.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		sh.setParameter( "Falloff2", Vector3f( .4, 3, 20 ) );
+		sh.setParameter( "Falloff2", falloff2 );
 	}
 	
 	sh.setParameter( "On0", on0 );

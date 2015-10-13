@@ -17,12 +17,14 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
 	}
 	sh.setParameter( "pos", 0, 0 );
 	//sh.setParameter( "lightpos", 0, -300 );
-
-	cs.setRadius( 10000 );
+	cs.setRadius( 100 );
 	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	//cs.setPosition( 0, -300 );
 	cs.setPosition( p.x, p.y );
+
+	falloff = Vector3f( .001, 3, 1 );
+	depth = .015;
 }
 
 void Light::HandleQuery( QuadTreeCollider * qtc )

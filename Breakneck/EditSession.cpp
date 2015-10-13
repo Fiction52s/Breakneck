@@ -4650,7 +4650,29 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "ok" )
 		{
 			//cout << "OKAY!!!" << endl;
-			lights.push_back( new StaticLight( Color::Green, lightPos ) );
+
+			int red;
+			int green;
+			int blue;
+
+			stringstream ss;
+			string redstr = p->textBoxes["red"]->text.getString().toAnsiString();
+			string greenstr = p->textBoxes["green"]->text.getString().toAnsiString();
+			string bluestr = p->textBoxes["blue"]->text.getString().toAnsiString();
+			ss << redstr << " " << greenstr << " " << bluestr;
+
+			ss >> red;
+			ss >> green;
+			ss >> blue;
+
+			if( ss.fail() )
+			{
+				cout << "stringstream to integer parsing error" << endl;
+				ss.clear();
+				assert( false );
+			}
+
+			lights.push_back( new StaticLight( Color( red, green, blue ), lightPos ) );
 			showPanel = NULL;
 		}
 	}
@@ -4753,8 +4775,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if( name == "light" )
 	{
-		Panel *p = new Panel( "light_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "light_options", 220, 220, this );
+		int textBoxX = 100;
+		p->AddButton( "ok", Vector2i( 100, 150 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "0" );
+		p->AddTextBox( "green", Vector2i( textBoxX, 60 ), 60, 3, "0" );
+		p->AddTextBox( "blue", Vector2i( textBoxX, 100 ), 60, 3, "0" );
+		p->AddLabel( "red_label", Vector2i( 20, 20 ), 20, "Red: " );
+		p->AddLabel( "green_label", Vector2i( 20, 60 ), 20, "Green: " );
+		p->AddLabel( "blue_label", Vector2i( 20, 100 ), 20, "Blue: " );
 		return p;
 	}
 	return NULL;
