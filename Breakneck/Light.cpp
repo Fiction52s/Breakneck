@@ -17,7 +17,7 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
 	}
 	sh.setParameter( "pos", 0, 0 );
 	//sh.setParameter( "lightpos", 0, -300 );
-	cs.setRadius( 100 );
+	cs.setRadius( 2000 );
 	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	//cs.setPosition( 0, -300 );

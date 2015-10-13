@@ -26,6 +26,36 @@ uniform vec4 LightColor2;
 uniform vec3 Falloff2;         
 uniform bool On2;
 
+uniform vec3 LightPos3;        
+uniform vec4 LightColor3;
+uniform vec3 Falloff3;         
+uniform bool On3;
+
+uniform vec3 LightPos4;
+uniform vec4 LightColor4;
+uniform vec3 Falloff4;
+uniform bool On4;
+
+uniform vec3 LightPos5;
+uniform vec4 LightColor5;
+uniform vec3 Falloff5;
+uniform bool On5;
+
+uniform vec3 LightPos6;
+uniform vec4 LightColor6;
+uniform vec3 Falloff6;
+uniform bool On6;
+
+uniform vec3 LightPos7;
+uniform vec4 LightColor7;
+uniform vec3 Falloff7;
+uniform bool On7;
+
+uniform vec3 LightPos8;
+uniform vec4 LightColor8;
+uniform vec3 Falloff8;
+uniform bool On8;
+
 uniform vec4 AmbientColor;    
 
 uniform float zoom;
@@ -43,7 +73,7 @@ uniform bool hasPowerLeftWire;
 uniform bool hasPowerRightWire;
 uniform bool hasPowerClones;
 
-const int numLights = 3;
+const int numLights = 9;
 struct LightSource
 {
 	bool on;
@@ -110,16 +140,52 @@ void main() {
 	lights[2].color = LightColor2; //vec4( 0, 0, 1, 1 );
 	lights[2].falloff = Falloff2;
 	
+	lights[3].on = On3;
+	lights[3].pos = LightPos3;
+	lights[3].color = LightColor3;
+	lights[3].falloff = Falloff3;
+	
+	lights[4].on = On4;
+	lights[4].pos = LightPos4;
+	lights[4].color = LightColor4;
+	lights[4].falloff = Falloff4;
+	
+	lights[5].on = On5;
+	lights[5].pos = LightPos5;
+	lights[5].color = LightColor5;
+	lights[5].falloff = Falloff5;
+	
+	lights[6].on = On6;
+	lights[6].pos = LightPos6;
+	lights[6].color = LightColor6;
+	lights[6].falloff = Falloff6;
+	
+	lights[7].on = On7;
+	lights[7].pos = LightPos7;
+	lights[7].color = LightColor7;
+	lights[7].falloff = Falloff7;
+	
+	lights[8].on = On8;
+	lights[8].pos = LightPos8;
+	lights[8].color = LightColor8;
+	lights[8].falloff = Falloff8;
+	
     //RGBA of our diffuse color
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );//vec4( 1, 1, 1, 1 );  ////
-	bool noLights = true;
+	
+	int numLightsOn = 0;
+	for( int i = 0; i < numLights; ++i )
+	{
+		if( lights[i].on )
+			numLightsOn++;	
+	}
+	
 	for( int i = 0; i < numLights;  ++i )
 	{
 		if( !lights[i].on )
 		{
 			continue;
 		}
-		noLights = false;
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
 		
 		//magenta
@@ -162,12 +228,16 @@ void main() {
 		vec3 Diffuse = (lights[i].color.rgb * lights[i].color.a) * max(dot(N, L), 0.0);
 
 		//pre-multiply ambient color with intensity
-		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLights ;
+		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLightsOn ;
 
 		//calculate attenuation
-		float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
+		//float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
+		//float Attenuation = 1.0 / (lights[i].falloff.x + (lights[i].falloff.y * D));
+		float Attenuation = ( .00000001 + ( 500.0 - D ) / 500.0 );
+		//if( D > 500 )
+		//	Attenuation = 0;
 		//Attenuation = 100;
-		Attenuation = Attenuation * 2 / zoom;
+		Attenuation = Attenuation;/// zoom;
 		//the calculation which brings it all together
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		
@@ -177,7 +247,8 @@ void main() {
 		//gl_FragColor =  gl_Color * vec4(FinalColor, DiffuseColor.a);
 	}
 	vec4 doneColor = finalfinal;//vec4(finalfinal, DiffuseColor.a);
-	if( noLights )
+	
+	if( numLightsOn == 0 )
 	{
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
 		
