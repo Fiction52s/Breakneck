@@ -7,14 +7,14 @@
 struct GameSession;
 struct Light : QuadTreeEntrant
 {
-	Light( GameSession *owner, sf::Vector2i &p, sf::Color &c );
+	Light( GameSession *owner, sf::Vector2i &p, sf::Color &c, double radius );
 	Light * next;
 	sf::Shader sh;
 	sf::CircleShape cs;
 	GameSession *owner;
 	sf::Vector3f falloff;
 	float depth;
-
+	double radius;
 	void Draw( sf::RenderTarget *target );
 
 	sf::Vector2i pos;

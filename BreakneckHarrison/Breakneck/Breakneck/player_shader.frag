@@ -231,9 +231,9 @@ void main() {
 		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLightsOn ;
 
 		//calculate attenuation
-		//float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
+		float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
 		//float Attenuation = 1.0 / (lights[i].falloff.x + (lights[i].falloff.y * D));
-		float Attenuation = ( .00000001 + ( 500.0 - D ) / 500.0 );
+		//float Attenuation = ( .00000001 + ( 500.0 - D ) / 500.0 );
 		//if( D > 500 )
 		//	Attenuation = 0;
 		//Attenuation = 100;

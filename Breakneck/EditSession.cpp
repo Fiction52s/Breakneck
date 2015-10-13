@@ -645,16 +645,18 @@ void TerrainPolygon::ShowGrass( bool show )
 	}
 }
 
-StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos )
-	:color( c ), position( pos )
+StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos, int rad )
+	:color( c ), position( pos ), radius( rad )
 {
 }
 
 void StaticLight::Draw( RenderTarget *target )
 {
 	CircleShape cs;
+	Color c = color;
+	c.a = 100;
 	cs.setFillColor( color );
-	cs.setRadius( 10 );
+	cs.setRadius( radius );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
@@ -900,7 +902,7 @@ bool EditSession::OpenFile( string fileName )
 			is >> g;
 			is >> b;
 
-			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ) ) );
+			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ) , 100 ) );
 		}
 
 
@@ -1671,6 +1673,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.
 	//rtt.create( 400, 400 );
 	//rtt.clear();
+
+	radiusOption = false;
+	lightPosDown = false;
 
 	showGrass = false;
 
@@ -2965,6 +2970,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else
 								{
+									lightPosDown = true;
 									lightPos = Vector2i( worldPos.x, worldPos.y );
 								}
 							}
@@ -2980,8 +2986,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( showPanel == NULL )
 								{
+									//if( !radiusOption )
+									//{
+									//	radiusOption = true;
+									//}
+									//else
+									//{
+									//	radiusOption = false;
+									lightPosDown = false;
+										showPanel = lightPanel;
+									//}
 									//cout << "make light panel" << endl;
-									showPanel = lightPanel;
+									//showPanel = lightPanel;
 								}
 							}
 							break;
@@ -4027,6 +4043,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		}
 
+
 		playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
 		w->draw( playerSprite );
@@ -4110,6 +4127,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			for( int i = 0; i < numLines * 8; ++i )
 			{
 				graphLines[i].position -= adjustment;
+			}
+		}
+
+		if( mode == CREATE_LIGHTS )
+		{
+			if( lightPosDown || showPanel )
+			{
+				CircleShape cs;
+				if( lightPosDown )
+				{
+					lightRadius = length( V2d( lightPos.x, lightPos.y ) - worldPos );
+				}
+				cs.setRadius( lightRadius );
+				cs.setFillColor( Color::White );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setPosition( lightPos.x, lightPos.y );
+				w->draw( cs );
 			}
 		}
 
@@ -4672,7 +4706,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			lights.push_back( new StaticLight( Color( red, green, blue ), lightPos ) );
+			lights.push_back( new StaticLight( Color( red, green, blue ), lightPos, lightRadius ) );
 			showPanel = NULL;
 		}
 	}
@@ -4778,7 +4812,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		Panel *p = new Panel( "light_options", 220, 220, this );
 		int textBoxX = 100;
 		p->AddButton( "ok", Vector2i( 100, 150 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "0" );
+		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "255" );
 		p->AddTextBox( "green", Vector2i( textBoxX, 60 ), 60, 3, "0" );
 		p->AddTextBox( "blue", Vector2i( textBoxX, 100 ), 60, 3, "0" );
 		p->AddLabel( "red_label", Vector2i( 20, 20 ), 20, "Red: " );

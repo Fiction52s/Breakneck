@@ -5,9 +5,10 @@
 
 using namespace sf;
 using namespace std;
-Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
+Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
 	:color( c ), pos( p ), next( NULL )
 {
+	radius = rad;
 	owner = own;
 	if (!sh.loadFromFile("light_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -17,7 +18,7 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c )
 	}
 	sh.setParameter( "pos", 0, 0 );
 	//sh.setParameter( "lightpos", 0, -300 );
-	cs.setRadius( 2000 );
+	cs.setRadius( rad );
 	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	//cs.setPosition( 0, -300 );
