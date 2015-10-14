@@ -191,7 +191,7 @@ Actor::Actor( GameSession *gs )
 		}
 
 		queryMode = "";
-		wallThresh = .999;
+		wallThresh = .9999;
 		//tileset setup
 		{
 		actionLength[DAIR] = 10 * 2;

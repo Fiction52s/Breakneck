@@ -1080,8 +1080,7 @@ bool GameSession::OpenFile( string fileName )
 			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), 100 );
 			lightTree->Insert( light );
 		}
-		cout << "loaded to here" << endl;
-
+		cout << "loaded to here" << endl;		
 
 		int numGroups;
 		is >> numGroups;

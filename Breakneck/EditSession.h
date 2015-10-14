@@ -44,11 +44,12 @@ struct TerrainPolygon
 	void RemoveSelectedPoints();
 	void Finalize();
 	void Reset();
-	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt);
+	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
 	bool IsClockwise();
 	void UpdateGrass();
 	void ShowGrass( bool show );
+	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
@@ -156,7 +157,18 @@ struct EditSession : GUIHandler
 
 	bool makingRect;
 	sf::Vector2i rectStart;
-	
+
+
+
+	void ExtendPolygon();
+	bool showPoints;
+	TerrainPolygon *extendingPolygon;
+	TerrainPoint *extendingPoint;
+
+
+
+
+
 	bool showTerrainPath;
 	
 	sf::RenderWindow *w;

@@ -490,6 +490,8 @@ int main()
 	window->setVerticalSyncEnabled( true );
 	//test.clear();
 
+
+
 	sf::Music titleMusic;
 	if( !titleMusic.openFromFile( "titletheme.ogg" ))
 		assert( false && "no music found" );
