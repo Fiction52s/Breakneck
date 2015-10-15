@@ -1549,41 +1549,74 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	Vector2i startPoint;
 	bool startPointFound = false;
+	bool firstPolygon = true;
+
 
 	TerrainPolygon *currentPoly = NULL;
 	TerrainPolygon *otherPoly = NULL;
 	PointList::iterator it = poly->points.begin();
+	PointList::iterator startIt;
+
+	TerrainPolygon *minPoly = NULL;
 
 	for(; it != poly->points.end(); ++it )
 	{
-		if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
+		//if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
+		//{
+			if( !startPointFound )
+			{
+				startPoint = (*it).pos;
+				startIt = it;
+				startPointFound = true;
+			}
+			else
+			{
+				if( (*it).pos.y > startPoint.y )
+				{
+					startPoint = (*it).pos;
+					startIt = it;
+				}
+			}
+		//}
+	}
+	
+	it = brush->points.begin();
+	for(; it != brush->points.end(); ++it )
+	{
+		//if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
+		if( !startPointFound )
 		{
 			startPoint = (*it).pos;
 			startPointFound = true;
-			currentPoly = poly;
-			otherPoly = brush;
-			break;
+			firstPolygon = false;
+			startIt = it;
 		}
-	}
-
-	if( !startPointFound )
-	{
-		it = brush->points.begin();
-		for(; it != brush->points.end(); ++it )
+		else
 		{
-			if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
+			if( (*it).pos.y > startPoint.y )
 			{
 				startPoint = (*it).pos;
-				startPointFound = true;
-				currentPoly = brush;
-				otherPoly = poly;
-				break;
+				firstPolygon = false;
+				startIt = it;
 			}
 		}
 	}
 
+	if( firstPolygon )
+	{
+		currentPoly = poly;
+		otherPoly = brush;
+	}
+	else
+	{
+		currentPoly = brush;
+		otherPoly = poly;
+	}
+	
+
 	assert( startPointFound );
 	
+	it = startIt;
 	Vector2i currPoint = startPoint;
 	++it;
 	if( it == currentPoly->points.end() )
@@ -1603,15 +1636,6 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	bool firstTime = true;
 	while( firstTime || currPoint != startPoint )
 	{
-	//	sf::Time time = alphaClock.getElapsedTime();
-	//	if( time.asSeconds() > 15 )
-	//	{
-	//		polygonTimeoutTextTimer = 0;
-	//		cout << "successful error" << endl;
-	//		return;
-	//	}
-		//cout << "start loop: " << currPoint.x << ", " << currPoint.y << endl;
-
 		CircleShape cs;
 		cs.setRadius( 30  );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
