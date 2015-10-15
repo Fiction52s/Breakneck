@@ -484,7 +484,7 @@ int main()
         //sf::RenderWindow window(i.front(), "SFML WORKS!", sf::Style::Fullscreen);
 		//window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 		//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-		window = new sf::RenderWindow( i.front(), "Breakneck", sf::Style::None );
+		window = new sf::RenderWindow( i.front(), "Breakneck", sf::Style::Default );
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 	window->setVerticalSyncEnabled( true );

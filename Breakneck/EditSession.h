@@ -26,6 +26,7 @@ struct GrassSeg
 struct TerrainPoint
 {
 	TerrainPoint( sf::Vector2i &pos, bool selected );
+
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
@@ -146,6 +147,8 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
+	bool IsPointValid( sf::Vector2i point, TerrainPolygon *poly );
+	int validityRadius;
 	bool showGrass;
 	sf::Texture grassTex;
 	bool pointGrab;

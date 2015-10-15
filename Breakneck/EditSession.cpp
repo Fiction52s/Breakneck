@@ -302,57 +302,63 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 	}
 
 	PointList newList;
+	inProgress->points.push_back( *endPoint );
+	bool inProgresscw = inProgress->IsClockwise();
+	if( !inProgresscw )
+	{
+		inProgress->FixWinding();
+		if( startFirst )
+		{
+			PointList::iterator temp = endIt;
+			endIt = startIt;
+			startIt = temp;
+			startFirst = false;
+			inProgresscw = true;
+		}
+		else
+		{
+			PointList::iterator temp = endIt;
+			endIt = startIt;
+			startIt = temp;
+			startFirst = true;
+			inProgresscw = true;
+			//cout << "changing" << endl;
+		}
+	}
+
+	inProgress->points.pop_back();
+
 	if( startFirst )
 	{	
 		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 		{
-			cout << "normal type: " << inProgress->IsClockwise() << endl;
+			cout << "normal type: " << inProgresscw << endl;
 			if( it == startIt )
 			{
-				if( inProgress->IsClockwise() )
+				for( PointList::iterator pit = inProgress->points.begin(); pit != inProgress->points.end(); ++pit )
 				{
-					for( PointList::iterator pit = inProgress->points.begin(); pit != inProgress->points.end(); ++pit )
-					{
-						newList.push_back( (*pit) );
-					}
+					newList.push_back( (*pit) );
 				}
-				else
-				{
-					for( PointList::reverse_iterator pit = inProgress->points.rbegin(); pit != inProgress->points.rend(); ++pit )
-					{
-						newList.push_back( (*pit) );
-					}
-				}
+
 				it = endIt;
-				newList.push_back( (*endIt ) );
+				newList.push_back( (*endIt ) );	
 			}
 			else
 			{
 				newList.push_back( (*it) );
 			}
 		}
-	}
-	else
+	}	else
 	{
-		cout << "other type: " << inProgress->IsClockwise() << endl;
+		cout << "other type: " << inProgresscw << endl;
 		for( PointList::iterator it = endIt; it != points.end(); ++it )
 		{
 			if( it == startIt )
-			{
-				if( inProgress->IsClockwise() )
+			{	
+				for( PointList::iterator pit = inProgress->points.begin(); pit != inProgress->points.end(); ++pit )
 				{
-					for( PointList::reverse_iterator pit = inProgress->points.rbegin(); pit != inProgress->points.rend(); ++pit )
-					{
-						newList.push_back( (*pit) );
-					}
-				}
-				else
-				{
-					for( PointList::iterator pit = inProgress->points.begin(); pit != inProgress->points.end(); ++pit )
-					{
-						newList.push_back( (*pit) );
-					}
-				}
+					newList.push_back( (*pit) );
+				}	
 				break;
 			}
 			else
@@ -1801,6 +1807,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
+	validityRadius = 8;
+
+	extendingPolygon = NULL;
+	extendingPoint = NULL;
+
 	radiusOption = false;
 	lightPosDown = false;
 
@@ -2189,6 +2200,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPoints = true;
 									extendingPolygon = NULL;
 									extendingPoint = NULL;
+									polygonInProgress->points.clear();
 								}
 							}
 							
@@ -2201,6 +2213,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								showPoints = false;
 								extendingPolygon = NULL;
 								extendingPoint = NULL;
+								polygonInProgress->points.clear();
 							}
 							break;
 						}
@@ -3510,6 +3523,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						
 						Vector2i worldi( testPoint.x, testPoint.y );
 
+						bool okay = true;
+						if( extendingPolygon != NULL && polygonInProgress->points.size() > 0 )
+						{
+							okay = IsPointValid( worldi, extendingPolygon ) && !extendingPolygon->ContainsPoint( testPoint );
+						}
+
 						bool done = false;
 						if( extendingPolygon != NULL )
 						{
@@ -3589,7 +3608,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 
 
-						if( !done )
+						if( !done && okay )
 						{
 
 							if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
@@ -5168,6 +5187,47 @@ void EditSession::ExtendPolygon()
 
 
 	polygonInProgress->Reset();
+}
+
+bool EditSession::IsPointValid( sf::Vector2i point, TerrainPolygon *poly )
+{
+	cout << "checking if the point is valid!!" << endl;
+	//check distance from points first
+
+	V2d p( point.x, point.y );
+	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+	{
+		V2d temp( (*it).pos.x, (*it).pos.y );
+		if( length( p - temp ) < validityRadius )
+		{
+			cout << "false type one" << endl;
+			return false;
+		}
+	}
+	PointList::iterator it = poly->points.begin();
+	PointList::iterator prev = poly->points.end(); 
+	--prev;
+	for( ; it != poly->points.end(); ++it )
+	{
+		V2d v0 = V2d( (*prev).pos.x, (*prev).pos.y );
+		V2d v1 = V2d( (*it).pos.x, (*it).pos.y );
+		V2d edgeDir = normalize( v1 - v0 );
+
+		double quant = dot( p - v0, edgeDir );
+		double offQuant = cross( p - v0, edgeDir );
+		bool nearOnAxis = quant >= 0 || quant <= length( v1 - v0 );
+		bool nearOffAxis = abs( offQuant ) < validityRadius;
+
+		if( nearOnAxis && nearOffAxis )
+		{
+			cout << "false type two" << endl;
+			return false;
+		}
+		prev = it;
+	}
+
+
+	return true;
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )
