@@ -3526,8 +3526,66 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						bool okay = true;
 						if( extendingPolygon != NULL && polygonInProgress->points.size() > 0 )
 						{
-							okay = IsPointValid( worldi, extendingPolygon ) && !extendingPolygon->ContainsPoint( testPoint );
+							okay = !extendingPolygon->ContainsPoint( testPoint );
+							
+
+							if( okay )
+							{
+							PointList::iterator okayIt = extendingPolygon->points.begin(); 
+							PointList::iterator okayPrev = extendingPolygon->points.end();
+							--okayPrev;
+							for( ; okayIt != extendingPolygon->points.end(); ++okayIt )
+							{
+								
+								//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
+								Vector2i a = polygonInProgress->points.back().pos;
+								Vector2i b = worldi;
+								Vector2i c = (*okayPrev).pos;
+								Vector2i d = (*okayIt).pos;
+								LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
+											V2d( c.x, c.y ), V2d( d.x, d.y ) );
+								if( !li.parallel )
+								{
+									double e1Left = std::min( a.x, b.x );
+									double e1Right = std::max( a.x, b.x );
+									double e1Top = std::min( a.y, b.y );
+									double e1Bottom = std::max( a.y, b.y );
+
+									double e2Left = std::min( c.x, d.x );
+									double e2Right = std::max( c.x, d.x );
+									double e2Top = std::min( c.y, d.y );
+									double e2Bottom = std::max( c.y, d.y );
+									//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
+									//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
+									if( e1Left < e2Right && e1Right > e2Left && e1Top < e2Bottom && e1Bottom > e2Top )
+									{
+										//cout << "---!!!!!!" << endl;
+										if( li.position.x < e1Right && li.position.x > e1Left && li.position.y > e1Top && li.position.y < e1Bottom)
+										{
+											if( li.position.x < e2Right && li.position.x > e2Left && li.position.y > e2Top && li.position.y < e2Bottom)
+											{
+												//okay = false;
+												//break;
+												cout << "okay is false" << endl;
+												okay = false;
+												break;
+												//cout << "seg intersect!!!!!!" << endl;
+												//assert( 0 );
+												//return li;
+
+											}
+										}
+									}
+								}
+							}
+								
+							okayPrev = okayIt;
+							}
+							// &&  IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
+							//okay = IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
 						}
+
+						
 
 						bool done = false;
 						if( extendingPolygon != NULL )
@@ -3544,59 +3602,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									//ExtendPolygon();
 									extendingPolygon->Extend( extendingPoint, &(*pit), polygonInProgress );
-									polygonInProgress->points.clear();
+
+									ExtendAdd();
+
+									//polygonInProgress->points.clear();
+									//polygonInProgress->Reset();
 									//cout << "EXTENDING POLYGON" << endl;
-									/*list<TerrainPolygon*>::iterator it = polygons.begin();
-									bool added = false;
-									polygonInProgress->Finalize();
-									bool recursionDone = false;
-									TerrainPolygon *currentBrush = polygonInProgress;
+									
 
-										while( it != polygons.end() )
-										{
-											TerrainPolygon *temp = (*it);
-											if( temp != currentBrush && currentBrush->IsTouching( temp ) )
-											{
-												cout << "before addi: " << (*it)->points.size() << endl;
-						
-												Add( currentBrush, temp );
-
-												polygonInProgress->Reset();
-						
-												cout << "after adding: " << (*it)->points.size() << endl;
-												polygons.erase( it );
-
-												currentBrush = temp;
-
-												it = polygons.begin();
-
-												added = true;
-							
-												continue;
-											}
-											else
-											{
-												//cout << "not" << endl;
-											}
-											++it;
-										}
-				
-									//add final check for validity here
-				
-									if( !added )
-									{
-										polygonInProgress->Finalize();
-										polygons.push_back( polygonInProgress );
-										polygonInProgress = new TerrainPolygon(&grassTex );
-									}
-									else
-									{
-
-										polygons.push_back( currentBrush );
-										polygonInProgress->Reset();
-									}*/
-
-
+									polygonInProgress->Reset();
 
 									extendingPolygon = NULL;
 									extendingPoint = NULL;
@@ -3610,28 +3624,43 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 						if( !done && okay )
 						{
-
-							if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
-								polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+							bool validNearPolys = true;
+							if( polygonInProgress->points.size() > 0 )
 							{
-								if( PointValid( polygonInProgress->points.back().pos, worldi ) )
+								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 								{
-									polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+									if( !IsPointValid( polygonInProgress->points.back().pos, worldi, (*it) ) )
+									{
+										validNearPolys = false;
+										break;
+									}
 								}
 							}
-							else if( polygonInProgress->points.empty() )
+
+							if( validNearPolys )
 							{
-								if( extendingPolygon != NULL )
+								if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
+									polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 								{
-									polygonInProgress->points.push_back( *extendingPoint );
+									if( PointValid( polygonInProgress->points.back().pos, worldi ) )
+									{
+										polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+									}
 								}
-								else
+								else if( polygonInProgress->points.empty() )
 								{
-									polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
-								}
-								//cout << "showPoints: " << showPoints << ", " << (extendingPolygon == NULL) << endl;
+									if( extendingPolygon != NULL )
+									{
+										polygonInProgress->points.push_back( *extendingPoint );
+									}
+									else
+									{
+										polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+									}
+									//cout << "showPoints: " << showPoints << ", " << (extendingPolygon == NULL) << endl;
 								
 							
+								}
 							}
 						}
 					}
@@ -5130,10 +5159,6 @@ void EditSession::ExtendPolygon()
 	{
 		//test final line
 
-		
-
-
-
 		list<TerrainPolygon*>::iterator it = polygons.begin();
 		bool added = false;
 		polygonInProgress->Finalize();
@@ -5173,15 +5198,14 @@ void EditSession::ExtendPolygon()
 				
 		if( !added )
 		{
-			polygonInProgress->Finalize();
-			polygons.push_back( polygonInProgress );
-			polygonInProgress = new TerrainPolygon(&grassTex );
+			//polygonInProgress->Finalize();
+			//polygons.push_back( polygonInProgress );
+			//polygonInProgress = new TerrainPolygon(&grassTex );
 		}
 		else
 		{
-
 			polygons.push_back( currentBrush );
-			polygonInProgress->Reset();
+			//polygonInProgress->Reset();
 		}
 	}
 
@@ -5189,9 +5213,9 @@ void EditSession::ExtendPolygon()
 	polygonInProgress->Reset();
 }
 
-bool EditSession::IsPointValid( sf::Vector2i point, TerrainPolygon *poly )
+bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly )
 {
-	cout << "checking if the point is valid!!" << endl;
+	//cout << "checking if the point is valid!!" << endl;
 	//check distance from points first
 
 	V2d p( point.x, point.y );
@@ -5200,7 +5224,7 @@ bool EditSession::IsPointValid( sf::Vector2i point, TerrainPolygon *poly )
 		V2d temp( (*it).pos.x, (*it).pos.y );
 		if( length( p - temp ) < validityRadius )
 		{
-			cout << "false type one" << endl;
+		//	cout << "false type one" << endl;
 			return false;
 		}
 	}
@@ -5215,19 +5239,79 @@ bool EditSession::IsPointValid( sf::Vector2i point, TerrainPolygon *poly )
 
 		double quant = dot( p - v0, edgeDir );
 		double offQuant = cross( p - v0, edgeDir );
-		bool nearOnAxis = quant >= 0 || quant <= length( v1 - v0 );
+		//cout << "quant: " << quant << ", l: " << length( v1 - v0 ) << endl;
+		bool nearOnAxis = quant >= 0 && quant <= length( v1 - v0 );
 		bool nearOffAxis = abs( offQuant ) < validityRadius;
 
 		if( nearOnAxis && nearOffAxis )
 		{
-			cout << "false type two" << endl;
+		//	cout << "false type two" << endl;
 			return false;
 		}
+
+
 		prev = it;
 	}
 
 
 	return true;
+}
+
+void EditSession::ExtendAdd()
+{
+	list<TerrainPolygon*>::iterator it = polygons.begin();
+	bool added = false;
+	//polygonInProgress->Finalize();
+	bool recursionDone = false;
+	TerrainPolygon *currentBrush = extendingPolygon;
+
+	showPoints = false;
+	extendingPolygon = NULL;
+	extendingPoint = NULL;
+
+	while( it != polygons.end() )
+	{
+		TerrainPolygon *temp = (*it);
+		if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+		{
+			//cout << "before addi: " << (*it)->points.size() << endl;
+						
+			Add( currentBrush, temp );
+
+			//polygonInProgress->Reset();
+						
+			//cout << "after adding: " << (*it)->points.size() << endl;
+			polygons.erase( it );
+
+			currentBrush = temp;
+
+			it = polygons.begin();
+
+			added = true;
+							
+			continue;
+		}
+		else
+		{
+			//cout << "not" << endl;
+		}
+		++it;
+	}
+				
+	//add final check for validity here
+				
+	if( !added )
+	{
+		//polygonInProgress->Finalize();
+		//polygons.push_back( polygonInProgress );
+		//polygonInProgress = new TerrainPolygon( &grassTex );
+	}
+	else
+	{
+
+		polygons.push_back( currentBrush );
+		//polygonInProgress->Reset();
+	}
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )

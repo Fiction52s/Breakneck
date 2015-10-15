@@ -147,7 +147,8 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
-	bool IsPointValid( sf::Vector2i point, TerrainPolygon *poly );
+	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
+	void ExtendAdd();
 	int validityRadius;
 	bool showGrass;
 	sf::Texture grassTex;
