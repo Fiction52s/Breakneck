@@ -1612,7 +1612,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	//	}
 		//cout << "start loop: " << currPoint.x << ", " << currPoint.y << endl;
 
-		/*CircleShape cs;
+		CircleShape cs;
 		cs.setRadius( 30  );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setFillColor( Color::Magenta );
@@ -1625,7 +1625,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		cs.setFillColor( Color::Yellow );
 		w->draw( cs );
 
-		w->display();*/
+		w->display();
 
 		
 		PointList::iterator min;
@@ -1807,7 +1807,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
-	validityRadius = 8;
+	validityRadius = 2;
 
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
@@ -2110,8 +2110,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									//test final line
 
-									if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
-										break;
+									for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+									{
+										if( !IsPointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
+										{
+											break;
+										}
+									}
+									
+									//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
+									//	break;
 
 									list<TerrainPolygon*>::iterator it = polygons.begin();
 									bool added = false;
@@ -5249,9 +5257,28 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 			return false;
 		}
 
+		V2d pointDir;
+		pointDir.x = point.x - oldPoint.x;
+		pointDir.y = point.y - oldPoint.y;
+		pointDir = normalize( pointDir );
+
+		V2d old( oldPoint.x, oldPoint.y );
+		double otherQuant = dot( v1 - old, pointDir );
+		double otherOffQuant = cross( v1 - old, pointDir );
+		
+		bool otherNearOnAxis = otherQuant >= 0 && otherQuant <= length( V2d( point.x, point.y ) - old );
+		bool otherNearOffAxis = abs( otherOffQuant ) < validityRadius;
+
+		if( otherNearOnAxis && otherNearOffAxis )
+		{
+			return false;
+		}
+
 
 		prev = it;
 	}
+
+	
 
 
 	return true;
