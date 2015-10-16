@@ -1684,8 +1684,8 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			otherNextPoint = (*otherIt).pos;
 			LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-			cout << "li.par: " << li.parallel << ", others: lii: " << lii.x << ", " << lii.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
-			if( !li.parallel && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
+			//cout << "li.par: " << li.parallel << ", others: lii: " << lii.x << ", " << lii.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
+			if( !li.parallel && ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
 			{
 				if( emptyInter )
 				{
@@ -1730,8 +1730,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			otherPoly = temp;
 			it = min;
 			
-			cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << ", from: " <<
-				currPoint.x << ", " << currPoint.y << endl;
+			cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
 
 			currPoint = minIntersection;
 
@@ -1747,7 +1746,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 			z.points.push_back( TerrainPoint( currPoint, false ) );
 
-		//	cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
+			cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
 			if( currPoint == startPoint && !firstTime )
 				break;
@@ -1765,9 +1764,11 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	}
 
 	poly->Reset();
+	//cout << "poly size: " << z.points.size() << endl;
 	for( PointList::iterator zit = z.points.begin(); zit != z.points.end(); ++zit )
 	{
 		poly->points.push_back( (*zit) );
+	//	cout << (*zit).pos.x << ", " << (*zit).pos.y << endl;
 	}
 	//cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 	poly->Finalize();
@@ -1819,7 +1820,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
-	validityRadius = 3;
+	validityRadius = 4;
 
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
@@ -2128,61 +2129,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									PointList::iterator prevIt = testIt;
 									testIt++;
 
-									cout << "lastline: " << polygonInProgress->points.back().pos.x << ", " << polygonInProgress->points.back().pos.y <<
-										" .. " << polygonInProgress->points.front().pos.x << ", " << polygonInProgress->points.front().pos.y << endl;
+									//cout << "lastline: " << polygonInProgress->points.back().pos.x << ", " << polygonInProgress->points.back().pos.y <<
+									//	" .. " << polygonInProgress->points.front().pos.x << ", " << polygonInProgress->points.front().pos.y << endl;
 									for( ; testIt != polygonInProgress->points.end(); ++testIt )
 									{
-										//LineIntersection li = SegmentIntersect( (*prevIt).pos, 
-										//	polygonInProgress->points.back().pos, (*testIt).pos, polygonInProgress->points.front().pos );
-										//Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-										//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-
 										Vector2i a = (*prevIt).pos;
 										Vector2i b = (*testIt).pos;
 										Vector2i c = polygonInProgress->points.back().pos;
 										Vector2i d = polygonInProgress->points.front().pos;
-
-										LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
-													V2d( c.x, c.y ), V2d( d.x, d.y ) );
+										LineIntersection li = SegmentIntersect( a,b,c,d );
 										Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-										//cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y << endl;
-										//cout << "c: " << c.x << ", " << c.y << ", d: " << d.x << ", " << d.y << endl;
-										if( !li.parallel )
+										//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
+										if( !li.parallel && lii != a && lii != b && lii != c && lii != d )
 										{
-											double e1Left = std::min( a.x, b.x );
-											double e1Right = std::max( a.x, b.x );
-											double e1Top = std::min( a.y, b.y );
-											double e1Bottom = std::max( a.y, b.y );
-
-											double e2Left = std::min( c.x, d.x );
-											double e2Right = std::max( c.x, d.x );
-											double e2Top = std::min( c.y, d.y );
-											double e2Bottom = std::max( c.y, d.y );
-
-											
-											
-											if( lii != a && lii != b && lii != c && lii != d )
-											{
-												/*cout << "intersection: " << li.position.x << ", " << li.position.y << endl;
-												cout << "e1: l: " << e1Left << ", r: " << e1Right << ", t: " << e1Top << ", b: " << e1Bottom << endl;
-												cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y << endl;
-												cout << "e2: l: " << e2Left << ", r: " << e2Right << ", t: " << e2Top << ", b: " << e2Bottom << endl;*/
-												//cout << "c: " << c.x << ", " << c.y << ", d: " << d.x << ", " << d.y << endl;
-
-												if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
-												{
-													if( li.position.x < e1Right && li.position.x > e1Left && li.position.y > e1Top && li.position.y < e1Bottom)
-													{
-														if( li.position.x < e2Right && li.position.x > e2Left && li.position.y > e2Top && li.position.y < e2Bottom)
-														{
-															valid = false;
-															cout << "valid is false"  << endl;
-															break;
-														}
-													}
-												}
-											}
+											valid = false;
 										}
+
+										
 
 										prevIt = testIt;
 									}
@@ -3624,61 +3587,38 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( okay )
 							{
-							PointList::iterator okayIt = extendingPolygon->points.begin(); 
-							PointList::iterator okayPrev = extendingPolygon->points.end();
-							--okayPrev;
-							for( ; okayIt != extendingPolygon->points.end(); ++okayIt )
-							{
-								
-								//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
-								Vector2i a = polygonInProgress->points.back().pos;
-								Vector2i b = worldi;
-								Vector2i c = (*okayPrev).pos;
-								Vector2i d = (*okayIt).pos;
-								LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
-											V2d( c.x, c.y ), V2d( d.x, d.y ) );
-								if( !li.parallel )
+								PointList::iterator okayIt = extendingPolygon->points.begin(); 
+								PointList::iterator okayPrev = extendingPolygon->points.end();
+								--okayPrev;
+								for( ; okayIt != extendingPolygon->points.end(); ++okayIt )
 								{
-									double e1Left = std::min( a.x, b.x );
-									double e1Right = std::max( a.x, b.x );
-									double e1Top = std::min( a.y, b.y );
-									double e1Bottom = std::max( a.y, b.y );
-
-									double e2Left = std::min( c.x, d.x );
-									double e2Right = std::max( c.x, d.x );
-									double e2Top = std::min( c.y, d.y );
-									double e2Bottom = std::max( c.y, d.y );
-									//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
-									//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
-									if( e1Left < e2Right && e1Right > e2Left && e1Top < e2Bottom && e1Bottom > e2Top )
-									{
-										//cout << "---!!!!!!" << endl;
-										if( li.position.x < e1Right && li.position.x > e1Left && li.position.y > e1Top && li.position.y < e1Bottom)
-										{
-											if( li.position.x < e2Right && li.position.x > e2Left && li.position.y > e2Top && li.position.y < e2Bottom)
-											{
-												//okay = false;
-												//break;
-												cout << "okay is false" << endl;
-												okay = false;
-												break;
-												//cout << "seg intersect!!!!!!" << endl;
-												//assert( 0 );
-												//return li;
-
-											}
-										}
-									}
-								}
-							}
 								
-							okayPrev = okayIt;
+									//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
+									Vector2i a = polygonInProgress->points.back().pos;
+									Vector2i b = worldi;
+									Vector2i c = (*okayPrev).pos;
+									Vector2i d = (*okayIt).pos;
+
+								
+									LineIntersection li = SegmentIntersect( a,b,c,d );
+									Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+									//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
+									if( !li.parallel && lii != a && lii != b && lii != c && lii != d )
+									{
+										okay = false;
+										break;
+									}
+									okayPrev = okayIt;
+								}
+								
+								
 							}
 							// &&  IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
 							//okay = IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
 						}
 
 						
+						//okay = true;
 
 						bool done = false;
 						if( extendingPolygon != NULL )
@@ -3714,7 +3654,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 						}
 
-
+						//okay = true;
 						if( !done && okay )
 						{
 							bool validNearPolys = true;
@@ -5312,12 +5252,13 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	//check distance from points first
 
 	V2d p( point.x, point.y );
+	cout << "p: " << p.x << ", " << p.y << endl;
 	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
 	{
 		V2d temp( (*it).pos.x, (*it).pos.y );
 		if( length( p - temp ) < validityRadius )
 		{
-		//	cout << "false type one" << endl;
+			cout << "false type one:" << length( p - temp ) << " .. " << temp.x << ", " << temp.y << ", p: " << p.x << ", " << p.y << endl;
 			return false;
 		}
 	}
@@ -5326,6 +5267,12 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	--prev;
 	for( ; it != poly->points.end(); ++it )
 	{
+		if( (*it).pos == oldPoint || (*prev).pos == oldPoint )
+		{
+			prev = it;
+			continue;
+		}
+
 		V2d v0 = V2d( (*prev).pos.x, (*prev).pos.y );
 		V2d v1 = V2d( (*it).pos.x, (*it).pos.y );
 		V2d edgeDir = normalize( v1 - v0 );
@@ -5333,12 +5280,15 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 		double quant = dot( p - v0, edgeDir );
 		double offQuant = cross( p - v0, edgeDir );
 		//cout << "quant: " << quant << ", l: " << length( v1 - v0 ) << endl;
-		bool nearOnAxis = quant >= 0 && quant <= length( v1 - v0 );
+		bool nearOnAxis = quant > 0 && quant < length( v1 - v0 );
 		bool nearOffAxis = abs( offQuant ) < validityRadius;
 
 		if( nearOnAxis && nearOffAxis )
 		{
-		//	cout << "false type two" << endl;
+			cout << "false type two. quant:" << quant << ", offquant: " << offQuant << endl;
+			cout << "p: " << p.x << ", " << p.y << endl;
+			cout << "v0: " << v0.x << ", " << v0.y << endl;
+			cout << "v1: " << v1.x << ", " << v1.y << endl;
 			return false;
 		}
 
@@ -5351,11 +5301,12 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 		double otherQuant = dot( v1 - old, pointDir );
 		double otherOffQuant = cross( v1 - old, pointDir );
 		
-		bool otherNearOnAxis = otherQuant >= 0 && otherQuant <= length( V2d( point.x, point.y ) - old );
+		bool otherNearOnAxis = otherQuant > 0 && otherQuant < length( V2d( point.x, point.y ) - old );
 		bool otherNearOffAxis = abs( otherOffQuant ) < validityRadius;
 
 		if( otherNearOnAxis && otherNearOffAxis )
 		{
+			cout << "false type three. quant: " << otherQuant << ", offQuant: " << otherOffQuant << endl;
 			return false;
 		}
 
@@ -5387,8 +5338,22 @@ void EditSession::ExtendAdd()
 		if( temp != currentBrush && currentBrush->IsTouching( temp ) )
 		{
 			//cout << "before addi: " << (*it)->points.size() << endl;
-						
+			/*cout << "currisze: " << currentBrush->points.size() << ", tempsize: " << temp->points.size() << endl;	
+			cout << "curr: "<< endl;
+			for( PointList::iterator pit = currentBrush->points.begin(); pit != currentBrush->points.end(); ++pit )
+			{
+				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
+			}
+			cout << "temp: "<< endl;
+			for( PointList::iterator pit = temp->points.begin(); pit != temp->points.end(); ++pit )
+			{
+				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
+			}*/
 			Add( currentBrush, temp );
+			
+			//currentBrush->Reset();
+			polygons.remove( currentBrush );
+			delete currentBrush;
 
 			//polygonInProgress->Reset();
 						
@@ -5398,6 +5363,8 @@ void EditSession::ExtendAdd()
 			currentBrush = temp;
 
 			it = polygons.begin();
+
+			cout << "number of polygons!: " << polygons.size() << endl;
 
 			added = true;
 							
