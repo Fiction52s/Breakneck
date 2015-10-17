@@ -26,6 +26,7 @@ struct GrassSeg
 struct TerrainPoint
 {
 	TerrainPoint( sf::Vector2i &pos, bool selected );
+
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
@@ -44,11 +45,12 @@ struct TerrainPolygon
 	void RemoveSelectedPoints();
 	void Finalize();
 	void Reset();
-	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt);
+	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
 	bool IsClockwise();
 	void UpdateGrass();
 	void ShowGrass( bool show );
+	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
@@ -73,8 +75,9 @@ struct TerrainPolygon
 
 struct StaticLight
 {
-	StaticLight( sf::Color c, sf::Vector2i &pos );
+	StaticLight( sf::Color c, sf::Vector2i &pos, int radius );
 	void Draw( sf::RenderTarget *target );
+	double radius;
 	sf::Color color;
 	sf::Vector2i position;
 	void WriteFile( std::ofstream &of );
@@ -144,6 +147,9 @@ struct EditSession : GUIHandler
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
+	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
+	void ExtendAdd();
+	int validityRadius;
 	bool showGrass;
 	sf::Texture grassTex;
 	bool pointGrab;
@@ -155,7 +161,18 @@ struct EditSession : GUIHandler
 
 	bool makingRect;
 	sf::Vector2i rectStart;
-	
+
+
+
+	void ExtendPolygon();
+	bool showPoints;
+	TerrainPolygon *extendingPolygon;
+	TerrainPoint *extendingPoint;
+
+
+
+
+
 	bool showTerrainPath;
 	
 	sf::RenderWindow *w;
@@ -180,6 +197,9 @@ struct EditSession : GUIHandler
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
+	static LineIntersection LimitSegmentIntersect( sf::Vector2i a, 
+		sf::Vector2i b, sf::Vector2i c, 
+		sf::Vector2i d );
 
 	double minimumEdgeLength;
 	double minAngle;
@@ -200,7 +220,9 @@ struct EditSession : GUIHandler
 	TerrainPolygon *enemyEdgePolygon;
 	double enemyEdgeQuantity;
 
-
+	bool radiusOption;
+	bool lightPosDown;
+	double lightRadius;
 	std::list<TerrainPolygon*> selectedPolygons;
 
 	sf::Sprite enemySprite;

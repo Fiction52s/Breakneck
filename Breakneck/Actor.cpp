@@ -55,6 +55,9 @@ Actor::Actor( GameSession *gs )
 		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
 		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
 
+		//Vector2i lightPos( position.x, position.y );
+		//Color lightColor = Color::Green;
+		//playerLight = new Light( owner, lightPos, lightColor );
 		//dashStartSound.setBuffer( testBuffer );
 		
 		slopeLaunchMinSpeed = 15;
@@ -188,7 +191,7 @@ Actor::Actor( GameSession *gs )
 		}
 
 		queryMode = "";
-		wallThresh = .999;
+		wallThresh = .9999;
 		//tileset setup
 		{
 		actionLength[DAIR] = 10 * 2;
@@ -503,19 +506,39 @@ Actor::Actor( GameSession *gs )
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 
-		hasPowerAirDash = true;
-		hasPowerGravReverse = true;
-		hasPowerBounce = true;
-		hasPowerGrindBall = true;
-		hasPowerTimeSlow = true;
 
-		//wire still under development
-		hasPowerLeftWire = true;
-		hasPowerRightWire = true;
 
+		
+
+
+		bool noPowers = false;
+		if( noPowers )
+		{
+			hasPowerAirDash = false;
+			hasPowerGravReverse = false;
+			hasPowerBounce = false;
+			hasPowerGrindBall = false;
+			hasPowerTimeSlow = false;
+			hasPowerLeftWire = false;
+			hasPowerRightWire = false;
+			hasPowerClones = 0;
+		}
+		else
+		{
+			hasPowerAirDash = true;
+			hasPowerGravReverse = true;
+			hasPowerBounce = true;
+			hasPowerGrindBall = true;
+			hasPowerTimeSlow = true;
+
+			//wire still under development
+			hasPowerLeftWire = true;
+			hasPowerRightWire = true;
+			hasPowerClones = MAX_GHOSTS;
+		}
 
 		//do this a little later.
-		hasPowerClones = MAX_GHOSTS;
+		
 
 
 		//only set these parameters again if u get a power or lose one.
@@ -1169,7 +1192,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( false ) )
 			{
-				cout << "special walljump right" << endl;
+				//cout << "special walljump right" << endl;
 				if( currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
@@ -1182,7 +1205,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{		
-				cout << "special walljump left" << endl;
+				//cout << "special walljump left" << endl;
 				if( currInput.LLeft() && !prevInput.LLeft() )
 				{
 					
@@ -3379,11 +3402,17 @@ void Actor::UpdatePrePhysics()
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
-	leftWire->ClearDebug();
-	leftWire->UpdateState( touchEdgeWithLeftWire );
+	if( hasPowerLeftWire )
+	{
+		leftWire->ClearDebug();
+		leftWire->UpdateState( touchEdgeWithLeftWire );
+	}
 
-	rightWire->ClearDebug();
-	rightWire->UpdateState( touchEdgeWithRightWire );
+	if( hasPowerRightWire )
+	{
+		rightWire->ClearDebug();
+		rightWire->UpdateState( touchEdgeWithRightWire );
+	}
 	
 
 	if( ground == NULL && bounceEdge == NULL && action != DEATH )
@@ -3516,7 +3545,7 @@ void Actor::UpdatePrePhysics()
 		//	velocity -= V2d( 0, gravity );
 		}
 		
-		double accel = 1;
+		double accel = .3;
 		double speed = dot( velocity, tes ); 
 
 		if( speed > 10 )
@@ -3527,6 +3556,67 @@ void Actor::UpdatePrePhysics()
 		{
 			speed -= accel;
 		}
+		else
+		{
+			
+		
+		}
+
+		V2d wireDir = normalize( wirePoint - position );
+		double otherAccel = .5;
+		if( abs( wireDir.x ) < .7 )
+			{
+				if( wireDir.y < 0 )
+				{
+					if( currInput.LLeft() )
+					{
+						speed -= otherAccel;
+					}
+					else if( currInput.LRight() )
+					{
+						speed += otherAccel;
+					}
+				}
+				else if( wireDir.y > 0 )
+				{
+					if( currInput.LLeft() )
+					{
+						speed += otherAccel;
+					}
+					else if( currInput.LRight() )
+					{
+						speed -= otherAccel;
+					}
+				}
+			}
+		else
+		{
+			if( wireDir.x > 0 )
+			{
+				if( currInput.LUp() )
+				{
+					speed -= otherAccel;
+				}
+				else if( currInput.LDown() )
+				{
+					speed += otherAccel;
+				}
+			}
+			else if( wireDir.x < 0 )
+			{
+				if( currInput.LUp() )
+				{
+					speed += otherAccel;
+				}
+				else if( currInput.LDown() )
+				{
+					speed -= otherAccel;
+				}
+			}
+
+			
+		}
+
 		velocity = speed * tes;
 		velocity += otherTes;
 		//velocity += otherTes;
@@ -5340,7 +5430,7 @@ void Actor::UpdatePhysics()
 									else
 									{	
 										
-										cout << "cxxxx" << endl;
+										//cout << "cxxxx" << endl;
 										ground = minContact.edge;
 										movingGround = minContact.movingPlat;
 
@@ -5818,7 +5908,7 @@ void Actor::UpdatePhysics()
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
 				movement = 0;
-				
+				cout << "bouncing: " << bounceQuant << endl;
 			//	cout << "offset now!: " << offsetX << endl;
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
@@ -6165,7 +6255,7 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-
+	
 	//rightWire->UpdateState( false );
 	if( rightWire->numPoints == 0 )
 	{
@@ -6595,19 +6685,7 @@ void Actor::UpdatePostPhysics()
 
 		if( ground != NULL )
 		{
-			double angle = 0;
-			//cout << "offsetx: " <<  offsetX << endl;
-			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 
@@ -6694,19 +6772,7 @@ void Actor::UpdatePostPhysics()
 
 		if( ground != NULL )
 		{
-			double angle = 0;
-			
-			
-			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -6788,17 +6854,7 @@ void Actor::UpdatePostPhysics()
 
 		if( ground != NULL )
 		{
-			double angle = 0;
-			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -6908,17 +6964,7 @@ void Actor::UpdatePostPhysics()
 		}
 
 
-		double angle = 0;
-		if( !approxEquals( abs(offsetX), b.rw ) )
-		{
-			if( reversed )
-					angle = PI;
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
-
+		double angle = GroundedAngle();
 		
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -6976,16 +7022,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 		
-		double angle = 0;
-		if( !approxEquals( abs(offsetX), b.rw ) )
-		{
-			if( reversed )
-					angle = PI;
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
+		double angle = GroundedAngle();
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
@@ -7062,16 +7099,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 
-		double angle = 0;
-		if( !approxEquals( abs(offsetX), b.rw ) )
-		{
-			if( reversed )
-					angle = PI;
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
+		double angle = GroundedAngle();
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
@@ -7137,21 +7165,7 @@ void Actor::UpdatePostPhysics()
 
 			
 			V2d trueNormal;
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				trueNormal = V2d( 0, -1 );
-				if( reversed )
-				{
-					angle = PI;
-					trueNormal = V2d( 0, 1 );
-				}
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-				trueNormal = gn;
-			}
+			double angle = GroundedAngleAttack( trueNormal );
 
 			if( showSword1 )
 			{
@@ -7233,21 +7247,7 @@ void Actor::UpdatePostPhysics()
 			}
 			
 			V2d trueNormal;
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				trueNormal = V2d( 0, -1 );
-				if( reversed )
-				{
-					angle = PI;
-					trueNormal = V2d( 0, 1 );
-				}
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-				trueNormal = gn;
-			}
+			double angle = GroundedAngleAttack( trueNormal );
 
 			if( showSword1 )
 			{
@@ -7324,21 +7324,7 @@ void Actor::UpdatePostPhysics()
 			}
 			
 			V2d trueNormal;
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				trueNormal = V2d( 0, -1 );
-				if( reversed )
-				{
-					angle = PI;
-					trueNormal = V2d( 0, 1 );
-				}
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-				trueNormal = gn;
-			}
+			double angle = GroundedAngleAttack( trueNormal );
 
 			if( showSword1 )
 			{
@@ -7586,16 +7572,9 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			
+			double angle = GroundedAngle();
+			
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
@@ -7937,16 +7916,7 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-						angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 		
 
@@ -8103,6 +8073,9 @@ void Actor::UpdatePostPhysics()
 			}
 
 
+			//bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
+			//	|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
@@ -8118,7 +8091,14 @@ void Actor::UpdatePostPhysics()
 
 			if( abs( bn.x ) >= wallThresh )
 			{
-				sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				if( bn.x > 0 )
+				{
+					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+				}
 			}
 			else if( bn.y <= 0 && bn.y > -steepThresh )
 			{
@@ -8157,7 +8137,8 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( bn.y > 0 )
 			{
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+				//cout << "this one" << endl;
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
 			}
 
 			
@@ -8315,47 +8296,140 @@ void Actor::UpdatePostPhysics()
 	//cout << "pos1: " << pos1.x << ", " << pos1.y << endl;
 	//cout << "pos2: " << pos2.x << ", " << pos2.y << endl;
 
-	bool on0 = false;
-	bool on1 = false;
-	bool on2 = false;
+	bool on[9];
+	for( int i = 0; i < 9; ++i )
+	{
+		on[i] = false;
+	}
 
 	if( owner->lightsAtOnce > 0 )
 	{
+		float depth0 = owner->touchedLights[0]->depth;
 		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
-		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 );
+		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, depth0 );
 		Color c0 = owner->touchedLights[0]->color;
+		Vector3f falloff0 = owner->touchedLights[0]->falloff;
 		//sh.setParameter( "On0", true );
-		on0 = true;
+		on[0] = true;
 		sh.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
 		sh.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		sh.setParameter( "Falloff0", Vector3f( 2, 3, 20 ) );
+		sh.setParameter( "Falloff0", falloff0 );
 	}
 	if( owner->lightsAtOnce > 1 )
 	{
+		float depth1 = owner->touchedLights[1]->depth;
 		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, depth1 ); 
 		Color c1 = owner->touchedLights[1]->color;
-		on1 = true;
+		Vector3f falloff1 = owner->touchedLights[1]->falloff;
+		on[1] = true;
 		//sh.setParameter( "On1", true );
 		sh.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
 		sh.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		sh.setParameter( "Falloff1", Vector3f( .4, 3, 20 ) );
+		sh.setParameter( "Falloff1", falloff1 );
 	}
 	if( owner->lightsAtOnce > 2 )
 	{
+		float depth2 = owner->touchedLights[2]->depth;
 		Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, depth2 ); 
 		Color c2 = owner->touchedLights[2]->color;
-		on2 = true;
+		Vector3f falloff2 = owner->touchedLights[2]->falloff;
+		on[2] = true;
 		//sh.setParameter( "On2", true );
 		sh.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
 		sh.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		sh.setParameter( "Falloff2", Vector3f( .4, 3, 20 ) );
+		sh.setParameter( "Falloff2", falloff2 );
 	}
-	
-	sh.setParameter( "On0", on0 );
-	sh.setParameter( "On1", on1 );
-	sh.setParameter( "On2", on2 );
+	if( owner->lightsAtOnce > 3 )
+	{
+		float depth3 = owner->touchedLights[3]->depth;
+		Vector2i vi3 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[3]->pos.x, owner->touchedLights[3]->pos.y ) );
+		Vector3f pos3( vi3.x / (float)owner->window->getSize().x, -1 + vi3.y / (float)owner->window->getSize().y, depth3 ); 
+		Color c3 = owner->touchedLights[3]->color;
+		Vector3f falloff3 = owner->touchedLights[3]->falloff;
+		
+		on[3] = true;
+		//sh.setParameter( "On3", true );
+		sh.setParameter( "LightPos3", pos3 );
+		sh.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+		sh.setParameter( "Falloff3", falloff3 );
+	}
+	if( owner->lightsAtOnce > 4 )
+	{
+		float depth4 = owner->touchedLights[4]->depth;
+		Vector2i vi4 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[4]->pos.x, owner->touchedLights[4]->pos.y ) );
+		Vector3f pos4( vi4.x / (float)owner->window->getSize().x, -1 + vi4.y / (float)owner->window->getSize().y, depth4 ); 
+		Color c4 = owner->touchedLights[4]->color;
+		Vector3f falloff4 = owner->touchedLights[4]->falloff;
+		
+		on[4] = true;
+		sh.setParameter( "LightPos4", pos4 );
+		sh.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+		sh.setParameter( "Falloff4", falloff4 );
+	}
+	if( owner->lightsAtOnce > 5 )
+	{
+		float depth5 = owner->touchedLights[5]->depth;
+		Vector2i vi5 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[5]->pos.x, owner->touchedLights[5]->pos.y ) );
+		Vector3f pos5( vi5.x / (float)owner->window->getSize().x, -1 + vi5.y / (float)owner->window->getSize().y, depth5 ); 
+		Color c5 = owner->touchedLights[5]->color;
+		Vector3f falloff5 = owner->touchedLights[5]->falloff;
+		
+		on[5] = true;
+		sh.setParameter( "LightPos5", pos5 );
+		sh.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+		sh.setParameter( "Falloff5", falloff5 );
+	}
+	if( owner->lightsAtOnce > 6 )
+	{
+		float depth6 = owner->touchedLights[6]->depth;
+		Vector2i vi6 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[6]->pos.x, owner->touchedLights[6]->pos.y ) );
+		Vector3f pos6( vi6.x / (float)owner->window->getSize().x, -1 + vi6.y / (float)owner->window->getSize().y, depth6 ); 
+		Color c6 = owner->touchedLights[6]->color;
+		Vector3f falloff6 = owner->touchedLights[6]->falloff;
+		
+		on[6] = true;
+		sh.setParameter( "LightPos6", pos6 );
+		sh.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+		sh.setParameter( "Falloff6", falloff6 );
+	}
+	if( owner->lightsAtOnce > 7 )
+	{
+		float depth7 = owner->touchedLights[7]->depth;
+		Vector2i vi7 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[7]->pos.x, owner->touchedLights[7]->pos.y ) );
+		Vector3f pos7( vi7.x / (float)owner->window->getSize().x, -1 + vi7.y / (float)owner->window->getSize().y, depth7 ); 
+		Color c7 = owner->touchedLights[7]->color;
+		Vector3f falloff7 = owner->touchedLights[7]->falloff;
+		
+		on[7] = true;
+		sh.setParameter( "LightPos7", pos7 );
+		sh.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+		sh.setParameter( "Falloff7", falloff7 );
+	}
+	if( owner->lightsAtOnce > 8 )
+	{
+		float depth8 = owner->touchedLights[8]->depth;
+		Vector2i vi8 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[8]->pos.x, owner->touchedLights[8]->pos.y ) );
+		Vector3f pos8( vi8.x / (float)owner->window->getSize().x, -1 + vi8.y / (float)owner->window->getSize().y, depth8 ); 
+		Color c8 = owner->touchedLights[8]->color;
+		Vector3f falloff8 = owner->touchedLights[8]->falloff;
+		
+		on[8] = true;
+		sh.setParameter( "LightPos8", pos8 );
+		sh.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+		sh.setParameter( "Falloff8", falloff8 );
+	}
+
+	sh.setParameter( "On0", on[0] );
+	sh.setParameter( "On1", on[1] );
+	sh.setParameter( "On2", on[2] );
+	sh.setParameter( "On3", on[3] );
+	sh.setParameter( "On4", on[4] );
+	sh.setParameter( "On5", on[5] );
+	sh.setParameter( "On6", on[6] );
+	sh.setParameter( "On7", on[7] );
+	sh.setParameter( "On8", on[8] );
 
 	if( desperationMode )
 	{
@@ -8400,6 +8474,8 @@ void Actor::UpdatePostPhysics()
 		slowCounter++;
 
 	UpdateHitboxes();
+	//playerLight->pos.x = position.x;
+	//playerLight->pos.y = position.y;
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
@@ -8639,6 +8715,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if( queryMode == "lights" )
 	{
 		Light *light = (Light*)qte;
+
+		//if( light == playerLight )
+		//	return;
 
 		if( owner->lightsAtOnce < owner->tempLightLimit )
 		{
@@ -8922,6 +9001,76 @@ void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPorti
 		rcEdge = edge;
 		rcQuantity = edgeQuantity;
 	}*/
+}
+
+double Actor::GroundedAngle()
+{
+	assert( ground != NULL );
+	V2d gn = ground->Normal();
+
+	double angle = 0;
+	
+	bool extraCase;
+	if( !reversed )
+	{
+		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+	else
+	{
+		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
+	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
+	if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
+	{
+		if( reversed )
+			angle = PI;
+	}
+	else
+	{
+		angle = atan2( gn.x, -gn.y );
+	}
+
+	return angle;
+}
+
+double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
+{
+	assert( ground != NULL );
+	V2d gn = ground->Normal();
+
+	double angle = 0;
+
+	bool extraCase;
+	if( !reversed )
+	{
+		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+	else
+	{
+		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+
+	if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
+	{
+		trueNormal = V2d( 0, -1 );
+		if( reversed )
+		{
+			angle = PI;
+			trueNormal = V2d( 0, 1 );
+		}
+	}
+	else
+	{
+		angle = atan2( gn.x, -gn.y );
+		trueNormal = gn;
+	}
+
+	return angle;
 }
 
 void Actor::SaveState()

@@ -2001,7 +2001,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "vel: " << vel.x << ", " << vel.y << ", bottomconds: " << bottomCond0 <<" , " << bottomCond1 <<", " << bottomCond2 << endl;
 			//cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
 			//cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
-
+			//cout << "oldright: " << oldRight << ", " << point.x << endl;
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
 			//	cout << "right " << endl;
@@ -2342,7 +2342,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 						{
 							okay = true;
 						}
-						cout << "t: " << t << endl;
+						//cout << "t: " << t << endl;
 					}
 
 					if( okay )

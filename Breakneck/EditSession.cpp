@@ -263,6 +263,121 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( true );
 }
 
+void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress )
+{
+	if( inProgress->points.size() < 2 )
+	{
+		return;
+	}
+	bool startFirst = true;
+	PointList::iterator startIt;
+	PointList::iterator endIt;
+
+	bool startFound = false;
+	bool endFound = false;
+
+	//inProgress->FixWinding();
+	
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		if( &(*it) ==  startPoint )
+		{
+			startIt = it;
+
+			if( endFound )
+				break;
+
+			startFound = true;
+		}
+		else if( &(*it) == endPoint )
+		{
+			endIt = it;
+
+			if( startFound )
+				break;
+
+			endFound = true;
+			startFirst = false;
+		}
+	}
+
+	PointList newList;
+	inProgress->points.push_back( *endPoint );
+	bool inProgresscw = inProgress->IsClockwise();
+	if( !inProgresscw )
+	{
+		inProgress->FixWinding();
+		if( startFirst )
+		{
+			PointList::iterator temp = endIt;
+			endIt = startIt;
+			startIt = temp;
+			startFirst = false;
+			inProgresscw = true;
+		}
+		else
+		{
+			PointList::iterator temp = endIt;
+			endIt = startIt;
+			startIt = temp;
+			startFirst = true;
+			inProgresscw = true;
+			//cout << "changing" << endl;
+		}
+	}
+
+	inProgress->points.pop_back();
+
+	if( startFirst )
+	{	
+		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+		{
+			cout << "normal type: " << inProgresscw << endl;
+			if( it == startIt )
+			{
+				for( PointList::iterator pit = inProgress->points.begin(); pit != inProgress->points.end(); ++pit )
+				{
+					newList.push_back( (*pit) );
+				}
+
+				it = endIt;
+				newList.push_back( (*endIt ) );	
+			}
+			else
+			{
+				newList.push_back( (*it) );
+			}
+		}
+	}	else
+	{
+		cout << "other type: " << inProgresscw << endl;
+		for( PointList::iterator it = endIt; it != points.end(); ++it )
+		{
+			if( it == startIt )
+			{	
+				for( PointList::iterator pit = inProgress->points.begin(); pit != inProgress->points.end(); ++pit )
+				{
+					newList.push_back( (*pit) );
+				}	
+				break;
+			}
+			else
+			{
+				newList.push_back( (*it) );
+			}
+		}
+	}
+
+	Reset();
+
+	for( PointList::iterator it = newList.begin(); it != newList.end(); ++it )
+	{
+		points.push_back( (*it) );
+	}
+
+	Finalize();
+}
+
 void TerrainPolygon::SwitchGrass( V2d mousePos )
 {
 	
@@ -347,7 +462,7 @@ void TerrainPolygon::UpdateGrass()
 	}
 }
 
-void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt )
+void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	if( grassVA != NULL )
 		rt->draw( *grassVA, grassTex );
@@ -375,6 +490,25 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt 
 			rt->draw( cs );
 		}
 		rt->draw( lines, points.size() * 2, sf::Lines );
+	}
+
+	if( showPoints )
+	{
+		for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+		{
+			if( &(*it) == dontShow )
+			{
+				continue;
+			}
+			CircleShape cs;
+			cs.setRadius( 8 * zoomMultiple );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+			cs.setFillColor( Color::Magenta );
+
+			cs.setPosition( (*it).pos.x, (*it).pos.y );
+			rt->draw( cs );
+		}
 	}
 
 	Vector2i center( (right + left) / 2, (bottom + top) / 2 );
@@ -645,16 +779,18 @@ void TerrainPolygon::ShowGrass( bool show )
 	}
 }
 
-StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos )
-	:color( c ), position( pos )
+StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos, int rad )
+	:color( c ), position( pos ), radius( rad )
 {
 }
 
 void StaticLight::Draw( RenderTarget *target )
 {
 	CircleShape cs;
-	cs.setFillColor( color );
-	cs.setRadius( 10 );
+	Color c = color;
+	c.a = 100;
+	cs.setFillColor( c );
+	cs.setRadius( radius );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
@@ -685,7 +821,7 @@ EditSession::EditSession( RenderWindow *wi)
 {
 	showTerrainPath = false;
 	minAngle = .99;
-
+	showPoints = false;
 	//	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
 }
@@ -704,8 +840,31 @@ void EditSession::Draw()
 	
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
+		if( extendingPolygon == NULL )
+		{
+			(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+		}
+		else
+		{
+			if( (*it) == extendingPolygon )
+			{
+				(*it)->Draw( showTerrainPath, zoomMultiple, w, true, extendingPoint );
+			}
+			else
+			{
+				if( extendingPolygon == NULL )
+				{
+					(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+				}
+				else
+				{
+					(*it)->Draw( showTerrainPath, zoomMultiple, w, false, extendingPoint );
+				}
+			}
+		}
 		
-		(*it)->Draw( showTerrainPath, zoomMultiple, w );
+		
+		
 	}
 
 	int psize = polygonInProgress->points.size();
@@ -900,7 +1059,7 @@ bool EditSession::OpenFile( string fileName )
 			is >> g;
 			is >> b;
 
-			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ) ) );
+			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ) , 100 ) );
 		}
 
 
@@ -970,7 +1129,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing goal" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1074,7 +1233,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing crawler" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1117,7 +1276,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing basicturret" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1154,7 +1313,7 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing" );
+						assert( 0 && "failure terrain indexing foottrap" );
 
 					if( edgeIndex == terrain->points.size() - 1 )
 						edgeIndex = 0;
@@ -1405,6 +1564,7 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 	}
 }
 
+
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 {
 
@@ -1413,105 +1573,78 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	Vector2i startPoint;
 	bool startPointFound = false;
+	bool firstPolygon = true;
+
 
 	TerrainPolygon *currentPoly = NULL;
 	TerrainPolygon *otherPoly = NULL;
 	PointList::iterator it = poly->points.begin();
+	PointList::iterator startIt;
 
-	bool brushFound = false;
-	list<PointList::iterator> found;
+	TerrainPolygon *minPoly = NULL;
+
+
+	//get which polygon I should start on
 	for(; it != poly->points.end(); ++it )
 	{
-		if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
-		{
-			found.push_back( it );
-			//startPoint = (*it).pos;
-			//startPointFound = true;
-			//currentPoly = poly;
-			//otherPoly = brush;
-			//break;
-		}
-	}
-
-	bool somethingFound = false;
-	if( !found.empty() )
-	{
-		somethingFound = true;
-		PointList::iterator lowestPoint = found.front();
-		list<PointList::iterator>::iterator foundIt = found.begin();
-		if( found.size() > 1 )
-		{
-			++foundIt;
-			for(  ;foundIt != found.end(); ++foundIt )
+		//if( !brush->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
+		//{
+			if( !startPointFound )
 			{
-				if( (*(*foundIt)).pos.y > (*lowestPoint).pos.y )
-					lowestPoint = (*foundIt);
-			}
-		}
-
-		it = (lowestPoint);
-		startPoint = (*lowestPoint).pos;
-		currentPoly = poly;
-		otherPoly = brush;
-	}
-
-	found.clear();
-	//if( found.empty() )//!startPointFound )
-	{
-		it = brush->points.begin();
-		for(; it != brush->points.end(); ++it )
-		{
-			if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
-			{
-				found.push_back( it );
-				//startPoint = (*it).pos;
-				//startPointFound = true;
-				//currentPoly = brush;
-				//otherPoly = poly;
-				//break;
-			}
-		}
-
-
-		if( !found.empty() )
-		{
-			PointList::iterator lowestPoint = found.front();
-			list<PointList::iterator>::iterator foundIt = found.begin();
-			if( found.size() > 1 )
-			{
-				++foundIt;
-				for(  ;foundIt != found.end(); ++foundIt )
-				{
-					if( (*(*foundIt)).pos.y > (*lowestPoint).pos.y )
-						lowestPoint = (*foundIt);
-				}
-			}
-
-			if( somethingFound )
-			{
-				if( (*lowestPoint).pos.y > startPoint.y )
-				{
-					it = (lowestPoint);
-					startPoint = (*lowestPoint).pos;
-					currentPoly = brush;
-					otherPoly = poly;
-				}
+				startPoint = (*it).pos;
+				startIt = it;
+				startPointFound = true;
 			}
 			else
 			{
-				it = (lowestPoint);
-				startPoint = (*lowestPoint).pos;
-				currentPoly = brush;
-				otherPoly = poly;
-			}	
+				if( (*it).pos.y > startPoint.y )
+				{
+					startPoint = (*it).pos;
+					startIt = it;
+				}
+			}
+		//}
+	}
+	
+	it = brush->points.begin();
+	for(; it != brush->points.end(); ++it )
+	{
+		//if( !poly->ContainsPoint( Vector2f( (*it).pos.x, (*it).pos.y) ) )
+		if( !startPointFound )
+		{
+			startPoint = (*it).pos;
+			startPointFound = true;
+			firstPolygon = false;
+			startIt = it;
 		}
-
+		else
+		{
+			if( (*it).pos.y > startPoint.y )
+			{
+				startPoint = (*it).pos;
+				firstPolygon = false;
+				startIt = it;
+			}
+		}
 	}
 
-	//assert( startPointFound );
-
-
+	if( firstPolygon )
+	{
+		currentPoly = poly;
+		otherPoly = brush;
+	}
+	else
+	{
+		currentPoly = brush;
+		otherPoly = poly;
+	}
 	
+
+	assert( startPointFound );
+	
+
+
+	it = startIt;
 	Vector2i currPoint = startPoint;
 	++it;
 	if( it == currentPoly->points.end() )
@@ -1525,23 +1658,14 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	//2. run a loobclockwise until you arrive back at the original state
 
-	sf::Clock alphaClock; //Remove later!!!!
 
 
 	bool firstTime = true;
+
 	while( firstTime || currPoint != startPoint )
 	{
-	//	sf::Time time = alphaClock.getElapsedTime();
-	//	if( time.asSeconds() > 15 )
-	//	{
-	//		polygonTimeoutTextTimer = 0;
-	//		cout << "successful error" << endl;
-	//		return;
-	//	}
-		//cout << "start loop: " << currPoint.x << ", " << currPoint.y << endl;
-
-		/*CircleShape cs;
-		cs.setRadius( 30  );
+		CircleShape cs;
+		cs.setRadius( 3 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setFillColor( Color::Magenta );
 		cs.setPosition( currPoint.x, currPoint.y );
@@ -1553,7 +1677,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		cs.setFillColor( Color::Yellow );
 		w->draw( cs );
 
-		w->display();*/
+		w->display();
 
 		
 		PointList::iterator min;
@@ -1561,55 +1685,57 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		bool emptyInter = true;
 		
 
-		PointList::iterator bit = otherPoly->points.begin();
-		Vector2i bCurrPoint = (*bit).pos;
-		++bit;
-		Vector2i bNextPoint;// = (*++bit);
+		PointList::iterator otherIt = otherPoly->points.begin();
+		Vector2i otherCurrPoint = (*otherIt).pos;
+		++otherIt;
+		Vector2i otherNextPoint;// = (*++bit);
 		Vector2i minPoint;
 		
-		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().pos, bCurrPoint );
-		if( !li.parallel && (abs( li.position.x - currPoint.x ) >= 1 || abs( li.position.y - currPoint.y ) >= 1 ))
+		LineIntersection li1 = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().pos, otherCurrPoint );
+		Vector2i lii1( floor(li1.position.x + .5), floor(li1.position.y + .5) );
+		if( !li1.parallel && ( lii1 != currPoint && lii1 != nextPoint && lii1 != otherPoly->points.back().pos && lii1 != otherCurrPoint ) ) 
 		{
-			minIntersection.x = li.position.x;
-			minIntersection.y = li.position.y;
-			minPoint = bCurrPoint;
-			min = --bit;
-			++bit;
+			minIntersection = lii1;
+			minPoint = otherCurrPoint;//otherCurrPoint;
+			min = otherPoly->points.begin();//--otherIt;
+			//++otherIt;
 			emptyInter = false;
 			//cout << "using this" << endl;
 		}
 
-		for(; bit != otherPoly->points.end(); ++bit )
+		for(; otherIt != otherPoly->points.end(); ++otherIt )
 		{
-			bNextPoint = (*bit).pos;
-			LineIntersection li = SegmentIntersect( currPoint, nextPoint, bCurrPoint, bNextPoint );
+			otherNextPoint = (*otherIt).pos;
+			LineIntersection li = LimitSegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-			if( !li.parallel && length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
+			//cout << "li.par: " << li.parallel << ", others: lii: " << lii.x << ", " << lii.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
+			if( !li.parallel )//&& ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
 			{
 				if( emptyInter )
 				{
 					emptyInter = false;
-
-					minIntersection.x = li.position.x;
-					minIntersection.y = li.position.y;
-					minPoint = bNextPoint;
-					min = bit;
+					minIntersection = lii;
+					//minIntersection.x = //li.position.x;
+					//minIntersection.y = //li.position.y;
+					minPoint = otherNextPoint;
+					min = otherIt;
 				}
 				else
 				{
-					Vector2i blah( minIntersection - currPoint );
+					V2d blah( minIntersection - currPoint );
+					V2d blah2( lii - currPoint );
 					//cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
-					if( length( li.position - V2d(currPoint.x, currPoint.y) ) < length( V2d( blah.x, blah.y ) ) )
+					if( length( blah2 ) < length( blah ) )
 					{
 						minIntersection = lii;
-						minPoint = bNextPoint;
-						min = bit;
+						minPoint = otherNextPoint;
+						min = otherIt;
 					}
 				}
 
 					
 			}
-			bCurrPoint = bNextPoint;
+			otherCurrPoint = otherNextPoint;
 			
 		}
 
@@ -1629,32 +1755,14 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			otherPoly = temp;
 			it = min;
 			
+			cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
 
 			currPoint = minIntersection;
 
 			z.points.push_back( TerrainPoint( currPoint, false ) );
-
+			
 			
 			nextPoint = (*it).pos;
-
-			
-		/*	if( nextPoint == startPoint )
-			{
-				if( nextPoint == startPoint && currentPoly == brush )
-				{
-					assert( 0 && "TT" );
-				}
-				cout << "break1. next point is: " << nextPoint.x << ", " << nextPoint.y << endl;
-				break;
-			}*/
-			//cout << "fff: " << (*it).x << ", " << (*it).y << endl;
-			
-
-			//if( otherPoly == poly )
-			//	cout << "switching to brush: " << currPoint.x << ", " << currPoint.y << endl;
-			//else
-			//	cout << "switching to poly: " << currPoint.x << ", " << currPoint.y << endl;
-			//cout << "nextpoint : " << nextPoint.x << ", " << nextPoint.y << endl;
 		}
 		else
 		{
@@ -1663,7 +1771,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 			z.points.push_back( TerrainPoint( currPoint, false ) );
 
-		//	cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
+			cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
 			if( currPoint == startPoint && !firstTime )
 				break;
@@ -1681,9 +1789,11 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	}
 
 	poly->Reset();
+	//cout << "poly size: " << z.points.size() << endl;
 	for( PointList::iterator zit = z.points.begin(); zit != z.points.end(); ++zit )
 	{
 		poly->points.push_back( (*zit) );
+	//	cout << (*zit).pos.x << ", " << (*zit).pos.y << endl;
 	}
 	//cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 	poly->Finalize();
@@ -1725,6 +1835,48 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
+LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+{
+	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
+				V2d( c.x, c.y ), V2d( d.x, d.y ) );
+	if( !li.parallel )
+	{
+		double e1Left = min( a.x, b.x );
+		double e1Right = max( a.x, b.x );
+		double e1Top = min( a.y, b.y );
+		double e1Bottom = max( a.y, b.y );
+
+		double e2Left = min( c.x, d.x );
+		double e2Right = max( c.x, d.x );
+		double e2Top = min( c.y, d.y );
+		double e2Bottom = max( c.y, d.y );
+		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
+		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
+		if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
+		{
+			//cout << "---!!!!!!" << endl;
+			if( li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
+			{
+				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
+				{
+					V2d &pos = li.position;
+					if( length( li.position - V2d( a.x, a.y ) ) > 1 &&  length( li.position - V2d( b.x, b.y ) ) > 1
+						&&  length( li.position - V2d( c.x, c.y ) ) > 1 &&  length( li.position - V2d( d.x, d.y ) ) > 1 )
+					{
+						return li;
+					}
+					//cout << "seg intersect!!!!!!" << endl;
+					//assert( 0 );
+					
+				}
+			}
+		}
+	}
+	//cout << "return false" << endl;
+	li.parallel = true;
+	return li;
+}
+
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
 	//RenderTexture rtt;
@@ -1734,6 +1886,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.
 	//rtt.create( 400, 400 );
 	//rtt.clear();
+
+	validityRadius = 4;
+
+	extendingPolygon = NULL;
+	extendingPoint = NULL;
+
+	radiusOption = false;
+	lightPosDown = false;
 
 	showGrass = false;
 
@@ -1750,6 +1910,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
+
+
 
 	sf::Texture playerZoomIconTex;
 	playerZoomIconTex.loadFromFile( "playerzoomicon.png" );
@@ -2019,12 +2181,60 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( ev.key.code == Keyboard::Space )
 							{
+								if( showPoints && extendingPolygon )
+								{
+								}
+								else
+								{
 								if( polygonInProgress->points.size() > 2 )
 								{
 									//test final line
+									bool valid = true;
 
-									if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
+
+									PointList::iterator testIt = polygonInProgress->points.begin();
+									PointList::iterator prevIt = testIt;
+									testIt++;
+
+									//cout << "lastline: " << polygonInProgress->points.back().pos.x << ", " << polygonInProgress->points.back().pos.y <<
+									//	" .. " << polygonInProgress->points.front().pos.x << ", " << polygonInProgress->points.front().pos.y << endl;
+									for( ; testIt != polygonInProgress->points.end(); ++testIt )
+									{
+										Vector2i a = (*prevIt).pos;
+										Vector2i b = (*testIt).pos;
+										Vector2i c = polygonInProgress->points.back().pos;
+										Vector2i d = polygonInProgress->points.front().pos;
+										LineIntersection li = LimitSegmentIntersect( a,b,c,d );
+										Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+										//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
+										if( !li.parallel )//(abs( lii.x - currPoint.x ) > 1 || abs( lii.y - currPoint.y ) > 1 ) )//&& lii != a && lii != b && lii != c && lii != d )
+										{
+											valid = false;
+										}
+
+										
+
+										prevIt = testIt;
+									}
+
+
+									for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+									{
+										//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
+										if( !IsPointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
+										{
+											valid = false;
+											break;
+										}
+									}
+									
+									if( !valid )
+									{
 										break;
+									}
+
+									//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
+									//	break;
 
 									list<TerrainPolygon*>::iterator it = polygons.begin();
 									bool added = false;
@@ -2082,6 +2292,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									cout << "cant finalize. cant make polygon" << endl;
 									polygonInProgress->points.clear();
 								}
+								}
 							}
 							else if( ev.key.code == sf::Keyboard::V || ev.key.code == sf::Keyboard::Delete )
 							{
@@ -2105,11 +2316,28 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 								}*/
 							}
+							else if( ev.key.code == sf::Keyboard::E )
+							{
+								if( !showPoints )
+								{
+									showPoints = true;
+									extendingPolygon = NULL;
+									extendingPoint = NULL;
+									polygonInProgress->points.clear();
+								}
+							}
 							
 							break;
 						}
 					case Event::KeyReleased:
 						{
+							if( ev.key.code == sf::Keyboard::E )
+							{
+								showPoints = false;
+								extendingPolygon = NULL;
+								extendingPoint = NULL;
+								polygonInProgress->points.clear();
+							}
 							break;
 						}
 					case Event::LostFocus:
@@ -3026,6 +3254,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else
 								{
+									lightPosDown = true;
 									lightPos = Vector2i( worldPos.x, worldPos.y );
 								}
 							}
@@ -3041,8 +3270,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( showPanel == NULL )
 								{
+									//if( !radiusOption )
+									//{
+									//	radiusOption = true;
+									//}
+									//else
+									//{
+									//	radiusOption = false;
+									lightPosDown = false;
+										showPanel = lightPanel;
+									//}
 									//cout << "make light panel" << endl;
-									showPanel = lightPanel;
+									//showPanel = lightPanel;
 								}
 							}
 							break;
@@ -3342,7 +3581,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					V2d extreme( 0, 0 );
 					V2d vec = tPoint - backPoint;
 					V2d normVec = normalize( vec );
-					double limit = .99;
+					double limit = .9998;
 					if( normVec.x > limit )
 						extreme.x = 1;
 					else if( normVec.x < -limit )
@@ -3380,27 +3619,157 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					}
 
-					if( emptySpace )
+					if( showPoints && extendingPolygon == NULL )
 					{
-						Vector2i worldi( testPoint.x, testPoint.y );
-						if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
-							polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+						bool none = true;
+						for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							if( PointValid( polygonInProgress->points.back().pos, worldi ) )
+							for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit )
 							{
-								polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+								Vector2i pointPos = (*pit).pos;
+								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
+								if( dist < 8 * zoomMultiple )
+								{
+									extendingPolygon = (*it);
+									extendingPoint = &(*pit);
+									none = false;
+									break;
+								}
+							}
+							if( !none )
+								break;
+						}	
+					}
+
+					if( ( !showPoints || (showPoints && extendingPolygon != NULL )) && emptySpace )
+					{
+						
+						Vector2i worldi( testPoint.x, testPoint.y );
+
+						bool okay = true;
+						if( extendingPolygon != NULL && polygonInProgress->points.size() > 0 )
+						{
+							okay = !extendingPolygon->ContainsPoint( testPoint );
+							
+
+							if( okay )
+							{
+								PointList::iterator okayIt = extendingPolygon->points.begin(); 
+								PointList::iterator okayPrev = extendingPolygon->points.end();
+								--okayPrev;
+								for( ; okayIt != extendingPolygon->points.end(); ++okayIt )
+								{
+								
+									//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
+									Vector2i a = polygonInProgress->points.back().pos;
+									Vector2i b = worldi;
+									Vector2i c = (*okayPrev).pos;
+									Vector2i d = (*okayIt).pos;
+
+								
+									LineIntersection li = LimitSegmentIntersect( a,b,c,d );
+									Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+									//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
+									if( !li.parallel )//&& lii != a && lii != b && lii != c && lii != d )
+									{
+										okay = false;
+										break;
+									}
+									okayPrev = okayIt;
+								}
+								
+								
+							}
+							// &&  IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
+							//okay = IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
+						}
+
+						
+						//okay = true;
+
+						bool done = false;
+						if( extendingPolygon != NULL )
+						{
+							for( PointList::iterator pit = extendingPolygon->points.begin(); pit != extendingPolygon->points.end(); ++pit )
+							{
+								if( &(*pit) == extendingPoint )
+								{
+									continue;
+								}
+								Vector2i pointPos = (*pit).pos;
+								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
+								if( dist < 8 * zoomMultiple )
+								{
+									//ExtendPolygon();
+									extendingPolygon->Extend( extendingPoint, &(*pit), polygonInProgress );
+
+									ExtendAdd();
+
+									//polygonInProgress->points.clear();
+									//polygonInProgress->Reset();
+									//cout << "EXTENDING POLYGON" << endl;
+									
+
+									polygonInProgress->Reset();
+
+									extendingPolygon = NULL;
+									extendingPoint = NULL;
+									done = true;
+									//cout << "done!" << endl;
+									break;
+								}
 							}
 						}
-						else if( polygonInProgress->points.empty() )
+
+						//okay = true;
+						if( !done && okay )
 						{
-							polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+							bool validNearPolys = true;
+							if( polygonInProgress->points.size() > 0 )
+							{
+								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+									if( !IsPointValid( polygonInProgress->points.back().pos, worldi, (*it) ) )
+									{
+										validNearPolys = false;
+										break;
+									}
+								}
+							}
+
+							if( validNearPolys )
+							{
+								if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
+									polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+								{
+									if( PointValid( polygonInProgress->points.back().pos, worldi ) )
+									{
+										polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+									}
+								}
+								else if( polygonInProgress->points.empty() )
+								{
+									if( extendingPolygon != NULL )
+									{
+										polygonInProgress->points.push_back( *extendingPoint );
+									}
+									else
+									{
+										polygonInProgress->points.push_back( TerrainPoint( worldi, false ) );
+									}
+									//cout << "showPoints: " << showPoints << ", " << (extendingPolygon == NULL) << endl;
+								
 							
+								}
+							}
 						}
 					}
 					else
 					{
 						//polygonInProgress->points.clear();
 					}
+
+					
 					
 				}
 				break;
@@ -3708,6 +4077,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 
 		w->setView( view );
+
+		sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
+		parTest.setFillColor( Color::Red );
+		parTest.setPosition( 0, 0 );
+		w->draw( parTest );
+
 		w->draw(border, 8, sf::Lines);
 
 		Draw();
@@ -4082,6 +4457,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		}
 
+
 		playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
 		w->draw( playerSprite );
@@ -4165,6 +4541,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			for( int i = 0; i < numLines * 8; ++i )
 			{
 				graphLines[i].position -= adjustment;
+			}
+		}
+
+		if( mode == CREATE_LIGHTS )
+		{
+			if( lightPosDown || showPanel )
+			{
+				CircleShape cs;
+				if( lightPosDown )
+				{
+					lightRadius = length( V2d( lightPos.x, lightPos.y ) - worldPos );
+				}
+				cs.setRadius( lightRadius );
+				cs.setFillColor( Color::White );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setPosition( lightPos.x, lightPos.y );
+				w->draw( cs );
 			}
 		}
 
@@ -4350,7 +4743,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 		//return true;
 
 		//make sure I'm not too close to the very first point and that my line isn't too close to the first point either
-		if( point.x != polygonInProgress->points.front().pos.x || point.y != polygonInProgress->points.front().pos.y )
+		//if( length( V2d( point.x, point.y ) - V2d( polygonInProgress->points.front().pos.x, polygonInProgress->points.front().pos.y ) ) < 8 )
 		{
 			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
 			if( separation < minimumEdgeLength )
@@ -4705,7 +5098,29 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "ok" )
 		{
 			//cout << "OKAY!!!" << endl;
-			lights.push_back( new StaticLight( Color::Blue, lightPos ) );
+
+			int red;
+			int green;
+			int blue;
+
+			stringstream ss;
+			string redstr = p->textBoxes["red"]->text.getString().toAnsiString();
+			string greenstr = p->textBoxes["green"]->text.getString().toAnsiString();
+			string bluestr = p->textBoxes["blue"]->text.getString().toAnsiString();
+			ss << redstr << " " << greenstr << " " << bluestr;
+
+			ss >> red;
+			ss >> green;
+			ss >> blue;
+
+			if( ss.fail() )
+			{
+				cout << "stringstream to integer parsing error" << endl;
+				ss.clear();
+				assert( false );
+			}
+
+			lights.push_back( new StaticLight( Color( red, green, blue ), lightPos, lightRadius ) );
 			showPanel = NULL;
 		}
 	}
@@ -4808,8 +5223,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if( name == "light" )
 	{
-		Panel *p = new Panel( "light_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "light_options", 220, 220, this );
+		int textBoxX = 100;
+		p->AddButton( "ok", Vector2i( 100, 150 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "255" );
+		p->AddTextBox( "green", Vector2i( textBoxX, 60 ), 60, 3, "0" );
+		p->AddTextBox( "blue", Vector2i( textBoxX, 100 ), 60, 3, "0" );
+		p->AddLabel( "red_label", Vector2i( 20, 20 ), 20, "Red: " );
+		p->AddLabel( "green_label", Vector2i( 20, 60 ), 20, "Green: " );
+		p->AddLabel( "blue_label", Vector2i( 20, 100 ), 20, "Blue: " );
 		return p;
 	}
 	return NULL;
@@ -4831,7 +5253,212 @@ int EditSession::CountSelectedPoints()
 	return count;
 }
 
+void EditSession::ExtendPolygon()
+{
+	if( polygonInProgress->points.size() > 1 )
+	{
+		//test final line
 
+		list<TerrainPolygon*>::iterator it = polygons.begin();
+		bool added = false;
+		polygonInProgress->Finalize();
+		bool recursionDone = false;
+		TerrainPolygon *currentBrush = polygonInProgress;
+
+			while( it != polygons.end() )
+			{
+				TerrainPolygon *temp = (*it);
+				if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+				{
+					//cout << "before addi: " << (*it)->points.size() << endl;
+						
+					Add( currentBrush, temp );
+
+					polygonInProgress->Reset();
+						
+					//cout << "after adding: " << (*it)->points.size() << endl;
+					polygons.erase( it );
+
+					currentBrush = temp;
+
+					it = polygons.begin();
+
+					added = true;
+							
+					continue;
+				}
+				else
+				{
+					//cout << "not" << endl;
+				}
+				++it;
+			}
+				
+		//add final check for validity here
+				
+		if( !added )
+		{
+			//polygonInProgress->Finalize();
+			//polygons.push_back( polygonInProgress );
+			//polygonInProgress = new TerrainPolygon(&grassTex );
+		}
+		else
+		{
+			polygons.push_back( currentBrush );
+			//polygonInProgress->Reset();
+		}
+	}
+
+
+	polygonInProgress->Reset();
+}
+
+bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly )
+{
+	//cout << "checking if the point is valid!!" << endl;
+	//check distance from points first
+
+	V2d p( point.x, point.y );
+	cout << "p: " << p.x << ", " << p.y << endl;
+	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+	{
+		V2d temp( (*it).pos.x, (*it).pos.y );
+		if( length( p - temp ) < validityRadius )
+		{
+			cout << "false type one:" << length( p - temp ) << " .. " << temp.x << ", " << temp.y << ", p: " << p.x << ", " << p.y << endl;
+			return false;
+		}
+	}
+	PointList::iterator it = poly->points.begin();
+	PointList::iterator prev = poly->points.end(); 
+	--prev;
+	for( ; it != poly->points.end(); ++it )
+	{
+		if( (*it).pos == oldPoint || (*prev).pos == oldPoint )
+		{
+			prev = it;
+			continue;
+		}
+
+		V2d v0 = V2d( (*prev).pos.x, (*prev).pos.y );
+		V2d v1 = V2d( (*it).pos.x, (*it).pos.y );
+		V2d edgeDir = normalize( v1 - v0 );
+
+		double quant = dot( p - v0, edgeDir );
+		double offQuant = cross( p - v0, edgeDir );
+		//cout << "quant: " << quant << ", l: " << length( v1 - v0 ) << endl;
+		bool nearOnAxis = quant > 0 && quant < length( v1 - v0 );
+		bool nearOffAxis = abs( offQuant ) < validityRadius;
+
+		if( nearOnAxis && nearOffAxis )
+		{
+			cout << "false type two. quant:" << quant << ", offquant: " << offQuant << endl;
+			cout << "p: " << p.x << ", " << p.y << endl;
+			cout << "v0: " << v0.x << ", " << v0.y << endl;
+			cout << "v1: " << v1.x << ", " << v1.y << endl;
+			return false;
+		}
+
+		V2d pointDir;
+		pointDir.x = point.x - oldPoint.x;
+		pointDir.y = point.y - oldPoint.y;
+		pointDir = normalize( pointDir );
+
+		V2d old( oldPoint.x, oldPoint.y );
+		double otherQuant = dot( v1 - old, pointDir );
+		double otherOffQuant = cross( v1 - old, pointDir );
+		
+		bool otherNearOnAxis = otherQuant > 0 && otherQuant < length( V2d( point.x, point.y ) - old );
+		bool otherNearOffAxis = abs( otherOffQuant ) < validityRadius;
+
+		if( otherNearOnAxis && otherNearOffAxis )
+		{
+			cout << "false type three. quant: " << otherQuant << ", offQuant: " << otherOffQuant << endl;
+			return false;
+		}
+
+
+		prev = it;
+	}
+
+	
+
+
+	return true;
+}
+
+void EditSession::ExtendAdd()
+{
+	list<TerrainPolygon*>::iterator it = polygons.begin();
+	bool added = false;
+	//polygonInProgress->Finalize();
+	bool recursionDone = false;
+	TerrainPolygon *currentBrush = extendingPolygon;
+
+	showPoints = false;
+	extendingPolygon = NULL;
+	extendingPoint = NULL;
+
+	while( it != polygons.end() )
+	{
+		TerrainPolygon *temp = (*it);
+		if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+		{
+			//cout << "before addi: " << (*it)->points.size() << endl;
+			/*cout << "currisze: " << currentBrush->points.size() << ", tempsize: " << temp->points.size() << endl;	
+			cout << "curr: "<< endl;
+			for( PointList::iterator pit = currentBrush->points.begin(); pit != currentBrush->points.end(); ++pit )
+			{
+				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
+			}
+			cout << "temp: "<< endl;
+			for( PointList::iterator pit = temp->points.begin(); pit != temp->points.end(); ++pit )
+			{
+				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
+			}*/
+			Add( currentBrush, temp );
+			
+			//currentBrush->Reset();
+			polygons.remove( currentBrush );
+			delete currentBrush;
+
+			//polygonInProgress->Reset();
+						
+			//cout << "after adding: " << (*it)->points.size() << endl;
+			polygons.erase( it );
+
+			currentBrush = temp;
+
+			it = polygons.begin();
+
+			cout << "number of polygons!: " << polygons.size() << endl;
+
+			added = true;
+							
+			continue;
+		}
+		else
+		{
+			//cout << "not" << endl;
+		}
+		++it;
+	}
+				
+	//add final check for validity here
+				
+	if( !added )
+	{
+		//polygonInProgress->Finalize();
+		//polygons.push_back( polygonInProgress );
+		//polygonInProgress = new TerrainPolygon( &grassTex );
+	}
+	else
+	{
+
+		polygons.push_back( currentBrush );
+		//polygonInProgress->Reset();
+	}
+}
 
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )

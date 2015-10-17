@@ -10,6 +10,7 @@
 #include <SFML/Graphics.hpp>
 #include "Wire.h"
 
+
 struct GameSession;
 struct PlayerGhost;
 
@@ -73,6 +74,8 @@ struct Actor : QuadTreeCollider,
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
 	void AirMovement();
+	double GroundedAngle();
+	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 
 	//unsaved vars
 	int possibleEdgeCount;
@@ -83,7 +86,7 @@ struct Actor : QuadTreeCollider,
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
-
+	//Light *playerLight;
 	Tileset *normal[Count];
 
 	sf::Sprite gsdodeca;

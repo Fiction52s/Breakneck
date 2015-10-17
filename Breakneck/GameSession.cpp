@@ -9,6 +9,7 @@
 #include "VectorMath.h"
 #include "Camera.h"
 #include <sstream>
+#include <ctime>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -16,18 +17,21 @@
 using namespace std;
 using namespace sf;
 
-GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex )
+GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 {
 	usePolyShader = true;
-	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment))
+	minimapTex = miniTex;
+	
+
+	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
 		cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 		usePolyShader = false;
 	}
-
+	
 	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
@@ -788,24 +792,45 @@ bool GameSession::OpenFile( string fileName )
 					coordsTopRight = Vector2f( (tileX + 1) * size, tileY * size );
 					coordsBottomLeft = Vector2f( tileX * size, (tileY+1) * size );
 					coordsBottomRight = Vector2f( (tileX+1) * size, (tileY+1) * size );
-					
+					coordsBottomLeft.y -= 1;
+					coordsBottomRight.y -= 1;
 
-					borderVa[i*4].position = surface;
+					coordsBottomRight.x -= 1;
+					coordsTopRight.x -= 1;
+					
+					Vector2f adjSurface = surface;
+					//adjSurface.x = floor( adjSurface.x + .5 );
+					//adjSurface.y = floor( adjSurface.y + .5 );
+
+					Vector2f adjInner = inner;
+					//adjInner.x = floor( adjInner.x + .5 );
+					//adjInner.y = floor( adjInner.y + .5 );
+
+					Vector2f adjSurfaceNext = surfaceNext;
+					//adjSurfaceNext.x = floor( adjSurfaceNext.x + .5 );
+					//adjSurfaceNext.y = floor( adjSurfaceNext.y + .5 );
+
+					Vector2f adjInnerNext = innerNext;
+					//adjInnerNext.x = floor( adjInnerNext.x + .5 );
+					//adjInnerNext.y = floor( adjInnerNext.y + .5 );
+
+				//	borderVa[i*4].color = Color( 0x0d, 0, 0x80 );
+					borderVa[i*4].position = adjSurface;
 					borderVa[i*4].texCoords = coordsTopLeft;
 
-					//borderVa[i*4+1].color = Color::Blue;
+				//	borderVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
-					borderVa[i*4+1].position = inner;
+					borderVa[i*4+1].position = adjInner;
 					borderVa[i*4+1].texCoords = coordsBottomLeft;
 
-					//borderVa[i*4+2].color = Color::Blue;
+				//	borderVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
-					borderVa[i*4+2].position = innerNext;
+					borderVa[i*4+2].position = adjInnerNext;
 					borderVa[i*4+2].texCoords = coordsBottomRight;
 
-					//borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+				//	borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
-					borderVa[i*4+3].position = surfaceNext;
+					borderVa[i*4+3].position = adjSurfaceNext;
 					borderVa[i*4+3].texCoords = coordsTopRight;
 					++i;
 
@@ -1052,11 +1077,10 @@ bool GameSession::OpenFile( string fileName )
 			is >> g;
 			is >> b;
 
-			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ) );
+			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), 100 );
 			lightTree->Insert( light );
 		}
-		cout << "loaded to here" << endl;
-
+		cout << "loaded to here" << endl;		
 
 		int numGroups;
 		is >> numGroups;
@@ -1245,7 +1269,12 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
-	
+	bool showFrameRate = false;
+	sf::Font arial;
+	arial.loadFromFile( "arial.ttf" );
+
+	sf::Text frameRate( "00", arial, 30 );
+
 	activeSequence = NULL;
 
 	fileName = fileN;
@@ -1288,6 +1317,14 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
+	//parTest.setFillColor( Color::Red );
+	Texture tex;
+	tex.loadFromFile( "cloud01.png" );
+	parTest.setTexture( tex ); 
+	parTest.setPosition( 0, 0 );
+
+
 	cam.pos.x = player.position.x;
 	cam.pos.y = player.position.y;
 	
@@ -1379,6 +1416,14 @@ int GameSession::Run( string fileN )
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );
 
+	stringstream ss;
+
+	int frameCounterWait = 20;
+	int frameCounter = 0;
+	double total = 0;
+
+	View cloudView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1388,9 +1433,31 @@ int GameSession::Run( string fileN )
 			frameTime = 0.25;	
         currentTime = newTime;
 
+		if( showFrameRate )
+		{
+			if( frameCounter == frameCounterWait )
+			{
+				double blah = 1.0 / frameTime;
+				total += blah;
+				ss << total / ( frameCounterWait + 1 ) ;
+				frameRate.setString( ss.str() );
+				ss.clear();
+				ss.str( "" );
+				frameCounter = 0;
+				total = 0;
+			}
+			else
+			{
+				double blah = 1.0 / frameTime;
+				total += blah;
+				++frameCounter;
+			}
+		}
+		
+
 		accumulator += frameTime;
 
-		window->clear();
+		
 		preScreenTex->clear();
 		preScreenTex->setSmooth( false );
 
@@ -1410,7 +1477,9 @@ int GameSession::Run( string fileN )
 				//con = controller.GetState();
 				
 				
-
+				bool tookScreenShot = false;
+				bool screenShot = false;
+				
 				while( true )
 				{
 					//prevInput = currInput;
@@ -1421,6 +1490,25 @@ int GameSession::Run( string fileN )
 					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 					
 					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
+					screenShot = Keyboard::isKeyPressed( sf::Keyboard::Num0 ) && !tookScreenShot;
+					
+					if( screenShot )
+					{
+						tookScreenShot = true;
+						Image im = window->capture();
+
+						 time_t now = time(0);
+						 char* dt = ctime(&now);
+						im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
+					}
+					else
+					{
+						if( skipInput )
+						{
+							tookScreenShot = false;
+						}
+					}
+					
 
 					if( !skipped && skipInput )//sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
 					{
@@ -1452,6 +1540,12 @@ int GameSession::Run( string fileN )
 					
 
 				}
+
+				window->clear();
+			}
+			else
+			{
+				window->clear();
 			}
 
 			if( skipInput )
@@ -1620,9 +1714,10 @@ int GameSession::Run( string fileN )
 				if( player.changingClone )
 				{
 					player.percentCloneChanged += player.percentCloneRate;
-					if( player.percentCloneChanged >= 1 )
+					//if( player.percentCloneChanged >= 1 )
 					{
-						player.percentCloneChanged = 1;
+						player.percentCloneChanged = 0;
+					//	player.percentCloneChanged = 1;
 						player.changingClone = false;
 						pauseFrames = 0;
 					}
@@ -1702,9 +1797,14 @@ int GameSession::Run( string fileN )
 				UpdateEnemiesPostPhysics();
 			
 
+				//Vector2f oldCam = cam.pos;
+				//float oldCamZoom = cam.GetZoom();
+
 				cam.Update( &player );
 
-				
+
+				//Vector2f diff = cam.pos - oldCam;
+
 
 				double camWidth = 960 * cam.GetZoom();
 				double camHeight = 540 * cam.GetZoom();
@@ -1810,11 +1910,19 @@ int GameSession::Run( string fileN )
 		//window->draw( background );
 
 		
-		preScreenTex->setView( view );
+		
 		//window->setView( view );
-
-
-
+		
+		cloudView.setCenter( view.getCenter() );
+		preScreenTex->setView( cloudView );
+		Vector2f orig( originalPos.x, originalPos.y );
+		float depth = 3;
+		parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
+		float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
+		//parTest.setScale( scale, scale );
+		preScreenTex->draw( parTest );
+		
+		preScreenTex->setView( view );
 		
 		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
@@ -1901,7 +2009,7 @@ int GameSession::Run( string fileN )
 		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-			view.getCenter().y - view.getSize().y / 2 );
+			view.getCenter().y + view.getSize().y / 2 );
 		
 		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
@@ -1937,6 +2045,7 @@ int GameSession::Run( string fileN )
 			listVA = t;
 		}
 
+		//listVA is null here
 		queryMode = "border";
 		numBorders = 0;
 		borderTree->Query( this, screenRect );
@@ -1961,7 +2070,29 @@ int GameSession::Run( string fileN )
 
 			if( usePolyShader )
 			{
-				UpdateTerrainShader( listVAIter->aabb );
+
+				sf::Rect<double> polyAndScreen;
+				sf::Rect<double> aabb = listVAIter->aabb;
+				double rightScreen = screenRect.left + screenRect.width;
+				double bottomScreen = screenRect.top + screenRect.height;
+				double rightPoly = aabb.left + aabb.width;
+				double bottomPoly = aabb.top + aabb.height;
+
+				double left = std::max( screenRect.left, aabb.left );
+
+				double right = std::min( rightPoly, rightScreen );
+				
+				double top = std::max( screenRect.top, aabb.top );
+
+				double bottom = std::min( bottomScreen, bottomPoly );
+
+
+				polyAndScreen.left = left;
+				polyAndScreen.top = top;
+				polyAndScreen.width = right - left;
+				polyAndScreen.height = bottom - top;
+				
+				UpdateTerrainShader( polyAndScreen );//listVAIter->aabb );
 				/*sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
 				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
 				rs.setOutlineColor( Color::Red );
@@ -2031,12 +2162,66 @@ int GameSession::Run( string fileN )
 		//grassTree->DebugDraw( preScreenTex );
 
 
-		//coll.DebugDraw( preScreenTex );
+		coll.DebugDraw( preScreenTex );
+
+		double minimapZoom = 15;
+
+		View vv;
+		vv.setCenter( player.position.x, player.position.y );
+		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
+		minimapTex->setView( vv );
+		minimapTex->clear( Color( 0, 0, 0, 191 ) );
+		
+		CircleShape cs;
+		cs.setFillColor( Color::Green );
+		cs.setRadius( 50 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( vv.getCenter().x, vv.getCenter().y );
+		
+
+
+		//vv.setSize( 1920 * 10, 1080 * 10 );
+		queryMode = "border";
+		numBorders = 0;
+		sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+			vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
+
+		borderTree->Query( this, minimapRect );
+
+		listVAIter = listVA;
+		while( listVAIter != NULL )
+		{
+			//if( listVAIter->grassVA != NULL )
+			//	minimapTex->draw( *listVAIter->grassVA, &grassTex );
+			
+			minimapTex->draw( *listVAIter->terrainVA );
+			//preScreenTex->draw( *listVAIter->va, &borderTex );
+			listVAIter = listVAIter->next;
+			//timesDraw++; 
+		}
+		
+		minimapTex->draw( cs );
+
+		minimapTex->display();
+		const Texture &miniTex = minimapTex->getTexture();
+
+		Sprite minimapSprite( miniTex );
+		minimapSprite.setPosition( preScreenTex->getSize().x / 2 - 150, preScreenTex->getSize().y / 2 - 150 );
+		minimapSprite.setScale( .5, .5 );
+		minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 
 		preScreenTex->setView( uiView );
+		preScreenTex->draw( minimapSprite );
+
 		//window->setView( uiView );
 	//	window->draw( healthSprite );
 		powerBar.Draw( preScreenTex );
+
+		if( showFrameRate )
+		{
+			preScreenTex->draw( frameRate );
+		}
+		
 
 		preScreenTex->setView( view );
 		//window->setView( view );
@@ -2068,7 +2253,7 @@ int GameSession::Run( string fileN )
 		{
 			player.Draw( preScreenTex );
 		}
-
+	//	preScreenTex->setSmooth( true );
 		preScreenTex->display();
 		const Texture &preTex = preScreenTex->getTexture();
 		
@@ -2082,7 +2267,7 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "resolution", window->getSize().x, window->getSize().y);
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
-		window->draw( preTexSprite, &cloneShader );
+		window->draw( preTexSprite );//, &cloneShader );
 		}
 
 
@@ -2256,13 +2441,13 @@ void GameSession::RespawnPlayer()
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 {
 	lightsAtOnce = 0;
-	tempLightLimit = 3;
+	tempLightLimit = 9;
 
 	queryMode = "lights"; 
 	lightTree->Query( this, aabb );
 
-	//Vector2i vi = Mouse::getPosition();
-	//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+	Vector2i vi = Mouse::getPosition();
+	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
 
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
@@ -2270,50 +2455,163 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	pos1.y = 1 - pos1.y;
 	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
 	pos2.y = 1 - pos2.y;*/
-	bool on0 = false;
-	bool on1 = false;
-	bool on2 = false;
+	
+	bool on[9];
+	for( int i = 0; i < 9; ++i )
+	{
+		on[i] = false;
+	}
 
 	if( lightsAtOnce > 0 )
 	{
+		float depth0 = touchedLights[0]->depth;
 		Vector2i vi0 = Vector2i( preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) ) );
-		Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
-			pos0.y = 1 - pos0.y;
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+		Vector3f pos0( vi0.x / (float)window->getSize().x, -1 + vi0.y / (float)window->getSize().y, depth0 );
+			//pos0.y = 1 - pos0.y;
+		//Vector3f pos0( vi0.x, vi0.y, .015 );
+		//cout << pos0.x << ", " << pos0.y << endl;
 		Color c0 = touchedLights[0]->color;
+
+		Vector3f falloff0 = touchedLights[0]->falloff;
+
+		
 		//sh.setParameter( "On0", true );
-		on0 = true;
+		on[0] = true;
 		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff0", Vector3f( 2, 3, 20 ) );
+		polyShader.setParameter( "Falloff0", falloff0 );
 	}
 	if( lightsAtOnce > 1 )
 	{
+		float depth1 = touchedLights[1]->depth;
 		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
-		Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, .015 ); 
-			pos1.y = 1 - pos1.y;
+		Vector3f pos1( vi1.x / (float)window->getSize().x, -1 + vi1.y / (float)window->getSize().y, depth1 ); 
+		//	pos1.y = 1 - pos1.y;
 		Color c1 = touchedLights[1]->color;
-		on1 = true;
+		Vector3f falloff1 = touchedLights[1]->falloff;
+		
+		on[1] = true;
 		//sh.setParameter( "On1", true );
 		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff1", Vector3f( .4, 3, 20 ) );
+		polyShader.setParameter( "Falloff1", falloff1 );
 	}
 	if( lightsAtOnce > 2 )
 	{
+		float depth2 = touchedLights[2]->depth;
 		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x /(float) window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, .015 ); 
-			pos2.y = 1 - pos2.y;
+		Vector3f pos2( vi2.x / (float)window->getSize().x, -1 + vi2.y / (float)window->getSize().y, depth2 ); 
+		//	pos2.y = 1 - pos2.y;
 		Color c2 = touchedLights[2]->color;
-		on2 = true;
+		Vector3f falloff2 = touchedLights[2]->falloff;
+		
+		on[2] = true;
 		//sh.setParameter( "On2", true );
 		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		polyShader.setParameter( "Falloff2", Vector3f( .4, 3, 20 ) );
+		polyShader.setParameter( "Falloff2", falloff2 );
 	}
-	
-	polyShader.setParameter( "On0", on0 );
-	polyShader.setParameter( "On1", on1 );
-	polyShader.setParameter( "On2", on2 );
+	if( lightsAtOnce > 3 )
+	{
+		float depth3 = touchedLights[3]->depth;
+		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
+		Vector3f pos3( vi3.x / (float)window->getSize().x, -1 + vi3.y / (float)window->getSize().y, depth3 ); 
+		//	pos3.y = 1 - pos3.y;
+		Color c3 = touchedLights[3]->color;
+		Vector3f falloff3 = touchedLights[3]->falloff;
+		
+		on[3] = true;
+		//sh.setParameter( "On3", true );
+		polyShader.setParameter( "LightPos3", pos3 );
+		polyShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+		polyShader.setParameter( "Falloff3", falloff3 );
+	}
+	if( lightsAtOnce > 4 )
+	{
+		float depth4 = touchedLights[4]->depth;
+		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
+		Vector3f pos4( vi4.x / (float)window->getSize().x, -1 + vi4.y / (float)window->getSize().y, depth4 ); 
+		//	pos4.y = 1 - pos4.y;
+		Color c4 = touchedLights[4]->color;
+		Vector3f falloff4 = touchedLights[4]->falloff;
+		
+		on[4] = true;
+		//sh.setParameter( "On4", true );
+		polyShader.setParameter( "LightPos4", pos4 );
+		polyShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+		polyShader.setParameter( "Falloff4", falloff4 );
+	}
+	if( lightsAtOnce > 5 )
+	{
+		float depth5 = touchedLights[5]->depth;
+		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
+		Vector3f pos5( vi5.x / (float)window->getSize().x, -1 + vi5.y / (float)window->getSize().y, depth5 ); 
+		//	pos5.y = 1 - pos5.y;
+		Color c5 = touchedLights[5]->color;
+		Vector3f falloff5 = touchedLights[5]->falloff;
+		
+		on[5] = true;
+		//sh.setParameter( "On5", true );
+		polyShader.setParameter( "LightPos5", pos5 );
+		polyShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+		polyShader.setParameter( "Falloff5", falloff5 );
+	}
+	if( lightsAtOnce > 6 )
+	{
+		float depth6 = touchedLights[6]->depth;
+		Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
+		Vector3f pos6( vi6.x / (float)window->getSize().x, -1 + vi6.y / (float)window->getSize().y, depth6 ); 
+		//	pos6.y = 1 - pos6.y;
+		Color c6 = touchedLights[6]->color;
+		Vector3f falloff6 = touchedLights[6]->falloff;
+		
+		on[6] = true;
+		//sh.setParameter( "On6", true );
+		polyShader.setParameter( "LightPos6", pos6 );
+		polyShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+		polyShader.setParameter( "Falloff6", falloff6 );
+	}
+	if( lightsAtOnce > 7 )
+	{
+		float depth7 = touchedLights[7]->depth;
+		Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
+		Vector3f pos7( vi7.x / (float)window->getSize().x, -1 + vi7.y / (float)window->getSize().y, depth7 ); 
+		//	pos7.y = 1 - pos7.y;
+		Color c7 = touchedLights[7]->color;
+		Vector3f falloff7 = touchedLights[7]->falloff;
+		
+		on[7] = true;
+		//sh.setParameter( "On7", true );
+		polyShader.setParameter( "LightPos7", pos7 );
+		polyShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+		polyShader.setParameter( "Falloff7", falloff7 );
+	}
+	if( lightsAtOnce > 8 )
+	{
+		float depth8 = touchedLights[8]->depth;
+		Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
+		Vector3f pos8( vi8.x / (float)window->getSize().x, -1 + vi8.y / (float)window->getSize().y, depth8 ); 
+		//	pos8.y = 1 - pos8.y;
+		Color c8 = touchedLights[8]->color;
+		Vector3f falloff8 = touchedLights[8]->falloff;
+		
+		on[8] = true;
+		//sh.setParameter( "On8", true );
+		polyShader.setParameter( "LightPos8", pos8 );
+		polyShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+		polyShader.setParameter( "Falloff8", falloff8 );
+	}
+
+	polyShader.setParameter( "On0", on[0] );
+	polyShader.setParameter( "On1", on[1] );
+	polyShader.setParameter( "On2", on[2] );
+	polyShader.setParameter( "On3", on[3] );
+	polyShader.setParameter( "On4", on[4] );
+	polyShader.setParameter( "On5", on[5] );
+	polyShader.setParameter( "On6", on[6] );
+	polyShader.setParameter( "On7", on[7] );
+	polyShader.setParameter( "On8", on[8] );
 }
 
 //save state to enter clone world
