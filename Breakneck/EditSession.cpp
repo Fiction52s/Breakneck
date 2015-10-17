@@ -1646,11 +1646,11 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	it = startIt;
 	Vector2i currPoint = startPoint;
-	//++it;
-	//if( it == currentPoly->points.end() )
-	//{
-	//	it = currentPoly->points.begin();
-//	}
+	++it;
+	if( it == currentPoly->points.end() )
+	{
+		it = currentPoly->points.begin();
+	}
 	Vector2i nextPoint = (*it).pos;
 
 
@@ -1661,17 +1661,6 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 
 	bool firstTime = true;
-
-	while( firstTime && currPoint != startPoint )
-	{
-		PointList::iterator min;
-		bool emptyInter = true;
-		PointList::iterator otherIt = otherPoly->points.begin();
-		Vector2i otherCurrPoint = (*otherIt).pos;
-		++otherIt;
-		Vector2i otherNextPoint;// = (*++bit);
-		Vector2i minPoint;
-	}
 
 	while( firstTime || currPoint != startPoint )
 	{
@@ -1717,10 +1706,10 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		for(; otherIt != otherPoly->points.end(); ++otherIt )
 		{
 			otherNextPoint = (*otherIt).pos;
-			LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
+			LineIntersection li = LimitSegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 			//cout << "li.par: " << li.parallel << ", others: lii: " << lii.x << ", " << lii.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
-			if( !li.parallel && ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
+			if( !li.parallel )//&& ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
 			{
 				if( emptyInter )
 				{
@@ -1837,6 +1826,48 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 					//cout << "seg intersect!!!!!!" << endl;
 					//assert( 0 );
 					return li;
+				}
+			}
+		}
+	}
+	//cout << "return false" << endl;
+	li.parallel = true;
+	return li;
+}
+
+LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+{
+	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
+				V2d( c.x, c.y ), V2d( d.x, d.y ) );
+	if( !li.parallel )
+	{
+		double e1Left = min( a.x, b.x );
+		double e1Right = max( a.x, b.x );
+		double e1Top = min( a.y, b.y );
+		double e1Bottom = max( a.y, b.y );
+
+		double e2Left = min( c.x, d.x );
+		double e2Right = max( c.x, d.x );
+		double e2Top = min( c.y, d.y );
+		double e2Bottom = max( c.y, d.y );
+		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
+		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
+		if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
+		{
+			//cout << "---!!!!!!" << endl;
+			if( li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
+			{
+				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
+				{
+					V2d &pos = li.position;
+					if( length( li.position - V2d( a.x, a.y ) ) > 1 &&  length( li.position - V2d( b.x, b.y ) ) > 1
+						&&  length( li.position - V2d( c.x, c.y ) ) > 1 &&  length( li.position - V2d( d.x, d.y ) ) > 1 )
+					{
+						return li;
+					}
+					//cout << "seg intersect!!!!!!" << endl;
+					//assert( 0 );
+					
 				}
 			}
 		}
@@ -2173,10 +2204,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										Vector2i b = (*testIt).pos;
 										Vector2i c = polygonInProgress->points.back().pos;
 										Vector2i d = polygonInProgress->points.front().pos;
-										LineIntersection li = SegmentIntersect( a,b,c,d );
+										LineIntersection li = LimitSegmentIntersect( a,b,c,d );
 										Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 										//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-										if( !li.parallel && lii != a && lii != b && lii != c && lii != d )
+										if( !li.parallel )//(abs( lii.x - currPoint.x ) > 1 || abs( lii.y - currPoint.y ) > 1 ) )//&& lii != a && lii != b && lii != c && lii != d )
 										{
 											valid = false;
 										}
@@ -3636,10 +3667,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									Vector2i d = (*okayIt).pos;
 
 								
-									LineIntersection li = SegmentIntersect( a,b,c,d );
+									LineIntersection li = LimitSegmentIntersect( a,b,c,d );
 									Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 									//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-									if( !li.parallel && lii != a && lii != b && lii != c && lii != d )
+									if( !li.parallel )//&& lii != a && lii != b && lii != c && lii != d )
 									{
 										okay = false;
 										break;
