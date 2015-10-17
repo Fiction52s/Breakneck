@@ -84,7 +84,7 @@ struct GameSession : QuadTreeCollider
 	int CountActiveEnemies();
 	void UpdateTerrainShader( const sf::Rect<double> &aabb );
 	void LevelSpecifics();
-	void SetGroundPar();
+	bool SetGroundPar();
 
 
 	void DebugDrawActors();

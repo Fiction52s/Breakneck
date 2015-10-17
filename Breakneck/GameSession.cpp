@@ -1951,9 +1951,8 @@ int GameSession::Run( string fileN )
 		
 		preScreenTex->setView( cloudView );
 
-		SetGroundPar();
-
-		preScreenTex->draw( groundPar, &mountain01Tex );
+		if( SetGroundPar() )
+			preScreenTex->draw( groundPar, &mountain01Tex );
 	
 
 		Vector2f orig( originalPos.x, originalPos.y );
@@ -3232,10 +3231,20 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 }
 
-void GameSession::SetGroundPar()
+bool GameSession::SetGroundPar()
 {	
-	int tileHeight = 1045 / 2;//540;
 	int widthFactor = 8;
+	float yView = view.getCenter().y / widthFactor;
+	//cout << "yView << " << yView << endl;
+	int tileHeight = 1045 / 2;//540;
+
+	if( yView > 1080 || yView < -tileHeight )
+	{
+		return false;
+	}
+
+	
+	
 	bool flipped = false;
 	int a = ((int)view.getCenter().x) % (1080 * widthFactor);
 	double ratio = a / (1080.0 * widthFactor);
@@ -3251,7 +3260,7 @@ void GameSession::SetGroundPar()
 	{
 		flipped = true;
 	}
-	cout << "ratio: " << ratio << ", ratiob: " << ratiob << endl;
+	//cout << "ratio: " << ratio << ", ratiob: " << ratiob << endl;
 
 	int i = 0;
 	if( flipped )
@@ -3290,7 +3299,9 @@ void GameSession::SetGroundPar()
 	groundPar[i*4+2].texCoords = Vector2f( 1920, tileHeight * (i+1) );
 	groundPar[i*4+3].texCoords = Vector2f( 1920 * ratio, tileHeight * (i+1) );
 
-	float yView = view.getCenter().y / widthFactor;
+	
 	cloudView.setCenter( 960, 540 + yView );
 	preScreenTex->setView( cloudView );
+
+	return true;
 }

@@ -876,7 +876,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
-					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					if( (groundSpeed > 0 && gNorm.x < 0) || (groundSpeed < 0 && gNorm.x > 0) )
 					{
 						action = STEEPCLIMB;
 						frame = 0;
@@ -2077,6 +2077,15 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 				}*/
+				}
+				else
+				{
+					//is steep
+					if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
+					{
+						action = STEEPCLIMB;
+						frame = 1;
+					}
 				}
 			}
 			
