@@ -84,6 +84,8 @@ struct GameSession : QuadTreeCollider
 	int CountActiveEnemies();
 	void UpdateTerrainShader( const sf::Rect<double> &aabb );
 	void LevelSpecifics();
+	void SetGroundPar();
+
 
 	void DebugDrawActors();
 
@@ -114,6 +116,8 @@ struct GameSession : QuadTreeCollider
 
 	std::list<MovingTerrain*> movingPlats;
 
+	sf::VertexArray groundPar;
+	sf::Transform groundTrans;
 	Camera cam;
 	Actor player;
 	sf::Shader polyShader;

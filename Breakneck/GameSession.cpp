@@ -19,10 +19,10 @@ using namespace sf;
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
+	,groundPar( sf::Quads, 2 * 4 )
 {
 	usePolyShader = true;
 	minimapTex = miniTex;
-	
 
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -1269,6 +1269,10 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
+	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 300 )->texture;
+
+	
+
 	bool showFrameRate = false;
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
@@ -1324,6 +1328,33 @@ int GameSession::Run( string fileN )
 	parTest.setTexture( tex ); 
 	parTest.setPosition( 0, 0 );
 
+	/*groundPar[0].position = Vector2f( 0, 1080 - 300 );
+	groundPar[1].position = Vector2f( 1920 / 2, 1080 - 300 );
+	groundPar[2].position = Vector2f( 1920 / 2, 1080 );
+	groundPar[3].position = Vector2f( 0, 1080 );
+
+	groundPar[0].texCoords = Vector2f( 0, 0 );
+	groundPar[1].texCoords = Vector2f( 1920 / 2, 0 );
+	groundPar[2].texCoords = Vector2f( 1920 / 2, 300 );
+	groundPar[3].texCoords = Vector2f( 0, 300 );
+
+	groundPar[4].position = Vector2f( 1920 / 2, 1080 - 300 );
+	groundPar[5].position = Vector2f( 1920, 1080 - 300 );
+	groundPar[6].position = Vector2f( 1920, 1080 );
+	groundPar[7].position = Vector2f( 1920 / 2, 1080 );
+
+	groundPar[4].texCoords = Vector2f( 1920 / 2, 0 );
+	groundPar[5].texCoords = Vector2f( 1920, 0 );
+	groundPar[6].texCoords = Vector2f( 1920, 300 );
+	groundPar[7].texCoords = Vector2f( 1920 / 2, 300 );*/
+
+	groundTrans = Transform::Identity;
+	groundTrans.translate( 0, 0 );
+//	groundPar[0].position = Vector2f( 0, 1080 - 300 );
+//	groundPar[1].position = Vector2f( 1920, 1080 - 300 );
+//	groundPar[2].position = Vector2f( 1920, 1080 );
+//	groundPar[3].position = Vector2f( 0, 1080 );
+	
 
 	cam.pos.x = player.position.x;
 	cam.pos.y = player.position.y;
@@ -1912,15 +1943,25 @@ int GameSession::Run( string fileN )
 		
 		
 		//window->setView( view );
+
 		
-		cloudView.setCenter( view.getCenter() );
+
+		cloudView.setCenter( 960, 540 );
+		//cloudView.setSize( 1920, 1080 );
+		
 		preScreenTex->setView( cloudView );
+
+		SetGroundPar();
+
+		preScreenTex->draw( groundPar, &mountain01Tex );
+	
+
 		Vector2f orig( originalPos.x, originalPos.y );
 		float depth = 3;
 		parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
 		float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
 		//parTest.setScale( scale, scale );
-		preScreenTex->draw( parTest );
+		//preScreenTex->draw( parTest );
 		
 		preScreenTex->setView( view );
 		
@@ -3189,4 +3230,61 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 	//target->draw( shipSprite );
 
+}
+
+void GameSession::SetGroundPar()
+{	
+	int widthFactor = 10;
+	bool flipped = false;
+	int a = ((int)view.getCenter().x) % (1080 * widthFactor);
+	double ratio = a / (1080.0 * widthFactor);
+	if( ratio < 0 )
+		ratio = 1 + ratio;
+
+	int b = ((int)view.getCenter().x) % (1080 * widthFactor * 2);
+	double ratiob = b / (1080.0 * widthFactor );
+	if( ratiob < 0 )
+		ratiob = 1 + ratiob;
+
+	if( ratiob > ratio )
+	{
+		flipped = true;
+	}
+	//cout << "ratio: " << ratio << ", ratiob: " << ratiob << endl;
+
+	int i = 0;
+	if( flipped )
+	{
+		i = 1;
+		//ratio = 1 - ratio;
+	}
+
+	groundPar[i*4].position = Vector2f( 0, 1080 - 300 );
+	groundPar[i*4+1].position = Vector2f( 1920 * ratio, 1080 - 300 );
+	groundPar[i*4+2].position = Vector2f( 1920 * ratio, 1080 );
+	groundPar[i*4+3].position = Vector2f( 0, 1080 );
+
+	groundPar[i*4].texCoords = Vector2f( 0, 300 * i );
+	groundPar[i*4 + 1].texCoords = Vector2f( 1920 * ratio, 300 * i );
+	groundPar[i*4 + 2].texCoords = Vector2f( 1920 * ratio, 300 * (i + 1) );
+	groundPar[i*4 + 3].texCoords = Vector2f( 0, 300 * (i + 1) );
+
+	if( flipped )
+	{
+		i = 0;
+	}
+	else
+	{
+		i = 1;
+	}
+
+	groundPar[i*4].position = Vector2f( 1920 * ratio , 1080 - 300 );
+	groundPar[i*4+ 1].position = Vector2f( 1920, 1080 - 300 );
+	groundPar[i*4+2].position = Vector2f( 1920, 1080 );
+	groundPar[i*4+3].position = Vector2f( 1920 * ratio , 1080 );
+
+	groundPar[i*4].texCoords = Vector2f( 1920 * ratio, 300 * i );
+	groundPar[i*4+1].texCoords = Vector2f( 1920, 300 * i );
+	groundPar[i*4+2].texCoords = Vector2f( 1920, 300 * (i+1) );
+	groundPar[i*4+3].texCoords = Vector2f( 1920 * ratio, 300 * (i+1) );
 }
