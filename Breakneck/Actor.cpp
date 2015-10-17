@@ -6685,25 +6685,7 @@ void Actor::UpdatePostPhysics()
 
 		if( ground != NULL )
 		{
-			double angle = 0;
-			//cout << "offsetx: " <<  offsetX << endl;
-			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-			//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
-			//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				
-
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 
@@ -6790,21 +6772,7 @@ void Actor::UpdatePostPhysics()
 
 		if( ground != NULL )
 		{
-			double angle = 0;
-			
-			
-			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -6886,19 +6854,7 @@ void Actor::UpdatePostPhysics()
 
 		if( ground != NULL )
 		{
-			double angle = 0;
-			//if( edgeQuantity == 0 || edgeQuantity == length( ground->v1 - ground->v0 ) )
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -7008,20 +6964,7 @@ void Actor::UpdatePostPhysics()
 		}
 
 
-		bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-		double angle = 0;
-		if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-		{
-			if( reversed )
-					angle = PI;
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
-
+		double angle = GroundedAngle();
 		
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -7079,19 +7022,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 		
-		bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-		double angle = 0;
-		if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-		{
-			if( reversed )
-					angle = PI;
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
+		double angle = GroundedAngle();
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
@@ -7168,19 +7099,7 @@ void Actor::UpdatePostPhysics()
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
 
-		bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-		double angle = 0;
-		if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-		{
-			if( reversed )
-					angle = PI;
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
+		double angle = GroundedAngle();
 
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 		sprite->setRotation( angle / PI * 180 );
@@ -7246,25 +7165,7 @@ void Actor::UpdatePostPhysics()
 
 			
 			V2d trueNormal;
-			double angle = 0;
-
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				trueNormal = V2d( 0, -1 );
-				if( reversed )
-				{
-					angle = PI;
-					trueNormal = V2d( 0, 1 );
-				}
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-				trueNormal = gn;
-			}
+			double angle = GroundedAngleAttack( trueNormal );
 
 			if( showSword1 )
 			{
@@ -7346,25 +7247,7 @@ void Actor::UpdatePostPhysics()
 			}
 			
 			V2d trueNormal;
-
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				trueNormal = V2d( 0, -1 );
-				if( reversed )
-				{
-					angle = PI;
-					trueNormal = V2d( 0, 1 );
-				}
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-				trueNormal = gn;
-			}
+			double angle = GroundedAngleAttack( trueNormal );
 
 			if( showSword1 )
 			{
@@ -7441,25 +7324,7 @@ void Actor::UpdatePostPhysics()
 			}
 			
 			V2d trueNormal;
-
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				trueNormal = V2d( 0, -1 );
-				if( reversed )
-				{
-					angle = PI;
-					trueNormal = V2d( 0, 1 );
-				}
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-				trueNormal = gn;
-			}
+			double angle = GroundedAngleAttack( trueNormal );
 
 			if( showSword1 )
 			{
@@ -7707,19 +7572,9 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			
+			double angle = GroundedAngle();
+			
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
@@ -8061,19 +7916,7 @@ void Actor::UpdatePostPhysics()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			
-			bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-				|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
-			{
-				if( reversed )
-						angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
+			double angle = GroundedAngle();
 
 		
 
@@ -9158,6 +9001,76 @@ void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPorti
 		rcEdge = edge;
 		rcQuantity = edgeQuantity;
 	}*/
+}
+
+double Actor::GroundedAngle()
+{
+	assert( ground != NULL );
+	V2d gn = ground->Normal();
+
+	double angle = 0;
+	
+	bool extraCase;
+	if( !reversed )
+	{
+		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+	else
+	{
+		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
+	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
+	if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
+	{
+		if( reversed )
+			angle = PI;
+	}
+	else
+	{
+		angle = atan2( gn.x, -gn.y );
+	}
+
+	return angle;
+}
+
+double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
+{
+	assert( ground != NULL );
+	V2d gn = ground->Normal();
+
+	double angle = 0;
+
+	bool extraCase;
+	if( !reversed )
+	{
+		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+	else
+	{
+		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
+		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+	}
+
+	if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
+	{
+		trueNormal = V2d( 0, -1 );
+		if( reversed )
+		{
+			angle = PI;
+			trueNormal = V2d( 0, 1 );
+		}
+	}
+	else
+	{
+		angle = atan2( gn.x, -gn.y );
+		trueNormal = gn;
+	}
+
+	return angle;
 }
 
 void Actor::SaveState()

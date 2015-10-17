@@ -74,6 +74,8 @@ struct Actor : QuadTreeCollider,
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
 	void AirMovement();
+	double GroundedAngle();
+	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 
 	//unsaved vars
 	int possibleEdgeCount;

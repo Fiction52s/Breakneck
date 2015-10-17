@@ -1320,8 +1320,8 @@ int GameSession::Run( string fileN )
 	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
 	//parTest.setFillColor( Color::Red );
 	Texture tex;
-	tex.loadFromFile( "parallax1.png" );
-	parTest.setTexture( tex );
+	tex.loadFromFile( "cloud01.png" );
+	parTest.setTexture( tex ); 
 	parTest.setPosition( 0, 0 );
 
 
@@ -1421,6 +1421,9 @@ int GameSession::Run( string fileN )
 	int frameCounterWait = 20;
 	int frameCounter = 0;
 	double total = 0;
+
+	View cloudView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1907,15 +1910,19 @@ int GameSession::Run( string fileN )
 		//window->draw( background );
 
 		
-		preScreenTex->setView( view );
+		
 		//window->setView( view );
-
+		
+		cloudView.setCenter( view.getCenter() );
+		preScreenTex->setView( cloudView );
 		Vector2f orig( originalPos.x, originalPos.y );
 		float depth = 3;
 		parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
 		float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
-		parTest.setScale( scale, scale );
+		//parTest.setScale( scale, scale );
 		preScreenTex->draw( parTest );
+		
+		preScreenTex->setView( view );
 		
 		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
