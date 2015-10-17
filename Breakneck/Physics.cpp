@@ -2159,14 +2159,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double edgeXPos = edgeLeft;
 			if( en.x > 0 ) //right
 			{
-				cout << "trying!: oldLeft: " << oldLeft << ", edgeXPos: " << edgeXPos <<", left: " << left << ", vel: " << vel.x << ", " << vel.y << endl;
-				cout << "blah: " << (vel.x < 0 ) << ", " << (oldLeft >= edgeXPos ) << ", " << (left <= edgeXPos ) << endl;
+				//cout << "trying!: oldLeft: " << oldLeft << ", edgeXPos: " << edgeXPos <<", left: " << left << ", vel: " << vel.x << ", " << vel.y << endl;
+				//cout << "blah: " << (vel.x < 0 ) << ", " << (oldLeft >= edgeXPos ) << ", " << (left <= edgeXPos ) << endl;
 				if( vel.x < 0 && oldLeft >= edgeXPos - .001 && left <= edgeXPos )
 				{
 					bool a = top >= edgeTop && top <= edgeBottom;
 					bool b = bottom >= edgeTop && bottom <= edgeBottom;
 					//cout << "edge l/r: " << edgetop << ", " << edgebottom << ", l/r: " << top << ", " << bottom << endl;
-					cout << "in here: " << a << ", " << b << endl;
+					//cout << "in here: " << a << ", " << b << endl;
 					bool hit = true;
 
 					if( a && b )
