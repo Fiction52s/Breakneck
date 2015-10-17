@@ -840,7 +840,31 @@ void EditSession::Draw()
 	
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+		if( extendingPolygon == NULL )
+		{
+			(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+		}
+		else
+		{
+			if( (*it) == extendingPolygon )
+			{
+				(*it)->Draw( showTerrainPath, zoomMultiple, w, true, extendingPoint );
+			}
+			else
+			{
+				if( extendingPolygon == NULL )
+				{
+					(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+				}
+				else
+				{
+					(*it)->Draw( showTerrainPath, zoomMultiple, w, false, extendingPoint );
+				}
+			}
+		}
+		
+		
+		
 	}
 
 	int psize = polygonInProgress->points.size();
@@ -1622,11 +1646,11 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	it = startIt;
 	Vector2i currPoint = startPoint;
-	++it;
-	if( it == currentPoly->points.end() )
-	{
-		it = currentPoly->points.begin();
-	}
+	//++it;
+	//if( it == currentPoly->points.end() )
+	//{
+	//	it = currentPoly->points.begin();
+//	}
 	Vector2i nextPoint = (*it).pos;
 
 
@@ -1637,6 +1661,18 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 
 	bool firstTime = true;
+
+	while( firstTime && currPoint != startPoint )
+	{
+		PointList::iterator min;
+		bool emptyInter = true;
+		PointList::iterator otherIt = otherPoly->points.begin();
+		Vector2i otherCurrPoint = (*otherIt).pos;
+		++otherIt;
+		Vector2i otherNextPoint;// = (*++bit);
+		Vector2i minPoint;
+	}
+
 	while( firstTime || currPoint != startPoint )
 	{
 		CircleShape cs;
@@ -1668,11 +1704,10 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		
 		LineIntersection li1 = SegmentIntersect( currPoint, nextPoint, otherPoly->points.back().pos, otherCurrPoint );
 		Vector2i lii1( floor(li1.position.x + .5), floor(li1.position.y + .5) );
-		if( !li1.parallel  && (abs( lii1.x - currPoint.x ) >= 1 || abs( lii1.y - currPoint.y ) >= 1 ))
+		if( !li1.parallel && ( lii1 != currPoint && lii1 != nextPoint && lii1 != otherPoly->points.back().pos && lii1 != otherCurrPoint ) ) 
 		{
-			minIntersection.x = lii1.x;
-			minIntersection.y = lii1.y;
-			minPoint = otherCurrPoint;
+			minIntersection = lii1;
+			minPoint = otherCurrPoint;//otherCurrPoint;
 			min = otherPoly->points.begin();//--otherIt;
 			//++otherIt;
 			emptyInter = false;
@@ -1698,9 +1733,10 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 				}
 				else
 				{
-					Vector2i blah( minIntersection - currPoint );
+					V2d blah( minIntersection - currPoint );
+					V2d blah2( lii - currPoint );
 					//cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
-					if( length( li.position - V2d(currPoint.x, currPoint.y) ) < length( V2d( blah.x, blah.y ) ) )
+					if( length( blah2 ) < length( blah ) )
 					{
 						minIntersection = lii;
 						minPoint = otherNextPoint;
