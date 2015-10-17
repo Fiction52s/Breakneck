@@ -1269,7 +1269,7 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
-	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 300 )->texture;
+	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1045 / 2 /*540*/ )->texture;
 
 	
 
@@ -1453,7 +1453,7 @@ int GameSession::Run( string fileN )
 	int frameCounter = 0;
 	double total = 0;
 
-	View cloudView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
+	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 
 	while( !quit )
 	{
@@ -3234,7 +3234,8 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 void GameSession::SetGroundPar()
 {	
-	int widthFactor = 10;
+	int tileHeight = 1045 / 2;//540;
+	int widthFactor = 8;
 	bool flipped = false;
 	int a = ((int)view.getCenter().x) % (1080 * widthFactor);
 	double ratio = a / (1080.0 * widthFactor);
@@ -3244,30 +3245,31 @@ void GameSession::SetGroundPar()
 	int b = ((int)view.getCenter().x) % (1080 * widthFactor * 2);
 	double ratiob = b / (1080.0 * widthFactor );
 	if( ratiob < 0 )
-		ratiob = 1 + ratiob;
+		ratiob = 2 + ratiob;
 
-	if( ratiob > ratio )
+	if( ratiob > ratio + .001 )
 	{
 		flipped = true;
 	}
-	//cout << "ratio: " << ratio << ", ratiob: " << ratiob << endl;
+	cout << "ratio: " << ratio << ", ratiob: " << ratiob << endl;
 
 	int i = 0;
 	if( flipped )
 	{
 		i = 1;
-		//ratio = 1 - ratio;
 	}
 
-	groundPar[i*4].position = Vector2f( 0, 1080 - 300 );
-	groundPar[i*4+1].position = Vector2f( 1920 * ratio, 1080 - 300 );
+	ratio = 1 - ratio;
+
+	groundPar[i*4].position = Vector2f( 0, 1080 - tileHeight );
+	groundPar[i*4+1].position = Vector2f( 1920 * ratio, 1080 - tileHeight );
 	groundPar[i*4+2].position = Vector2f( 1920 * ratio, 1080 );
 	groundPar[i*4+3].position = Vector2f( 0, 1080 );
 
-	groundPar[i*4].texCoords = Vector2f( 0, 300 * i );
-	groundPar[i*4 + 1].texCoords = Vector2f( 1920 * ratio, 300 * i );
-	groundPar[i*4 + 2].texCoords = Vector2f( 1920 * ratio, 300 * (i + 1) );
-	groundPar[i*4 + 3].texCoords = Vector2f( 0, 300 * (i + 1) );
+	groundPar[i*4].texCoords = Vector2f( 0, tileHeight * i );
+	groundPar[i*4 + 1].texCoords = Vector2f( 1920 * ratio, tileHeight * i );
+	groundPar[i*4 + 2].texCoords = Vector2f( 1920 * ratio, tileHeight * (i + 1) );
+	groundPar[i*4 + 3].texCoords = Vector2f( 0, tileHeight * (i + 1) );
 
 	if( flipped )
 	{
@@ -3278,13 +3280,17 @@ void GameSession::SetGroundPar()
 		i = 1;
 	}
 
-	groundPar[i*4].position = Vector2f( 1920 * ratio , 1080 - 300 );
-	groundPar[i*4+ 1].position = Vector2f( 1920, 1080 - 300 );
+	groundPar[i*4].position = Vector2f( 1920 * ratio , 1080 - tileHeight );
+	groundPar[i*4+ 1].position = Vector2f( 1920, 1080 - tileHeight );
 	groundPar[i*4+2].position = Vector2f( 1920, 1080 );
 	groundPar[i*4+3].position = Vector2f( 1920 * ratio , 1080 );
 
-	groundPar[i*4].texCoords = Vector2f( 1920 * ratio, 300 * i );
-	groundPar[i*4+1].texCoords = Vector2f( 1920, 300 * i );
-	groundPar[i*4+2].texCoords = Vector2f( 1920, 300 * (i+1) );
-	groundPar[i*4+3].texCoords = Vector2f( 1920 * ratio, 300 * (i+1) );
+	groundPar[i*4].texCoords = Vector2f( 1920 * ratio, tileHeight * i );
+	groundPar[i*4+1].texCoords = Vector2f( 1920, tileHeight * i );
+	groundPar[i*4+2].texCoords = Vector2f( 1920, tileHeight * (i+1) );
+	groundPar[i*4+3].texCoords = Vector2f( 1920 * ratio, tileHeight * (i+1) );
+
+	float yView = view.getCenter().y / widthFactor;
+	cloudView.setCenter( 960, 540 + yView );
+	preScreenTex->setView( cloudView );
 }

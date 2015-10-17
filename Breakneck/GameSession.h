@@ -163,7 +163,7 @@ struct GameSession : QuadTreeCollider
 	//EnemyQNode *enemyTree;
 	std::string fileName;
 	bool goalDestroyed;
-
+	sf::View cloudView;
 	Enemy *activeEnemyList;
 	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;
