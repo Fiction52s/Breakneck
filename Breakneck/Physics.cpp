@@ -471,7 +471,7 @@ Collider::~Collider()
 	delete currentContact;
 }
 
-Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel )
+Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel, const V2d &tVel )
 {
 	if( b.isCircle )
 	{

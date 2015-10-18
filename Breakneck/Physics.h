@@ -117,21 +117,9 @@ struct Collider
 	Contact *collideEdge( 
 		sf::Vector2<double> position, 
 		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel );
-		
-	Contact *collideEdge2( 
-		sf::Vector2<double> position, 
-		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel );
-	Contact *collideEdge3( 
-		sf::Vector2<double> position, 
-		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel );
-
-	Contact *collideEdgeREAL( 
-		sf::Vector2<double> position, 
-		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel );
+		const sf::Vector2<double> &vel, 
+		const sf::Vector2<double> &tVel );
+	
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
 

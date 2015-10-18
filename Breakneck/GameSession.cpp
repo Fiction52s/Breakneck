@@ -1062,7 +1062,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 			
-			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 2 );
+			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 0 );
 			movingPlats.push_back( mt );
 		}
 

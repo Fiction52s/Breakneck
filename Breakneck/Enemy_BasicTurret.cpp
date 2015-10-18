@@ -98,7 +98,7 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 		col = true;
 	}*/
 
-	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel );
+	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel, V2d( 0, 0 ) );
 	
 
 	if( c != NULL )

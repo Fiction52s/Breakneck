@@ -4054,6 +4054,11 @@ bool Actor::CheckStandUp()
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
 		owner->terrainTree->Query( this, r );
+
+		for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
+		{
+			(*it)->Query( this, r );
+		}
 		//cout << "col number: " << possibleEdgeCount << endl;
 		possibleEdgeCount = 0;
 		return checkValid;
@@ -4133,7 +4138,10 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		cout << "norm: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+		if( col )
+		{
+			cout << "norm: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+		}
 
 		if( false )//if( col )//if( false )////if( col )//
 		{
@@ -8513,11 +8521,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		V2d temp0 = e->v0;
 		V2d temp1 = e->v1;
 
-		e->v0 += currMovingTerrain->oldPosition;
-		e->v1 += currMovingTerrain->oldPosition;
+		//e->v0 += currMovingTerrain->oldPosition;
+		//e->v1 += currMovingTerrain->oldPosition;
 
-		//e->v0 += currMovingTerrain->position;
-		//e->v1 += currMovingTerrain->position;
+		e->v0 += currMovingTerrain->position;
+		e->v1 += currMovingTerrain->position;
 
 		if( e->Normal().y == -1 )
 		{
@@ -8526,8 +8534,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		
 		}
 		V2d blah( tempVel - currMovingTerrain->vel );
-		cout << "tempnew: " << blah.x << ", " << blah.y << endl;
-		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + -currMovingTerrain->vel );
+		//cout << "tempnew: " << blah.x << ", " << blah.y << endl;
+		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, currMovingTerrain->vel );
 
 		e->v0 = temp0;
 		e->v1 = temp1;
@@ -8564,6 +8572,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					col = true;
 				}
 			}*/
+
+			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
+			{
+				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+			}
+			else //point
+			{
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			}
+
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
@@ -8612,7 +8630,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		if( e == ground )
 			return;
 
-		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel );
+		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
 		
 		
 		//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
@@ -8622,11 +8640,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
@@ -8654,7 +8672,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
-					cout << "now the min" << endl;
+					//cout << "now the min" << endl;
 					//if( minContact.edge != NULL )
 					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
 					//	<< e->Normal().x << ", " << e->Normal().y << endl;
@@ -8694,11 +8712,23 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		//}
 	}
+	else if( queryMode == "moving_check" )
+	{
+		if ( action != GRINDBALL )
+		{
+			if( ( e->Normal().y <= 0 && !reversed && ground != NULL ) || ( e->Normal().y >= 0 && reversed && ground != NULL ) )
+			{
+				return;
+			}
+		}
+		
+		checkValid = false;
+	}
 	else if( queryMode == "checkwall" )
 	{
 		if( ground == e )
 			return;
-		Contact *c = owner->coll.collideEdge( position + tempVel , b, e, tempVel );
+		Contact *c = owner->coll.collideEdge( position + tempVel , b, e, tempVel, V2d( 0, 0 ) );
 		
 		if( c != NULL )
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
@@ -8747,7 +8777,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				e->v1.x << ", " << e->v1.y << endl;
 		}
 
-		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel );
+		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );
 
 		e->v0 = temp0;
 		e->v1 = temp1;

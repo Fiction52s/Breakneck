@@ -70,7 +70,7 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( queryMode == "resolve" )
 	{
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel );
+		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
 
 		if( c != NULL )
 		{
