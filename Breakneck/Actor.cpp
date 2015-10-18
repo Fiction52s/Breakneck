@@ -4133,6 +4133,8 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
+		cout << "norm: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+
 		if( false )//if( col )//if( false )////if( col )//
 		{
 			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
@@ -5891,33 +5893,39 @@ void Actor::UpdatePhysics()
 			if( action == BOUNCEAIR && tempCollision && bounceOkay )
 			{
 				
-				
-				bounceEdge = minContact.edge;
-				bounceMovingTerrain = minContact.movingPlat;
-				
-
-				V2d oldv0 = bounceEdge->v0;
-				V2d oldv1 = bounceEdge->v1;
-
-				if( bounceMovingTerrain != NULL )
+				if( bounceEdge == NULL || ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
 				{
-					bounceEdge->v0 += bounceMovingTerrain->position;
-					bounceEdge->v1 += bounceMovingTerrain->position;
-				}
+					bounceEdge = minContact.edge;
+					bounceMovingTerrain = minContact.movingPlat;
 
-				bounceQuant = bounceEdge->GetQuantity( minContact.position );
+					//cout << "b: " << bounceEdge->Normal().x << ", " << bounceEdge->Normal().y << endl;
 				
 
-				if( bounceMovingTerrain != NULL )
-				{
-					bounceEdge->v0 = oldv0;
-					bounceEdge->v1 = oldv1;
+					V2d oldv0 = bounceEdge->v0;
+					V2d oldv1 = bounceEdge->v1;
+
+					if( bounceMovingTerrain != NULL )
+					{
+						bounceEdge->v0 += bounceMovingTerrain->position;
+						bounceEdge->v1 += bounceMovingTerrain->position;
+					}
+
+					bounceQuant = bounceEdge->GetQuantity( minContact.position );
+				
+
+					if( bounceMovingTerrain != NULL )
+					{
+						bounceEdge->v0 = oldv0;
+						bounceEdge->v1 = oldv1;
+					}
+
+					offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+
+					movement = 0;
+					cout << "bouncing: " << bounceQuant << endl;
 				}
-
-				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
-
-				movement = 0;
-				cout << "bouncing: " << bounceQuant << endl;
+				
+				
 			//	cout << "offset now!: " << offsetX << endl;
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
@@ -6341,6 +6349,7 @@ void Actor::UpdatePostPhysics()
 	}
 	else if( bounceEdge != NULL )
 	{
+		cout << "bouncing here seriously" << endl;
 		if( action == BOUNCEAIR )
 		{
 			storedBounceVel = velocity;
@@ -8568,11 +8577,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
@@ -8593,10 +8602,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						minContact.movingPlat = NULL;
 						col = true;
 					}
+					else
+					{
+						//cout << "happens here!!!!" << endl;
+					}
 				}
 				else
 				{
-					//cout << "now the min" << endl;
+					cout << "now the min" << endl;
 					//if( minContact.edge != NULL )
 					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
 					//	<< e->Normal().x << ", " << e->Normal().y << endl;
