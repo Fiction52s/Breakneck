@@ -53,6 +53,8 @@ void Camera::Update( Actor *player )
 		pos.x = player->position.x;
 		pos.y = player->position.y;
 		zoomLevel = 0;
+		zoomFactor = 1;
+		return;
 		//return;
 	}
 

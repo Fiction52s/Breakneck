@@ -1323,9 +1323,11 @@ int GameSession::Run( string fileN )
 	
 	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
 	//parTest.setFillColor( Color::Red );
-	Texture tex;
-	tex.loadFromFile( "cloud01.png" );
-	parTest.setTexture( tex ); 
+	//Texture tex;
+	//tex.loadFromFile( "cloud01.png" );
+	Tileset *cloudTileset = GetTileset( "cloud01.png", 1269, 350 );
+	//parTest.setTexture( tex ); 
+	parTest.setTexture( *cloudTileset->texture );
 	parTest.setPosition( 0, 0 );
 
 	/*groundPar[0].position = Vector2f( 0, 1080 - 300 );
@@ -1950,7 +1952,7 @@ int GameSession::Run( string fileN )
 		//cloudView.setSize( 1920, 1080 );
 		
 		preScreenTex->setView( cloudView );
-
+		//cavedepth
 		if( SetGroundPar() )
 			preScreenTex->draw( groundPar, &mountain01Tex );
 	
@@ -1960,7 +1962,7 @@ int GameSession::Run( string fileN )
 		parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
 		float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
 		//parTest.setScale( scale, scale );
-		//preScreenTex->draw( parTest );
+		preScreenTex->draw( parTest );
 		
 		preScreenTex->setView( view );
 		

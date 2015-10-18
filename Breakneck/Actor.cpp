@@ -1343,7 +1343,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					if( currInput.B )
+					if( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) )
 					{
 						action = DASH;
 						frame = 0;
@@ -5892,7 +5892,7 @@ void Actor::UpdatePhysics()
 
 			if( action == BOUNCEAIR && tempCollision && bounceOkay )
 			{
-				
+				//this condition might only work when not reversed? does it matter?
 				if( bounceEdge == NULL || ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
 				{
 					bounceEdge = minContact.edge;
@@ -8523,8 +8523,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			//cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
 			//	e->v1.x << ", " << e->v1.y << endl;
+		
 		}
-
+		V2d blah( tempVel - currMovingTerrain->vel );
+		cout << "tempnew: " << blah.x << ", " << blah.y << endl;
 		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + -currMovingTerrain->vel );
 
 		e->v0 = temp0;
@@ -8536,7 +8538,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		//}
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+		{	
+			/*if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
@@ -8560,7 +8563,49 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.movingPlat = currMovingTerrain;
 					col = true;
 				}
+			}*/
+
+			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			{	
+				
+
+				if( c->collisionPriority == minContact.collisionPriority )
+				{
+					if(( c->normal.x == 0 && c->normal.y == 0 ) )//|| minContact.normal.y  0 )
+					//if( length(c->resolution) > length(minContact.resolution) )
+					{
+					//	cout << "now the min" << endl;
+						minContact.collisionPriority = c->collisionPriority;
+						minContact.edge = e;
+						minContact.resolution = c->resolution;
+						minContact.position = c->position;
+						minContact.normal = c->normal;
+						minContact.movingPlat = currMovingTerrain;
+						col = true;
+					}
+					else
+					{
+						//cout << "happens here!!!!" << endl;
+					}
+				}
+				else
+				{
+					//cout << "now the min" << endl;
+					//if( minContact.edge != NULL )
+					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
+					//	<< e->Normal().x << ", " << e->Normal().y << endl;
+					minContact.collisionPriority = c->collisionPriority;
+					//cout << "pri: " << c->collisionPriority << endl;
+					minContact.edge = e;
+					minContact.resolution = c->resolution;
+					minContact.position = c->position;
+					minContact.normal = c->normal;
+					minContact.movingPlat = currMovingTerrain;
+					col = true;
+					
+				}
 			}
+		}
 	}
 	if( queryMode == "resolve" )
 	{
