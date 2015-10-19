@@ -1062,7 +1062,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 			
-			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 0 );
+			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 5 );
 			movingPlats.push_back( mt );
 		}
 
@@ -1269,8 +1269,10 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
+	cloudTileset = GetTileset( "cloud01.png", 1269, 350 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1045 / 2 /*540*/ )->texture;
 
+	SetupClouds();
 	
 
 	bool showFrameRate = false;
@@ -1325,10 +1327,10 @@ int GameSession::Run( string fileN )
 	//parTest.setFillColor( Color::Red );
 	//Texture tex;
 	//tex.loadFromFile( "cloud01.png" );
-	Tileset *cloudTileset = GetTileset( "cloud01.png", 1269, 350 );
+	
 	//parTest.setTexture( tex ); 
-	parTest.setTexture( *cloudTileset->texture );
-	parTest.setPosition( 0, 0 );
+	//parTest.setTexture( *cloudTileset->texture );
+	//parTest.setPosition( 0, 0 );
 
 	/*groundPar[0].position = Vector2f( 0, 1080 - 300 );
 	groundPar[1].position = Vector2f( 1920 / 2, 1080 - 300 );
@@ -1957,12 +1959,13 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( groundPar, &mountain01Tex );
 	
 
-		Vector2f orig( originalPos.x, originalPos.y );
-		float depth = 3;
-		parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
-		float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
+		
+		//float depth = 3;
+		//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
+		SetCloudParAndDraw();
+		//float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
 		//parTest.setScale( scale, scale );
-		preScreenTex->draw( parTest );
+		//preScreenTex->draw( parTest );
 		
 		preScreenTex->setView( view );
 		
@@ -2206,7 +2209,7 @@ int GameSession::Run( string fileN )
 
 		coll.DebugDraw( preScreenTex );
 
-		double minimapZoom = 15;
+		double minimapZoom = 20;
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
@@ -3306,4 +3309,61 @@ bool GameSession::SetGroundPar()
 	preScreenTex->setView( cloudView );
 
 	return true;
+}
+
+void GameSession::SetupClouds()
+{
+	clouds[0].setTexture( *cloudTileset->texture );//"cloud01.png
+	clouds[1].setTexture( *cloudTileset->texture );
+	clouds[2].setTexture( *cloudTileset->texture );
+	clouds[3].setTexture( *cloudTileset->texture );
+	clouds[4].setTexture( *cloudTileset->texture );
+
+	for( int i = 0; i < NUM_CLOUDS; ++i )
+	{
+		//clouds[i].setOrigin( clouds[i].getLocalBounds().width / 2, clouds[i].getLocalBounds().height / 2 );
+	}
+
+	clouds[0].setPosition( 0, 0 );
+	clouds[1].setPosition( 100, 100 );
+	clouds[2].setPosition( 200, 300 );
+	clouds[3].setPosition( 300, 500 );
+	clouds[4].setPosition( 400, 700 );
+}
+
+void GameSession::SetCloudParAndDraw()
+{
+	int depth = 10;
+	Vector2f orig( originalPos.x, originalPos.y );
+
+
+	for( int i = 0; i < NUM_CLOUDS; ++i )
+	{
+		if( view.getCenter().x < 0 )
+		{
+			clouds[i].setPosition( -((int)((orig.x + view.getCenter().x) / depth - .5) % ( -1920 * 3 ) - ( 1920 * 3 / 2 )), clouds[i].getPosition().y );
+			//cout << "neg: " << clouds[i].getPosition().x << endl;
+		}
+		else
+		{
+			clouds[i].setPosition( -((int)((orig.x + view.getCenter().x) / depth + .5) % ( 1920 * 3 ) - ( 1920 * 3 / 2 )), clouds[i].getPosition().y );
+			//cout << "pos: " << clouds[i].getPosition().x << endl;
+		}
+
+		if( view.getCenter().y < 0 )
+		{
+			clouds[i].setPosition( clouds[i].getPosition().x, -((int)((orig.y + view.getCenter().y) / depth - .5) % ( -1080 * 3 ) ));// - ( 1080 * 3 / 2 )));
+		}
+		else
+		{
+			clouds[i].setPosition( clouds[i].getPosition().x, -((int)((orig.y + view.getCenter().y) / depth + .5) % ( 1080 * 3 ) ));// - ( 1080 * 3 / 2 )));
+		}
+		
+		preScreenTex->draw( clouds[i] );
+	}
+
+	//float depth = 3;
+	//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
+	//float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
+	//parTest.setScale( scale, scale );
 }

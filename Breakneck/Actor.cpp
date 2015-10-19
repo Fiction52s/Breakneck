@@ -8506,7 +8506,6 @@ void Actor::UpdatePostPhysics()
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
 {
-
 	Edge *e = (Edge*)qte;
 
 	assert( queryMode != "" );
@@ -8520,12 +8519,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		V2d temp0 = e->v0;
 		V2d temp1 = e->v1;
+		
+		e->v0 += currMovingTerrain->oldPosition;
+		e->v1 += currMovingTerrain->oldPosition;
 
-		//e->v0 += currMovingTerrain->oldPosition;
-		//e->v1 += currMovingTerrain->oldPosition;
-
-		e->v0 += currMovingTerrain->position;
-		e->v1 += currMovingTerrain->position;
+		//e->v0 += currMovingTerrain->position;
+		//e->v1 += currMovingTerrain->position;
 
 		if( e->Normal().y == -1 )
 		{
@@ -8535,7 +8534,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		V2d blah( tempVel - currMovingTerrain->vel );
 		//cout << "tempnew: " << blah.x << ", " << blah.y << endl;
-		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, currMovingTerrain->vel );
+		Contact *c = owner->coll.collideEdge( position + b.offset - currMovingTerrain->vel, b, e, tempVel, currMovingTerrain->vel );
 
 		e->v0 = temp0;
 		e->v1 = temp1;

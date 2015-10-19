@@ -34,6 +34,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void TestPoint( Edge * e);
 	void SortNewPoints( int start, int end );
 	void SwapPoints( int aIndex, int bIndex );
+	void UpdateQuads();
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
@@ -60,9 +61,12 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		double angleDiff;
 	};
 
+	double quadHalfWidth;
 	int numPoints;
+	const static int MAX_POINTS = 100;
 	//sf::Vector2<double> points[16];
-	WirePoint points[100];
+	WirePoint points[MAX_POINTS];
+	sf::VertexArray quads;
 	int framesFiring;
 	double fireRate;
 	sf::Vector2<double> fireDir;

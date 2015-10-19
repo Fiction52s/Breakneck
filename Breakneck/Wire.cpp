@@ -11,6 +11,8 @@ using namespace std;
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
+	, quads( sf::Quads, MAX_POINTS * 4 ) //eventually you can split this up into smaller sections so that they don't all need to draw
+	, quadHalfWidth( 3 ) 
 {
 }
 
@@ -45,7 +47,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				fireDir = V2d( 0, 0 );
 
 
-				if( false )
+				if( true )
 				{
 					if( currInput.LLeft() )
 					{
@@ -676,8 +678,185 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	//TestPoint( v1 );
 }
 
+void Wire::UpdateQuads()
+{
+	
+
+	V2d alongDir;// = fireDir;
+	V2d otherDir;// = fireDir;
+	double temp;// = otherDir.x;
+	//otherDir.x = otherDir.y;
+	//otherDir.y = -temp;
+
+	
+
+	if( state == FIRING )
+	{
+		alongDir = fireDir;
+		otherDir = alongDir;
+		temp = otherDir.x;
+		otherDir.x = otherDir.y;
+		otherDir.y = -temp;
+
+		V2d currFirePos = player->position + fireDir * (40.0 * framesFiring);
+
+		V2d startBack = player->position - otherDir * quadHalfWidth;
+		V2d startFront = player->position + otherDir * quadHalfWidth;
+
+		V2d endBack = currFirePos - otherDir * quadHalfWidth;
+		V2d endFront = currFirePos + otherDir * quadHalfWidth;
+
+		quads[0].color = Color::Red;
+		quads[1].color = Color::Red;
+		quads[2].color = Color::Red;
+		quads[3].color = Color::Red;
+			
+		quads[0].position = Vector2f( startBack.x, startBack.y );
+		quads[1].position = Vector2f( startFront.x, startFront.y );
+		quads[2].position = Vector2f( endFront.x, endFront.y );
+		quads[3].position = Vector2f( endBack.x, endBack.y );
+		//sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Blue),
+		//	sf::Vertex(sf::Vector2f(player->position.x + fireDir.x * 40 * framesFiring,
+		//	player->position.y + fireDir.y * 40 * framesFiring), Color::Magenta)
+	}
+	else if( state == HIT || state == PULLING )
+	{
+		if( numPoints == 0 )
+		{
+
+			alongDir = normalize( anchor.pos - player->position );
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp;
+
+			V2d startBack = player->position - otherDir * quadHalfWidth;
+			V2d startFront = player->position + otherDir * quadHalfWidth;
+
+			V2d endBack = anchor.pos - otherDir * quadHalfWidth;
+			V2d endFront = anchor.pos + otherDir * quadHalfWidth;
+
+			quads[0].position = Vector2f( startBack.x, startBack.y );
+			quads[1].position = Vector2f( startFront.x, startFront.y );
+			quads[2].position = Vector2f( endFront.x, endFront.y );
+			quads[3].position = Vector2f( endBack.x, endBack.y );
+
+			quads[0].color = Color::Blue;
+			quads[1].color = Color::Blue;
+			quads[2].color = Color::Blue;
+			quads[3].color = Color::Blue;
+
+			for( int i = 1; i < MAX_POINTS; ++i )
+			{
+				quads[i*4].position = Vector2f( 0, 0 );
+				quads[i*4+1].position = Vector2f( 0, 0 );
+				quads[i*4+2].position = Vector2f( 0, 0 );
+				quads[i*4+3].position = Vector2f( 0, 0 );
+			}
+		}
+		else
+		{
+
+			alongDir = normalize( points[numPoints-1].pos - player->position );
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp;
+
+			V2d startBack = player->position - otherDir * quadHalfWidth;
+			V2d startFront = player->position + otherDir * quadHalfWidth;
+
+			V2d endBack = points[numPoints-1].pos - otherDir * quadHalfWidth;
+			V2d endFront = points[numPoints-1].pos + otherDir * quadHalfWidth;
+
+			quads[0].position = Vector2f( startBack.x, startBack.y );
+			quads[1].position = Vector2f( startFront.x, startFront.y );
+			quads[2].position = Vector2f( endFront.x, endFront.y );
+			quads[3].position = Vector2f( endBack.x, endBack.y );
+
+			quads[0].color = Color::Magenta;
+			quads[1].color = Color::Magenta;
+			quads[2].color = Color::Magenta;
+			quads[3].color = Color::Magenta;
+
+			int i = 1;
+			for( ; i < numPoints; ++i )
+			{
+				/*V2d alongDir = fireDir;
+				V2d otherDir = fireDir;
+				double temp = otherDir.x;
+				otherDir.x = otherDir.y;
+				otherDir.y = -temp;*/
+
+				alongDir = normalize( points[i].pos - points[i-1].pos );
+				otherDir = alongDir;
+				temp = otherDir.x;
+				otherDir.x = otherDir.y;
+				otherDir.y = -temp;
+
+				startBack = points[i-1].pos - otherDir * quadHalfWidth;
+				startFront = points[i-1].pos + otherDir * quadHalfWidth;
+
+				endBack = points[i].pos - otherDir * quadHalfWidth;
+				endFront = points[i].pos + otherDir * quadHalfWidth;
+
+				//sf::Vertex(sf::Vector2f(points[i-1].pos.x, points[i-1].pos.y ), Color::Red),
+				//sf::Vertex(sf::Vector2f(points[i].pos.x, points[i].pos.y ), Color::Magenta)
+
+				quads[i*4].position = Vector2f( startBack.x, startBack.y );
+				quads[i*4+1].position = Vector2f( startFront.x, startFront.y );
+				quads[i*4+2].position = Vector2f( endFront.x, endFront.y );
+				quads[i*4+3].position = Vector2f( endBack.x, endBack.y );
+
+				quads[i*4].color = Color::Magenta;
+				quads[i*4+1].color = Color::Magenta;
+				quads[i*4+2].color = Color::Magenta;
+				quads[i*4+3].color = Color::Magenta;
+			}
+
+			alongDir = normalize( anchor.pos - points[0].pos );
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp; 
+
+			startBack = points[0].pos - otherDir * quadHalfWidth;
+			startFront = points[0].pos + otherDir * quadHalfWidth;
+
+			endBack = anchor.pos - otherDir * quadHalfWidth;
+			endFront = anchor.pos + otherDir * quadHalfWidth;
+
+			quads[i*4].position = Vector2f( startBack.x, startBack.y );
+			quads[i*4+1].position = Vector2f( startFront.x, startFront.y );
+			quads[i*4+2].position = Vector2f( endFront.x, endFront.y );
+			quads[i*4+3].position = Vector2f( endBack.x, endBack.y );
+
+			quads[i*4].color = Color::Magenta;
+			quads[i*4+1].color = Color::Magenta;
+			quads[i*4+2].color = Color::Magenta;
+			quads[i*4+3].color = Color::Magenta;
+
+			++i;
+			for( ; i < MAX_POINTS; ++i )
+			{
+				quads[i*4].position = Vector2f( 0, 0 );
+				quads[i*4+1].position = Vector2f( 0, 0 );
+				quads[i*4+2].position = Vector2f( 0, 0 );
+				quads[i*4+3].position = Vector2f( 0, 0 );
+			}
+		}
+	}
+}
+
 void Wire::Draw( RenderTarget *target )
 {
+	UpdateQuads(); //maybe move this later to be more efficient
+
+	if( state == FIRING || state == HIT || state == PULLING )
+	{
+		target->draw( quads );
+	}
+	
 	if( state == FIRING )
 	{
 		sf::Vertex line[] =
@@ -687,7 +866,7 @@ void Wire::Draw( RenderTarget *target )
 			player->position.y + fireDir.y * 40 * framesFiring), Color::Magenta)
 		};
 
-		target->draw(line, 2, sf::Lines);
+		//target->draw(line, 2, sf::Lines);
 			
 	}
 	else if( state == HIT || state == PULLING )
@@ -701,7 +880,7 @@ void Wire::Draw( RenderTarget *target )
 				sf::Vertex(sf::Vector2f( anchor.pos.x, anchor.pos.y ), Color::Magenta)
 			};
 
-			target->draw(line0, 2, sf::Lines);
+		//	target->draw(line0, 2, sf::Lines);
 		}
 		else
 		{
@@ -711,7 +890,7 @@ void Wire::Draw( RenderTarget *target )
 				sf::Vertex(sf::Vector2f( player->position.x, player->position.y ), Color::Magenta)
 			};
 
-			target->draw(line0, 2, sf::Lines);
+		//	target->draw(line0, 2, sf::Lines);
 		}
 
 		if( numPoints > 0 )
@@ -722,7 +901,7 @@ void Wire::Draw( RenderTarget *target )
 				sf::Vertex(sf::Vector2f( points[0].pos.x, points[0].pos.y ), Color::Magenta)
 			};
 
-			target->draw(line1, 2, sf::Lines);
+		//	target->draw(line1, 2, sf::Lines);
 		}
 
 		for( int i = 1; i < numPoints; ++i )
@@ -734,7 +913,7 @@ void Wire::Draw( RenderTarget *target )
 				sf::Vertex(sf::Vector2f(points[i].pos.x, points[i].pos.y ), Color::Magenta)
 			};
 
-			target->draw(line, 2, sf::Lines);
+		//	target->draw(line, 2, sf::Lines);
 		}
 
 		CircleShape cs1;

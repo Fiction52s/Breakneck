@@ -3581,7 +3581,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					V2d extreme( 0, 0 );
 					V2d vec = tPoint - backPoint;
 					V2d normVec = normalize( vec );
-					double limit = .9998;
+					double limit = .999;
 					if( normVec.x > limit )
 						extreme.x = 1;
 					else if( normVec.x < -limit )

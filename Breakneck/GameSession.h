@@ -85,7 +85,8 @@ struct GameSession : QuadTreeCollider
 	void UpdateTerrainShader( const sf::Rect<double> &aabb );
 	void LevelSpecifics();
 	bool SetGroundPar();
-
+	void SetCloudParAndDraw();
+	void SetupClouds();
 
 	void DebugDrawActors();
 
@@ -138,7 +139,9 @@ struct GameSession : QuadTreeCollider
 	sf::Sprite background;
 	sf::View bgView;
 
-	sf::Sprite parTest;
+	const static int NUM_CLOUDS = 5;
+	sf::Sprite clouds[NUM_CLOUDS];
+	Tileset *cloudTileset;
 
 	struct TestVA : QuadTreeEntrant
 	{
