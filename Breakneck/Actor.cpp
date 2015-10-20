@@ -9126,13 +9126,17 @@ double Actor::GroundedAngle()
 	bool extraCase;
 	if( !reversed )
 	{
-		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+		V2d e0n = ground->edge0->Normal();
+		V2d e1n = ground->edge1->Normal();
+		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 )
+		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) && e1n.x > 0 ) );
 	}
 	else
 	{
-		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
-		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+		V2d e0n = ground->edge0->Normal();
+		V2d e1n = ground->edge1->Normal();
+		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 )
+		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) && e1n.x > 0 ) );
 	}
 	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
 	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
