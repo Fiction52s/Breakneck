@@ -3405,11 +3405,14 @@ void GameSession::SetUndergroundParAndDraw()
 
 	Vector2f center = view.getCenter();
 
-
+	float top = center.y - view.getSize().y / 2;
+	float left = center.x - view.getSize().x / 2;
 	
 	//cout << preScreenTex->getView().getCenter().x << ", " << preScreenTex->getView().getCenter().y << endl;
-	//cout << "zoom: " << cam.GetZoom() << ", dist: " << -center.y << endl;
-	int distFromTop = -center.y * cam.GetZoom();
+//	cout << "zoom: " << cam.GetZoom() << ", dist: " << -center.y * cam.GetZoom() /  4  << endl;
+	
+	int distFromTop = -center.y + 540;//-top + 1080;
+	cout << "distfrom: " << distFromTop << endl;
 	if( distFromTop < 0 )
 		distFromTop = 0;
 	if( distFromTop > 1080 )

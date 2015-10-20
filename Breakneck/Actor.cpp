@@ -8626,8 +8626,25 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	if( queryMode == "resolve" )
 	{
-		if( e == ground )
+		bool bb = false;
+
+		if( ground != NULL )
+		{
+
+			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
+			V2d gn = ground->Normal();
+			V2d nextn = ground->edge1->Normal();
+			V2d prevn = ground->edge0->Normal();
+			bool a = !reversed && ((groundSpeed > 0 && gn.x > 0 && nextn.x > 0) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 ));
+			bool b = reversed && (( groundSpeed > 0 && gn.x < 0 && nextn.x < 0 || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 )));
+			bb = ground != NULL && ( a || b );
+		}
+
+		
+		if( e == ground || bb )
+		{
 			return;
+		}
 
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
 		

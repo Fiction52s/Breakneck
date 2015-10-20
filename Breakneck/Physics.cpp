@@ -608,21 +608,24 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		{
 			bool rightCond0 = (prevEn.x < 0 && prevEn.y >= 0 && en.x < 0 && en.y <= 0);
 			bool rightCond1 = ( prevEn.x >= 0 && prevEn.y > 0 && en.x <= 0 && en.y < 0 );
-			bool rightCond2 = ( prevEn.x < 0 && prevEn.y > 0 && en.x >= 0 && en.y < 0 );
+			bool rightCond2 = prevEn.y > 0 && en.x >= 0 && en.y < 0;//( prevEn.x < 0 && prevEn.y > 0 && en.x >= 0 && en.y < 0 );
+			
 			//bool rightCond3 = ( prevEn.x == 0 && prevEn.y > 0 && en.x < 0 && en.y < 0 );
 			
 			bool leftCond0 = (prevEn.x > 0 && prevEn.y <= 0 && en.x > 0 && en.y >= 0);
 			bool leftCond1 = ( prevEn.x <= 0 && prevEn.y < 0 && en.x > 0 && en.y > 0 );
-			bool leftCond2 = ( prevEn.x >= 0 && prevEn.y < 0 && en.x <= 0 && en.y > 0 );
+			bool leftCond2 = prevEn.y < 0 && en.x <= 0 && en.y > 0;//( prevEn.x >= 0 && prevEn.y < 0 && en.x <= 0 && en.y > 0 );
 			//cout << "blah: " << (prevEn.x > 0) << ", " << (prevEn.y <= 0) << ", " << (en.x < 0 )<< ", " << (en.y > 0) << endl;
 
 			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x <= 0);
 			bool topCond1 = ( prevEn.y <= 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
-			bool topCond2 = ( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
+			bool topCond2 = prevEn.y > 0 && en.x < 0 ;//( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
 
 			bool bottomCond0 = (prevEn.y <= 0 && prevEn.x <= 0 && en.y < 0 && en.x >= 0);
 			bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y <= 0 && en.x > 0 );
-			bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y >= 0 && en.x > 0 );
+			//bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y >= 0 && en.x > 0 );
+			bool bottomCond2 = ( prevEn.y < 0 && en.x > 0 );
+			//bool bottomCond3 = ( prevEn.y < 0 && prevEn.x < 0 && en.y < 0 && en.x > 0 );
 			
 			
 			//cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
