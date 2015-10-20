@@ -12,8 +12,9 @@ Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, quads( sf::Quads, MAX_POINTS * 4 ) //eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ) 
+	, quadHalfWidth( 3 ), ts_wire( NULL )//, ts_redWire( NULL ) 
 {
+	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 }
 
 void Wire::UpdateState( bool touchEdgeWithWire )
@@ -678,10 +679,9 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	//TestPoint( v1 );
 }
 
+//make multiples of the quads for each edge later
 void Wire::UpdateQuads()
 {
-	
-
 	V2d alongDir;// = fireDir;
 	V2d otherDir;// = fireDir;
 	double temp;// = otherDir.x;
@@ -706,10 +706,23 @@ void Wire::UpdateQuads()
 		V2d endBack = currFirePos - otherDir * quadHalfWidth;
 		V2d endFront = currFirePos + otherDir * quadHalfWidth;
 
-		quads[0].color = Color::Red;
-		quads[1].color = Color::Red;
-		quads[2].color = Color::Red;
-		quads[3].color = Color::Red;
+
+		Vector2f topLeft( 0, 0 );
+		Vector2f topRight( 6, 0 );
+		Vector2f bottomLeft( 0, 36 );
+		Vector2f bottomRight( 6, 36 );
+
+		quads[0].texCoords = topLeft;
+		quads[1].texCoords = topRight;
+		quads[2].texCoords = bottomRight;
+		quads[3].texCoords = bottomLeft;
+		//quads[0].texCoords = Vector2f( 0, 0 );
+		//quads
+
+		//quads[0].color = Color::Red;
+		//quads[1].color = Color::Red;
+		//quads[2].color = Color::Red;
+		//quads[3].color = Color::Red;
 			
 		quads[0].position = Vector2f( startBack.x, startBack.y );
 		quads[1].position = Vector2f( startFront.x, startFront.y );
@@ -741,10 +754,20 @@ void Wire::UpdateQuads()
 			quads[2].position = Vector2f( endFront.x, endFront.y );
 			quads[3].position = Vector2f( endBack.x, endBack.y );
 
-			quads[0].color = Color::Blue;
+			/*quads[0].color = Color::Blue;
 			quads[1].color = Color::Blue;
 			quads[2].color = Color::Blue;
-			quads[3].color = Color::Blue;
+			quads[3].color = Color::Blue;*/
+
+			Vector2f topLeft( 0, 0 );
+			Vector2f topRight( 6, 0 );
+			Vector2f bottomLeft( 0, 36 );
+			Vector2f bottomRight( 6, 36 );
+
+			quads[0].texCoords = topLeft;
+			quads[1].texCoords = topRight;
+			quads[2].texCoords = bottomRight;
+			quads[3].texCoords = bottomLeft;
 
 			for( int i = 1; i < MAX_POINTS; ++i )
 			{
@@ -774,10 +797,20 @@ void Wire::UpdateQuads()
 			quads[2].position = Vector2f( endFront.x, endFront.y );
 			quads[3].position = Vector2f( endBack.x, endBack.y );
 
-			quads[0].color = Color::Magenta;
+			/*quads[0].color = Color::Magenta;
 			quads[1].color = Color::Magenta;
 			quads[2].color = Color::Magenta;
-			quads[3].color = Color::Magenta;
+			quads[3].color = Color::Magenta;*/
+
+			Vector2f topLeft( 0, 0 );
+			Vector2f topRight( 6, 0 );
+			Vector2f bottomLeft( 0, 36 );
+			Vector2f bottomRight( 6, 36 );
+
+			quads[0].texCoords = topLeft;
+			quads[1].texCoords = topRight;
+			quads[2].texCoords = bottomRight;
+			quads[3].texCoords = bottomLeft;
 
 			int i = 1;
 			for( ; i < numPoints; ++i )
@@ -808,10 +841,20 @@ void Wire::UpdateQuads()
 				quads[i*4+2].position = Vector2f( endFront.x, endFront.y );
 				quads[i*4+3].position = Vector2f( endBack.x, endBack.y );
 
-				quads[i*4].color = Color::Magenta;
+				/*quads[i*4].color = Color::Magenta;
 				quads[i*4+1].color = Color::Magenta;
 				quads[i*4+2].color = Color::Magenta;
-				quads[i*4+3].color = Color::Magenta;
+				quads[i*4+3].color = Color::Magenta;*/
+
+				topLeft = Vector2f( 0, 0 );
+				topRight= Vector2f( 6, 0 );
+				bottomLeft= Vector2f( 0, 36 );
+				bottomRight= Vector2f( 6, 36 );
+
+				quads[i*4].texCoords = topLeft;
+				quads[i*4+1].texCoords = topRight;
+				quads[i*4+2].texCoords = bottomRight;
+				quads[i*4+3].texCoords = bottomLeft;
 			}
 
 			alongDir = normalize( anchor.pos - points[0].pos );
@@ -831,10 +874,20 @@ void Wire::UpdateQuads()
 			quads[i*4+2].position = Vector2f( endFront.x, endFront.y );
 			quads[i*4+3].position = Vector2f( endBack.x, endBack.y );
 
-			quads[i*4].color = Color::Magenta;
+			topLeft = Vector2f( 0, 0 );
+			topRight= Vector2f( 6, 0 );
+			bottomLeft= Vector2f( 0, 36 );
+			bottomRight= Vector2f( 6, 36 );
+
+			quads[i*4].texCoords = topLeft;
+			quads[i*4+1].texCoords = topRight;
+			quads[i*4+2].texCoords = bottomRight;
+			quads[i*4+3].texCoords = bottomLeft;
+
+			/*quads[i*4].color = Color::Magenta;
 			quads[i*4+1].color = Color::Magenta;
 			quads[i*4+2].color = Color::Magenta;
-			quads[i*4+3].color = Color::Magenta;
+			quads[i*4+3].color = Color::Magenta;*/
 
 			++i;
 			for( ; i < MAX_POINTS; ++i )
@@ -854,7 +907,7 @@ void Wire::Draw( RenderTarget *target )
 
 	if( state == FIRING || state == HIT || state == PULLING )
 	{
-		target->draw( quads );
+		target->draw( quads, ts_wire->texture );
 	}
 	
 	if( state == FIRING )

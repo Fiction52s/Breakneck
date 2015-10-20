@@ -86,6 +86,7 @@ struct GameSession : QuadTreeCollider
 	void LevelSpecifics();
 	bool SetGroundPar();
 	void SetCloudParAndDraw();
+	void SetUndergroundParAndDraw();
 	void SetupClouds();
 
 	void DebugDrawActors();
@@ -118,6 +119,10 @@ struct GameSession : QuadTreeCollider
 	std::list<MovingTerrain*> movingPlats;
 
 	sf::VertexArray groundPar;
+	sf::VertexArray undergroundPar;
+	Tileset *undergroundTileset;
+
+
 	sf::Transform groundTrans;
 	Camera cam;
 	Actor player;

@@ -5,6 +5,7 @@
 //#include "Actor.h"
 #include "Physics.h"
 #include "QuadTree.h"
+#include "Tileset.h"
 //#include "GameSession.h"
 
 struct Actor;
@@ -38,7 +39,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
-	
+	Tileset *ts_wire;
+	//Tileset *ts_redWire;
 	//double closestInfo;
 	double closestDiff;
 	sf::Vector2<double> realAnchor;

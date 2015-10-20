@@ -19,7 +19,7 @@ using namespace sf;
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
-	,groundPar( sf::Quads, 2 * 4 )
+	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 )
 {
 	usePolyShader = true;
 	minimapTex = miniTex;
@@ -1274,6 +1274,17 @@ int GameSession::Run( string fileN )
 
 	SetupClouds();
 	
+	undergroundTileset = GetTileset( "underground01.png", 32, 32 );
+	undergroundPar[0].color = Color::Red;
+	undergroundPar[1].color = Color::Red;
+	undergroundPar[2].color = Color::Red;
+	undergroundPar[3].color = Color::Red;
+
+	undergroundPar[0].position = Vector2f( 0, 0 );
+	undergroundPar[1].position = Vector2f( 0, 0 );
+	undergroundPar[2].position = Vector2f( 0, 0 );
+	undergroundPar[3].position = Vector2f( 0, 0 );
+
 
 	bool showFrameRate = false;
 	sf::Font arial;
@@ -1958,11 +1969,20 @@ int GameSession::Run( string fileN )
 		if( SetGroundPar() )
 			preScreenTex->draw( groundPar, &mountain01Tex );
 	
-
+		cloudView.setCenter( 960, 540 );	
+		preScreenTex->setView( cloudView );
 		
 		//float depth = 3;
 		//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
 		SetCloudParAndDraw();
+
+
+		
+
+		//preScreenTex->setView( cloudView );
+		SetUndergroundParAndDraw();
+
+		
 		//float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
 		//parTest.setScale( scale, scale );
 		//preScreenTex->draw( parTest );
@@ -3366,4 +3386,48 @@ void GameSession::SetCloudParAndDraw()
 	//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
 	//float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
 	//parTest.setScale( scale, scale );
+}
+
+void GameSession::SetUndergroundParAndDraw()
+{
+	undergroundPar[0].color = Color::Red;
+	undergroundPar[1].color = Color::Red;
+	undergroundPar[2].color = Color::Red;
+	undergroundPar[3].color = Color::Red;
+
+	Vector2f center = view.getCenter();
+
+
+	
+	//cout << preScreenTex->getView().getCenter().x << ", " << preScreenTex->getView().getCenter().y << endl;
+	//cout << "zoom: " << cam.GetZoom() << ", dist: " << -center.y << endl;
+	int distFromTop = -center.y * cam.GetZoom();
+	if( distFromTop < 0 )
+		distFromTop = 0;
+	if( distFromTop > 1080 )
+	{
+		/*undergroundPar[0].position = Vector2f( 0, 0 );
+		undergroundPar[1].position = Vector2f( 0, 0 );
+		undergroundPar[2].position = Vector2f( 0, 0 );
+		undergroundPar[3].position = Vector2f( 0, 0 );*/
+	}
+	else
+	{
+		undergroundPar[0].position = Vector2f( 0, distFromTop );
+		undergroundPar[1].position = Vector2f( 1920, distFromTop );
+		undergroundPar[2].position = Vector2f( 1920, 1080 );
+		undergroundPar[3].position = Vector2f( 0, 1080 );
+		preScreenTex->draw( undergroundPar );
+	}
+	
+		
+	//else
+	{
+		
+		//cout << "NOT normal" << endl;
+	}
+
+	//cloudView.setCenter( cloudView.getCenter().x, center.y );
+
+	
 }
