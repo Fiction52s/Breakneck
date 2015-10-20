@@ -1840,8 +1840,16 @@ int GameSession::Run( string fileN )
 
 				player.UpdatePostPhysics();
 
+				if( player.hasPowerLeftWire )
+					player.leftWire->UpdateQuads();
+
+				if( player.hasPowerRightWire )
+					player.rightWire->UpdateQuads();
+
 				UpdateEnemiesPostPhysics();
-			
+				
+
+
 
 				//Vector2f oldCam = cam.pos;
 				//float oldCamZoom = cam.GetZoom();

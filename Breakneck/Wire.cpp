@@ -2,6 +2,7 @@
 #include "Actor.h"
 #include "GameSession.h"
 #include <iostream>
+#include <assert.h>
 
 using namespace sf;
 using namespace std;
@@ -9,10 +10,10 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120/*120*/), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
-	, quads( sf::Quads, MAX_POINTS * 4 ) //eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ), ts_wire( NULL )//, ts_redWire( NULL ) 
+	, quads( sf::Quads, (int)(ceil( maxTotalLength / 6.0 ) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
+	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 5 )//, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 }
@@ -93,7 +94,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				hitStallCounter = framesFiring;
 			}
 
-			if( framesFiring * fireRate > 10000 )
+			if( framesFiring * fireRate > maxTotalLength )
 			{
 				state = IDLE;
 				framesFiring = 0;
@@ -163,7 +164,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			
 			RayCast( this, player->owner->terrainTree->startNode, player->position, player->position + fireDir * fireRate * (double)(framesFiring + 1 ) );
 			
-			++framesFiring;
+			
+			cout << "framesFiring " << framesFiring << endl;
 
 			if( rcEdge != NULL )
 			{
@@ -289,6 +291,12 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		{
 			break;
 		}
+	}
+
+	++frame;
+	if( frame / animFactor > 5 )
+	{
+		frame = 0;
 	}
 }
 
@@ -688,17 +696,21 @@ void Wire::UpdateQuads()
 	//otherDir.x = otherDir.y;
 	//otherDir.y = -temp;
 
-	
-
+	int tileHeight = 6;
+	int startIndex = 0;
 	if( state == FIRING )
 	{
+		
 		alongDir = fireDir;
 		otherDir = alongDir;
 		temp = otherDir.x;
 		otherDir.x = otherDir.y;
 		otherDir.y = -temp;
 
-		V2d currFirePos = player->position + fireDir * (40.0 * framesFiring);
+		V2d currFirePos = player->position + fireDir * fireRate * (double)framesFiring;
+
+		int firingTakingUp = ceil( length( currFirePos - player->position ) / tileHeight );
+
 
 		V2d startBack = player->position - otherDir * quadHalfWidth;
 		V2d startFront = player->position + otherDir * quadHalfWidth;
@@ -706,16 +718,69 @@ void Wire::UpdateQuads()
 		V2d endBack = currFirePos - otherDir * quadHalfWidth;
 		V2d endFront = currFirePos + otherDir * quadHalfWidth;
 
+		cout << "fram: " << frame / animFactor << endl;
+		Vector2f topLeft( 0, tileHeight * frame / animFactor );
+		Vector2f topRight( 6, tileHeight * frame / animFactor );
+		Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
+		Vector2f bottomRight( 6, tileHeight * (frame / animFactor + 1 ) );
+		if( firingTakingUp > quads.getVertexCount() / 4 )
+		{
+			cout << "firingTakingup: " << firingTakingUp << ", count: " << quads.getVertexCount() / 4 << endl;
+			assert( false );
+		}
 
-		Vector2f topLeft( 0, 0 );
-		Vector2f topRight( 6, 0 );
-		Vector2f bottomLeft( 0, 36 );
-		Vector2f bottomRight( 6, 36 );
+		//assert( firingTakingUp <= quads.getVertexCount() / 4 );
+		//startIndex is 0
+		//cout << "fireTakingUp: " << firingTakingUp << endl;
 
-		quads[0].texCoords = topLeft;
+		for( int j = startIndex; j < firingTakingUp; ++j, ++startIndex )
+		{
+			V2d startPartial( player->position + alongDir * (double)(tileHeight * j) );
+			V2d endPartial( player->position + alongDir * (double)(tileHeight * (j+1)) );
+
+			
+
+			int diff = tileHeight * (j+1) - length( currFirePos - player->position );
+			Vector2f realTopLeft = topLeft;
+			Vector2f realTopRight = topRight;
+			if( diff > 0 )
+			{
+				assert( j == firingTakingUp - 1 );
+				//realTopLeft.y += diff;
+				//realTopRight.y += diff;
+				cout << "diff: " << diff << endl;
+				endPartial = currFirePos;
+			}
+
+			V2d startPartialBack = startPartial - otherDir * quadHalfWidth;
+			V2d startPartialFront = startPartial + otherDir * quadHalfWidth;
+
+			V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
+			V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
+
+			quads[j*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
+			quads[j*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
+			quads[j*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
+			quads[j*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
+
+			quads[j*4].texCoords = realTopLeft;
+			quads[j*4+1].texCoords = realTopRight;
+			quads[j*4+2].texCoords = bottomRight;
+			quads[j*4+3].texCoords = bottomLeft;
+		}
+
+		for( ; startIndex < quads.getVertexCount() / 4; ++startIndex )
+		{
+			quads[startIndex*4].position = Vector2f( 0, 0 );
+			quads[startIndex*4+1].position = Vector2f( 0, 0 );
+			quads[startIndex*4+2].position = Vector2f( 0, 0 );
+			quads[startIndex*4+3].position = Vector2f( 0, 0 );
+		}
+
+		/*quads[0].texCoords = topLeft;
 		quads[1].texCoords = topRight;
 		quads[2].texCoords = bottomRight;
-		quads[3].texCoords = bottomLeft;
+		quads[3].texCoords = bottomLeft;*/
 		//quads[0].texCoords = Vector2f( 0, 0 );
 		//quads
 
@@ -724,10 +789,10 @@ void Wire::UpdateQuads()
 		//quads[2].color = Color::Red;
 		//quads[3].color = Color::Red;
 			
-		quads[0].position = Vector2f( startBack.x, startBack.y );
+		/*quads[0].position = Vector2f( startBack.x, startBack.y );
 		quads[1].position = Vector2f( startFront.x, startFront.y );
 		quads[2].position = Vector2f( endFront.x, endFront.y );
-		quads[3].position = Vector2f( endBack.x, endBack.y );
+		quads[3].position = Vector2f( endBack.x, endBack.y );*/
 		//sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Blue),
 		//	sf::Vertex(sf::Vector2f(player->position.x + fireDir.x * 40 * framesFiring,
 		//	player->position.y + fireDir.y * 40 * framesFiring), Color::Magenta)
@@ -899,12 +964,12 @@ void Wire::UpdateQuads()
 			}
 		}
 	}
+
+	++framesFiring;
 }
 
 void Wire::Draw( RenderTarget *target )
 {
-	UpdateQuads(); //maybe move this later to be more efficient
-
 	if( state == FIRING || state == HIT || state == PULLING )
 	{
 		target->draw( quads, ts_wire->texture );

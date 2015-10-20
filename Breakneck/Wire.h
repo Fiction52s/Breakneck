@@ -63,6 +63,10 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		double angleDiff;
 	};
 
+	double maxTotalLength;
+
+	int frame;
+	int animFactor;
 	double quadHalfWidth;
 	int numPoints;
 	const static int MAX_POINTS = 100;
@@ -78,7 +82,6 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int hitStallFrames;
 	int hitStallCounter;
 
-	double maxTotalLength;
 	double totalLength;
 	//double minTotalLength;
 	double segmentLength;
