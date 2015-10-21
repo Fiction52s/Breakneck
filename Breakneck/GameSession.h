@@ -86,6 +86,7 @@ struct GameSession : QuadTreeCollider
 	void LevelSpecifics();
 	bool SetGroundPar();
 	void SetCloudParAndDraw();
+	
 	void SetUndergroundParAndDraw();
 	void SetupClouds();
 
@@ -121,6 +122,8 @@ struct GameSession : QuadTreeCollider
 	sf::VertexArray groundPar;
 	sf::VertexArray undergroundPar;
 	Tileset *undergroundTileset;
+	Tileset *undergroundTilesetNormal;
+	sf::Shader underShader;
 
 
 	sf::Transform groundTrans;

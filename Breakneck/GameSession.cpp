@@ -31,6 +31,12 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		//assert( 0 && "polygon shader not loaded" );
 		usePolyShader = false;
 	}
+
+	if( !underShader.loadFromFile( "under_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "under shader not loading correctly!" << endl;
+		assert( false );
+	}
 	
 	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
 	{
@@ -1274,7 +1280,8 @@ int GameSession::Run( string fileN )
 
 	SetupClouds();
 	
-	undergroundTileset = GetTileset( "underground01.png", 32, 32 );
+	undergroundTileset = GetTileset( "testterrain2.png", 96, 96 );//GetTileset( "underground01.png", 32, 32 );
+	undergroundTilesetNormal = GetTileset( "testterrain2_NORMALS.png", 96, 96 );
 	undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
 	undergroundPar[2].color = Color::Red;
@@ -1986,7 +1993,11 @@ int GameSession::Run( string fileN )
 
 
 		
-
+		
+		
+		
+		//cloudView.setCenter( 0, 0 );
+		//preScreenTex->setView( cloudView );
 		//preScreenTex->setView( cloudView );
 		SetUndergroundParAndDraw();
 
@@ -3398,37 +3409,78 @@ void GameSession::SetCloudParAndDraw()
 
 void GameSession::SetUndergroundParAndDraw()
 {
-	undergroundPar[0].color = Color::Red;
+	underShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture );
+	underShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+	underShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
+	underShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
+	underShader.setParameter( "zoom", cam.GetZoom() );
+	underShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
+		view.getCenter().y + view.getSize().y / 2 );
+
+	/*underShader.setParameter( "On0", on[0] );
+	underShader.setParameter( "On1", on[1] );
+	underShader.setParameter( "On2", on[2] );
+	underShader.setParameter( "On3", on[3] );
+	underShader.setParameter( "On4", on[4] );
+	underShader.setParameter( "On5", on[5] );
+	underShader.setParameter( "On6", on[6] );
+	underShader.setParameter( "On7", on[7] );
+	underShader.setParameter( "On8", on[8] );*/
+
+	underShader.setParameter( "On0", false );
+	underShader.setParameter( "On1", false );
+	underShader.setParameter( "On2", false );
+	underShader.setParameter( "On3", false );
+	underShader.setParameter( "On4", false );
+	underShader.setParameter( "On5", false );
+	underShader.setParameter( "On6", false );
+	underShader.setParameter( "On7", false );
+	underShader.setParameter( "On8", false );
+
+	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
 	undergroundPar[2].color = Color::Red;
-	undergroundPar[3].color = Color::Red;
+	undergroundPar[3].color = Color::Red;*/
 
 	Vector2f center = view.getCenter();
 
 	float top = center.y - view.getSize().y / 2;
 	float left = center.x - view.getSize().x / 2;
+	float bottom = center.y + view.getSize().y / 2;
+	float right = center.x + view.getSize().x / 2;
+	
 	
 	//cout << preScreenTex->getView().getCenter().x << ", " << preScreenTex->getView().getCenter().y << endl;
 //	cout << "zoom: " << cam.GetZoom() << ", dist: " << -center.y * cam.GetZoom() /  4  << endl;
 	
-	int distFromTop = -center.y + 540;//-top + 1080;
-	cout << "distfrom: " << distFromTop << endl;
-	if( distFromTop < 0 )
-		distFromTop = 0;
-	if( distFromTop > 1080 )
-	{
+	//int distFromTop = 
+	//cout << "distfrom: " << distFromTop << endl;
+	//if( distFromTop < 0 )
+	//	distFromTop = 0;
+	//if( distFromTop > 1080 )
+	//{
 		/*undergroundPar[0].position = Vector2f( 0, 0 );
 		undergroundPar[1].position = Vector2f( 0, 0 );
 		undergroundPar[2].position = Vector2f( 0, 0 );
 		undergroundPar[3].position = Vector2f( 0, 0 );*/
+	//}
+	//else
+	if( bottom < 0 )
+	{
 	}
 	else
 	{
-		undergroundPar[0].position = Vector2f( 0, distFromTop );
-		undergroundPar[1].position = Vector2f( 1920, distFromTop );
-		undergroundPar[2].position = Vector2f( 1920, 1080 );
-		undergroundPar[3].position = Vector2f( 0, 1080 );
-		preScreenTex->draw( undergroundPar );
+		if( top < 0 )
+		{
+			top = 0;
+		}
+		preScreenTex->setView( view );
+		//top = 0;
+		undergroundPar[0].position = Vector2f( left, top );
+		undergroundPar[1].position = Vector2f( right, top );
+		undergroundPar[2].position = Vector2f( right, bottom );
+		undergroundPar[3].position = Vector2f( left, bottom );
+		preScreenTex->draw( undergroundPar, &underShader );
 	}
 	
 		
