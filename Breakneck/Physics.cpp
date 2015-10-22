@@ -711,7 +711,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				bool down = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y > 0;
 				bool l = prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
 
-				cout << "topleft: " << topLeft << endl;
+				//cout << "topleft: " << topLeft << endl;
 				if( botLeft || botRight || down || topFlat )
 					topCond0 = true;
 				if( topLeft || l || botLeft || rightFlat )
@@ -739,7 +739,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					bottomCond0 = true;
 			}
 
-
+			
 			//cout << "prev: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << "bottom: " << bottomCond0 << ", top: " << topCond0 << ", left: " << leftCond0 << ", right: " << rightCond0 << endl;
 		//	cout << "fullbottom: " << bottomCond3 << ", " << bottomCond4 << ", " << bottomCond5 << ", " << bottomCond6 << endl;
 			
@@ -763,13 +763,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "oldright: " << oldRight << ", " << point.x << endl;
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
-				cout << "right " << endl;
+			//	cout << "right " << endl;
 				pointMinTime = ( point.x - oldRight ) / abs(vel.x);
 				pointNormal.x = -1;
 			}
 			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x - .001 && left <= point.x  )
 			{
-				cout << "left" << endl;
+			//	cout << "left" << endl;
 				pointMinTime = ( oldLeft - point.x ) / abs( vel.x );
 				pointNormal.x = 1;
 			}
@@ -796,12 +796,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					okay = true;
 				}
 
-				cout << "bottom cond okay: " << okay << endl;
+				//cout << "bottom cond okay: " << okay << endl;
 
 				bottomTime = ( point.y - oldBottom ) / abs( vel.y );
 				if( okay && bottomTime < pointMinTime )
 				{
-					cout << "bottom: " << bottomCond0 << ", " << bottomCond1 << ", " << bottomCond2 << endl;
+				//	cout << "bottom: " << bottomCond0 << ", " << bottomCond1 << ", " << bottomCond2 << endl;
 					//cout << "bottomtime: " << bottomTime << endl;
 					pointMinTime = bottomTime;
 					pointNormal.x = 0;
@@ -811,7 +811,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y - .001 && top <= point.y )
 			{
-				cout << "top" << endl;
+			//	cout << "top" << endl;
 				topTime = ( oldTop - point.y ) / abs( vel.y );
 				if( topTime < pointMinTime )
 				{
@@ -891,7 +891,9 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					}
 					else if( b )
 					{
+						
 						intersect.x = right;
+						cout << "only this!!: " << intersect.x << ", pos: " << position.x << endl;
 					}
 					else if( left <= edgeLeft && right >= edgeRight )
 					{

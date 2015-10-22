@@ -3783,10 +3783,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					pointGrabPos = Vector2i( worldPos.x, worldPos.y );
 
 	
-
-					if( true )
+					bool validMove = true;
+					/*if( true )
 					{
-						
 						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 						{
@@ -3799,6 +3798,59 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( (*pointIt).selected ) //selected
 								{
+									Vector2i prev;
+									if( pointIt == points.begin() )
+									{
+										prev = (*(--points.end())).pos;
+									}
+									else
+									{
+										PointList::iterator tempIt = pointIt;
+										--tempIt;
+										prev = (*tempIt).pos;
+									}
+
+									for( list<TerrainPolygon*>::iterator tit = polygons.begin();
+										tit != polygons.end(); ++tit )
+									{
+										if( (*tit) != (*it) )
+										if( !IsPointValid( prev, (*pointIt).pos, (*tit) ) )
+										{
+											validMove = false;
+											break;
+										}
+									}
+									
+									if( !validMove )
+										break;
+									//(*pointIt).pos += pointGrabDelta;
+									//affected = true;
+								}
+							}
+
+							if( !validMove )
+								break;
+						}
+					}*/
+
+					if( validMove )
+					{
+						//cout << "valid move" << endl;
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+							it != selectedPolygons.end(); ++it )
+						{
+							bool affected = false;
+
+							PointList & points = (*it)->points;
+
+							for( PointList::iterator pointIt = points.begin();
+								pointIt != points.end(); ++pointIt )
+							{
+								if( (*pointIt).selected ) //selected
+								{					
+
+									Vector2i temp = (*pointIt).pos + pointGrabDelta;
+
 									(*pointIt).pos += pointGrabDelta;
 									affected = true;
 								}
@@ -3820,6 +3872,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								
 							}
 						}
+					}
+					else
+					{
+						cout << "NOT VALID move" << endl;
 					}
 
 				}
@@ -5319,7 +5375,7 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	//check distance from points first
 
 	V2d p( point.x, point.y );
-	cout << "p: " << p.x << ", " << p.y << endl;
+	//cout << "p: " << p.x << ", " << p.y << endl;
 	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
 	{
 		V2d temp( (*it).pos.x, (*it).pos.y );

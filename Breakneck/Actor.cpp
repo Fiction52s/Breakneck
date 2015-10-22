@@ -5153,11 +5153,11 @@ void Actor::UpdatePhysics()
 				{
 					movement = 0;
 					offsetX += m;
-					if( abs( offsetX ) > b.rw + .00001 )
+					/*if( abs( offsetX ) > b.rw + .00001 )
 					{
 						cout << "off: " << offsetX << endl;
 						assert( false );
-					}
+					}*/
 				}
 
 				if(!approxEquals( m, 0 ) )
@@ -5298,11 +5298,11 @@ void Actor::UpdatePhysics()
 					q += m;
 				}
 				
-				if( abs( offsetX ) > b.rw + .00001 )
+				/*if( abs( offsetX ) > b.rw + .00001 )
 				{
 					cout << "off: " << offsetX << endl;
 						assert( false );
-				}
+				}*/
 
 				if( approxEquals( m, 0 ) )
 				{
@@ -5954,15 +5954,34 @@ void Actor::UpdatePhysics()
 			{
 				
 				//b.rh = dashHeight;
-				
+				//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
+				//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
-				if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
+				//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
+				if( false )
 				{
-					cout << "prevented glitchy offset: " << offsetX << endl;
+					//cout << "prevented glitchy offset: " << offsetX << endl;
 				}
 				else
 				{
+					//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 )
+
+					if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //stops glitchyness with _\ weird offsets
+					{
+						assert( minContact.edge->Normal().y == -1 );
+						if( offsetX > 0 )
+						{
+							offsetX = b.rw;
+							minContact.position.x = position.x - b.rw;
+						}
+						else
+						{
+							offsetX = -b.rw;
+							minContact.position.x = position.x + b.rw;
+						}
+					}
+
 				if( b.rh == doubleJumpHeight )
 				{
 					b.offset.y = (normalHeight - doubleJumpHeight);
@@ -8660,7 +8679,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			V2d nextn = ground->edge1->Normal();
 			V2d prevn = ground->edge0->Normal();
 			bool sup = ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 );
-			cout << "sup: " << sup << endl;
+			//cout << "sup: " << sup << endl;
 			bool a = false;
 			bool b = false;
 			if( !reversed )
@@ -8715,11 +8734,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
