@@ -594,8 +594,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		//bool pointInRect = point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;		
 
+		
 		bool pointInRect = point.x >= min( left, oldLeft ) && point.x <= max( right, oldRight ) && point.y >= min( top, oldTop ) && point.y <= max( bottom, oldBottom );		
 
+
+		double unPoint = cross( normalize(e->v1 - e->v0), normalize( e->edge0->v0 - e->v0 ) );
 		double leftTime = 1, rightTime = 1, bottomTime = 1, topTime = 1; // one whole timestep
 		
 		V2d intersect;
@@ -604,12 +607,30 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		int type = 0;
 		V2d pointNormal(0,0);
 		
-		if( pointInRect )
+		if( pointInRect && unPoint > -.0001 )
 		{
+			//cout << "uinpoint: " << unPoint << endl;
 			bool rightCond0 = (prevEn.x < 0 && prevEn.y >= 0 && en.x < 0 && en.y <= 0);
 			bool rightCond1 = ( prevEn.x >= 0 && prevEn.y > 0 && en.x <= 0 && en.y < 0 );
 			bool rightCond2 = prevEn.y > 0 && en.x >= 0 && en.y < 0;//( prevEn.x < 0 && prevEn.y > 0 && en.x >= 0 && en.y < 0 );
 			
+			bool rightCond3 = prevEn.x < 0 || en.x < 0;
+			//bool rightCond4 = prevEn.x <= 0 && prevEn.y <= 0 && en.x >= 0 && en.y <= 0;
+			//bool rightCond5 = prevEn.x >= 0 && prevEn.y >= 0 && en.x <= 0 && en.y >= 0;
+			//bool rightCond4 = prevEn.x < 0 && prevEn.y <= 0 && en.x >= 0;
+			//bool rightCond5 = en.x < 0 && en.y >= 0 && prevEn.x >= 0;
+			bool rightCond4 = prevEn.x >= 0 && en.y < 0;
+			bool rightCond5 = en.x >= 0 && prevEn.y > 0;
+			bool rightCond6 = prevEn.x < 0 && en.x < 0;
+
+
+			rightCond0 = rightCond3 && ( rightCond4 || rightCond5 || rightCond6 );
+			rightCond1 = rightCond2 = rightCond0;
+
+			//rightCond0 = rightCond3 && !rightCond4 && !rightCond5;
+			//rightCond1 = rightCond0;
+			//rightCond2 = rightCond1;
+			//bool rightCond5 = en.x 
 			//bool rightCond3 = ( prevEn.x == 0 && prevEn.y > 0 && en.x < 0 && en.y < 0 );
 			
 			bool leftCond0 = (prevEn.x > 0 && prevEn.y <= 0 && en.x > 0 && en.y >= 0);
@@ -617,16 +638,121 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			bool leftCond2 = prevEn.y < 0 && en.x <= 0 && en.y > 0;//( prevEn.x >= 0 && prevEn.y < 0 && en.x <= 0 && en.y > 0 );
 			//cout << "blah: " << (prevEn.x > 0) << ", " << (prevEn.y <= 0) << ", " << (en.x < 0 )<< ", " << (en.y > 0) << endl;
 
-			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x <= 0);
-			bool topCond1 = ( prevEn.y <= 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
-			bool topCond2 = prevEn.y > 0 && en.x < 0 ;//( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
+			bool leftCond3 = prevEn.x > 0 || en.x > 0;
+			bool leftCond4 = prevEn.x <= 0 && en.y > 0;
+			bool leftCond5 = en.x <= 0 && prevEn.y < 0;
+			bool leftCond6 = prevEn.x > 0 && en.x > 0;
 
+			leftCond0 = leftCond3 && (leftCond4 || leftCond5 || leftCond6 );
+			leftCond1 = leftCond2 = leftCond0;
+		//	bool leftCond3 = prevEn.x > 0 || en.x > 0;
+		//	bool leftCond4 = 
+
+			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x <= 0);
+			//bool topCond0 = (prevEn.y > 0 && en.y >= 0 && en.x <= 0);
+			bool topCond1 = ( prevEn.y <= 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
+			bool topCond2 = prevEn.y > 0 && prevEn.x > 0 && en.x < 0 ;//( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
+			//bool topCond3 = prevEn.y > 0 && prevEn.x < 0 && en.y >=0 && en.x < 0;
+
+			bool topCond3 = prevEn.y > 0 || en.y > 0;
+			bool topCond4 = prevEn.y <= 0 && en.x < 0;
+			bool topCond5 = en.y <= 0 && prevEn.x > 0;
+			bool topCond6 = prevEn.y > 0 && en.y > 0;
+			topCond0 = topCond3 && ( topCond4 || topCond5 || topCond6 );
+			topCond1 = topCond2 = topCond0;
+
+			//bool bottomCond0 = (prevEn.y <= 0 && prevEn.x <= 0 && en.y < 0 && en.x >= 0);
 			bool bottomCond0 = (prevEn.y <= 0 && prevEn.x <= 0 && en.y < 0 && en.x >= 0);
 			bool bottomCond1 = ( prevEn.y > 0 && prevEn.x < 0 && en.y <= 0 && en.x > 0 );
 			//bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 && en.y >= 0 && en.x > 0 );
-			bool bottomCond2 = ( prevEn.y < 0 && en.x > 0 );
+			bool bottomCond2 = ( prevEn.y < 0 && prevEn.x < 0 &&  en.x > 0 && en.y > 0 );
+
+			bool bottomCond3 = prevEn.y < 0 || en.y < 0;
+			//bool bottomCond4 = prevEn.y <= 0 && prevEn.x >= 0 && en.y >= 0 && en.x >= 0; //4 is done. finish 5 then move onto right
+			//bool bottomCond5 = prevEn.y >= 0 && prevEn.x <= 0 && en.y <= 0 && en.x <= 0;
+
+			//bool bottomCond4 = prevEn.y < 0 && prevEn.x >= 0 && en.y >= 0;
+			//bool bottomCond5 = en.y < 0 && en.x <= 0 && prevEn.y >= 0;
+			//bool bottomCond6 = prevEn.x == -1 && en.y == -1;
+			//bool bottomCond7 = prevEn.y == -1 && en.x == 1;
+
+			bool bottomCond4 = prevEn.y >=0 && en.x > 0;
+			bool bottomCond5 = en.y >=0 && prevEn.x < 0;
+			bool bottomCond6 =  ( prevEn.y <= 0 && en.y <= 0 );
+
+			
+			bottomCond0 = bottomCond3 && (bottomCond4 || bottomCond5 || bottomCond6 );
+			bottomCond1 = bottomCond2 = bottomCond0;
+
+			//temporary
+			bottomCond0 = bottomCond1 = bottomCond2 = false;
+			rightCond0 = rightCond1 = rightCond2 = false;
+			leftCond0 =leftCond1 = leftCond2 = false;
+			topCond0 = topCond1 = topCond2 = false;
+
+			bool topPos = false, botPos = false, leftPos = false, rightPos = false;
+			double aaaa =  dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
+			if( aaaa > 0 )
+			{
+				//everything but flat edges should work
+
+				bool topRight = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
+				bool topLeft = prevEn.x < 0 && prevEn.y > 0 && en.x > 0 && en.y < 0;
+				bool botLeft = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
+				bool botRight = prevEn.x > 0 && prevEn.y < 0 && en.x < 0 && en.y > 0;
+
+				bool topFlat = (prevEn.x == 1 && en.x < 0 && en.y > 0 ) || ( prevEn.x > 0 && prevEn.y > 0 && en.x == -1 );
+				bool botFlat = ( prevEn.x < 0 && prevEn.y < 0 && en.x == 1 ) || ( prevEn.x == -1 && en.x > 0 && en.y < 0 );
+				bool leftFlat = (prevEn.y == -1 && en.x > 0 && en.y > 0 ) || (prevEn.x > 0 && prevEn.y < 0 && en.y == 1 );
+				bool rightFlat = ( prevEn.x < 0 && prevEn.y > 0 && en.y == -1 ) || ( prevEn.y == 1 && en.x < 0 && en.y < 0 );
+
+				bool up = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y < 0;
+				bool r = prevEn.x > 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
+				bool down = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y > 0;
+				bool l = prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
+
+				cout << "topleft: " << topLeft << endl;
+				if( botLeft || botRight || down || topFlat )
+					topCond0 = true;
+				if( topLeft || l || botLeft || rightFlat )
+					rightCond0 = true;
+				if( topRight || up || topLeft || botFlat )
+					bottomCond0 = true;
+				if( botRight || r || topRight || leftFlat )
+					leftCond0 = true;
+			}
+			else
+			{
+				//double bbbb = dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
+				bool up = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y < 0;
+				bool r = prevEn.x > 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
+				bool down = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y > 0;
+				bool l = prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
+
+				if( down )
+					topCond0 = true;
+				if( l )
+					rightCond0 = true;
+				if( r )
+					leftCond0 = true;
+				if( up )
+					bottomCond0 = true;
+			}
+
+
+			//cout << "prev: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << "bottom: " << bottomCond0 << ", top: " << topCond0 << ", left: " << leftCond0 << ", right: " << rightCond0 << endl;
+		//	cout << "fullbottom: " << bottomCond3 << ", " << bottomCond4 << ", " << bottomCond5 << ", " << bottomCond6 << endl;
+			
+			//cout << "CMON " << unPoint << ", normal: " << en.x << ", " << en.y << ", prev: " << prevEn.x << ", " << prevEn.y << endl;
+			//cout << "3 : " << bottomCond0 << ", 4: " << bottomCond4 << ",5: " << bottomCond5 << ", 6: " << bottomCond6 << endl;
+			//bool bottomCond3 = prevEn.y < 0 && prevEn.x > 0 && en.y < 0 && en.x > 0 );
 			//bool bottomCond3 = ( prevEn.y < 0 && prevEn.x < 0 && en.y < 0 && en.x > 0 );
 			
+			
+			//cout << "six: " << bottomCond6 << ", pre: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << endl;
+			//bottomCond0 = bottomCond3 && !bottomCond4 && !bottomCond5 && !bottomCond6 && !bottomCond7;
+			//bottomCond1 = bottomCond0;
+			//bottomCond2 = bottomCond0;
 			
 			//cout << "oldLeft: " << oldLeft << ", px: " << point.x << ", left: " << left << endl;
 			//cout << "leftconds: " << leftCond0 << ", " << leftCond1 << ", " << leftCond2 << endl;
@@ -637,13 +763,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "oldright: " << oldRight << ", " << point.x << endl;
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
-			//	cout << "right " << endl;
+				cout << "right " << endl;
 				pointMinTime = ( point.x - oldRight ) / abs(vel.x);
 				pointNormal.x = -1;
 			}
 			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x - .001 && left <= point.x  )
 			{
-				//cout << "left" << endl;
+				cout << "left" << endl;
 				pointMinTime = ( oldLeft - point.x ) / abs( vel.x );
 				pointNormal.x = 1;
 			}
@@ -670,11 +796,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					okay = true;
 				}
 
-				//cout << "bottom cond okay: " << okay << endl;
+				cout << "bottom cond okay: " << okay << endl;
 
 				bottomTime = ( point.y - oldBottom ) / abs( vel.y );
 				if( okay && bottomTime < pointMinTime )
 				{
+					cout << "bottom: " << bottomCond0 << ", " << bottomCond1 << ", " << bottomCond2 << endl;
 					//cout << "bottomtime: " << bottomTime << endl;
 					pointMinTime = bottomTime;
 					pointNormal.x = 0;
@@ -684,7 +811,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y - .001 && top <= point.y )
 			{
-		//		cout << "top" << endl;
+				cout << "top" << endl;
 				topTime = ( oldTop - point.y ) / abs( vel.y );
 				if( topTime < pointMinTime )
 				{
@@ -956,8 +1083,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				else
 				{
 					bool okay = true;
-					bool a = intersectQuantity == 0 ;
-					bool b = intersectQuantity == len;
+					bool a = approxEquals( intersectQuantity, 0 );
+					bool b = approxEquals( intersectQuantity, len );
 					if( a || b  )
 					{
 						okay = false;
@@ -971,7 +1098,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 							t = -cross( e->edge1->v1 - e->v1, e->v1 - e->v0 ); 
 						}
 						
-						if( t < 0 )
+						if( t < -.00001 )
 						{
 							okay = true;
 						}

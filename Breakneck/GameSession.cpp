@@ -2513,6 +2513,7 @@ void GameSession::RespawnPlayer()
 	player.currInput = ControllerState();
 	player.ground = NULL;
 	player.grindEdge = NULL;
+	player.bounceEdge = NULL;
 	player.dead = false;
 	powerBar.points = 100;
 	powerBar.layer = 0;

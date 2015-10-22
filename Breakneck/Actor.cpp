@@ -4116,6 +4116,10 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( col )
 	{
+		if( col )
+		{
+			//cout << "norm: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+		}
 		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 		{
 			
@@ -4138,10 +4142,7 @@ bool Actor::ResolvePhysics( V2d vel )
 			
 		}
 
-		if( col )
-		{
-			cout << "norm: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-		}
+		
 
 		if( false )//if( col )//if( false )////if( col )//
 		{
@@ -5152,6 +5153,11 @@ void Actor::UpdatePhysics()
 				{
 					movement = 0;
 					offsetX += m;
+					if( abs( offsetX ) > b.rw + .00001 )
+					{
+						cout << "off: " << offsetX << endl;
+						assert( false );
+					}
 				}
 
 				if(!approxEquals( m, 0 ) )
@@ -5292,6 +5298,11 @@ void Actor::UpdatePhysics()
 					q += m;
 				}
 				
+				if( abs( offsetX ) > b.rw + .00001 )
+				{
+					cout << "off: " << offsetX << endl;
+						assert( false );
+				}
 
 				if( approxEquals( m, 0 ) )
 				{
@@ -5941,12 +5952,22 @@ void Actor::UpdatePhysics()
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
+				
+				//b.rh = dashHeight;
+				
+				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+
+				if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
+				{
+					cout << "prevented glitchy offset: " << offsetX << endl;
+				}
+				else
+				{
 				if( b.rh == doubleJumpHeight )
 				{
 					b.offset.y = (normalHeight - doubleJumpHeight);
 				}
-				//b.rh = dashHeight;
-				
+
 				//if( reversed )
 				//	b.offset.y = -b.offset.y;
 
@@ -6012,7 +6033,9 @@ void Actor::UpdatePhysics()
 
 				movement = 0;
 			
-				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+				
+				
+				cout << "offsetX: " <<offsetX << endl;
 				//cout << "offsetX: " << offsetX << endl;
 				//cout << "offset now!: " << offsetX << endl;
 				//V2d gn = ground->Normal();
@@ -6026,6 +6049,7 @@ void Actor::UpdatePhysics()
 				{
 					//cout << "super secret fix offsetx2: " << offsetX << endl;
 					//offsetX = -b.rw;
+				}
 				}
 				//cout << "groundinggg" << endl;
 			}
@@ -8635,9 +8659,44 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			V2d gn = ground->Normal();
 			V2d nextn = ground->edge1->Normal();
 			V2d prevn = ground->edge0->Normal();
-			bool a = !reversed && ((groundSpeed > 0 && gn.x > 0 && nextn.x > 0) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 ));
-			bool b = reversed && (( groundSpeed > 0 && gn.x < 0 && nextn.x < 0 || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 )));
-			bb = ground != NULL && ( a || b );
+			bool sup = ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 );
+			cout << "sup: " << sup << endl;
+			bool a = false;
+			bool b = false;
+			if( !reversed )
+			{
+				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
+				{
+					if( ( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 ) )
+						a = true;
+				}
+				else if( groundSpeed < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				{
+					a = true;
+				}
+			}
+			else
+			{
+				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
+				{
+					if( ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) )
+					{
+						cout << "first:" << edgeQuantity << ", " <<length( ground->v1 - ground->v0 )  << endl;
+						b = true;
+					}
+				}
+				else if( groundSpeed < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				{
+					b = true;
+					cout << "second" << endl;
+				}
+			}
+			a = false;
+			b = false;
+			//a = !reversed && ((groundSpeed > 0 && gn.x < 0 && nextn.x < 0 && nextn.y < 0) || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 )
+			//	|| ( groundSpeed > 0 && gn.x > 0 && nextn.x > 0 && prevn.y < 0 ) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 && prevn.y < 0 ));
+			//bool b = reversed && (( gn.x < 0 && nextn.x < 0 || ( gn.x > 0 && prevn.x > 0 )));
+			bb = ( a || b );
 		}
 
 		
@@ -9128,15 +9187,18 @@ double Actor::GroundedAngle()
 	{
 		V2d e0n = ground->edge0->Normal();
 		V2d e1n = ground->edge1->Normal();
-		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 )
-		|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) && e1n.x > 0 ) );
+		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 )
+		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) && e1n.x > 0 );
 	}
 	else
 	{
 		V2d e0n = ground->edge0->Normal();
 		V2d e1n = ground->edge1->Normal();
-		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 )
-		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) && e1n.x > 0 ) );
+		bool a = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 );
+		bool b = ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) && e1n.x > 0 );
+		extraCase = a || b;
+		//cout << "extraCSe : " << a <<", " << b << ", edge: " << edgeQuantity << ", " << length( ground->v1 - ground->v0 )
+		//	 << ", " << approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) << endl;
 	}
 	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
 	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );

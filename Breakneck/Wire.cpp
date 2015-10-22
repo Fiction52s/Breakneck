@@ -1072,3 +1072,9 @@ void Wire::ClearDebug()
 	}
 	progressDraw.clear();
 }
+
+void Wire::Reset()
+{
+
+
+}

@@ -36,6 +36,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void SortNewPoints( int start, int end );
 	void SwapPoints( int aIndex, int bIndex );
 	void UpdateQuads();
+	void Reset();
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
