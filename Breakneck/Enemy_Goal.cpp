@@ -28,7 +28,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 
 	
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 10;
+	hitboxInfo->damage = 100;
 	hitboxInfo->drain = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;

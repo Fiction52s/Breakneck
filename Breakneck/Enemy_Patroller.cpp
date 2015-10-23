@@ -62,7 +62,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	hitBody.rh = 16;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 10;
+	hitboxInfo->damage = 100;
 	hitboxInfo->drain = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;

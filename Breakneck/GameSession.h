@@ -27,6 +27,7 @@ struct PowerBar
 	int maxRecover;
 	int maxRecoverLayer;
 
+	void Reset();
 	void Draw( sf::RenderTarget *target );
 	bool Damage( int power );
     bool Use( int power );

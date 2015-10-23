@@ -43,7 +43,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	
 	bulletHitboxInfo = new HitboxInfo;
-	bulletHitboxInfo->damage = 10;
+	bulletHitboxInfo->damage = 100;
 	bulletHitboxInfo->drain = 0;
 	bulletHitboxInfo->hitlagFrames = 0;
 	bulletHitboxInfo->hitstunFrames = 10;

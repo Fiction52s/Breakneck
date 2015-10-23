@@ -2523,6 +2523,7 @@ void GameSession::RespawnPlayer()
 	player.receivedHit = NULL;
 	player.rightWire->Reset();
 	player.leftWire->Reset();
+	powerBar.Reset();
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
@@ -2994,6 +2995,12 @@ PowerBar::PowerBar()
 
 	maxRecover = 75;
 	maxRecoverLayer = 0;
+}
+
+void PowerBar::Reset()
+{
+	points = pointsPerLayer;
+	layer = maxLayer;
 }
 
 void PowerBar::Draw( sf::RenderTarget *target )

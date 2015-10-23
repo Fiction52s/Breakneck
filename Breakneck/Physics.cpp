@@ -694,8 +694,6 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double aaaa =  dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
 			if( aaaa > 0 )
 			{
-				//everything but flat edges should work
-
 				bool topRight = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
 				bool topLeft = prevEn.x < 0 && prevEn.y > 0 && en.x > 0 && en.y < 0;
 				bool botLeft = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
@@ -711,6 +709,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				bool down = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y > 0;
 				bool l = prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
 
+				//cout << "up: " << up << ", r: " << r << ", down: " << down << ", l: "<< l << endl;
 				//cout << "topleft: " << topLeft << endl;
 				if( botLeft || botRight || down || topFlat )
 					topCond0 = true;
@@ -724,10 +723,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			else
 			{
 				//double bbbb = dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
-				bool up = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y < 0;
-				bool r = prevEn.x > 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
-				bool down = prevEn.x > 0 && prevEn.y > 0 && en.x < 0 && en.y > 0;
-				bool l = prevEn.x < 0 && prevEn.y > 0 && en.x < 0 && en.y < 0;
+				//the equals signs are for straight edges connected to slopes. not sure why i need to test those points but i guess it makes sense
+				bool up = prevEn.x <= 0 && prevEn.y < 0 && en.x >= 0 && en.y < 0;
+				bool r = prevEn.x > 0 && prevEn.y <= 0 && en.x > 0 && en.y >= 0;
+				bool down = prevEn.x >= 0 && prevEn.y > 0 && en.x <= 0 && en.y > 0;
+				bool l = prevEn.x < 0 && prevEn.y >= 0 && en.x < 0 && en.y <= 0;
 
 				if( down )
 					topCond0 = true;
