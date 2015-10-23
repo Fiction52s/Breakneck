@@ -479,8 +479,8 @@ struct PlayerGhost
 	void UpdatePrePhysics( int ghostFrame );
 	void DebugDraw( sf::RenderTarget *target );
 
-	const static int maxFrames = 300;
-	P states[maxFrames];//[240];
+	const static int MAX_FRAMES = 300;
+	P states[MAX_FRAMES];//[240];
 	int totalRecorded;
 	int currFrame;
 

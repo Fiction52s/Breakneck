@@ -1075,6 +1075,5 @@ void Wire::ClearDebug()
 
 void Wire::Reset()
 {
-
-
+	state = IDLE;
 }

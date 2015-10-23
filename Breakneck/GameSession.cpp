@@ -2521,6 +2521,8 @@ void GameSession::RespawnPlayer()
 	player.recordedGhosts = 0;
 	player.blah = false;
 	player.receivedHit = NULL;
+	player.rightWire->Reset();
+	player.leftWire->Reset();
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )

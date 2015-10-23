@@ -752,7 +752,7 @@ void Actor::UpdatePrePhysics()
 		
 
 		
-	if( record > 0 && ( ( currInput.RDown() && !prevInput.RDown() ) || ghosts[record-1]->currFrame == ghosts[record-1]->maxFrames ) )
+	if( record > 0 && ( ( currInput.RDown() && !prevInput.RDown() ) || ghosts[record-1]->currFrame == PlayerGhost::MAX_FRAMES - 1 ) )
 	{
 		//record = false;
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
@@ -8524,8 +8524,18 @@ void Actor::UpdatePostPhysics()
 		ghosts[record-1]->currFrame++;
 	}
 
-	if( ghostFrame < PlayerGhost::maxFrames )
-				ghostFrame++;
+	if( ghostFrame < PlayerGhost::MAX_FRAMES )
+		ghostFrame++;
+	/*else
+	{
+		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
+		record = 0;
+		LoadState();
+		owner->LoadState(); 
+		blah = true;
+		ghostFrame = 1;
+		owner->powerBar.Charge( 20 );
+	}*/
 
 	if( slowCounter == slowMultiple )
 	{
