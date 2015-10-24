@@ -10,7 +10,7 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120/*120*/), maxTotalLength( 10000 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 5/*120*/), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, quads( sf::Quads, (int)(ceil( maxTotalLength / 6.0 ) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
 	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 5 )//, ts_redWire( NULL ) 
@@ -80,6 +80,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					fireDir = normalize( fireDir );
 					state = FIRING;
 					framesFiring = 0;
+					frame = 0;
 				}
 			}
 			break;
@@ -736,19 +737,20 @@ void Wire::UpdateQuads()
 		for( int j = startIndex; j < firingTakingUp; ++j, ++startIndex )
 		{
 			V2d startPartial( player->position + alongDir * (double)(tileHeight * j) );
-			V2d endPartial( player->position + alongDir * (double)(tileHeight * (j+1)) );
+			V2d endPartial( player->position + alongDir * (double)(tileHeight * ( j + 1 )) );
 
 			
+			//cout << "a: " << frame / animFactor << ", " << (tileHeight * (frame / animFactor)) << "startPartial: " << startPartial.x << ", " << startPartial.y << endl;
+			//cout << "b: " << frame / animFactor + 1 << ", " << (tileHeight * (frame / animFactor + 1)) << "endPartial: " << endPartial.x << ", " << endPartial.y << endl;
 
-			int diff = tileHeight * (j+1) - length( currFirePos - player->position );
-			Vector2f realTopLeft = topLeft;
-			Vector2f realTopRight = topRight;
+			int diff = tileHeight * (j + 1) - length( currFirePos - player->position );
+		
 			if( diff > 0 )
 			{
 				assert( j == firingTakingUp - 1 );
 				//realTopLeft.y += diff;
 				//realTopRight.y += diff;
-				cout << "diff: " << diff << endl;
+				cout << "diff: " << diff << " len: " << length( currFirePos - player->position ) << " currfirepos: " << currFirePos.x << ", " << currFirePos.y << " pos: " << player->position.x << ", " << player->position.y << endl;
 				endPartial = currFirePos;
 			}
 
@@ -763,10 +765,23 @@ void Wire::UpdateQuads()
 			quads[j*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
 			quads[j*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
 
+			int trueFrame = frame / animFactor;
+
+			Vector2f realTopLeft = topLeft;
+			Vector2f realTopRight = topRight;
+			Vector2f realBottomRight= bottomRight;
+			Vector2f realBottomLeft = bottomLeft;
+
+			realTopLeft.y = tileHeight * (frame/animFactor);
+			realTopRight.y = tileHeight * (frame/animFactor);
+			realBottomRight.y = tileHeight * (frame/animFactor + 1);
+			realBottomLeft.y = tileHeight * (frame/animFactor + 1);
+
+
 			quads[j*4].texCoords = realTopLeft;
 			quads[j*4+1].texCoords = realTopRight;
-			quads[j*4+2].texCoords = bottomRight;
-			quads[j*4+3].texCoords = bottomLeft;
+			quads[j*4+2].texCoords = realBottomRight;
+			quads[j*4+3].texCoords = realBottomLeft;
 		}
 
 		for( ; startIndex < quads.getVertexCount() / 4; ++startIndex )
