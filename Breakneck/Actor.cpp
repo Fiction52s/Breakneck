@@ -3674,6 +3674,63 @@ void Actor::UpdatePrePhysics()
 		{
 			speed -= accel;
 		}
+
+		V2d wireDir = normalize( wirePoint - position );
+		double otherAccel = .5;
+		if( abs( wireDir.x ) < .7 )
+			{
+				if( wireDir.y < 0 )
+				{
+					if( currInput.LLeft() )
+					{
+						speed -= otherAccel;
+					}
+					else if( currInput.LRight() )
+					{
+						speed += otherAccel;
+					}
+				}
+				else if( wireDir.y > 0 )
+				{
+					if( currInput.LLeft() )
+					{
+						speed += otherAccel;
+					}
+					else if( currInput.LRight() )
+					{
+						speed -= otherAccel;
+					}
+				}
+			}
+		else
+		{
+			if( wireDir.x > 0 )
+			{
+				if( currInput.LUp() )
+				{
+					speed -= otherAccel;
+				}
+				else if( currInput.LDown() )
+				{
+					speed += otherAccel;
+				}
+			}
+			else if( wireDir.x < 0 )
+			{
+				if( currInput.LUp() )
+				{
+					speed += otherAccel;
+				}
+				else if( currInput.LDown() )
+				{
+					speed -= otherAccel;
+				}
+			}
+
+			
+		}
+
+
 		velocity = speed * tes;
 		 
 		//velocity += otherTes;

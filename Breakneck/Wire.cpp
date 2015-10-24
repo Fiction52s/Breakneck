@@ -699,27 +699,77 @@ void Wire::UpdateQuads()
 
 	int tileHeight = 6;
 	int startIndex = 0;
-	if( state == FIRING )
+	bool hitOrPulling = (state == HIT || state == PULLING );
+	bool singleRope = ( hitOrPulling && numPoints == 0 );
+	
+	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) )
 	{
+		for( int pointI = numPoints; pointI >= 0; --pointI )
+		{
+		V2d currWirePos;
+		V2d currWireStart;
+		if( hitOrPulling )
+		{	
+			if( pointI == 0 )
+			{
+				if( numPoints == 0 )
+				{
+					currWirePos = anchor.pos;
+					currWireStart = player->position;
+					//alongDir = normalize(currWirePos - player->position);
+				//	cout << "only rope from anchor to player" << endl;
+				}
+				else
+				{
+					currWirePos = anchor.pos;
+					currWireStart = points[0].pos;
+					//alongDir = normalize( anchor.pos - currWirePos );
+				//	cout << "anchor to first point" << endl;
+				}
+			}
+			else
+			{
+				if( pointI == numPoints )
+				{
+					currWirePos = points[pointI-1].pos;
+					currWireStart = player->position;
+					//alongDir = normalize( currWirePos - player->position );
+					
+				//	cout << "beginning rope from player to points" << endl;
+				}
+				else
+				{
+					currWirePos = points[pointI-1].pos;
+					currWireStart = points[pointI].pos;
+				//	alongDir = normalize( points[pointI-1].pos - points[pointI].pos );
+				//	cout << "middle of rope point: " << pointI << " to " << pointI-1 << endl;
+				}
+			}
+			alongDir = normalize( currWirePos - currWireStart );
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp;
+		}
+		else if( state == FIRING )
+		{
+			alongDir = fireDir;
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp;
+			currWirePos = player->position + fireDir * fireRate * (double)framesFiring;
+			currWireStart = player->position;
+		}
 		
-		alongDir = fireDir;
-		otherDir = alongDir;
-		temp = otherDir.x;
-		otherDir.x = otherDir.y;
-		otherDir.y = -temp;
 
-		V2d currFirePos = player->position + fireDir * fireRate * (double)framesFiring;
-
-		int firingTakingUp = ceil( length( currFirePos - player->position ) / tileHeight );
+		int firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
 
-		V2d startBack = player->position - otherDir * quadHalfWidth;
-		V2d startFront = player->position + otherDir * quadHalfWidth;
+		V2d endBack = currWirePos - otherDir * quadHalfWidth;
+		V2d endFront = currWirePos + otherDir * quadHalfWidth;
 
-		V2d endBack = currFirePos - otherDir * quadHalfWidth;
-		V2d endFront = currFirePos + otherDir * quadHalfWidth;
-
-		cout << "fram: " << frame / animFactor << endl;
+		//cout << "fram: " << frame / animFactor << endl;
 		Vector2f topLeft( 0, tileHeight * frame / animFactor );
 		Vector2f topRight( 6, tileHeight * frame / animFactor );
 		Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
@@ -734,24 +784,31 @@ void Wire::UpdateQuads()
 		//startIndex is 0
 		//cout << "fireTakingUp: " << firingTakingUp << endl;
 
-		for( int j = startIndex; j < firingTakingUp; ++j, ++startIndex )
-		{
-			V2d startPartial( player->position + alongDir * (double)(tileHeight * j) );
-			V2d endPartial( player->position + alongDir * (double)(tileHeight * ( j + 1 )) );
 
+		V2d startPartial;
+		V2d endPartial;
+		
+		//cout << "startIndex: " << startIndex << ", firingTakingUp: " << firingTakingUp << endl;
+		for( int j = 0; j < firingTakingUp; ++j )
+		{
+			startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
+			endPartial = ( currWireStart + alongDir * (double)(tileHeight * ( j + 1 )) );
+			
 			
 			//cout << "a: " << frame / animFactor << ", " << (tileHeight * (frame / animFactor)) << "startPartial: " << startPartial.x << ", " << startPartial.y << endl;
 			//cout << "b: " << frame / animFactor + 1 << ", " << (tileHeight * (frame / animFactor + 1)) << "endPartial: " << endPartial.x << ", " << endPartial.y << endl;
 
-			int diff = tileHeight * (j + 1) - length( currFirePos - player->position );
+			int diff = tileHeight * (j + 1) - length( currWirePos - currWireStart );
 		
 			if( diff > 0 )
 			{
+			//	cout << "j: " << j << ", firetu: " << firingTakingUp - 1 << endl;
 				assert( j == firingTakingUp - 1 );
 				//realTopLeft.y += diff;
 				//realTopRight.y += diff;
-				cout << "diff: " << diff << " len: " << length( currFirePos - player->position ) << " currfirepos: " << currFirePos.x << ", " << currFirePos.y << " pos: " << player->position.x << ", " << player->position.y << endl;
-				endPartial = currFirePos;
+			//	cout << "diff: " << diff << " len: " << length( currWirePos - player->position ) << " currfirepos: " << currWirePos.x << ", " 
+			//		<< currWirePos.y << " pos: " << player->position.x << ", " << player->position.y << endl;
+				endPartial = currWirePos;
 			}
 
 			V2d startPartialBack = startPartial - otherDir * quadHalfWidth;
@@ -759,11 +816,11 @@ void Wire::UpdateQuads()
 
 			V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
 			V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
-
-			quads[j*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
-			quads[j*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
-			quads[j*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
-			quads[j*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
+			int index = (j + startIndex );
+			quads[index*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
+			quads[index*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
+			quads[index*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
+			quads[index*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
 
 			int trueFrame = frame / animFactor;
 
@@ -777,13 +834,23 @@ void Wire::UpdateQuads()
 			realBottomRight.y = tileHeight * (frame/animFactor + 1);
 			realBottomLeft.y = tileHeight * (frame/animFactor + 1);
 
-
-			quads[j*4].texCoords = realTopLeft;
-			quads[j*4+1].texCoords = realTopRight;
-			quads[j*4+2].texCoords = realBottomRight;
-			quads[j*4+3].texCoords = realBottomLeft;
+			if( right )
+			{
+				realTopLeft.y += 36;
+				realTopRight.y += 36;
+				realBottomRight.y += 36;
+				realBottomLeft.y += 36;
+			}
+			quads[index*4].texCoords = realTopLeft;
+			quads[index*4+1].texCoords = realTopRight;
+			quads[index*4+2].texCoords = realBottomRight;
+			quads[index*4+3].texCoords = realBottomLeft;
 		}
 
+		startIndex += firingTakingUp;
+
+		}
+		//cout << "clearing: " << startIndex << " and beyond" << endl;
 		for( ; startIndex < quads.getVertexCount() / 4; ++startIndex )
 		{
 			quads[startIndex*4].position = Vector2f( 0, 0 );
@@ -791,196 +858,10 @@ void Wire::UpdateQuads()
 			quads[startIndex*4+2].position = Vector2f( 0, 0 );
 			quads[startIndex*4+3].position = Vector2f( 0, 0 );
 		}
-
-		/*quads[0].texCoords = topLeft;
-		quads[1].texCoords = topRight;
-		quads[2].texCoords = bottomRight;
-		quads[3].texCoords = bottomLeft;*/
-		//quads[0].texCoords = Vector2f( 0, 0 );
-		//quads
-
-		//quads[0].color = Color::Red;
-		//quads[1].color = Color::Red;
-		//quads[2].color = Color::Red;
-		//quads[3].color = Color::Red;
-			
-		/*quads[0].position = Vector2f( startBack.x, startBack.y );
-		quads[1].position = Vector2f( startFront.x, startFront.y );
-		quads[2].position = Vector2f( endFront.x, endFront.y );
-		quads[3].position = Vector2f( endBack.x, endBack.y );*/
-		//sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Blue),
-		//	sf::Vertex(sf::Vector2f(player->position.x + fireDir.x * 40 * framesFiring,
-		//	player->position.y + fireDir.y * 40 * framesFiring), Color::Magenta)
-	}
-	else if( state == HIT || state == PULLING )
-	{
-		if( numPoints == 0 )
-		{
-
-			alongDir = normalize( anchor.pos - player->position );
-			otherDir = alongDir;
-			temp = otherDir.x;
-			otherDir.x = otherDir.y;
-			otherDir.y = -temp;
-
-			V2d startBack = player->position - otherDir * quadHalfWidth;
-			V2d startFront = player->position + otherDir * quadHalfWidth;
-
-			V2d endBack = anchor.pos - otherDir * quadHalfWidth;
-			V2d endFront = anchor.pos + otherDir * quadHalfWidth;
-
-			quads[0].position = Vector2f( startBack.x, startBack.y );
-			quads[1].position = Vector2f( startFront.x, startFront.y );
-			quads[2].position = Vector2f( endFront.x, endFront.y );
-			quads[3].position = Vector2f( endBack.x, endBack.y );
-
-			/*quads[0].color = Color::Blue;
-			quads[1].color = Color::Blue;
-			quads[2].color = Color::Blue;
-			quads[3].color = Color::Blue;*/
-
-			Vector2f topLeft( 0, 0 );
-			Vector2f topRight( 6, 0 );
-			Vector2f bottomLeft( 0, 36 );
-			Vector2f bottomRight( 6, 36 );
-
-			quads[0].texCoords = topLeft;
-			quads[1].texCoords = topRight;
-			quads[2].texCoords = bottomRight;
-			quads[3].texCoords = bottomLeft;
-
-			for( int i = 1; i < MAX_POINTS; ++i )
-			{
-				quads[i*4].position = Vector2f( 0, 0 );
-				quads[i*4+1].position = Vector2f( 0, 0 );
-				quads[i*4+2].position = Vector2f( 0, 0 );
-				quads[i*4+3].position = Vector2f( 0, 0 );
-			}
-		}
-		else
-		{
-
-			alongDir = normalize( points[numPoints-1].pos - player->position );
-			otherDir = alongDir;
-			temp = otherDir.x;
-			otherDir.x = otherDir.y;
-			otherDir.y = -temp;
-
-			V2d startBack = player->position - otherDir * quadHalfWidth;
-			V2d startFront = player->position + otherDir * quadHalfWidth;
-
-			V2d endBack = points[numPoints-1].pos - otherDir * quadHalfWidth;
-			V2d endFront = points[numPoints-1].pos + otherDir * quadHalfWidth;
-
-			quads[0].position = Vector2f( startBack.x, startBack.y );
-			quads[1].position = Vector2f( startFront.x, startFront.y );
-			quads[2].position = Vector2f( endFront.x, endFront.y );
-			quads[3].position = Vector2f( endBack.x, endBack.y );
-
-			/*quads[0].color = Color::Magenta;
-			quads[1].color = Color::Magenta;
-			quads[2].color = Color::Magenta;
-			quads[3].color = Color::Magenta;*/
-
-			Vector2f topLeft( 0, 0 );
-			Vector2f topRight( 6, 0 );
-			Vector2f bottomLeft( 0, 36 );
-			Vector2f bottomRight( 6, 36 );
-
-			quads[0].texCoords = topLeft;
-			quads[1].texCoords = topRight;
-			quads[2].texCoords = bottomRight;
-			quads[3].texCoords = bottomLeft;
-
-			int i = 1;
-			for( ; i < numPoints; ++i )
-			{
-				/*V2d alongDir = fireDir;
-				V2d otherDir = fireDir;
-				double temp = otherDir.x;
-				otherDir.x = otherDir.y;
-				otherDir.y = -temp;*/
-
-				alongDir = normalize( points[i].pos - points[i-1].pos );
-				otherDir = alongDir;
-				temp = otherDir.x;
-				otherDir.x = otherDir.y;
-				otherDir.y = -temp;
-
-				startBack = points[i-1].pos - otherDir * quadHalfWidth;
-				startFront = points[i-1].pos + otherDir * quadHalfWidth;
-
-				endBack = points[i].pos - otherDir * quadHalfWidth;
-				endFront = points[i].pos + otherDir * quadHalfWidth;
-
-				//sf::Vertex(sf::Vector2f(points[i-1].pos.x, points[i-1].pos.y ), Color::Red),
-				//sf::Vertex(sf::Vector2f(points[i].pos.x, points[i].pos.y ), Color::Magenta)
-
-				quads[i*4].position = Vector2f( startBack.x, startBack.y );
-				quads[i*4+1].position = Vector2f( startFront.x, startFront.y );
-				quads[i*4+2].position = Vector2f( endFront.x, endFront.y );
-				quads[i*4+3].position = Vector2f( endBack.x, endBack.y );
-
-				/*quads[i*4].color = Color::Magenta;
-				quads[i*4+1].color = Color::Magenta;
-				quads[i*4+2].color = Color::Magenta;
-				quads[i*4+3].color = Color::Magenta;*/
-
-				topLeft = Vector2f( 0, 0 );
-				topRight= Vector2f( 6, 0 );
-				bottomLeft= Vector2f( 0, 36 );
-				bottomRight= Vector2f( 6, 36 );
-
-				quads[i*4].texCoords = topLeft;
-				quads[i*4+1].texCoords = topRight;
-				quads[i*4+2].texCoords = bottomRight;
-				quads[i*4+3].texCoords = bottomLeft;
-			}
-
-			alongDir = normalize( anchor.pos - points[0].pos );
-			otherDir = alongDir;
-			temp = otherDir.x;
-			otherDir.x = otherDir.y;
-			otherDir.y = -temp; 
-
-			startBack = points[0].pos - otherDir * quadHalfWidth;
-			startFront = points[0].pos + otherDir * quadHalfWidth;
-
-			endBack = anchor.pos - otherDir * quadHalfWidth;
-			endFront = anchor.pos + otherDir * quadHalfWidth;
-
-			quads[i*4].position = Vector2f( startBack.x, startBack.y );
-			quads[i*4+1].position = Vector2f( startFront.x, startFront.y );
-			quads[i*4+2].position = Vector2f( endFront.x, endFront.y );
-			quads[i*4+3].position = Vector2f( endBack.x, endBack.y );
-
-			topLeft = Vector2f( 0, 0 );
-			topRight= Vector2f( 6, 0 );
-			bottomLeft= Vector2f( 0, 36 );
-			bottomRight= Vector2f( 6, 36 );
-
-			quads[i*4].texCoords = topLeft;
-			quads[i*4+1].texCoords = topRight;
-			quads[i*4+2].texCoords = bottomRight;
-			quads[i*4+3].texCoords = bottomLeft;
-
-			/*quads[i*4].color = Color::Magenta;
-			quads[i*4+1].color = Color::Magenta;
-			quads[i*4+2].color = Color::Magenta;
-			quads[i*4+3].color = Color::Magenta;*/
-
-			++i;
-			for( ; i < MAX_POINTS; ++i )
-			{
-				quads[i*4].position = Vector2f( 0, 0 );
-				quads[i*4+1].position = Vector2f( 0, 0 );
-				quads[i*4+2].position = Vector2f( 0, 0 );
-				quads[i*4+3].position = Vector2f( 0, 0 );
-			}
-		}
 	}
 
-	++framesFiring;
+	if( state == FIRING )
+		++framesFiring;
 }
 
 void Wire::Draw( RenderTarget *target )
@@ -1051,7 +932,7 @@ void Wire::Draw( RenderTarget *target )
 
 		CircleShape cs1;
 		cs1.setFillColor( Color::Red );
-		cs1.setRadius( 10 );
+		cs1.setRadius( 2 );
 		cs1.setOrigin( cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2 );
 		cs1.setPosition( anchor.pos.x, anchor.pos.y );
 
@@ -1061,7 +942,7 @@ void Wire::Draw( RenderTarget *target )
 		{
 			CircleShape cs;
 			cs.setFillColor( Color::Cyan );
-			cs.setRadius( 5 );
+			cs.setRadius( 2 );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( points[i].pos.x, points[i].pos.y );
 
